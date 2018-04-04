@@ -1,0 +1,204 @@
+/**
+ * 后台JS主入口
+ */
+  // layui.use('element', function(){
+
+  var layer = layui.layer,
+      // element = layui.element(),
+      element =  layui.element
+      laydate = layui.laydate,
+      // form = layui.form();
+      form = layui.form;
+
+  /**
+   * AJAX全局设置
+   */
+  $.ajaxSetup({
+      type: "post",
+      dataType: "json"
+  });
+
+  /**
+   * 后台侧边菜单选中状态
+   */
+  $('.layui-nav-item').find('a').removeClass('layui-this');
+  $('.layui-nav-tree').find('a[href*="' + GV.current_controller + '"]').parent().addClass('layui-this').parents('.layui-nav-item').addClass('layui-nav-itemed');
+
+function initLayuiTable(options){
+  var defaults = {
+    limit: 50
+  }
+  var opt = $.extend({}, defaults, options);
+
+  layui.table.init('listtable', opt);
+  $(window).resize(function(event) {
+    layui.table.init('listtable', opt);
+  });
+}
+
+function admin_init(){
+  /**
+   * 通用单图上传
+   */
+
+
+  /*layui.upload({
+      url: "/index.php/api/upload/upload",
+      type: 'image',
+      ext: 'jpg|png|gif|bmp',
+      success: function (data) {
+          if (data.error === 0) {
+              document.getElementById('thumb').value = data.url;
+          } else {
+              layer.msg(data.message);
+          }
+      }
+  });*/
+  var layUpload = layui.upload;
+  var uploadInst = layUpload.render({
+    elem: '#test1' //绑定元素
+    ,url: '/index.php/api/upload/upload' //上传接口
+    ,done: function(res){
+      //上传完毕回调
+      if (res.error === 0) {
+          document.getElementById('thumb').value = res.url;
+      } else {
+          layer.msg(res.message);
+      }
+    }
+    ,error: function(){
+      //请求异常回调
+    }
+  });
+
+  /**
+   * 通用日期时间选择
+   */
+  $('.datetime').on('click', function () {
+    laydate.render({
+      elem: this
+      ,type: 'datetime'
+      ,range: false //或 range: '~' 来自定义分割字符
+    });
+    /*  laydate({
+          elem: this,
+          istime: true,
+          format: 'YYYY-MM-DD hh:mm:ss'
+      })*/
+  });
+
+  /**
+   * 通用表单提交(AJAX方式)
+   */
+  form.on('submit(*)', function (data) {
+      $.ajax({
+          url: data.form.action,
+          type: data.form.method,
+          data: $(data.form).serialize(),
+          success: function (info) {
+              if (info.code === 1) {
+                  setTimeout(function () {
+                      location.href = info.url;
+                  }, 1000);
+              }
+              layer.msg(info.msg);
+          }
+      });
+
+      return false;
+  });
+
+  /**
+   * 通用批量处理（审核、取消审核、删除）
+   */
+  $(document).on('click',  '.ajax-action', function() {
+  // $('.ajax-action').on('click', function () {
+      var _action = $(this).data('action');
+      layer.open({
+          shade: false,
+          content: '确定执行此操作？',
+          btn: ['确定', '取消'],
+          yes: function (index) {
+              $.ajax({
+                  url: _action,
+                  data: $('.ajax-form').serialize(),
+                  success: function (info) {
+                      if (info.code === 1) {
+                          setTimeout(function () {
+                              location.href = info.url;
+                          }, 1000);
+                      }
+                      layer.msg(info.msg);
+                  }
+              });
+              layer.close(index);
+          }
+      });
+
+      return false;
+  });
+
+  /**
+   * 通用全选
+   */
+  $(document).on('click',  '.check-all', function() {
+  // $('.check-all').on('click', function () {
+      $(this).parents('table').find('input[type="checkbox"]').prop('checked', $(this).prop('checked'));
+  });
+
+  /**
+   * 通用删除
+   */
+  $(document).on('click',  '.ajax-delete', function() {
+  // $('.ajax-delete').on('click', function () {
+      var _href = $(this).attr('href');
+      layer.open({
+          shade: false,
+          content: '确定删除？',
+          btn: ['确定', '取消'],
+          yes: function (index) {
+              $.ajax({
+                  url: _href,
+                  type: "get",
+                  success: function (info) {
+                      if (info.code === 1) {
+                          setTimeout(function () {
+                              location.href = info.url;
+                          }, 1000);
+                      }
+                      layer.msg(info.msg);
+                  }
+              });
+              layer.close(index);
+          }
+      });
+
+      return false;
+  });
+
+  /**
+   * 清除缓存
+   */
+  $(document).on('click',  '#clear-cache', function() {
+  // $('#clear-cache').on('click', function () {
+      var _url = $(this).data('url');
+      if (_url !== 'undefined') {
+          $.ajax({
+              url: _url,
+              success: function (data) {
+                  if (data.code === 1) {
+                      setTimeout(function () {
+                          location.href = location.pathname;
+                      }, 1000);
+                  }
+                  layer.msg(data.msg);
+              }
+          });
+      }
+
+      return false;
+  });
+}
+
+admin_init();
+// })

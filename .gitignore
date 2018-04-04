@@ -1,0 +1,9 @@
+.idea
+.DS_Store
+/application/database.php
+/application/extra
+*.temp/
+*.log
+runtime/
+vendor/
+thinkphp

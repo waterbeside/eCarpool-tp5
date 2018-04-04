@@ -1,0 +1,49 @@
+<div class="layui-tab-content">
+    <div class="layui-tab-item layui-show">
+        <form class="layui-form form-container" action="{:url('admin/company/add')}" method="post">
+            <div class="layui-form-item">
+                <label class="layui-form-label">公司名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="company_name" value="" required  lay-verify="required" placeholder="请输入公司名称" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">缩写名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="short_name" value="" placeholder="缩写名" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">国别</label>
+                <div class="layui-input-block">
+                    <input type="text" name="country" value="" required  lay-verify="required" placeholder="国别" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">简介</label>
+                <div class="layui-input-block">
+                  <textarea name="ad_words" placeholder="请输入内容" class="layui-textarea"></textarea>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">状态</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="status" value="1" title="显示" checked>
+                    <input type="radio" name="status" value="0" title="隐藏" >
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="*">保存</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+  form.render();
+</script>

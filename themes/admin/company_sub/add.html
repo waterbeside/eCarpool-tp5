@@ -1,0 +1,59 @@
+<div class="layui-tab-content">
+    <div class="layui-tab-item layui-show">
+        <form class="layui-form form-container" action="{:url('admin/company_sub/add')}" method="post">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">分厂名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="sub_company_name" value="" required  lay-verify="required" placeholder="请输入分厂名称" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">所属公司</label>
+                <div class="layui-input-block">
+                  <select name="company_id" lay-verify="required">
+                     <option value="0">请选择公司</option>
+                   </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">简介</label>
+                <div class="layui-input-block">
+                  <textarea name="remark" placeholder="请输入内容" class="layui-textarea"></textarea>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">状态</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="status" value="1" title="显示" >
+                    <input type="radio" name="status" value="0" title="隐藏" >
+                </div>
+            </div>
+
+
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="*">保存</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+  $.get("{:url('admin/company/public_lists')}",function(res){
+    if(res.code === 0){
+      var options = '<option value="0">请选择公司</option>';
+      $(res.data.lists).each(function(index, el) {
+        options += '<option value="'+el.id+'" >'+el.name+'</option>';
+      });
+      $("select[name='company_id']").html(options)
+      form.render();
+    }
+  })
+  form.render();
+
+</script>

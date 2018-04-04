@@ -1,0 +1,22 @@
+<div class="layui-tab-content">
+    <div class="layui-tab-item layui-show">
+        <form class="layui-form form-container" action="{:url('admin/slide_category/edit')}" method="post">
+            <div class="layui-form-item">
+                <label class="layui-form-label">分类名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" value="{$slide_category.name}" required  lay-verify="required" placeholder="请输入分类名称" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <input type="hidden" name="id" value="{$slide_category.id}">
+                    <button class="layui-btn" lay-submit lay-filter="*">更新</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+  form.render();
+</script>

@@ -1,0 +1,77 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <ul class="layui-tab-title">
+            <li class="layui-this">用户管理</li>
+            <li class=""><a href="{:url('admin/user/add')}"  data-title="添加用户"  data-trigger="modal" >添加用户</a></li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+
+                <form class="layui-form layui-form-pane" action="{:url('admin/user/index')}" method="get">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">关键词</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="keyword" value="{$keyword}" placeholder="请输入关键词" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn">搜索</button>
+                    </div>
+                </form>
+                <hr>
+
+                <table lay-filter="listtable">
+                    <thead>
+                    <tr >
+                        <th lay-data="{field:'uid', width:100}" fixed="left">ID</th>
+                        <th lay-data="{field:'loginname'}">用户名</th>
+                        <th lay-data="{field:'phone', width:100}">手机</th>
+                        <th lay-data="{field:'name', width:100}">姓名</th>
+                        <th lay-data="{field:'Department', width:100}">部门</th>
+                        <th lay-data="{field:'company_name', width:100}">公司</th>
+                        <!-- <th lay-data="{field:'score', width:80}">分</th> -->
+                        <th lay-data="{field:'other', width:60}">...</th>
+                        <th lay-data="{field:'options', width:120}">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {foreach name="user_list" item="vo"}
+                    <tr>
+                        <td>{$vo.uid}</td>
+                        <td>{$vo.loginname}</td>
+                        <td>{$vo.phone}</td>
+                        <td>{$vo.name}</td>
+                        <td>{$vo.Department}</td>
+
+                        <td>{php}echo $vo['companyname'] ? $vo['companyname'].' / ' : '';{/php}{$vo.company_name}</td>
+
+                        <!-- <td><a  class="layui-btn layui-btn-normal layui-btn-xs " data-title="分数管理"  data-trigger="modal" href="">0</a></td> -->
+                        <td>
+                          {php}echo $vo['is_active']==1 ? '' : '<i class="fa fa-times"></i>';{/php}
+                          {php}echo $vo['sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+                        </td>
+                        <td>
+                          <a href="{:url('admin/user/edit',['id'=>$vo['uid']])}"  class="layui-btn   layui-btn-xs " data-title="編輯成員"  data-trigger="modal" title="編輯"><i class="layui-icon">&#xe642;</i></a>
+                          <a href="{:url('admin/user/delete',['id'=>$vo['uid']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除" ><i class="layui-icon">&#xe640;</i></a>
+                        </td>
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+                <!--分页-->
+                {$user_list->render()}
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+initLayuiTable({ limit: {$pagesize} })
+
+</script>
+{/block}
