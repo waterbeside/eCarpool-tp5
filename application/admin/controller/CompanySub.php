@@ -2,7 +2,7 @@
 namespace app\admin\controller;
 
 use app\carpool\model\CompanySub as CompanySubModel;
-// use app\carpool\validate\CompanySub as CompanySubValidate;
+use think\Validate;
 
 use app\common\controller\AdminBase;
 use think\Config;
@@ -86,6 +86,13 @@ class CompanySub extends AdminBase
               $this->error($validate_result);
           }
 
+          //验证名称是否重复
+          $validate   = Validate::make(['sub_company_name'  => 'unique:carpool/CompanySub,sub_company_name,'.$id],['sub_company_name.unique' => '分厂名已存在']);
+
+          $validate_result = $validate->check($data);
+          if ($validate_result !== true) {
+              $this->error($validate->getError());
+          }
 
           if ($this->company_sub_model->allowField(true)->save($data, ['sub_company_id'=>$id]) !== false) {
               $this->success('更新成功');
