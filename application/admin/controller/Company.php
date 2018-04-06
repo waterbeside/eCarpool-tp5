@@ -3,6 +3,7 @@ namespace app\admin\controller;
 
 use app\carpool\model\Company as CompanyModel;
 use app\common\controller\AdminBase;
+use think\Validate;
 use think\Config;
 use think\Db;
 use think\Cache;
@@ -95,17 +96,26 @@ class Company extends AdminBase
     {
       if ($this->request->isPost()) {
           $data            = $this->request->param();
-          $validate_result = $this->validate($data, 'app\carpool\validate\Company');
+          $validate_result = $this->validate($data, 'app\carpool\validate\Company.edit');
           if ($validate_result !== true) {
               $this->error($validate_result);
-          } else {
-              if ($this->company_model->allowField(true)->save($data, ['company_id'=>$id]) !== false) {
-                  Cache::tag('public')->rm('companys');
-                  $this->success('更新成功');
-              } else {
-                  $this->error('更新失败');
-              }
           }
+
+
+          $validate   = Validate::make(['company_name'  => 'unique:carpool/Company,company_name,'.$id],['company_name.unique' => '公司名已存在']);
+          $validate_result = $validate->check($data);
+          if ($validate_result !== true) {
+              $this->error($validate->getError());
+          }
+
+
+          if ($this->company_model->allowField(true)->save($data, ['company_id'=>$id]) !== false) {
+              Cache::tag('public')->rm('companys');
+              $this->success('更新成功');
+          } else {
+              $this->error('更新失败');
+          }
+
        }else{
          $datas = $this->company_model->find($id);
          return $this->fetch('edit', ['datas' => $datas]);
