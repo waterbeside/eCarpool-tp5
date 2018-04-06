@@ -9,31 +9,45 @@
         </ul>
         <div class="layui-tab-content">
             <div class="layui-tab-item layui-show">
-                <table class="layui-table">
-                    <thead>
-                    <tr>
-                        <th style="width: 30px;">ID</th>
-                        <th>公司名</th>
-                        <th>缩写</th>
-                        <th>国别</th>
-                        <th width="100">操作</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {foreach name="lists" item="vo"}
-                    <tr>
-                      <td>{$vo.company_id}</td>
-                      <td>{$vo.company_name}</td>
-                      <td>{$vo.short_name}</td>
-                      <td>{$vo.country}</td>
-                        <td>
-                            <a href="{:url('admin/company/edit',['id'=>$vo['company_id']])}" class="layui-btn   layui-btn-sm " data-title="編輯"  data-trigger="modal" ><i class="layui-icon">&#xe642;</i></a>
-                            <a href="{:url('admin/company/delete',['id'=>$vo['company_id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete"><i class="layui-icon">&#xe640;</i></a>
-                        </td>
-                    </tr>
-                    {/foreach}
-                    </tbody>
-                </table>
+              <form class="layui-form layui-form-pane" action="{:url('admin/company/index')}" method="get">
+                  <div class="layui-inline">
+                      <label class="layui-form-label">检索</label>
+                      <div class="layui-input-inline">
+                          <input type="text" name="keyword" value="{$keyword}" placeholder="请输入关键词" class="layui-input">
+                      </div>
+                  </div>
+                  <div class="layui-inline">
+                      <button class="layui-btn"><i class="fa fa-search"></i></button>
+                  </div>
+              </form>
+              <hr>
+              <table class="layui-table">
+                  <thead>
+                  <tr>
+                      <th style="width: 30px;">ID</th>
+                      <th>公司名</th>
+                      <th>缩写</th>
+                      <th>国别</th>
+                      <th width="100">操作</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {foreach name="lists" item="vo"}
+                  <tr>
+                    <td>{$vo.company_id}</td>
+                    <td>{$vo.company_name}</td>
+                    <td>{$vo.short_name}</td>
+                    <td>{$vo.country}</td>
+                      <td>
+                          <a href="{:url('admin/company/edit',['id'=>$vo['company_id']])}" class="layui-btn   layui-btn-sm " data-title="編輯"  data-trigger="modal" ><i class="layui-icon">&#xe642;</i></a>
+                          <a href="{:url('admin/company/delete',['id'=>$vo['company_id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete"><i class="layui-icon">&#xe640;</i></a>
+                      </td>
+                  </tr>
+                  {/foreach}
+                  </tbody>
+              </table>
+              <!--分页-->
+              {$lists->render()}
             </div>
         </div>
     </div>
