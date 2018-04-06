@@ -65,7 +65,7 @@ class Department extends AdminBase
       }
       $returnLists = [];
       foreach($lists as $key => $value) {
-        if(!$scid || ($scid > 0 && $scid == $value['company_id'])){
+        if(!$scid || ($scid > 0 && $scid == $value['sub_company_id'])){
           $returnLists[] = [
             'id'=>$value['departmentid'],
             'name'=>$value['department_name'],
