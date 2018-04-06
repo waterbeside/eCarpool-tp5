@@ -7,6 +7,7 @@ use think\Validate;
 use app\common\controller\AdminBase;
 use think\Config;
 use think\Db;
+use think\Cache;
 
 /**
  * 公司管理
@@ -44,6 +45,35 @@ class CompanySub extends AdminBase
     }
 
     /**
+     * 用于选择列表
+     */
+    public function public_lists(){
+      $cid = $this->request->get('cid/d');
+
+      $lists_cache = Cache::tag('public')->get('sub_companys');
+      if($lists_cache){
+        $lists = $lists_cache;
+      }else{
+        $lists = $this->company_sub_model->where('status',1)->order('sub_company_id ASC ')->select();
+        if($lists){
+          Cache::tag('public')->set('sub_companys',$lists,3600);
+        }
+      }
+      $returnLists = [];
+      foreach($lists as $key => $value) {
+        if(!$cid || ($cid > 0 && $cid == $value['company_id'])){
+          var_dump($value['sub_company_name']);
+          $returnLists[] = [
+            'id'=>$value['sub_company_id'],
+            'name'=>$value['sub_company_name'],
+            'status'=>$value['status'],
+          ];
+        }
+      }
+      return json(['data'=>['lists'=>$returnLists],'code'=>0,'desc'=>'success']);
+    }
+
+    /**
      * 添加子公司
      * @return mixed
      */
@@ -58,6 +88,7 @@ class CompanySub extends AdminBase
               $this->error($validate_result);
           } else {
               if ($this->company_sub_model->allowField(true)->save($data)) {
+                Cache::tag('public')->rm('sub_companys');
                   $this->success('保存成功');
               } else {
                   $this->error('保存失败');
@@ -86,15 +117,15 @@ class CompanySub extends AdminBase
               $this->error($validate_result);
           }
 
-          //验证名称是否重复
+          /*//验证名称是否重复
           $validate   = Validate::make(['sub_company_name'  => 'unique:carpool/CompanySub,sub_company_name,'.$id],['sub_company_name.unique' => '分厂名已存在']);
-
           $validate_result = $validate->check($data);
           if ($validate_result !== true) {
               $this->error($validate->getError());
-          }
+          }*/
 
           if ($this->company_sub_model->allowField(true)->save($data, ['sub_company_id'=>$id]) !== false) {
+            Cache::tag('public')->rm('sub_companys');
               $this->success('更新成功');
           } else {
               $this->error('更新失败');
