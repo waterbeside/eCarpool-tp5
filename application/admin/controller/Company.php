@@ -34,7 +34,7 @@ class Company extends AdminBase
         if ($keyword) {
             $map['company_name|short_name'] = ['like', "%{$keyword}%"];
         }
-        $lists = $this->company_model->where($map)->order('company_id ASC , company_name ')->paginate(50, false, ['page' => $page]);
+        $lists = $this->company_model->where($map)->order('company_id ASC , company_name ')->paginate(50, false,['query'=>['keyword'=>$keyword]]);
 
         return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword]);
     }

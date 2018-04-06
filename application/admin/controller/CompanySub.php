@@ -30,7 +30,7 @@ class CompanySub extends AdminBase
      * @param int    $page
      * @return mixed
      */
-    public function index($keyword = '', $page = 1,$pagesize = 50)
+    public function index($keyword = '', $page = 1 )
     {
         $map = [];
         if ($keyword) {
@@ -39,8 +39,8 @@ class CompanySub extends AdminBase
         $join = [
           ['company c','s.company_id = c.company_id'],
         ];
-        $lists = $this->company_sub_model->field('s.sub_company_id,s.company_id,s.status,s.sub_company_name,c.company_name,c.short_name')->alias('s')->join($join)->where($map)->order('sub_company_id ASC , sub_company_name ')->paginate($pagesize, false, ['page' => $page]);
-        return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword,'pagesize'=>$pagesize]);
+        $lists = $this->company_sub_model->field('s.sub_company_id,s.company_id,s.status,s.sub_company_name,c.company_name,c.short_name')->alias('s')->join($join)->where($map)->order('sub_company_id ASC , sub_company_name ')->paginate(50, false, ['query'=>['keyword'=>$keyword]]);
+        return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword]);
     }
 
     /**
