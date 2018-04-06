@@ -39,8 +39,7 @@ class CompanySub extends AdminBase
         $join = [
           ['company c','s.company_id = c.company_id'],
         ];
-        $lists = $this->company_sub_model->alias('s')->join($join)->where($map)->order('sub_company_id ASC , sub_company_name ')->paginate($pagesize, false, ['page' => $page]);
-
+        $lists = $this->company_sub_model->field('s.sub_company_id,s.company_id,s.status,s.sub_company_name,c.company_name,c.short_name')->alias('s')->join($join)->where($map)->order('sub_company_id ASC , sub_company_name ')->paginate($pagesize, false, ['page' => $page]);
         return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword,'pagesize'=>$pagesize]);
     }
 
@@ -49,7 +48,6 @@ class CompanySub extends AdminBase
      */
     public function public_lists(){
       $cid = $this->request->get('cid/d');
-
       $lists_cache = Cache::tag('public')->get('sub_companys');
       if($lists_cache){
         $lists = $lists_cache;
