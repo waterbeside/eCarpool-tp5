@@ -5,7 +5,7 @@ use app\carpool\model\Company as CompanyModel;
 use app\common\controller\AdminBase;
 use think\Config;
 use think\Db;
-
+use think\Cache;
 /**
  * 公司管理
  * Class Department
@@ -41,7 +41,15 @@ class Company extends AdminBase
 
 
     public function public_lists(){
-      $lists = $this->company_model->order('company_id ASC , company_name ')->select();
+      $lists_cache = Cache::tag('public')->get('companys');
+      if($lists_cache){
+        $lists = $lists_cache;
+      }else{
+        $lists = $this->company_model->order('company_id ASC , company_name ')->select();
+        if($lists){
+          Cache::tag('public')->set('companys',$lists,3600);
+        }
+      }
       $returnLists = [];
       foreach($lists as $key => $value) {
         $returnLists[] = [
@@ -67,6 +75,7 @@ class Company extends AdminBase
               $this->error($validate_result);
           } else {
               if ($this->company_model->allowField(true)->save($data)) {
+                  Cache::tag('public')->rm('companys');
                   $this->success('保存成功');
               } else {
                   $this->error('保存失败');
@@ -86,14 +95,12 @@ class Company extends AdminBase
     {
       if ($this->request->isPost()) {
           $data            = $this->request->param();
-
           $validate_result = $this->validate($data, 'app\carpool\validate\Company');
-
           if ($validate_result !== true) {
               $this->error($validate_result);
           } else {
-
               if ($this->company_model->allowField(true)->save($data, ['company_id'=>$id]) !== false) {
+                  Cache::tag('public')->rm('companys');
                   $this->success('更新成功');
               } else {
                   $this->error('更新失败');
