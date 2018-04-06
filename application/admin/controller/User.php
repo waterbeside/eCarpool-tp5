@@ -29,7 +29,6 @@ class User extends AdminBase
      */
     public function index($keyword = '', $page = 1,$pagesize = 50)
     {
-
         $map = [];
         if ($keyword) {
             $map['loginname|phone|Department|name|companyname'] = ['like', "%{$keyword}%"];
@@ -37,8 +36,7 @@ class User extends AdminBase
         $join = [
           ['company c','u.company_id = c.company_id'],
         ];
-        $user_list = $this->user_model->alias('u')->join($join)->where($map)->order('uid DESC')->paginate($pagesize, false, ['page' => $page]);
-
+        $user_list = $this->user_model->alias('u')->join($join)->where($map)->order('uid DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
         return $this->fetch('index', ['user_list' => $user_list, 'keyword' => $keyword,'pagesize'=>$pagesize]);
     }
 
