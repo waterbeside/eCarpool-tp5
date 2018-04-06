@@ -37,7 +37,7 @@ class CompanySub extends AdminBase
             $map['sub_company_name'] = ['like', "%{$keyword}%"];
         }
         $join = [
-          ['company c','s.company_id = c.company_id'],
+          ['company c','s.company_id = c.company_id','left'],
         ];
         $lists = $this->company_sub_model->field('s.sub_company_id,s.company_id,s.status,s.sub_company_name,c.company_name,c.short_name')->alias('s')->join($join)->where($map)->order('sub_company_id ASC , sub_company_name ')->paginate(50, false, ['query'=>['keyword'=>$keyword]]);
         return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword]);
