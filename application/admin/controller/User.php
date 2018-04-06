@@ -48,13 +48,14 @@ class User extends AdminBase
     {
       if ($this->request->isPost()) {
           $data            = $this->request->post();
-          $validate_result = $this->validate($data, 'app\admin\validate\User');
+          $validate_result = $this->validate($data, 'app\carpool\validate\User');
 
           if ($validate_result !== true) {
               $this->error($validate_result);
           } else {
             // $data['password'] = md5($data['password'] . Config::get('salt'));
-              $data['password'] = md5($data['password']);
+              $data['password'] = "";
+              $data['md5password'] = md5($data['password']);
               if ($this->user_model->allowField(true)->save($data)) {
                   $this->success('保存成功');
               } else {
@@ -76,28 +77,43 @@ class User extends AdminBase
      */
     public function edit($id)
     {
-      if ($this->request->isPost()) {
-          $data            = $this->request->post();
-          $validate_result = $this->validate($data, 'app\admin\validate\User');
 
-          if ($validate_result !== true) {
-              $this->error($validate_result);
-          } else {
-              $user               = $this->user_model->find($id);
-              $user->uid           = $uid;
-              $user->loginname     = $data['loginname'];
-              $user->phone        = $data['phone'];
-              $user->is_active    = $data['is_active'];
-              if (!empty($data['password']) && !empty($data['confirm_password'])) {
-                  // $user->password = md5($data['password'] . Config::get('salt'));
-                  $user->md5password = md5($data['password']);
-              }
-              if ($user->save() !== false) {
-                  $this->success('更新成功');
-              } else {
-                  $this->error('更新失败');
-              }
+      if ($this->request->isPost()) {
+
+          $data            = $this->request->post();
+          unset($data['md5password']);
+          $validate = new \app\carpool\validate\User;
+          if (!empty($data['password']) && !empty($data['confirm_password'])) {
+            if (!$validate->scene('edit_change_password')->check($data)) {
+              $this->error($validate->getError());
+            }
+            $data['md5password'] = md5($data['password']);
+          }else{
+            if (!$validate->scene('edit')->check($data)) {
+              $this->error($validate->getError());
+            }
+            unset($data['password']);
           }
+        /*
+          $rule = [
+            'loginname'  => 'unique:carpool/User,loginname,'.$id,
+            'phone'       => 'unique:carpool/User,phone,'.$id,
+          ];
+          $msg = [
+            'loginname.unique' => '该用户名已被占用',
+            'phone.unique' => '电话已被使用',
+          ];
+          $validate   = Validate::make($rule,$msg);
+          $validate_result = $validate->check($data);
+          if ($validate_result !== true) {
+              $this->error($validate->getError());
+          }*/
+          if ($this->user_model->allowField(true)->save($data, ['uid'=>$id]) !== false) {
+              $this->success('保存成功');
+          } else {
+              $this->error('保存失败');
+          }
+
       }else{
         $user = $this->user_model->find($id);
         $user->avatar = $user->imgpath ? config('carpool.avatarBasePath').$user->imgpath : config('carpool.avatarBasePath')."im/default.png";

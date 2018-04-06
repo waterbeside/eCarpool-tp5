@@ -1,88 +1,253 @@
 <div class="layui-tab-content">
     <div class="layui-tab-item layui-show">
-        <form class="layui-form form-container" action="{:url('admin/user/edit')}" method="post">
+        <form class="layui-form form-container" action="{:url('admin/User/edit')}" method="post">
             <div style="text-align:center; margin:-50px 0 14px;">
               <div class="cp-avatar" style="background-image:url('{$user.avatar}')"></div>
             </div>
 
-            <div class="layui-form-item">
-                <label class="layui-form-label">用户名(工号)</label>
+            <fieldset class="amain-fieldset layui-elem-field" >
+              <legend>其本信息</legend>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">用户名(工号)</label>
+                  <div class="layui-input-block">
+                      <input type="text" name="loginname" value="{$user.loginname}" required  lay-verify="required" placeholder="请输入用户名" class="layui-input">
+                      <div class="layui-form-mid layui-word-aux">修改帐号名有可能形响im_id，如非必要，请勿修改</div>
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">手机</label>
+                  <div class="layui-input-block">
+                      <input type="text" name="phone" value="{$user.phone}" placeholder="（选填）请输入手机" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">姓名</label>
+                  <div class="layui-input-block">
+                      <input type="text" name="name" value="{$user.name}" placeholder="姓名" lay-verify="required" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">性别</label>
+                  <div class="layui-input-block">
+                      <input type="radio" name="sex" value="1" title="男" {if condition="$user.sex==1"} checked="checked"{/if}>
+                      <input type="radio" name="sex" value="2" title="女" {if condition="$user.sex==0"} checked="checked"{/if}>
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">密码</label>
+                  <div class="layui-input-block">
+                      <input type="password" name="password" value="" placeholder="（选填）如不修改则留空" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">重复密码</label>
+                  <div class="layui-input-block">
+                      <input type="password" name="confirm_password" value="" placeholder="（选填）如不修改则留空" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">状态</label>
+                  <div class="layui-input-block">
+                      <input type="checkbox" name="is_active" value="1" lay-skin="switch" lay-text="启用|禁用" {if condition="$user.is_active==1"} checked="checked"{/if}>
+                  </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="amain-fieldset layui-elem-field" >
+              <legend>公司信息</legend>
+              <div class="layui-form-item">
+                <label class="layui-form-label">所属公司</label>
                 <div class="layui-input-block">
-                    <input type="text" name="loginname" value="{$user.loginname}" required  lay-verify="required" placeholder="请输入用户名" class="layui-input">
+                  <select name="company_id" lay-verify="required" lay-filter="company_id">
+                     <option value="0">请选择公司</option>
+                   </select>
                 </div>
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">分厂</label>
+              </div>
+
+              <div class="layui-form-item">
+                <label class="layui-form-label">所属分厂</label>
                 <div class="layui-input-block">
-                    <input type="text" name="companyname" value="{$user.companyname}" required  lay-verify="required" placeholder="分厂" class="layui-input">
+                  <select name="sub_company_id" lay-verify="required" lay-filter="sub_company_id" lay-search>
+                     <option value="0">请选择分厂</option>
+                   </select>
                 </div>
-            </div>
-            <div class="layui-form-item">
+              </div>
+
+              <div class="layui-form-item">
                 <label class="layui-form-label">部门</label>
                 <div class="layui-input-block">
-                    <input type="text" name="Department" value="{$user.Department}" required  lay-verify="required" placeholder="部门" class="layui-input">
+                  <select name="departmentid" lay-verify="required" lay-search>
+                     <option value="0">请选择分厂</option>
+                   </select>
                 </div>
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">密码</label>
-                <div class="layui-input-block">
-                    <input type="password" name="password" value="" placeholder="（选填）如不修改则留空" class="layui-input">
+              </div>
+            </fieldset>
+
+            <div class="layui-collapse" >
+              <div class="layui-colla-item">
+                <h2 class="layui-colla-title">车辆信息</h2>
+                <div class="layui-colla-content">
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">车牌号</label>
+                      <div class="layui-input-block">
+                          <input type="text" name="carnumber" value="{$user.carnumber}" placeholder="车牌号" class="layui-input">
+                      </div>
+                  </div>
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">车颜色</label>
+                      <div class="layui-input-block">
+                        <input type="text" name="carcolor" value="{$user.carcolor}" placeholder="车颜色" class="layui-input">
+                      </div>
+                  </div>
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">车品牌</label>
+                      <div class="layui-input-block">
+                        <input type="text" name="carbrand" value="{$user.carbrand}" placeholder="车品牌" class="layui-input">
+                      </div>
+                  </div>
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">车型号</label>
+                      <div class="layui-input-block">
+                        <input type="text" name="cartype" value="{$user.cartype}" placeholder="车型号" class="layui-input">
+                      </div>
+                  </div>
                 </div>
+              </div>
             </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">重复密码</label>
-                <div class="layui-input-block">
-                    <input type="password" name="confirm_password" value="" placeholder="（选填）如不修改则留空" class="layui-input">
+
+            <div class="blank12"></div>
+
+            <div class="layui-collapse" >
+              <div class="layui-colla-item">
+                <h2 class="layui-colla-title">其它（补充项，非必要，请勿乱改）</h2>
+                <div class="layui-colla-content">
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">deptid</label>
+                      <div class="layui-input-block">
+                        <input type="text" name="deptid" value="{$user.deptid}" placeholder="deptid" class="layui-input">
+                      </div>
+                  </div>
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">home address id</label>
+                      <div class="layui-input-block">
+                        <input type="number" name="home_address_id" value="{$user.home_address_id}" placeholder="home_address_id" class="layui-input" lay-verify="number">
+                      </div>
+                  </div>
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">company address id</label>
+                      <div class="layui-input-block">
+                        <input type="number" name="company_address_id" value="{$user.company_address_id}" placeholder="company_address_id" class="layui-input" lay-verify="number">
+                      </div>
+                  </div>
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">nativename</label>
+                      <div class="layui-input-block">
+                        <input type="text" name="nativename" value="{$user.nativename}" placeholder="nativename" class="layui-input">
+                      </div>
+                  </div>
+
                 </div>
+              </div>
             </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">手机</label>
-                <div class="layui-input-block">
-                    <input type="text" name="phone" value="{$user.phone}" placeholder="（选填）请输入手机" class="layui-input">
-                </div>
+
+            <div class="blank20"></div>
+
+            <div class="layui-btn-container layui-row">
+                <input type="hidden" name="id" value="{$user.uid}">
+                <button class="layui-btn layui-btn-lg layui-col-xs12" lay-submit lay-filter="*">提交</button>
             </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">姓名</label>
-                <div class="layui-input-block">
-                    <input type="text" name="name" value="{$user.name}" placeholder="姓名" class="layui-input">
-                </div>
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">性别</label>
-                <div class="layui-input-block">
-                    <input type="radio" name="sex" value="1" title="男" {if condition="$user.sex==1"} checked="checked"{/if}>
-                    <input type="radio" name="sex" value="2" title="女" {if condition="$user.sex==0"} checked="checked"{/if}>
-                </div>
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">车牌号</label>
-                <div class="layui-input-block">
-                    <input type="text" name="carnumber" value="{$user.carnumber}" placeholder="车牌号" class="layui-input">
-                </div>
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">车颜色</label>
-                <div class="layui-input-block">
-                  <input type="text" name="carcolor" value="{$user.carcolor}" placeholder="车颜色" class="layui-input">
-                </div>
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">状态</label>
-                <div class="layui-input-block">
-                    <input type="radio" name="is_active" value="1" title="启用" {if condition="$user.is_active==1"} checked="checked"{/if}>
-                    <input type="radio" name="is_active" value="0" title="禁用" {if condition="$user.is_active==0"} checked="checked"{/if}>
-                </div>
-            </div>
-            <div class="layui-form-item">
-                <div class="layui-input-block">
-                    <input type="hidden" name="uid" value="{$user.uid}">
-                    <button class="layui-btn" lay-submit lay-filter="*">更新</button>
-                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
-                </div>
-            </div>
+
         </form>
     </div>
 </div>
 <script>
+  function getCompanys(success){
+    $.get("{:url('admin/company/public_lists')}",function(res){
+      var selectedid = "{$user.company_id}";
+      if(res.code === 0){
+        var options = '<option value="0">请选择公司</option>';
+        $(res.data.lists).each(function(index, el) {
+          var selected = selectedid == el.id ? "selected" : "";
+          options += '<option value="'+el.id+'" '+selected+'>'+el.name+'</option>';
+        });
+        $("select[name='company_id']").html(options);
+        if(typeof(success)=="function"){
+          success(res);
+        }
+        form.render();
+      }
+    })
+  }
+
+  function getSubCompanys(success){
+    var cid = $("select[name='company_id']").val();
+    $.get("{:url('admin/company_sub/public_lists')}",{cid:cid},function(res){
+      var companyname = "{$user.companyname}";
+      if(res.code === 0){
+        var options = '<option value="0">请选择分厂</option>';
+        $(res.data.lists).each(function(index, el) {
+          var selected = companyname == el.name ? "selected" : "";
+          options += '<option value="'+el.id+'" '+selected+'>'+el.name+'</option>';
+        });
+        $("select[name='sub_company_id']").html(options)
+        if(typeof(success)=="function"){
+          success(res);
+        }
+        form.render();
+      }
+    })
+  }
+
+  function getDepartments(success){
+    var cid = $("select[name='sub_company_id']").val();
+    $.get("{:url('admin/department/public_lists')}",{scid:cid},function(res){
+      var department = "{$user.Department}";
+      if(res.code === 0){
+        var options = '<option value="0">请选择分厂</option>';
+        $(res.data.lists).each(function(index, el) {
+          var selected = department == el.name ? "selected" : "";
+          options += '<option value="'+el.id+'" '+selected+'>'+el.name+'</option>';
+        });
+        $("select[name='departmentid']").html(options)
+        if(typeof(success)=="function"){
+          success(res);
+        }
+        form.render();
+      }
+    })
+  }
+
+
+  form.on('select(company_id)', function (data) {
+    if(data.value>0){
+      $("select[name='sub_company_id']").closest('.layui-form-item').show()
+      getSubCompanys();
+    }else{
+      $("select[name='sub_company_id']").closest('.layui-form-item').hide()
+      $("select[name='departmentid']").closest('.layui-form-item').hide()
+    }
+  });
+
+  form.on('select(sub_company_id)', function (data) {
+    if(data.value>0){
+      $("select[name='departmentid']").closest('.layui-form-item').show()
+      getDepartments();
+    }else{
+      $("select[name='departmentid']").closest('.layui-form-item').hide()
+    }
+  });
+
+
+
+
+  getCompanys(function(res){
+    getSubCompanys(function(res2){
+      getDepartments();
+    });
+  });
+
+
+
   form.render();
+  element.init();
 </script>
