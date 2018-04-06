@@ -52,7 +52,7 @@ class CompanySub extends AdminBase
       if ($this->request->isPost()) {
           $data            = $this->request->param();
           // $validate_result = $this->validate($data, 'CompanySub');
-          $validate_result = $this->validate($data,'app\admin\validate\CompanySub');
+          $validate_result = $this->validate($data,'app\carpool\validate\CompanySub');
 
           if ($validate_result !== true) {
               $this->error($validate_result);
@@ -80,7 +80,7 @@ class CompanySub extends AdminBase
       if ($this->request->isPost()) {
           $data            = $this->request->param();
           // $validate_result = $this->validate($data, 'CompanySub');
-          $validate_result = $this->validate($data,'app\admin\validate\CompanySub.edit');
+          $validate_result = $this->validate($data,'app\carpool\validate\CompanySub.edit');
 
           if ($validate_result !== true) {
               $this->error($validate_result);

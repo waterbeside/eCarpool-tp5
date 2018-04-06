@@ -61,7 +61,7 @@ class Company extends AdminBase
     {
       if ($this->request->isPost()) {
           $data            = $this->request->param();
-          $validate_result = $this->validate($data, 'Company');
+          $validate_result = $this->validate($data, 'app\carpool\validate\Company');
 
           if ($validate_result !== true) {
               $this->error($validate_result);
@@ -87,7 +87,7 @@ class Company extends AdminBase
       if ($this->request->isPost()) {
           $data            = $this->request->param();
 
-          $validate_result = $this->validate($data, 'Company');
+          $validate_result = $this->validate($data, 'app\carpool\validate\Company');
 
           if ($validate_result !== true) {
               $this->error($validate_result);

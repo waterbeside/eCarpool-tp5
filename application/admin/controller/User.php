@@ -50,7 +50,7 @@ class User extends AdminBase
     {
       if ($this->request->isPost()) {
           $data            = $this->request->post();
-          $validate_result = $this->validate($data, 'User');
+          $validate_result = $this->validate($data, 'app\admin\validate\User');
 
           if ($validate_result !== true) {
               $this->error($validate_result);
@@ -80,7 +80,7 @@ class User extends AdminBase
     {
       if ($this->request->isPost()) {
           $data            = $this->request->post();
-          $validate_result = $this->validate($data, 'User');
+          $validate_result = $this->validate($data, 'app\admin\validate\User');
 
           if ($validate_result !== true) {
               $this->error($validate_result);
@@ -109,7 +109,7 @@ class User extends AdminBase
 
     }
 
-   
+
 
     /**
      * 删除用户
