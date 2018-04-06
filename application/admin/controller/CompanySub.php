@@ -60,7 +60,6 @@ class CompanySub extends AdminBase
       $returnLists = [];
       foreach($lists as $key => $value) {
         if(!$cid || ($cid > 0 && $cid == $value['company_id'])){
-          var_dump($value['sub_company_name']);
           $returnLists[] = [
             'id'=>$value['sub_company_id'],
             'name'=>$value['sub_company_name'],
