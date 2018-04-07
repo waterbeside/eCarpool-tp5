@@ -2,8 +2,11 @@
 namespace app\admin\controller;
 
 use app\carpool\model\User as UserModel;
+use app\carpool\model\CompanySub as CompanySubModel;
+use app\carpool\model\Department as DepartmentModel;
 use app\common\controller\AdminBase;
 use think\facade\Config;
+use think\facade\Validate;
 use think\Db;
 
 /**
@@ -31,7 +34,7 @@ class User extends AdminBase
     {
         $map = [];
         if ($keyword) {
-            $map['loginname|phone|Department|name|companyname'] = ['like', "%{$keyword}%"];
+            $map[] = ['loginname|phone|Department|name|companyname','like', "%{$keyword}%"];
         }
         $join = [
           ['company c','u.company_id = c.company_id'],
@@ -48,23 +51,28 @@ class User extends AdminBase
     {
       if ($this->request->isPost()) {
           $data            = $this->request->post();
-          $validate_result = $this->validate($data, 'app\carpool\validate\User');
+          unset($data['md5password']);
 
+          $sub_company_name = CompanySubModel::where(['sub_company_id'=>$data['sub_company_id']])->value('sub_company_name');
+          $data['companyname'] = $sub_company_name ? $sub_company_name : '';
+          $department_name = DepartmentModel::where(['departmentid'=>$data['departmentid']])->value('department_name');
+          $data['Department'] = $department_name ? $department_name : '';
+
+          $validate_result = $this->validate($data, 'app\carpool\validate\User');
           if ($validate_result !== true) {
               $this->error($validate_result);
-          } else {
-            // $data['password'] = md5($data['password'] . Config::get('salt'));
-              $data['password'] = "";
-              $data['md5password'] = md5($data['password']);
-              if ($this->user_model->allowField(true)->save($data)) {
-                  $this->success('保存成功');
-              } else {
-                  $this->error('保存失败');
-              }
           }
-      }else{
-        return $this->fetch();
+          $data['password'] = "";
+          $data['md5password'] = md5($data['password']);
+          if ($this->user_model->allowField(true)->save($data)) {
+              $this->success('保存成功');
+          } else {
+              $this->error('保存失败');
+          }
 
+      }else{
+        $avatar =  config('app.avatarBasePath')."im/default.png";
+        return $this->fetch('add', ['avatar' => $avatar]);
       }
 
     }
@@ -80,21 +88,32 @@ class User extends AdminBase
 
       if ($this->request->isPost()) {
 
-          $data            = $this->request->post();
+          $data               = $this->request->post();
+          $data['is_active']  = $this->request->post('is_active/d',0);
           unset($data['md5password']);
+
+          $sub_company_name = CompanySubModel::where(['sub_company_id'=>$data['sub_company_id']])->value('sub_company_name');
+          $data['companyname'] = $sub_company_name ? $sub_company_name : '';
+          $department_name = DepartmentModel::where(['departmentid'=>$data['departmentid']])->value('department_name');
+          $data['Department'] = $department_name ? $department_name : '';
+
+          //开始验证字段
           $validate = new \app\carpool\validate\User;
-          if (!empty($data['password']) && !empty($data['confirm_password'])) {
+
+          if (!empty($data['password'])) {
             if (!$validate->scene('edit_change_password')->check($data)) {
               $this->error($validate->getError());
             }
             $data['md5password'] = md5($data['password']);
           }else{
             if (!$validate->scene('edit')->check($data)) {
+
               $this->error($validate->getError());
             }
             unset($data['password']);
           }
-        /*
+
+          // 验证手机号和帐号名是否重复
           $rule = [
             'loginname'  => 'unique:carpool/User,loginname,'.$id,
             'phone'       => 'unique:carpool/User,phone,'.$id,
@@ -107,7 +126,7 @@ class User extends AdminBase
           $validate_result = $validate->check($data);
           if ($validate_result !== true) {
               $this->error($validate->getError());
-          }*/
+          }
           if ($this->user_model->allowField(true)->save($data, ['uid'=>$id]) !== false) {
               $this->success('保存成功');
           } else {
