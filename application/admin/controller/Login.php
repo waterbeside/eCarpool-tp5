@@ -36,11 +36,17 @@ class Login extends Controller
                 $this->error($validate_result);
             } else {
                 $where['username'] = $data['username'];
-                $where['password'] = md5($data['password'] . Config::get('salt'));
+                // $where['password'] = md5($data['password'] . Config::get('salt'));
 
-                $admin_user = Db::name('admin_user')->field('id,username,status')->where($where)->find();
+
+                $admin_user = Db::name('admin_user')->field('id,username,status,password')->where($where)->find();
 
                 if (!empty($admin_user)) {
+                    $hash = $admin_user['password'];
+                    if(!password_verify($data['password'], $hash)){
+                      $this->error('用户名或密码错误');
+                    }
+
                     if ($admin_user['status'] != 1) {
                         $this->error('当前用户已禁用');
                     } else {
@@ -70,5 +76,12 @@ class Login extends Controller
         Session::delete('admin_id');
         Session::delete('admin_name');
         $this->success('退出成功', 'admin/login/index');
+    }
+
+
+    public function test(){
+      $hash = password_hash(123456, PASSWORD_DEFAULT);
+      var_dump($hash);
+      var_dump(password_verify(123456, $hash));
     }
 }
