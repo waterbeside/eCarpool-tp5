@@ -77,7 +77,7 @@ class Category extends AdminBase
           if ($validate_result !== true) {
               $this->error($validate_result);
           } else {
-              $children = $this->category_model->where(['path' => ['like', "%,{$id},%"]])->column('id');
+              $children = $this->category_model->where([['path','like', "%,{$id},%"]])->column('id');
               if (in_array($data['pid'], $children)) {
                   $this->error('不能移动到自己的子分类');
               } else {
@@ -94,7 +94,7 @@ class Category extends AdminBase
       }
     }
 
-  
+
 
     /**
      * 删除栏目

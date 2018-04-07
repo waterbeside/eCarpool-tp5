@@ -34,7 +34,7 @@ class Department extends AdminBase
 
         $map = [];
         if ($keyword) {
-            $map['d.department_name'] = ['like', "%{$keyword}%"];
+            $map[] = ['d.department_name','like', "%{$keyword}%"];
         }
 
         $fields = 'd.departmentid,d.department_name,d.is_active,d.sub_company_id,d.company_id,cs.sub_company_name,cs.city_name,c.company_name,c.short_name as company_short_name';

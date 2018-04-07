@@ -34,7 +34,7 @@ class CompanySub extends AdminBase
     {
         $map = [];
         if ($keyword) {
-            $map['sub_company_name'] = ['like', "%{$keyword}%"];
+            $map[] = ['sub_company_name','like', "%{$keyword}%"];
         }
         $join = [
           ['company c','s.company_id = c.company_id','left'],
