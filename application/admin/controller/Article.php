@@ -15,9 +15,9 @@ class Article extends AdminBase
     protected $article_model;
     protected $category_model;
 
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
         $this->article_model  = new ArticleModel();
         $this->category_model = new CategoryModel();
 

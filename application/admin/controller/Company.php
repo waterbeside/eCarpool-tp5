@@ -3,10 +3,10 @@ namespace app\admin\controller;
 
 use app\carpool\model\Company as CompanyModel;
 use app\common\controller\AdminBase;
-use think\Validate;
-use think\Config;
+use think\facade\Validate;
+use think\facade\Config;
 use think\Db;
-use think\Cache;
+use think\facade\Cache;
 /**
  * 公司管理
  * Class Department
@@ -16,9 +16,9 @@ class Company extends AdminBase
 {
     protected $company_model;
 
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
         $this->company_model = new CompanyModel();
     }
 

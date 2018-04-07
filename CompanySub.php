@@ -2,12 +2,12 @@
 namespace app\admin\controller;
 
 use app\carpool\model\CompanySub as CompanySubModel;
-use think\facade\Validate;
+use think\Validate;
 
 use app\common\controller\AdminBase;
-use think\facade\Config;
+use think\Config;
 use think\Db;
-use think\facade\Cache;
+use think\Cache;
 
 /**
  * 公司管理
@@ -18,9 +18,9 @@ class CompanySub extends AdminBase
 {
     protected $company_sub_model;
 
-    protected function initialize()
+    protected function _initialize()
     {
-        parent::initialize();
+        parent::_initialize();
         $this->company_sub_model = new CompanySubModel();
     }
 

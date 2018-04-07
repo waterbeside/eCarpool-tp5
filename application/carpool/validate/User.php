@@ -29,7 +29,7 @@ class User extends Validate
     public function sceneEdit()
     {
     	return $this->only(['loginname','phone','Department'])
-      ->append('loginname', 'length:16,18')
+
           ->remove('loginname', 'unique')
           ->remove('phone', 'unique');
     }

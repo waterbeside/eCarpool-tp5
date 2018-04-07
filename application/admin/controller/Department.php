@@ -4,9 +4,9 @@ namespace app\admin\controller;
 use app\carpool\model\Department as DepartmentModel;
 use app\carpool\model\CompanySub as CompanySubModel;
 use app\common\controller\AdminBase;
-use think\Config;
+use think\facade\Config;
 use think\Db;
-use think\Cache;
+use think\facade\Cache;
 
 /**
  * 部门管理
@@ -17,9 +17,9 @@ class Department extends AdminBase
 {
     protected $department_model;
 
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
         $this->department_model = new DepartmentModel();
     }
 

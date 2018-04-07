@@ -1,10 +1,10 @@
 <?php
 namespace app\admin\controller;
 
-use think\Config;
+use think\facade\Config;
 use think\Controller;
 use think\Db;
-use think\Session;
+use think\facade\Session;
 
 /**
  * 后台登录

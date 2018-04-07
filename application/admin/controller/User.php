@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 use app\carpool\model\User as UserModel;
 use app\common\controller\AdminBase;
-use think\Config;
+use think\facade\Config;
 use think\Db;
 
 /**
@@ -15,9 +15,9 @@ class User extends AdminBase
 {
     protected $user_model;
 
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
         $this->user_model = new UserModel();
     }
 
@@ -116,7 +116,7 @@ class User extends AdminBase
 
       }else{
         $user = $this->user_model->find($id);
-        $user->avatar = $user->imgpath ? config('carpool.avatarBasePath').$user->imgpath : config('carpool.avatarBasePath')."im/default.png";
+        $user->avatar = $user->imgpath ? config('app.avatarBasePath').$user->imgpath : config('app.avatarBasePath')."im/default.png";
 
         return $this->fetch('edit', ['user' => $user]);
       }

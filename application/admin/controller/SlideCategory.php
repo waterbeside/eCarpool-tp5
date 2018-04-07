@@ -11,9 +11,9 @@ use think\Db;
  */
 class SlideCategory extends AdminBase
 {
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
 
     }
 

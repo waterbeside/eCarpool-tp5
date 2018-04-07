@@ -5,7 +5,7 @@ use app\common\model\AdminUser as AdminUserModel;
 use app\common\model\AuthGroup as AuthGroupModel;
 use app\common\model\AuthGroupAccess as AuthGroupAccessModel;
 use app\common\controller\AdminBase;
-use think\Config;
+use think\facade\Config;
 use think\Db;
 
 /**
@@ -19,9 +19,9 @@ class AdminUser extends AdminBase
     protected $auth_group_model;
     protected $auth_group_access_model;
 
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
         $this->admin_user_model        = new AdminUserModel();
         $this->auth_group_model        = new AuthGroupModel();
         $this->auth_group_access_model = new AuthGroupAccessModel();

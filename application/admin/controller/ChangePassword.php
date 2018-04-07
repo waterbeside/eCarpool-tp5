@@ -2,9 +2,9 @@
 namespace app\admin\controller;
 
 use app\common\controller\AdminBase;
-use think\Config;
+use think\facade\Config;
 use think\Db;
-use think\Session;
+use think\facade\Session;
 
 /**
  * 修改密码

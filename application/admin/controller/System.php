@@ -1,8 +1,9 @@
 <?php
 namespace app\admin\controller;
 
+use think\facade\Env;
 use app\common\controller\AdminBase;
-use think\Cache;
+use think\facade\Cache;
 use think\Db;
 
 /**
@@ -12,9 +13,9 @@ use think\Db;
  */
 class System extends AdminBase
 {
-    public function _initialize()
+    public function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
     }
 
     /**
@@ -50,7 +51,7 @@ class System extends AdminBase
      */
     public function clear()
     {
-        if (delete_dir_file(CACHE_PATH) || delete_dir_file(TEMP_PATH)) {
+        if (delete_dir_file(Env::get('runtime_path') . 'cache/') || delete_dir_file(Env::get('runtime_path'). 'temp/')) {
             $this->success('清除缓存成功');
         } else {
             $this->error('清除缓存失败');

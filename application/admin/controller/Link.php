@@ -14,9 +14,9 @@ class Link extends AdminBase
 {
     protected $link_model;
 
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
         $this->link_model = new LinkModel();
     }
 

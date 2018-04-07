@@ -14,9 +14,9 @@ use think\Db;
 class Slide extends AdminBase
 {
 
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
     }
 
     /**

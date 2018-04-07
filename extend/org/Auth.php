@@ -11,9 +11,9 @@
 namespace org;
 
 use think\Db;
-use think\Config;
-use think\Session;
-use think\Request;
+use think\facade\Config;
+use think\facade\Session;
+use think\facade\Request;
 use think\Loader;
 
 /**
@@ -105,7 +105,7 @@ class Auth
             $this->config = array_merge($this->config, $auth);
         }
         // 初始化request
-        $this->request = Request::instance();
+        // $this->request = Request::instance();
     }
 
     /**
@@ -149,8 +149,11 @@ class Auth
         }
         $list = []; //保存验证通过的规则名
         if ('url' == $mode) {
-            $REQUEST = unserialize(strtolower(serialize($this->request->param())));
+          // $REQUEST = unserialize(strtolower(serialize($this->request->param())));
+            $REQUEST = unserialize(strtolower(serialize(Request::param())));
+
         }
+
         foreach ($authList as $auth) {
             $query = preg_replace('/^.+\?/U', '', $auth);
             if ('url' == $mode && $query != $auth) {
@@ -233,11 +236,15 @@ class Auth
             return [];
         }
         $map = [
-            'id'   => ['in', $ids],
-            'type' => $type
+            ['id','in',$ids],
+            ['type','=',$type]
+            // 'id'   => ['in', $ids],
+            // 'type' => $type
         ];
+
         //读取用户组所有权限规则
         $rules = Db::name($this->config['auth_rule'])->where($map)->field('condition,name')->select();
+
         //循环规则，判断结果。
         $authList = []; //
         foreach ($rules as $rule) {

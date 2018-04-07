@@ -15,9 +15,9 @@ class AuthGroup extends AdminBase
     protected $auth_group_model;
     protected $auth_rule_model;
 
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
         $this->auth_group_model = new AuthGroupModel();
         $this->auth_rule_model  = new AuthRuleModel();
     }

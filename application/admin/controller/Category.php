@@ -17,9 +17,9 @@ class Category extends AdminBase
     protected $category_model;
     protected $article_model;
 
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
         $this->category_model = new CategoryModel();
         $this->article_model  = new ArticleModel();
         $category_level_list  = $this->category_model->getLevelList();

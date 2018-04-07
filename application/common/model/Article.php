@@ -2,7 +2,7 @@
 namespace app\common\model;
 
 use think\Model;
-use think\Session;
+use think\facade\Session;
 
 class Article extends Model
 {

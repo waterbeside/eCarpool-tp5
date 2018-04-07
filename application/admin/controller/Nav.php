@@ -15,9 +15,9 @@ class Nav extends AdminBase
 
     protected $nav_model;
 
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
         $this->nav_model = new NavModel();
         $nav_list        = $this->nav_model->order(['sort' => 'ASC', 'id' => 'ASC'])->select();
         $nav_level_list  = array2level($nav_list);
