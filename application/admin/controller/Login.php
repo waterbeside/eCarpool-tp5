@@ -5,6 +5,7 @@ use think\facade\Config;
 use think\Controller;
 use think\Db;
 use think\facade\Session;
+use think\facade\Cookie;
 
 /**
  * 后台登录
@@ -38,32 +39,29 @@ class Login extends Controller
                 $where['username'] = $data['username'];
                 // $where['password'] = md5($data['password'] . Config::get('salt'));
 
+                $Model_User = model('AdminUser');
+                $res = $Model_User->loginUser($data['username'],$data['password']);
+                if(is_array($res)){
+                  $token = $res['data']['jwt'];
+                  $user  = $res['data']['user'];
+                  if($user['status']==1){
+                    $exp = config('admin_setting')['jwt_exp'];
+                    Cookie::set('admin_token',$token,$exp);
+                    // Session::set('admin_id', $user['id']);
+                    // Session::set('admin_name', $user['username']);
+                    // return json(array('code' => 1, 'msg' => '登录成功','data'=>['token'=>$token,'user'=>$user]));
+                    $this->success('登录成功', 'admin/index/index',['token'=>$token,'user'=>$user]);
 
-                $admin_user = Db::name('admin_user')->field('id,username,status,password')->where($where)->find();
+                  }else{
+                    $this->error('此帐号权限受限');
 
-                if (!empty($admin_user)) {
-                    $hash = $admin_user['password'];
-                    if(!password_verify($data['password'], $hash)){
-                      $this->error('用户名或密码错误');
-                    }
+                  }
 
-                    if ($admin_user['status'] != 1) {
-                        $this->error('当前用户已禁用');
-                    } else {
-                        Session::set('admin_id', $admin_user['id']);
-                        Session::set('admin_name', $admin_user['username']);
-                        Db::name('admin_user')->update(
-                            [
-                                'last_login_time' => date('Y-m-d H:i:s', time()),
-                                'last_login_ip'   => $this->request->ip(),
-                                'id'              => $admin_user['id']
-                            ]
-                        );
-                        $this->success('登录成功', 'admin/index/index');
-                    }
-                } else {
-                    $this->error('用户名或密码错误');
+                }else{
+                  $this->error('用户名或密码错误');
+                  // return json(array('code' => 0, 'msg' => '用户名或密码错误'));
                 }
+
             }
         }
     }
@@ -75,6 +73,7 @@ class Login extends Controller
     {
         Session::delete('admin_id');
         Session::delete('admin_name');
+        Cookie::delete('admin_token');
         $this->success('退出成功', 'admin/login/index');
     }
 

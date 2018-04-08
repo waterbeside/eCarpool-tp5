@@ -7,6 +7,8 @@ use think\facade\Cache;
 use think\Controller;
 use think\Db;
 use think\facade\Session;
+use Firebase\JWT\JWT;
+
 
 /**
  * 后台公用基础控制器
@@ -15,6 +17,10 @@ use think\facade\Session;
  */
 class AdminBase extends Controller
 {
+
+    protected $jwtInfo ;
+    public $userBaseInfo;
+
     protected function initialize()
     {
         parent::initialize();
@@ -33,9 +39,11 @@ class AdminBase extends Controller
     protected function checkAuth()
     {
 
-        if (!Session::has('admin_id')) {
+      $this->checkToken();
+
+        /*if (!Session::has('admin_id')) {
             $this->redirect('admin/login/index');
-        }
+        }*/
 
         $module     = $this->request->module();
         $controller = $this->request->controller();
@@ -47,11 +55,49 @@ class AdminBase extends Controller
 
         if (!in_array($module . '/' . $controller . '/' . $action, $not_check) && $controller!="Publics" && strpos('public_', $action) === false) {
             $auth     = new Auth();
-            $admin_id = Session::get('admin_id');
+            $admin_id = $this->userBaseInfo['uid'];
+
+            // $admin_id = Session::get('admin_id');
             if (!$auth->check($module . '/' . $controller . '/' . $action, $admin_id) && $admin_id != 1) {
                 $this->error('没有权限');
             }
         }
+    }
+
+    /**
+     * 验证jwt
+     */
+    public function checkToken(){
+        $Authorization = request()->header('Authorization');
+        $temp_array    = explode('Bearer ',$Authorization);
+		    $Authorization = count($temp_array)>1 ? $temp_array[1] : '';
+        $Authorization = $Authorization ? $Authorization : cookie('admin_token');
+        $Authorization = $Authorization ? $Authorization : input('request.admin_token');
+
+
+        if(!$Authorization){
+          return $this->error('您尚未登入');
+        }else{
+
+
+          $jwtDecode = JWT::decode($Authorization, config('admin_setting')['jwt_key'], array('HS256'));
+          $this->jwtInfo = $jwtDecode;
+          if(isset($jwtDecode->uid) && isset($jwtDecode->username) ){
+
+            $now = time();
+            if( $now  > $jwtDecode->exp){
+              return $this->error('登入超时，请重新登入');
+            }
+            $this->userBaseInfo  = array(
+              'username' => $jwtDecode->username,
+              'uid' => $jwtDecode->uid,
+            );
+            return true;
+          }else{
+            return $this->error('您尚未登入');
+          }
+        }
+
     }
 
     /**
@@ -60,7 +106,8 @@ class AdminBase extends Controller
     protected function getMenu()
     {
         $menu     = [];
-        $admin_id = Session::get('admin_id');
+        // $admin_id = Session::get('admin_id');
+        $admin_id = $this->userBaseInfo['uid'];
         $auth     = new Auth();
 
         $auth_rule_list = Db::name('auth_rule')->where('status', 1)->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
@@ -73,5 +120,9 @@ class AdminBase extends Controller
         $menu = !empty($menu) ? array2tree($menu) : [];
         array_multisort(array_column($menu,'sort'),SORT_DESC,$menu);
         $this->assign('menu', $menu);
+
     }
+
+
+
 }

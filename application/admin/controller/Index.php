@@ -45,6 +45,7 @@ class Index extends AdminBase
     public function index()
     {
         $this->getMenu();
-        return $this->fetch('index');
+        $admin_user = $this->userBaseInfo;
+        return $this->fetch('index',['admin_user'=>$admin_user]);
     }
 }
