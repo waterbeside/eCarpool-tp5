@@ -138,10 +138,6 @@ return [
     'exception_handle'       => '',
 
 
-
-    // 全站加密密钥（开发新站点前请修改此项）
-    'salt'                   => '',
-
     'nim' => array(
       //网易云信分配的账号，请替换你在管理后台应用下申请的Appkey
       'appKey' => '',
@@ -150,6 +146,15 @@ return [
     ),
     //头像公共路徑
     'avatarBasePath' => '',
+
+    //后台管理设置
+    'admin_setting'=>[
+      //后台JWT KEY
+      'jwt_key' => 'xLhiuLqnUZe9kA',
+      //后台用户jwt有效时间
+      "jwt_exp" => 86400*2,
+
+    ]
 
 
 
