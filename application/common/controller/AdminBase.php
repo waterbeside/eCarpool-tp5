@@ -76,7 +76,7 @@ class AdminBase extends Controller
 
 
         if(!$Authorization){
-          return $this->error('您尚未登入');
+          return $this->error('您尚未登入','admin/login/index');
         }else{
 
 
@@ -86,7 +86,7 @@ class AdminBase extends Controller
 
             $now = time();
             if( $now  > $jwtDecode->exp){
-              return $this->error('登入超时，请重新登入');
+              return $this->error('登入超时，请重新登入','admin/login/index');
             }
             $this->userBaseInfo  = array(
               'username' => $jwtDecode->username,
@@ -94,7 +94,7 @@ class AdminBase extends Controller
             );
             return true;
           }else{
-            return $this->error('您尚未登入');
+            return $this->error('您尚未登入','admin/login/index');
           }
         }
 
