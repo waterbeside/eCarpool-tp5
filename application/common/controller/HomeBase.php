@@ -13,7 +13,6 @@ class HomeBase extends Controller
         parent::initialize();
         $this->getSystem();
         $this->getNav();
-        $this->getSlide();
     }
 
     /**
