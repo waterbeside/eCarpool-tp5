@@ -1,0 +1,260 @@
+<div class="layui-tab-content">
+    <div class="layui-tab-item layui-show">
+        <form class="layui-form form-container" action="{:url('admin/i18n/edit')}" method="post">
+          <fieldset class="amain-fieldset layui-elem-field" >
+            <legend>基本设置</legend>
+
+            <div class="layui-form-item">
+              <label class="layui-form-label">Key</label>
+              <div class="layui-input-block">
+                  <input type="text" name="name" value="{$data.name}" required  lay-verify="required" placeholder="输入key" class="layui-input">
+              </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">状态</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="status" value="1" lay-skin="switch" lay-text="启用|禁用" {if condition="$data.status==1"} checked="checked"{/if}>
+                </div>
+            </div>
+
+            <ul class="amain-i18n-edit-list" id="J-contents-list">
+              <li class="item layui-form-item item-zh-cn">
+                <label class="layui-form-label">
+                  zh-cn<br />
+                  <small>中文<br />(中国大陆)</small>
+                  <input type="hidden" name="langData[zh-cn][sort]" class="amain-sort-input" value="0"/>
+                  <br />
+                </label>
+                <div class="layui-input-block">
+                  <textarea name="langData[zh-cn][content]"    class="layui-textarea"   ></textarea>
+                </div>
+              </li>
+            </ul>
+
+            <div class="amain-additem-bar">
+              <div class="layui-form-item">
+                  <label class="layui-form-label ">添加语言</label>
+                  <div class="layui-input-inline">
+                    <select name="langs" lay-verify="required" lay-search>
+                       <option value="0">请选择语言</option>
+                     </select>
+                  </div>
+                  <button class="layui-btn layui-btn-primary  "  onclick="return RESOLVE_INIT.addLang()"><i class="fa fa-plus"></i> 添加一种语言</button>
+              </div>
+
+            </div>
+          </fieldset>
+
+
+
+          <div class="layui-collapse" >
+            <div class="layui-colla-item">
+              <h2 class="layui-colla-title">其它</h2>
+              <div class="layui-colla-content">
+                <div class="layui-form-item ">
+                  <label class="layui-form-label">title</label>
+                  <div class="layui-input-block">
+                    <input type="text" name="title" value="{$data.title}" required  lay-verify="required"   class="layui-input">
+                    <div class="layui-form-mid layui-word-aux">
+                      <label><input type="checkbox" name="auto_title" value="1" lay-ignore checked> 根据中文内容自动截取</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="layui-form-item">
+                  <label class="layui-form-label">IOS Key</label>
+                  <div class="layui-input-block">
+                    <input type="text" name="key_ios" value="{$data.key_ios}" required  lay-verify="required"   class="layui-input " >
+                    <div class="layui-form-mid layui-word-aux">
+                      <label><input type="checkbox" name="auto_key_ios" value="1" lay-ignore checked> 根据Key自动填写</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="layui-form-item ">
+                  <label class="layui-form-label">Android KEY</label>
+                  <div class="layui-input-block">
+                    <input type="text" name="key_android" value="{$data.key_android}" required  lay-verify="required"   class="layui-input " >
+                    <div class="layui-form-mid layui-word-aux">
+                      <label><input type="checkbox" name="auto_key_and" value="1" lay-ignore checked> 根据Key自动填写</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <div class="blank20"></div>
+          <div class="layui-btn-container layui-row">
+              <input type="hidden" name="id" value="{$data.id}">
+              <button class="layui-btn layui-btn-lg layui-col-xs12"  type="submit" lay-submit lay-filter="*">提交</button>
+          </div>
+
+        </form>
+    </div>
+</div>
+
+
+<script>
+  RESOLVE_INIT = {
+
+    init: function(){
+      var _this = this;
+      this.getLangs();
+
+      if(this.data.contents.length>0){
+        this.renderContents();
+      }else{
+        form.render();
+      }
+
+      $("input[name='name']").keyup(function(event) {
+        var keyValue = $(this).val();
+        var $iosInput = $("input[name='key_ios']");
+        var $andInput = $("input[name='key_android']");
+        if($("input[name='auto_key_ios']").is(":checked")){
+          $iosInput.val(keyValue);
+        }
+        if($("input[name='auto_key_and']").is(":checked")){
+          var keyValue_and =  keyValue.replace(/\./g,'_')
+          $andInput.val(keyValue_and);
+        }
+      });
+
+      $(".amain-i18n-edit-list textarea[name='langData[zh-cn][content]']").keyup(function(event) {
+        var value = $(this).val();
+        if(value.length<60 && $("input[name='auto_title']").is(":checked")){
+          $("input[name='title']").val(value);
+        }
+
+      })
+
+      var list = document.getElementById("J-contents-list");
+      Sortable.create(list,{
+        handle: ".layui-form-label",
+        onUpdate: function (evt/**Event*/){
+           var item = evt.item; // the current dragged HTMLElement
+           _this.reSort();
+        }
+      }); // That's all.
+
+      element.init();
+
+
+    },
+
+    data: {
+      langs:[],
+      contents: {php}echo json_encode($data['content']);{/php}
+    },
+
+    templates: {
+      langItem: function(itemData){
+
+        var delectBtn = itemData.lang_code == "zh-cn" ? '' : '<a class="delete " onclick="RESOLVE_INIT.deleteLang(this)" ><i class="fa fa-times"></i></a>';
+        return '<li class="item layui-form-item item-'+itemData.lang_code+'">\
+          <label class="layui-form-label">\
+            '+itemData.lang_code+' <br />\
+            <small>'+itemData.lang_name+'</small>\
+            <input type="hidden" name="langData['+itemData.lang_code+'][sort]" class="amain-sort-input" value="'+itemData.sort+'"/>\
+            <br />\
+          </label>\
+          <div class="layui-input-block">\
+            <textarea name="langData['+itemData.lang_code+'][content]"    class="layui-textarea"  >'+itemData.content+'</textarea>\
+          </div>\
+          '+delectBtn+'\
+        </li>'
+      }
+    },
+
+
+   renderContents: function(){
+      var _this = this;
+      var langsHtml = ''
+      $(this.data.contents).each(function(index, el) {
+        var data = el;
+        data.sort = index;
+        data.lang_name =  data.lang_name.replace('（',' <br />( ').replace('）',' )')
+        langsHtml += _this.templates.langItem(data);
+      });
+      $(".amain-i18n-edit-list").html(langsHtml);
+      form.render();
+   },
+
+   reSort : function(){
+     $(".amain-i18n-edit-list").find('.item').each(function(index, el) {
+       $(this).find(".amain-sort-input").val(index);
+     });
+
+   },
+
+
+    getLangs: function(success){
+        var _this = this;
+        $.get("{:url('admin/i18n/public_langs')}",function(res){
+          if(res.code === 0){
+            var options = '<option value="0">请选择语言</option>';
+            _this.data.langs = res.data.lists;
+            $(res.data.lists).each(function(index, el) {
+              options += '<option value="'+el.code+'">【'+el.code +"】"+el.name+'</option>';
+            });
+            $("select[name='langs']").html(options)
+            if(typeof(success)=="function"){
+              success(res);
+            }
+            form.render();
+          }
+        })
+
+    },
+
+
+    addLang: function(){
+      var lang = $("select[name='langs']").val();
+      var langItemData = {};
+      $(this.data.langs).each(function(index, el) {
+        if(el.code==lang){
+          langItemData = el;
+        }
+      })
+
+      if(!langItemData.code){
+        alert('请选择一种语言');
+        return false;
+      }
+      if($(".amain-i18n-edit-list").find('.item-'+lang).length>0){
+        alert('该语言已存在');
+        return false;
+      }
+      var sort = $(".amain-i18n-edit-list .item:last-child").find('.amain-sort-input').val();
+      var itemCount = $(".amain-i18n-edit-list").find('.item').length;
+      sort = itemCount > parseInt(sort)+1  ? itemCount+1 : parseInt(sort) + 1;
+      var data = {
+        content:"",
+        lang_code:lang,
+        sort:sort,
+        lang_name:langItemData.name.replace('（',' <br />( ').replace('）',' )')
+      };
+
+
+      var itemHtml = this.templates.langItem(data)
+      $(".amain-i18n-edit-list").append(itemHtml);
+      form.render();
+
+      return false;
+    },
+
+    deleteLang: function(obj){
+      $(obj).closest("li.item").remove();
+    }
+
+
+
+
+  }
+
+  RESOLVE_INIT.init();
+
+
+
+</script>

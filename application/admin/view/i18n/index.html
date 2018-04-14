@@ -1,0 +1,69 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <ul class="layui-tab-title">
+          <li class="layui-this">I18n文档管理</li>
+          <li class=""><a data-title="添加字条"  data-trigger="modal" href="{:url('admin/i18n/add')}">添加字条</a></li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+
+                <form class="layui-form layui-form-pane" action="{:url('admin/i18n/index')}" method="get">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">检索</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="keyword" value="{$keyword}" placeholder="请输入关键词" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn"><i class="fa fa-search"></i></button>
+                    </div>
+                </form>
+                <hr>
+
+                <table class="layui-table">
+                    <thead>
+                    <tr>
+                        <th  >#</th>
+                        <th  >Name</th>
+                        <th  >key_ios</th>
+                        <th  >key_android</th>
+                        <th  >content</th>
+                        <th  >状态</th>
+                        <th width="110">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {foreach name="lists" item="vo"}
+                    <tr>
+                        <td>{$vo.id}</td>
+                        <td>{$vo.name}</td>
+                        <td>{$vo.key_ios}</td>
+                        <td>{$vo.key_android}</td>
+                        <td>{php}echo $vo['content'] ? $vo['content'] : $vo['title'];{/php}</td>
+                        <td>{php}echo $vo['status']==1 ? '<i class="fa fa-check"></i>' : '<i class="fa fa-times"></i>';{/php}</td>
+
+
+                        <td>
+                          <a  href="{:url('admin/i18n/edit',['id'=>$vo['id']])}" class="layui-btn layui-btn-sm " data-title="編輯"  data-trigger="modal"     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
+                          <a href="{:url('admin/i18n/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
+                        </td>
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+                <!--分页-->
+                {$lists|raw}
+
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+
+</script>
+{/block}
