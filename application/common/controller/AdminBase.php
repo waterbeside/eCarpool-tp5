@@ -41,6 +41,7 @@ class AdminBase extends Controller
 
       $this->checkToken();
 
+        // $this->userBaseInfo = ['uid'=>Session::get('admin_id')]
         /*if (!Session::has('admin_id')) {
             $this->redirect('admin/login/index');
         }*/
@@ -123,6 +124,19 @@ class AdminBase extends Controller
 
     }
 
-
+    public function log($desc='',$status=2){
+      $request = request();
+      $data['uid'] = $this->userBaseInfo['uid'];
+      $data['ip'] = $request->ip();
+      // $data['path'] = $request->path();
+      $isAjaxShow =  $request->isAjax() ? " (Ajax)" : "";
+      $data['type'] = $request->method()."$isAjaxShow";
+      $data['route']= $request->module().'/'.$request->controller().'/'.$request->action();
+      $data['query_string'] = $request->query();
+      $data['description'] = $desc;
+      $data['status'] = $status;
+      $data['time'] = time();
+      Db::name('admin_log')->insert($data);
+    }
 
 }
