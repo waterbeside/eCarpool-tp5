@@ -95,8 +95,11 @@ class Department extends AdminBase
           $data['sub_company_name'] = $sub_company_name ? $sub_company_name : '';
 
           if ($this->department_model->allowField(true)->save($data)) {
+              $pk = $this->department_model->departmentid; //插入成功后取得id
+              $this->log('新加部门成功，id='.$pk,0);
               $this->success('保存成功');
           } else {
+            $this->log('新加部门失败',1);
               $this->error('保存失败');
           }
 
@@ -127,8 +130,10 @@ class Department extends AdminBase
           $data['sub_company_name'] = $sub_company_name ? $sub_company_name : '';
 
           if ($this->department_model->allowField(true)->save($data, ['departmentid'=>$id]) !== false) {
+              $this->log('更新部门成功，id='.$id,0);
               $this->success('更新成功');
           } else {
+              $this->log('更新部门失败，id='.$id,1);
               $this->error('更新失败');
           }
 
@@ -147,8 +152,10 @@ class Department extends AdminBase
     public function delete($id)
     {
         if ($this->department_model->destroy($id)) {
+            $this->log('删除部门成功，id='.$id,1);
             $this->success('删除成功');
         } else {
+            $this->log('删除部门失败，id='.$id,1);
             $this->error('删除失败');
         }
     }

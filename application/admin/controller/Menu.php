@@ -50,8 +50,11 @@ class Menu extends AdminBase
               $this->error($validate_result);
           } else {
               if ($this->auth_rule_model->save($data)) {
+                $pk = $this->auth_rule_model->id; //插入成功后取得id
+                  $this->log('添加菜单成功，id='.$pk,0);
                   $this->success('保存成功');
               } else {
+                  $this->log('添加菜单失败',1);
                   $this->error('保存失败');
               }
           }
@@ -78,8 +81,10 @@ class Menu extends AdminBase
           } else {
 
               if ($this->auth_rule_model->save($data, $id) !== false) {
+                  $this->log('更新菜单成功，id='.$id,0);
                   $this->success('更新成功');
               } else {
+                  $this->log('更新菜单失败，id='.$id,1);
                   $this->error('更新失败');
               }
           }
@@ -90,7 +95,7 @@ class Menu extends AdminBase
 
     }
 
-   
+
 
     /**
      * 删除菜单
@@ -103,8 +108,10 @@ class Menu extends AdminBase
             $this->error('此菜单下存在子菜单，不可删除');
         }
         if ($this->auth_rule_model->destroy($id)) {
+            $this->log('删除菜单成功，id='.$id,0);
             $this->success('删除成功');
         } else {
+            $this->log('删除菜单失败，id='.$id,1);
             $this->error('删除失败');
         }
     }

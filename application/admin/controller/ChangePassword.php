@@ -28,7 +28,8 @@ class ChangePassword extends AdminBase
     public function updatePassword()
     {
         if ($this->request->isPost()) {
-            $admin_id    = Session::get('admin_id');
+            $admin_id    = $this->userBaseInfo['uid'];
+            // $admin_id    = Session::get('admin_id');
             $data   = $this->request->param();
 
             if (!$data['password'] == $data['confirm_password']) {
@@ -49,8 +50,10 @@ class ChangePassword extends AdminBase
             $res          = Db::name('admin_user')->where(['id' => $admin_id])->setField('password', $new_password);
 
             if ($res !== false) {
+                $this->log('修改密码成功，id='.$admin_id,0);
                 $this->success('修改成功');
             } else {
+                $this->log('修改密码成功，id='.$admin_id,1);
                 $this->error('修改失败');
             }
 

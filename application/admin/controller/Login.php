@@ -50,14 +50,16 @@ class Login extends Controller
                     // Session::set('admin_id', $user['id']);
                     // Session::set('admin_name', $user['username']);
                     // return json(array('code' => 1, 'msg' => '登录成功','data'=>['token'=>$token,'user'=>$user]));
-                    $this->success('登录成功', 'admin/index/index',['token'=>$token,'user'=>$user]);
+                    $this->log('后台用户登入成功 username ='.$data['username'],0);
+                    $this->success('登入成功', 'admin/index/index',['token'=>$token,'user'=>$user]);
 
                   }else{
-                    $this->error('此帐号权限受限');
-
+                    $this->log('后台用户登入失败，帐号受限 username ='.$data['username'],1);
+                    $this->error('此帐号受限');
                   }
 
                 }else{
+                  $this->log('后台用户登入失败，用户名或密码错误 username ='.$data['username'],1);
                   $this->error('用户名或密码错误');
                   // return json(array('code' => 0, 'msg' => '用户名或密码错误'));
                 }
@@ -74,13 +76,9 @@ class Login extends Controller
         Session::delete('admin_id');
         Session::delete('admin_name');
         Cookie::delete('admin_token');
+        $this->log('后台用户登出成功',0);
         $this->success('退出成功', 'admin/login/index');
     }
 
 
-    public function test(){
-      $hash = password_hash(123456, PASSWORD_DEFAULT);
-      var_dump($hash);
-      var_dump(password_verify(123456, $hash));
-    }
 }

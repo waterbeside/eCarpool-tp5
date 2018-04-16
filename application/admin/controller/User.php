@@ -65,8 +65,11 @@ class User extends AdminBase
           $data['password'] = "";
           $data['md5password'] = md5($data['password']);
           if ($this->user_model->allowField(true)->save($data)) {
+              $uid_n = $this->user_model->uid; //插入成功后取得id
+              $this->log('新加用户成功，id='.$uid_n,0);
               $this->success('保存成功');
           } else {
+              $this->log('新加用户失败',1);
               $this->error('保存失败');
           }
 
@@ -128,8 +131,10 @@ class User extends AdminBase
               $this->error($validate->getError());
           }
           if ($this->user_model->allowField(true)->save($data, ['uid'=>$id]) !== false) {
+              $this->log('保存用户成功，id='.$id,0);
               $this->success('保存成功');
           } else {
+              $this->log('保存用户失败，id='.$id,1);
               $this->error('保存失败');
           }
 
@@ -151,8 +156,10 @@ class User extends AdminBase
     public function delete($id)
     {
         if ($this->user_model->destroy($id)) {
+            $this->log('删除用户成功，id='.$id,0);
             $this->success('删除成功');
         } else {
+            $this->log('删除用户失败，id='.$id,1);
             $this->error('删除失败');
         }
     }

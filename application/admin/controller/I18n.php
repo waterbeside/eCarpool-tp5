@@ -118,9 +118,11 @@ class I18n extends AdminBase
           } catch (\Exception $e) {
               // 回滚事务
               Db::rollback();
+              $this->log('新加字条失败',1);
               $this->error('保存失败');
 
           }
+          $this->log('新加字条成功，id='.$iid,0);
           $this->success('保存成功');
 
        }else{
@@ -197,9 +199,11 @@ class I18n extends AdminBase
           } catch (\Exception $e) {
               // 回滚事务
               Db::rollback();
+              $this->log('更新字条失败，id='.$id,1);
               $this->error('更新失败');
 
           }
+          $this->log('更新字条成功，id='.$id,0);
           $this->success('更新成功');
 
        }else{
@@ -236,9 +240,11 @@ class I18n extends AdminBase
 
           // 回滚事务
           Db::rollback();
+          $this->log('新加字条成功，id='.$id,1);
           $this->error('删除失败');
 
       }
+      $this->log('删除字条成功，id='.$id,0);
       $this->success('删除成功');
     }
 
@@ -326,6 +332,8 @@ class I18n extends AdminBase
          }
          # code...
       }
+      $this->log('批量导入i18n数据',0);
+
     }
 
 

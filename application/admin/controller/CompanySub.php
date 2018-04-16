@@ -86,8 +86,11 @@ class CompanySub extends AdminBase
           } else {
               if ($this->company_sub_model->allowField(true)->save($data)) {
                 Cache::tag('public')->rm('sub_companys');
+                  $pk = $this->company_sub_model->sub_company_id; //插入成功后取得id
+                  $this->log('新加分厂成功，id='.$pk,0);
                   $this->success('保存成功');
               } else {
+                  $this->log('新加分厂失败',1);
                   $this->error('保存失败');
               }
           }
@@ -123,8 +126,10 @@ class CompanySub extends AdminBase
 
           if ($this->company_sub_model->allowField(true)->save($data, ['sub_company_id'=>$id]) !== false) {
             Cache::tag('public')->rm('sub_companys');
+              $this->log('更新分厂成功，id='.$id,0);
               $this->success('更新成功');
           } else {
+              $this->log('更新分厂失败，id='.$id,1);
               $this->error('更新失败');
           }
 
@@ -143,8 +148,10 @@ class CompanySub extends AdminBase
     public function delete($id)
     {
         if ($this->company_sub_model->destroy($id)) {
+            $this->log('删除分厂成功，id='.$id,0);
             $this->success('删除成功');
         } else {
+            $this->log('删除分厂失败，id='.$id,1);
             $this->error('删除失败');
         }
     }
