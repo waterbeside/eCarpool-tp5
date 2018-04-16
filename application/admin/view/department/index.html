@@ -27,7 +27,7 @@
                     <thead>
                     <tr>
                         <th lay-data="{field:'departmentid', width:100}">ID</th>
-                        <th  lay-data="{field:'department_name'}">部门名</th>
+                        <th lay-data="{field:'department_name'}">部门名</th>
                         <th lay-data="{field:'sub_company_name', width:100}">厂名</th>
                         <th lay-data="{field:'company_name', width:120}">公司</th>
                         <th lay-data="{field:'options', width:120}">操作</th>
@@ -40,9 +40,8 @@
                         <td>{$vo.department_name}</td>
                         <td>{$vo.sub_company_name}</td>
                         <td>{$vo.company_name}</td>
-
                         <td>
-                          <a  href="{:url('admin/department/edit',['id'=>$vo['departmentid']])}" class="layui-btn layui-btn-sm " data-title="編輯"  data-trigger="modal"     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
+                            <a  href="{:url('admin/department/edit',['id'=>$vo['departmentid']])}" class="layui-btn layui-btn-sm " data-title="編輯"  data-trigger="modal"     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
                             <a href="{:url('admin/department/delete',['id'=>$vo['departmentid']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
                         </td>
                     </tr>
