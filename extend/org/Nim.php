@@ -1,5 +1,5 @@
 <?php
-namespace extend\NIM;
+namespace org;
 /**
  * 网易云信server API 接口 2.0
  * Class ServerAPI
