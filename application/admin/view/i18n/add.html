@@ -1,6 +1,6 @@
 <div class="layui-tab-content">
     <div class="layui-tab-item layui-show">
-        <form class="layui-form form-container" action="{:url('admin/i18n/add')}" method="post">
+        <form class="layui-form form-container" action="{:url('admin/i18n/add')}" method="post" id="editForm">
           <fieldset class="amain-fieldset layui-elem-field" >
             <legend>基本设置</legend>
 
@@ -186,21 +186,29 @@
 
     getLangs: function(success){
         var _this = this;
-        $.get("{:url('admin/i18n/public_langs')}",function(res){
-          if(res.code === 0){
-            var options = '<option value="0">请选择语言</option>';
-            _this.data.langs = res.data.lists;
-            $(res.data.lists).each(function(index, el) {
-              options += '<option value="'+el.code+'">【'+el.code +"】"+el.name+'</option>';
-            });
-            $("select[name='langs']").html(options)
-            if(typeof(success)=="function"){
-              success(res);
+        if(pageData && pageData.langs.length > 0){
+          _this.renderLangs(pageData.langs);
+        }else{
+          $.get("{:url('admin/i18n/public_langs')}",function(res){
+            if(res.code === 0){
+              var options = '<option value="0">请选择语言</option>';
+              _this.data.langs = res.data.lists;
+              _this.renderLangs(res.data.lists);
+              if(typeof(success)=="function"){
+                success(res);
+              }
+              form.render();
             }
-            form.render();
-          }
-        })
+          })
+        }
+    },
 
+    renderLangs: function(listData){
+      var options = '<option value="0">请选择语言</option>';
+      $(listData).each(function(index, el) {
+        options += '<option value="'+el.code+'">【'+el.code +"】"+el.name+'</option>';
+      });
+      $("#editForm  select[name='langs']").html(options)
     },
 
     reSort : function(){
