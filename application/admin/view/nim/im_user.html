@@ -1,4 +1,4 @@
-<form class="layui-form form-container" action="{:url('admin/nim/update_token')}" method="post">
+<form class="layui-form form-container" action="{:url('admin/nim/update_token')}" method="post" >
   <blockquote class="layui-elem-quote">已生成云信帐号</blockquote>
   <div class="layui-form-item">
       <label class="layui-form-label">im_id</label>
@@ -17,7 +17,7 @@
       <div class="layui-input-block">
           <input type="hidden" name="isAction" value="1">
           <input type="hidden" name="uid" value="{$userData.uid}">
-          <button class="layui-btn" lay-submit lay-filter="*">更新 Token</button>
+          <button class="layui-btn" lay-submit lay-filter="*.update_token">更新 Token</button>
           <button   class="layui-btn layui-btn-primary" onclick="RESOLVE_INIT.closeModal(event)">返回</button>
       </div>
   </div>
@@ -31,7 +31,7 @@ var RESOLVE_INIT = {
     /**
      * 通用表单提交(AJAX方式)
      */
-    form.on('submit(*)', function (data) {
+    form.on('submit(*.update_token)', function (data) {
         $.ajax({
             url: data.form.action,
             type: data.form.method,
