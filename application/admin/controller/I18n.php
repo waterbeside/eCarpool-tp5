@@ -31,7 +31,7 @@ class I18n extends AdminBase
      * @param int    $page
      * @return mixed
      */
-    public function index($keyword = '', $page = 1, $lang = 'zh-ch')
+    public function index($keyword = '', $page = 1, $lang = 'zh-cn')
     {
         $map = [];
         if ($keyword) {
@@ -47,7 +47,7 @@ class I18n extends AdminBase
 
         $lists = $this->I18n_model->alias('t')->join($join)->where($map)->order($order)->field($fields)->paginate(50, false, ['query'=>request()->param()]);
 
-        return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword]);
+        return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword,'lang'=>$lang]);
     }
 
     /**

@@ -10,15 +10,19 @@
         <div class="layui-tab-content">
             <div class="layui-tab-item layui-show">
 
-                <form class="layui-form layui-form-pane" action="{:url('admin/i18n/index')}" method="get">
+                <form class="layui-form layui-form-pane" action="{:url('admin/i18n/index')}" method="get" id="searchForm">
                     <div class="layui-inline">
-                        <label class="layui-form-label">检索</label>
+                      <select name="lang" lay-verify="required" lay-search>
+                         <option value="0">请选择语言</option>
+                       </select>
+                    </div>
+                    <div class="layui-inline">
                         <div class="layui-input-inline">
                             <input type="text" name="keyword" value="{$keyword}" placeholder="请输入关键词" class="layui-input">
                         </div>
                     </div>
                     <div class="layui-inline">
-                        <button class="layui-btn"><i class="fa fa-search"></i></button>
+                        <button class="layui-btn">检索</button>
                     </div>
                 </form>
                 <hr>
@@ -27,7 +31,7 @@
                     <thead>
                     <tr>
                         <th  >#</th>
-                        <th  >Name</th>
+                        <!-- <th  >Name</th> -->
                         <th  >key_ios</th>
                         <th  >key_android</th>
                         <th  >content</th>
@@ -39,10 +43,20 @@
                     {foreach name="lists" item="vo"}
                     <tr>
                         <td>{$vo.id}</td>
-                        <td>{$vo.name}</td>
+                        <!-- <td>{$vo.name}</td> -->
                         <td>{$vo.key_ios}</td>
                         <td>{$vo.key_android}</td>
-                        <td>{php}echo $vo['content'] ? $vo['content'] : $vo['title'];{/php}</td>
+                        <td>{php}
+                          if($lang=="zh-cn"){
+                            echo $vo['content'] ? $vo['content'] : $vo['title'];
+
+                          }else{
+                            echo "<small>".$vo['title']." </small><br />";
+                            echo $vo['content'];
+
+                          }
+                          {/php}
+                        </td>
                         <td>{php}echo $vo['status']==1 ? '<i class="fa fa-check"></i>' : '<i class="fa fa-times"></i>';{/php}</td>
 
 
@@ -64,6 +78,29 @@
 {/block}
 {block name="script"}
 <script>
+var pageData = {
+  langs:[]
+}
+function getLangs(success){
+    var _this = this;
+    var lang = '{$lang}';
+    $.get("{:url('admin/i18n/public_langs')}",function(res){
+      if(res.code === 0){
+        var options = '<option value="0">请选择语言</option>';
+        pageData.langs = res.data.lists;
+        $(res.data.lists).each(function(index, el) {
+          var selected = el.code == lang ? "selected" : '';
+          options += '<option value="'+el.code+'" '+selected+'>【'+el.code +"】"+el.name+'</option>';
+        });
+        $("#searchForm select[name='lang']").html(options)
+        if(typeof(success)=="function"){
+          success(res);
+        }
+        form.render();
+      }
+    })
 
+}
+getLangs();
 </script>
 {/block}
