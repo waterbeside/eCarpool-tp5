@@ -34,7 +34,7 @@
                         <th lay-data="{field:'company_name', width:100}">公司</th>
                         <!-- <th lay-data="{field:'score', width:80}">分</th> -->
                         <th lay-data="{field:'other', width:60}">...</th>
-                        <th lay-data="{field:'options', width:120}">操作</th>
+                        <th lay-data="{field:'options', width:140}">操作</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -54,6 +54,7 @@
                           {php}echo $vo['sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
                         </td>
                         <td>
+                          <a href="{:url('admin/nim/im_user',['uid'=>$vo['uid']])}"  class="layui-btn   layui-btn-xs " data-title="云信账号"  data-trigger="modal" title="編輯云帐号">IM</a>
                           <a href="{:url('admin/user/edit',['id'=>$vo['uid']])}"  class="layui-btn   layui-btn-xs " data-title="編輯成員"  data-trigger="modal" title="編輯"><i class="layui-icon">&#xe642;</i></a>
                           <a href="{:url('admin/user/delete',['id'=>$vo['uid']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除" ><i class="layui-icon">&#xe640;</i></a>
                         </td>
