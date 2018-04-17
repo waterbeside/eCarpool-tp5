@@ -49,7 +49,7 @@ class AdminUser extends AdminBase
           $validate_result = $this->validate($data, 'AdminUser');
 
           if ($validate_result !== true) {
-              $this->error($validate_result);
+              $this->jsonReturn(1,$validate_result);
           } else {
               // $data['password'] = md5($data['password'] . Config::get('salt'));
               $data['password']  = password_hash($data['password'], PASSWORD_DEFAULT);
@@ -59,10 +59,10 @@ class AdminUser extends AdminBase
                   $this->auth_group_access_model->save($auth_group_access);
                   $pk = $this->admin_user_model->id; //插入成功后取得id
                   $this->log('添加后台用户成功，id='.$pk,0);
-                  $this->success('保存成功');
+                  $this->jsonReturn(0,'保存成功');
               } else {
                   $this->log('添加后台用户失败',1);
-                  $this->error('保存失败');
+                  $this->jsonReturn(1,'保存失败');
               }
           }
       }else{
@@ -86,7 +86,7 @@ class AdminUser extends AdminBase
           $validate_result = $this->validate($data, 'AdminUser');
 
           if ($validate_result !== true) {
-              $this->error($validate_result);
+              $this->jsonReturn(1,$validate_result);
           } else {
               $admin_user = $this->admin_user_model->find($id);
 
@@ -103,10 +103,10 @@ class AdminUser extends AdminBase
                   $auth_group_access['group_id'] = $group_id;
                   $this->auth_group_access_model->where('uid', $id)->update($auth_group_access);
                   $this->log('更新后台用户成功，id='.$id,0);
-                  $this->success('更新成功');
+                  $this->jsonReturn(0,'更新成功');
               } else {
                   $this->log('更新后台用户失败，id='.$id,1);
-                  $this->error('更新失败');
+                  $this->jsonReturn(1,'更新失败');
               }
           }
       }else{
@@ -132,10 +132,10 @@ class AdminUser extends AdminBase
         if ($this->admin_user_model->destroy($id)) {
             $this->auth_group_access_model->where('uid', $id)->delete();
             $this->log('删除后台用户成功，id='.$id,0);
-            $this->success('删除成功');
+            $this->jsonReturn(0,'删除成功');
         } else {
           $this->log('删除后台用户失败，id='.$id,1);
-            $this->error('删除失败');
+            $this->jsonReturn(1,'删除失败');
         }
     }
 }

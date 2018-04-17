@@ -48,12 +48,12 @@ class Category extends AdminBase
           $validate_result = $this->validate($data, 'Category');
 
           if ($validate_result !== true) {
-              $this->error($validate_result);
+              $this->jsonReturn(1,$validate_result);
           } else {
               if ($this->category_model->allowField(true)->save($data)) {
-                  $this->success('保存成功');
+                  $this->jsonReturn(0,'保存成功');
               } else {
-                  $this->error('保存失败');
+                  $this->jsonReturn(1,'保存失败');
               }
           }
       }else{
@@ -75,16 +75,16 @@ class Category extends AdminBase
           $validate_result = $this->validate($data, 'Category');
 
           if ($validate_result !== true) {
-              $this->error($validate_result);
+              $this->jsonReturn(1,$validate_result);
           } else {
               $children = $this->category_model->where([['path','like', "%,{$id},%"]])->column('id');
               if (in_array($data['pid'], $children)) {
-                  $this->error('不能移动到自己的子分类');
+                  $this->jsonReturn(1,'不能移动到自己的子分类');
               } else {
                   if ($this->category_model->allowField(true)->save($data, $id) !== false) {
-                      $this->success('更新成功');
+                      $this->jsonReturn(0,'更新成功');
                   } else {
-                      $this->error('更新失败');
+                      $this->jsonReturn(1,'更新失败');
                   }
               }
           }
@@ -106,15 +106,15 @@ class Category extends AdminBase
         $article  = $this->article_model->where(['cid' => $id])->find();
 
         if (!empty($category)) {
-            $this->error('此分类下存在子分类，不可删除');
+            $this->jsonReturn(1,'此分类下存在子分类，不可删除');
         }
         if (!empty($article)) {
-            $this->error('此分类下存在文章，不可删除');
+            $this->jsonReturn(1,'此分类下存在文章，不可删除');
         }
         if ($this->category_model->destroy($id)) {
-            $this->success('删除成功');
+            $this->jsonReturn(0,'删除成功');
         } else {
-            $this->error('删除失败');
+            $this->jsonReturn(1,'删除失败');
         }
     }
 }

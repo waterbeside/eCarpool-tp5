@@ -42,12 +42,12 @@ class Link extends AdminBase
           $validate_result = $this->validate($data, 'Link');
 
           if ($validate_result !== true) {
-              $this->error($validate_result);
+              $this->jsonReturn(1,$validate_result);
           } else {
               if ($this->link_model->allowField(true)->save($data)) {
-                  $this->success('保存成功');
+                  $this->jsonReturn(0,'保存成功');
               } else {
-                  $this->error('保存失败');
+                  $this->jsonReturn(1,'保存失败');
               }
           }
       }else{
@@ -72,9 +72,9 @@ class Link extends AdminBase
               $this->error($validate_result);
           } else {
               if ($this->link_model->allowField(true)->save($data, $id) !== false) {
-                  $this->success('更新成功');
+                  $this->jsonReturn(0,'更新成功');
               } else {
-                  $this->error('更新失败');
+                  $this->jsonReturn(1,'更新失败');
               }
           }
       }else{
@@ -84,7 +84,7 @@ class Link extends AdminBase
 
     }
 
-    
+
 
     /**
      * 删除友情链接
@@ -93,9 +93,9 @@ class Link extends AdminBase
     public function delete($id)
     {
         if ($this->link_model->destroy($id)) {
-            $this->success('删除成功');
+            $this->jsonReturn(0,'删除成功');
         } else {
-            $this->error('删除失败');
+            $this->jsonReturn(1,'删除失败');
         }
     }
 }

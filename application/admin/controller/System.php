@@ -39,9 +39,9 @@ class System extends AdminBase
             $site_config['site_tongji'] = htmlspecialchars_decode($site_config['site_tongji']);
             $data['value']              = serialize($site_config);
             if (Db::name('system')->where('name', 'site_config')->update($data) !== false) {
-                $this->success('提交成功');
+              $this->jsonReturn(0,'提交成功');
             } else {
-                $this->error('提交失败');
+              $this->jsonReturn(1,'提交失败');
             }
         }
     }
@@ -52,9 +52,10 @@ class System extends AdminBase
     public function clear()
     {
         if (delete_dir_file(Env::get('runtime_path') . 'cache/') || delete_dir_file(Env::get('runtime_path'). 'temp/')) {
-            $this->success('清除缓存成功');
+            $this->jsonReturn(0,'清除缓存成功');
         } else {
-            $this->error('清除缓存失败');
+            $this->jsonReturn(1,'清除缓存失败');
+
         }
     }
 }

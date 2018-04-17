@@ -17,7 +17,7 @@
 <body class="login">
 <div class="login-title">Carpool Management</div>
 <div class="login-form-wrapper">
-  <form class="layui-form login-form" action="{:url('admin/login/login')}" method="post">
+  <form class="layui-form login-form" action="{:url('admin/login/login')}" method="post" data-unrefresh='1' data-jump="{:url('admin/index/index')}">
       <div class="layui-form-item">
           <label class="layui-form-label">用户名</label>
           <div class="layui-input-block">

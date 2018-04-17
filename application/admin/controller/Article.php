@@ -64,12 +64,12 @@ class Article extends AdminBase
           $validate_result = $this->validate($data, 'Article');
 
           if ($validate_result !== true) {
-              $this->error($validate_result);
+              $this->jsonReturn(1,$validate_result);
           } else {
               if ($this->article_model->allowField(true)->save($data)) {
-                  $this->success('保存成功');
+                  $this->jsonReturn(0,'保存成功');
               } else {
-                  $this->error('保存失败');
+                  $this->jsonReturn(1,'保存失败');
               }
           }
       }else{
@@ -92,12 +92,12 @@ class Article extends AdminBase
           $validate_result = $this->validate($data, 'Article');
 
           if ($validate_result !== true) {
-              $this->error($validate_result);
+              $this->jsonReturn(1,$validate_result);
           } else {
               if ($this->article_model->allowField(true)->save($data, $id) !== false) {
-                  $this->success('更新成功');
+                  $this->jsonReturn(0,'更新成功');
               } else {
-                  $this->error('更新失败');
+                  $this->jsonReturn(1,'更新失败');
               }
           }
       }else{
@@ -120,12 +120,12 @@ class Article extends AdminBase
         $id = $ids ? $ids : $id;
         if ($id) {
             if ($this->article_model->destroy($id)) {
-                $this->success('删除成功');
+                $this->jsonReturn(0,'删除成功');
             } else {
-                $this->error('删除失败');
+                $this->jsonReturn(1,'删除失败');
             }
         } else {
-            $this->error('请选择需要删除的文章');
+            $this->jsonReturn(1,'请选择需要删除的文章');
         }
     }
 
@@ -144,12 +144,12 @@ class Article extends AdminBase
                 $data[] = ['id' => $value, 'status' => $status];
             }
             if ($this->article_model->saveAll($data)) {
-                $this->success('操作成功');
+                $this->jsonReturn(0,'操作成功');
             } else {
-                $this->error('操作失败');
+                $this->jsonReturn(1,'操作失败');
             }
         } else {
-            $this->error('请选择需要操作的文章');
+            $this->jsonReturn(1,'请选择需要操作的文章');
         }
     }
 }

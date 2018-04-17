@@ -74,7 +74,7 @@ class I18n extends AdminBase
           $validate   = Validate::make($rule,$msg);
           $validate_result = $validate->check($data);
           if ($validate_result !== true) {
-              $this->error($validate->getError());
+              $this->jsonReturn(1,$validate->getError());
           }
 
 
@@ -91,7 +91,7 @@ class I18n extends AdminBase
           }
           //验证中文内容是否存在
           if(!$data['langData']['zh-cn']['content']){
-            $this->error('请输入中文内容');
+            $this->jsonReturn(1,'请输入中文内容');
           }
 
           // 启动事务
@@ -119,11 +119,11 @@ class I18n extends AdminBase
               // 回滚事务
               Db::rollback();
               $this->log('新加字条失败',1);
-              $this->error('保存失败');
+              $this->jsonReturn(1,'保存失败');
 
           }
           $this->log('新加字条成功，id='.$iid,0);
-          $this->success('保存成功');
+          $this->jsonReturn(0,'保存成功');
 
        }else{
          return $this->fetch();
@@ -155,7 +155,7 @@ class I18n extends AdminBase
           $validate   = Validate::make($rule,$msg);
           $validate_result = $validate->check($data);
           if ($validate_result !== true) {
-              $this->error($validate->getError());
+              $this->jsonReturn(1,$validate->getError());
           }
 
 
@@ -172,7 +172,7 @@ class I18n extends AdminBase
           }
           //验证中文内容是否存在
           if(!$data['langData']['zh-cn']['content']){
-            $this->error('请输入中文内容');
+            $this->jsonReturn(1,'请输入中文内容');
           }
 
           // 启动事务
@@ -200,11 +200,10 @@ class I18n extends AdminBase
               // 回滚事务
               Db::rollback();
               $this->log('更新字条失败，id='.$id,1);
-              $this->error('更新失败');
-
+              $this->jsonReturn(1,'更新失败');
           }
           $this->log('更新字条成功，id='.$id,0);
-          $this->success('更新成功');
+          $this->jsonReturn(0,'更新成功');
 
        }else{
         $datas = $this->I18n_model->find($id);
@@ -241,11 +240,11 @@ class I18n extends AdminBase
           // 回滚事务
           Db::rollback();
           $this->log('新加字条成功，id='.$id,1);
-          $this->error('删除失败');
+          $this->jsonReturn(1,'删除失败');
 
       }
       $this->log('删除字条成功，id='.$id,0);
-      $this->success('删除成功');
+      $this->jsonReturn(0,'删除成功');
     }
 
 
@@ -286,7 +285,9 @@ class I18n extends AdminBase
             'name'=>$value['name'],
           ];
       }
-      return json(['data'=>['lists'=>$returnLists],'code'=>0,'desc'=>'success']);
+      // return json(['data'=>['lists'=>$returnLists],'code'=>0,'desc'=>'success']);
+      $this->jsonReturn(0,['lists'=>$returnLists],'success');
+
     }
 
 

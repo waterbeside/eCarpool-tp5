@@ -43,9 +43,9 @@ class AuthGroup extends AdminBase
           $data = $this->request->post();
 
           if ($this->auth_group_model->save($data) !== false) {
-              $this->success('保存成功');
+              $this->jsonReturn(0,'保存成功');
           } else {
-              $this->error('保存失败');
+              $this->jsonReturn(1,'保存失败');
           }
       }else{
         return $this->fetch();
@@ -65,12 +65,12 @@ class AuthGroup extends AdminBase
           $data = $this->request->post();
 
           if ($id == 1 && $data['status'] != 1) {
-              $this->error('超级管理组不可禁用');
+              $this->jsonReturn(1,'超级管理组不可禁用');
           }
           if ($this->auth_group_model->save($data, $id) !== false) {
-              $this->success('更新成功');
+              $this->jsonReturn(0,'更新成功');
           } else {
-              $this->error('更新失败');
+              $this->jsonReturn(1,'更新失败');
           }
       }else{
         $auth_group = $this->auth_group_model->find($id);
@@ -78,7 +78,7 @@ class AuthGroup extends AdminBase
       }
     }
 
-    
+
 
     /**
      * 删除权限组
@@ -87,12 +87,12 @@ class AuthGroup extends AdminBase
     public function delete($id)
     {
         if ($id == 1) {
-            $this->error('超级管理组不可删除');
+            $this->jsonReturn(1,'超级管理组不可删除');
         }
         if ($this->auth_group_model->destroy($id)) {
-            $this->success('删除成功');
+            $this->jsonReturn(0,'删除成功');
         } else {
-            $this->error('删除失败');
+            $this->jsonReturn(1,'删除失败');
         }
     }
 
@@ -137,9 +137,9 @@ class AuthGroup extends AdminBase
                 $group_data['rules'] = is_array($auth_rule_ids) ? implode(',', $auth_rule_ids) : '';
 
                 if ($this->auth_group_model->save($group_data, $id) !== false) {
-                    $this->success('授权成功');
+                    $this->jsonReturn(0,'授权成功');
                 } else {
-                    $this->error('授权失败');
+                    $this->jsonReturn(1,'授权失败');
                 }
             }
         }

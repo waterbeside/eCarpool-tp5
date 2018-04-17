@@ -63,7 +63,7 @@ function admin_init(){
       if (res.error === 0) {
           document.getElementById('thumb').value = res.url;
       } else {
-          layer.msg(res.message);
+          layer.msg(res.desc);
       }
     }
     ,error: function(){
@@ -93,15 +93,26 @@ function admin_init(){
   form.on('submit(*)', function (data) {
       $.ajax({
           url: data.form.action,
+          dataType:'json',
           type: data.form.method,
           data: $(data.form).serialize(),
-          success: function (info) {
-              if (info.code === 1) {
+          success: function (res) {
+              if (res.code === 0) {
+                var jump = $(data.form).data('jump') ? $(data.form).data('jump') : "";
+
+                if($(data.form).data('unrefresh')!=1 || jump!=""){
                   setTimeout(function () {
-                      location.href = info.url;
+                    if(jump!=""){
+                      location.href = jump;
+                    }else if(res.url){
+                      location.href = res.url;
+                    }else{
+                      location.reload();
+                    }
                   }, 1000);
+                }
               }
-              layer.msg(info.msg);
+              layer.msg(res.desc);
           }
       });
 
@@ -121,14 +132,19 @@ function admin_init(){
           yes: function (index) {
               $.ajax({
                   url: _action,
+                  dataType:'json',
                   data: $('.ajax-form').serialize(),
-                  success: function (info) {
-                      if (info.code === 1) {
-                          setTimeout(function () {
-                              location.href = info.url;
-                          }, 1000);
+                  success: function (res) {
+                      if (res.code === 0) {
+                        setTimeout(function () {
+                          if(res.url){
+                            location.href = res.url;
+                          }else{
+                            location.reload();
+                          }
+                        }, 1000);
                       }
-                      layer.msg(info.msg);
+                      layer.msg(res.desc);
                   }
               });
               layer.close(index);
@@ -159,14 +175,19 @@ function admin_init(){
           yes: function (index) {
               $.ajax({
                   url: _href,
+                  dataType:'json',
                   type: "get",
-                  success: function (info) {
-                      if (info.code === 1) {
-                          setTimeout(function () {
-                              location.href = info.url;
-                          }, 1000);
+                  success: function (res) {
+                      if (res.code === 0) {
+                        setTimeout(function () {
+                          if(res.url){
+                            location.href = res.url;
+                          }else{
+                            location.reload();
+                          }
+                        }, 1000);
                       }
-                      layer.msg(info.msg);
+                      layer.msg(res.desc);
                   }
               });
               layer.close(index);
@@ -185,13 +206,18 @@ function admin_init(){
       if (_url !== 'undefined') {
           $.ajax({
               url: _url,
-              success: function (data) {
-                  if (data.code === 1) {
-                      setTimeout(function () {
-                          location.href = location.pathname;
-                      }, 1000);
+              dataType:'json',
+              success: function (res) {
+                  if (res.code === 0) {
+                    setTimeout(function () {
+                      if(res.url){
+                        location.href = res.url;
+                      }else{
+                        location.reload();
+                      }
+                    }, 1000);
                   }
-                  layer.msg(data.msg);
+                  layer.msg(res.desc);
               }
           });
       }

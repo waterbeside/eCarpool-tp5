@@ -154,17 +154,24 @@
      * 清除缓存
      */
     $(document).on('click',  '#clear-cache', function() {
+    // $('#clear-cache').on('click', function () {
         var _url = $(this).data('url');
         if (_url !== 'undefined') {
             $.ajax({
                 url: _url,
-                success: function (data) {
-                    if (data.code === 1) {
-                        setTimeout(function () {
-                            location.href = location.pathname;
-                        }, 1000);
+                dataType:'json',
+                success: function (res) {
+                    if (res.code === 0) {
+
+                      setTimeout(function () {
+                        if(res.url){
+                          location.href = res.url;
+                        }else{
+                          location.reload();
+                        }
+                      }, 1000);
                     }
-                    layer.msg(data.msg);
+                    layer.msg(res.desc);
                 }
             });
         }

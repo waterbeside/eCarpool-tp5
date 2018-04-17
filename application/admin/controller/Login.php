@@ -2,17 +2,18 @@
 namespace app\admin\controller;
 
 use think\facade\Config;
-use think\Controller;
+use app\common\controller\Base as BaseController;
 use think\Db;
 use think\facade\Session;
 use think\facade\Cookie;
+use app\common\model\AdminLog;
 
 /**
  * 后台登录
  * Class Login
  * @package app\admin\controller
  */
-class Login extends Controller
+class Login extends BaseController
 {
     /**
      * 后台登录
@@ -32,9 +33,10 @@ class Login extends Controller
         if ($this->request->isPost()) {
             $data            = $this->request->only(['username', 'password', 'verify']);
             $validate_result = $this->validate($data, 'Login');
+            $AdminLog = new AdminLog;
 
             if ($validate_result !== true) {
-                $this->error($validate_result);
+                $this->jsonReturn(1,$validate_result);
             } else {
                 $where['username'] = $data['username'];
                 // $where['password'] = md5($data['password'] . Config::get('salt'));
@@ -50,17 +52,17 @@ class Login extends Controller
                     // Session::set('admin_id', $user['id']);
                     // Session::set('admin_name', $user['username']);
                     // return json(array('code' => 1, 'msg' => '登录成功','data'=>['token'=>$token,'user'=>$user]));
-                    $this->log('后台用户登入成功 username ='.$data['username'],0);
-                    $this->success('登入成功', 'admin/index/index',['token'=>$token,'user'=>$user]);
+                    $AdminLog->add('后台用户登入成功 username ='.$data['username'],0);
+                    $this->jsonReturn(0,['token'=>$token,'user'=>$user],'登入成功');
 
                   }else{
-                    $this->log('后台用户登入失败，帐号受限 username ='.$data['username'],1);
-                    $this->error('此帐号受限');
+                    $AdminLog->add('后台用户登入失败，帐号受限 username ='.$data['username'],1);
+                    $this->jsonReturn(1,'此帐号受限');
                   }
 
                 }else{
-                  $this->log('后台用户登入失败，用户名或密码错误 username ='.$data['username'],1);
-                  $this->error('用户名或密码错误');
+                  $AdminLog->add('后台用户登入失败，用户名或密码错误 username ='.$data['username'],1);
+                  $this->jsonReturn(1,'用户名或密码错误');
                   // return json(array('code' => 0, 'msg' => '用户名或密码错误'));
                 }
 
@@ -76,8 +78,11 @@ class Login extends Controller
         Session::delete('admin_id');
         Session::delete('admin_name');
         Cookie::delete('admin_token');
-        $this->log('后台用户登出成功',0);
+        $AdminLog = new AdminLog;
+        // $AdminLog->add('后台用户登出成功',0);
         $this->success('退出成功', 'admin/login/index');
+        // $this->jsonReturn(0,'退出成功');
+
     }
 
 
