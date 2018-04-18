@@ -135,6 +135,7 @@ class Company extends AdminBase
     public function delete($id)
     {
         if ($this->company_model->destroy($id)) {
+            Cache::tag('public')->rm('companys');
             $this->log('删除公司成功，id='.$id,0);
             $this->jsonReturn(0,'删除成功');
         } else {

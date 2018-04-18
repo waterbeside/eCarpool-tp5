@@ -97,6 +97,7 @@ class Department extends AdminBase
 
           if ($this->department_model->allowField(true)->save($data)) {
               $pk = $this->department_model->departmentid; //插入成功后取得id
+              Cache::tag('public')->rm('departments');
               $this->log('新加部门成功，id='.$pk,0);
               $this->jsonReturn(0,'保存成功');
           } else {
@@ -131,6 +132,7 @@ class Department extends AdminBase
           $data['sub_company_name'] = $sub_company_name ? $sub_company_name : '';
 
           if ($this->department_model->allowField(true)->save($data, ['departmentid'=>$id]) !== false) {
+              Cache::tag('public')->rm('departments');
               $this->log('更新部门成功，id='.$id,0);
               $this->jsonReturn(0,'更新成功');
           } else {
@@ -154,6 +156,7 @@ class Department extends AdminBase
     public function delete($id)
     {
         if ($this->department_model->destroy($id)) {
+            Cache::tag('public')->rm('departments');
             $this->log('删除部门成功，id='.$id,1);
             $this->jsonReturn(0,'删除成功');
         } else {
