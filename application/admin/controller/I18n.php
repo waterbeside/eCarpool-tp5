@@ -249,18 +249,18 @@ class I18n extends AdminBase
 
 
     /**
-     * 取得语言代码列表
+     * 语言代码列表
      */
-    public function lang_list(){
+    public function lang_list($keyword = '', $page = 1, $lang = 'zh-cn'){
       $map = [];
       if ($keyword) {
         $map[] = ['t.code|t.name','like', "%{$keyword}%"];
       }
 
       $fields = '*';
-      $order = 'name ASC , title ';
-      $lists = $this->I18n_model->alias('t')->join($join)->where($map)->order($order)->field($fields)->paginate(50, false, ['query'=>request()->param()]);
-      return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword]);
+      $order = 'sort ASC , id ';
+      $lists = I18nLangModel::alias('t')->where($map)->order($order)->field($fields)->paginate(30, false, ['query'=>request()->param()]);
+      return $this->fetch('lang_list', ['lists' => $lists, 'keyword' => $keyword]);
 
     }
 
@@ -290,7 +290,87 @@ class I18n extends AdminBase
 
     }
 
+    /**
+     * 添加语言
+     * @return mixed
+     */
+    public function lang_add()
+    {
+      if ($this->request->isPost()) {
+          $data            = $this->request->param();
+          $data['status']  = $this->request->post('status/d',0);
 
+          // 开始验证
+          $validate_result = $this->validate($data, 'I18nLang');
+          if ($validate_result !== true) {
+            $this->jsonReturn(1,$validate_result);
+          }
+
+          $lang_model = new I18nLangModel();
+          if ($lang_model->allowField(true)->save($data)) {
+              Cache::tag('public')->rm('langs');
+              $pk = $lang_model->id; //插入成功后取得id
+              $this->log('新加语言成功，id='.$pk,0);
+              return $this->jsonReturn(0,'保存成功');
+          } else {
+              $this->log('新加语言失败',1);
+              return $this->jsonReturn(1,'保存失败');
+          }
+
+       }else{
+         return $this->fetch('lang_add');
+      }
+    }
+
+    /**
+     * 编辑语言
+     * @param $id
+     * @return mixed
+     */
+    public function lang_edit($id)
+    {
+      $lang_model = new I18nLangModel();
+      if ($this->request->isPost()) {
+          $data            = $this->request->param();
+          $data['status']  = $this->request->post('status/d',0);
+          // 开始验证
+          $validate_result = $this->validate($data, 'I18nLang');
+          if ($validate_result !== true) {
+            $this->jsonReturn(1,$validate_result);
+          }
+
+
+          if ($lang_model->allowField(true)->save($data, ['id'=>$id]) !== false) {
+              Cache::tag('public')->rm('langs');
+              $this->log('修改语言成功，id='.$id,0);
+              return $this->jsonReturn(0,'修改成功');
+          } else {
+              $this->log('修改语言失败，id='.$id,1);
+              return $this->jsonReturn(1,'修改失败');
+          }
+
+       }else{
+        $datas = $lang_model->find($id);
+        return $this->fetch('lang_edit', ['data' => $datas]);
+      }
+    }
+
+    /**
+     * 删除语言
+     * @param $id
+     */
+    public function lang_delete($id)
+    {
+        $lang_model = new I18nLangModel();
+        if ($lang_model->destroy($id)) {
+            Cache::tag('public')->rm('langs');
+            $this->log('删除语言成功，id='.$id,0);
+            return $this->jsonReturn(0,'删除成功');
+        } else {
+            $this->log('删除语言失败，id='.$id,1);
+            return $this->jsonReturn(1,'删除失败');
+        }
+    }
 
     /**
      * 导入
@@ -336,6 +416,9 @@ class I18n extends AdminBase
       $this->log('批量导入i18n数据',0);
 
     }
+
+
+
 
 
 
