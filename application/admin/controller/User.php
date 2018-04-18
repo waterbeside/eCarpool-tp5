@@ -37,7 +37,7 @@ class User extends AdminBase
             $map[] = ['loginname|phone|Department|name|companyname','like', "%{$keyword}%"];
         }
         $join = [
-          ['company c','u.company_id = c.company_id'],
+          ['company c','u.company_id = c.company_id','left'],
         ];
         $user_list = $this->user_model->alias('u')->join($join)->where($map)->order('uid DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
         return $this->fetch('index', ['user_list' => $user_list, 'keyword' => $keyword,'pagesize'=>$pagesize]);
