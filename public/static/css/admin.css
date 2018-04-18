@@ -54,6 +54,7 @@
 .amain-additem-bar { background: #e0e9eb; border:1px solid #ddd; padding: 4px; border-radius: 3px;}
 .amain-additem-bar .layui-form-item:last-child { margin-bottom: 0;}
 
+.amain-body .list_status_0 { background: #fcfcfc; color: #aaa}
 
 .header {background-color: #393D49;}
 
