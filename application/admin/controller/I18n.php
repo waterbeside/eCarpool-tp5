@@ -31,23 +31,25 @@ class I18n extends AdminBase
      * @param int    $page
      * @return mixed
      */
-    public function index($keyword = '', $page = 1, $lang = 'zh-cn')
+    public function index($keyword = '', $page = 1, $lang = 'zh-cn',$module = '')
     {
         $map = [];
         if ($keyword) {
           $map[] = ['t.name|t.title|d.content','like', "%{$keyword}%"];
+        }
+        if ($module) {
+          $map[] = ['t.module','=', "$module"];
         }
         $join = [
           ['i18n_data d','t.id = d.iid AND d.lang = "'.$lang.'"', 'left'],
         ];
 
         $fields = 't.id,t.lang_list, t.name, t.title, t.key_ios, t.key_android ,t.status, d.lang, d.content ';
-
         $order = 'name ASC , title ';
-
         $lists = $this->I18n_model->alias('t')->join($join)->where($map)->order($order)->field($fields)->paginate(50, false, ['query'=>request()->param()]);
 
-        return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword,'lang'=>$lang]);
+        $modules = $this->I18n_model->field('module')->group('module')->select();
+        return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword,'lang'=>$lang,'module'=>$module,'modules'=>$modules]);
     }
 
     /**

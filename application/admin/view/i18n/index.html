@@ -12,7 +12,15 @@
 
                 <form class="layui-form layui-form-pane" action="{:url('admin/i18n/index')}" method="get" id="searchForm">
                     <div class="layui-inline">
-                      <select name="lang" lay-verify="required" lay-search>
+                      <select name="module"  lay-search>
+                        <option value="0">请选择模块</option>
+                        {foreach name="modules" item="vo"}
+                         <option value="{$vo.module}" {php}echo $vo['module']==$module ? 'selected' : '';{/php}>{$vo.module}</option>
+                         {/foreach}
+                       </select>
+                    </div>
+                    <div class="layui-inline">
+                      <select name="lang"   lay-search>
                          <option value="0">请选择语言</option>
                        </select>
                     </div>
