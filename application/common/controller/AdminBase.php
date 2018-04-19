@@ -25,9 +25,7 @@ class AdminBase extends Base
     protected function initialize()
     {
         parent::initialize();
-
         $this->checkAuth();
-
         // 输出当前请求控制器（配合后台侧边菜单选中状态）
         $this->assign('controller', Loader::parseName($this->request->controller()));
 
@@ -40,12 +38,8 @@ class AdminBase extends Base
     protected function checkAuth()
     {
 
-      $this->checkToken();
-
-        // $this->userBaseInfo = ['uid'=>Session::get('admin_id')]
-        /*if (!Session::has('admin_id')) {
-            $this->redirect('admin/login/index');
-        }*/
+       // $this->checkToken(); //如果使用jwt验证
+        $this->checkAuthSession(); //如果使用Session验证
 
         $module     = $this->request->module();
         $controller = $this->request->controller();
@@ -67,6 +61,26 @@ class AdminBase extends Base
     }
 
     /**
+     * 验证验入session
+     * @return [type] [description]
+     */
+    public function checkAuthSession(){
+
+      if (!Session::has('admin_id')) {
+        if($this->request->isAjax()){
+          $this->jsonReturn(10004,'您尚未登入');
+        }else{
+          return $this->error('您尚未登入','admin/login/index');
+        }
+      }
+      $this->userBaseInfo = [
+        'uid'=>Session::get('admin_id'),
+        'username'=>Session::get('admin_name')
+      ];
+
+    }
+
+    /**
      * 验证jwt
      */
     public function checkToken(){
@@ -78,7 +92,11 @@ class AdminBase extends Base
 
 
         if(!$Authorization){
-          return $this->error('您尚未登入','admin/login/index');
+          if($this->request->isAjax()){
+            $this->jsonReturn(10004,'您尚未登入');
+          }else{
+            return $this->error('您尚未登入','admin/login/index');
+          }
         }else{
 
 
@@ -88,7 +106,11 @@ class AdminBase extends Base
 
             $now = time();
             if( $now  > $jwtDecode->exp){
-              return $this->error('登入超时，请重新登入','admin/login/index');
+              if($this->request->isAjax()){
+                $this->jsonReturn(10004,'登入超时，请重新登入');
+              }else{
+                return $this->error('登入超时，请重新登入','admin/login/index');
+              }
             }
             $this->userBaseInfo  = array(
               'username' => $jwtDecode->username,
@@ -96,7 +118,11 @@ class AdminBase extends Base
             );
             return true;
           }else{
-            return $this->error('您尚未登入','admin/login/index');
+            if($this->request->isAjax()){
+              $this->jsonReturn(10004,'您尚未登入');
+            }else{
+              return $this->error('您尚未登入','admin/login/index');
+            }
           }
         }
 

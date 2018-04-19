@@ -49,8 +49,8 @@ class Login extends BaseController
                   if($user['status']==1){
                     $exp = config('admin_setting')['jwt_exp'];
                     Cookie::set('admin_token',$token,$exp);
-                    // Session::set('admin_id', $user['id']);
-                    // Session::set('admin_name', $user['username']);
+                    Session::set('admin_id', $user['id']);
+                    Session::set('admin_name', $user['username']);
                     // return json(array('code' => 1, 'msg' => '登录成功','data'=>['token'=>$token,'user'=>$user]));
                     $AdminLog->add('后台用户登入成功 username ='.$data['username'],0);
                     $this->jsonReturn(0,['token'=>$token,'user'=>$user],'登入成功');
