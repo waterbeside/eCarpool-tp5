@@ -11,7 +11,7 @@ namespace org;
  *
 ***/
 
-class NIM {
+class Nim {
     private $AppKey;                //开发者平台分配的AppKey
     private $AppSecret;             //开发者平台分配的AppSecret,可刷新
     private $Nonce;					//随机数（最大长度128个字符）

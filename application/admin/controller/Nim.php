@@ -7,7 +7,7 @@ use app\common\controller\AdminBase;
 use think\facade\Config;
 use think\facade\Validate;
 use think\Db;
-use org\NIM as NimServer;
+use org\Nim as NimServer;
 
 /**
  * 云信管理
