@@ -55,7 +55,7 @@ class AdminUser extends AdminBase
               $data['password']  = password_hash($data['password'], PASSWORD_DEFAULT);
               if ($this->admin_user_model->allowField(true)->save($data)) {
                   $auth_group_access['uid']      = $this->admin_user_model->id;
-                  $auth_group_access['group_id'] = $group_id;
+                  $auth_group_access['group_id'] = $data['group_id'];
                   $this->auth_group_access_model->save($auth_group_access);
                   $pk = $this->admin_user_model->id; //插入成功后取得id
                   $this->log('添加后台用户成功，id='.$pk,0);
@@ -100,7 +100,7 @@ class AdminUser extends AdminBase
               }
               if ($admin_user->save() !== false) {
                   $auth_group_access['uid']      = $id;
-                  $auth_group_access['group_id'] = $group_id;
+                  $auth_group_access['group_id'] = $data['group_id'];;
                   $this->auth_group_access_model->where('uid', $id)->update($auth_group_access);
                   $this->log('更新后台用户成功，id='.$id,0);
                   $this->jsonReturn(0,'更新成功');
