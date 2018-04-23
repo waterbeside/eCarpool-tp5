@@ -47,15 +47,19 @@ class AdminBase extends Base
 
 
         // 排除权限
-        $not_check = ['admin/Index/index', 'admin/AuthGroup/getjson', 'admin/System/clear'];
+        $not_check = ['admin/Index/index', 'admin/AuthGroup/getjson', 'admin/System/clear','admin/Index/main'];
 
-        if (!in_array($module . '/' . $controller . '/' . $action, $not_check) && $controller!="Publics" && strpos('public_', $action) === false) {
+        if (!in_array($module . '/' . $controller . '/' . $action, $not_check) && $controller!="Publics" && strpos($action,'public_' ) === false) {
             $auth     = new Auth();
             $admin_id = $this->userBaseInfo['uid'];
 
             // $admin_id = Session::get('admin_id');
             if (!$auth->check($module . '/' . $controller . '/' . $action, $admin_id) && $admin_id != 1) {
-                $this->error('没有权限');
+                if($this->request->isAjax()){
+                  $this->jsonReturn(10004,'没有权限');
+                }else{
+                  return $this->error('没有权限');
+                }
             }
         }
     }
