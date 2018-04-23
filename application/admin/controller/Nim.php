@@ -44,7 +44,7 @@ class Nim extends AdminBase
       $icon       = $user->imgpath ? config('app.avatarBasePath').$user->imgpath : config('app.avatarBasePath')."im/default.png";
       $rs         = $this->NIM->createUserId($imid,$user->name,'',$icon);
       if($isUpdate && $rs['code']==200){
-        $user->im_md5password     = $res['info']['token'];
+        $user->im_md5password     = $rs['info']['token'];
         $user->im_id              = $imid;
         $res = $user->save();
         if($res){
@@ -109,7 +109,7 @@ class Nim extends AdminBase
           // dump($nimData);exit;
         }else{
           $res = $this->create_imid($uid);
-          if($rs['code']==200){
+          if($res['code']==200){
             $user->im_md5password     = $res['info']['token'];
             // $user->save();
             $isCreateSuccess = 1;
@@ -118,13 +118,25 @@ class Nim extends AdminBase
 
       }else{
         $res = $this->create_imid($uid);
-        if($rs['code']==200){
+        if($res['code']==200){
           $user->im_md5password     = $res['info']['token'];
           $isCreateSuccess = 1;
           // $user->save();
+        }else if($res['code']==414 && $res['desc']=="already register"){
+            $res = $this->update_token($uid);
+            if($res['code']==200){
+              $user->im_md5password     = $res['info']['token'];
+              $isCreateSuccess = 1;
+            }else{
+              echo("帐号出错，请重新打开。");exit;
+            }
+        }else{
+          echo("帐号出错，请重新打开。");exit;
         }
       }
-      if(!$nimData && $isCreateSuccess){
+
+
+      if(!isset($nimData) && $isCreateSuccess){
         $nimData['icon']       = $user->imgpath ? config('app.avatarBasePath').$user->imgpath : config('app.avatarBasePath')."im/default.png";
         $nimData['accid']      = $user->loginname;
         $nimData['name']       = $user->name;
