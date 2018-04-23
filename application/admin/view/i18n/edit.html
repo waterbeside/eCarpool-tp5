@@ -98,7 +98,7 @@
 
 
 <script>
-console.log(pageData);
+// console.log(pageData);
   RESOLVE_INIT = {
 
     init: function(){
@@ -188,6 +188,7 @@ console.log(pageData);
     getLangs: function(success){
         var _this = this;
         if(pageData && pageData.langs.length > 0){
+          _this.data.langs = pageData.langs;
           _this.renderLangs(pageData.langs);
         }else{
           $.get("{:url('admin/i18n/public_langs')}",function(res){
@@ -220,13 +221,14 @@ console.log(pageData);
 
 
     addLang: function(){
-      var lang = $("select[name='langs']").val();
+      var lang = $("#editForm select[name='langs']").val();
       var langItemData = {};
       $(this.data.langs).each(function(index, el) {
         if(el.code==lang){
           langItemData = el;
         }
       })
+      // console.log(lang);
 
       if(!langItemData.code){
         alert('请选择一种语言');

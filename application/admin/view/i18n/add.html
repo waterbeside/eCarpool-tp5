@@ -192,6 +192,7 @@
     getLangs: function(success){
         var _this = this;
         if(pageData && pageData.langs.length > 0){
+          _this.data.langs = pageData.langs;
           _this.renderLangs(pageData.langs);
         }else{
           $.get("{:url('admin/i18n/public_langs')}",function(res){
@@ -224,7 +225,7 @@
     },
 
     addLang: function(){
-      var lang = $("select[name='langs']").val();
+      var lang = $("#editForm select[name='langs']").val();
       var langItemData = {};
       $(this.data.langs).each(function(index, el) {
         if(el.code==lang){
