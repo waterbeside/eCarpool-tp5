@@ -8,7 +8,6 @@
     <div class="layui-tab layui-tab-brief">
         <ul class="layui-tab-title">
             <li class=""><a href="{:url('admin/auth_group/index')}">权限组</a></li>
-            <li class=""><a href="{:url('admin/auth_group/add')}">添加权限组</a></li>
             <li class="layui-this">编辑权限组</li>
         </ul>
         <div class="layui-tab-content">
@@ -83,18 +82,19 @@
             $.ajax({
                 url: "{:url('admin/auth_group/updateAuthGroupRule')}",
                 type: "post",
+                dataType: "json",
                 cache: false,
                 data: {
                     id: _id,
                     auth_rule_ids: auth_rule_ids
                 },
-                success: function (data) {
-                    if(data.code === 1){
-                        setTimeout(function () {
-                            location.href = data.url;
-                        }, 1000);
-                    }
-                    layer.msg(data.msg);
+                success: function (res) {
+                  if (res.code === 0) {
+                    setTimeout(function () {
+                      location.href = "{:url('admin/auth_group/index')}";
+                    }, 1000);
+                  }
+                  layer.msg(res.desc);
                 }
             });
         });
