@@ -39,7 +39,7 @@
       </div>
       <div class="layui-form-item">
           <div class="layui-input-block">
-              <button class="layui-btn" lay-submit lay-filter="*">登 录</button>
+              <button class="layui-btn" lay-submit lay-filter="*.login">登 录</button>
           </div>
       </div>
   </form>
@@ -54,5 +54,43 @@
 <script src="__JS__/jquery.min.js"></script>
 <script src="__JS__/layui/layui.all.js"></script>
 <script src="__JS__/admin.js"></script>
+<script>
+
+/**
+ * 通用表单提交(AJAX方式)
+ */
+form.on('submit(*.login)', function (data) {
+    $.ajax({
+        url: data.form.action,
+        dataType:'json',
+        type: data.form.method,
+        data: $(data.form).serialize(),
+        success: function (res) {
+            if (res.code === 0) {
+              var jump = $(data.form).data('jump') ? $(data.form).data('jump') : "";
+
+              if($(data.form).data('unrefresh')!=1 || jump!=""){
+                setTimeout(function () {
+                  if(jump!=""){
+                    location.href = jump;
+                  }else if(res.url){
+                    location.href = res.url;
+                  }else{
+                    location.reload();
+                  }
+                }, 1000);
+              }
+            }else{
+              $("input[name='verify']").val('');
+              $(".captcha").trigger('click');
+
+            }
+            layer.msg(res.desc);
+        }
+    });
+
+    return false;
+});
+</script>
 </body>
 </html>
