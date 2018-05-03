@@ -1,19 +1,9 @@
 {
-    "name": "topthink/think",
-    "description": "the new thinkphp framework",
     "type": "project",
     "keywords": [
-        "framework",
+        "溢起拼車",
         "thinkphp",
-        "ORM"
-    ],
-    "homepage": "http://thinkphp.cn/",
-    "license": "Apache-2.0",
-    "authors": [
-        {
-            "name": "liu21st",
-            "email": "liu21st@gmail.com"
-        }
+        "後臺管理"
     ],
     "require": {
         "php": ">=5.6.0",
