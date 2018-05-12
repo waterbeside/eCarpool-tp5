@@ -36,11 +36,36 @@ function initLayuiTable(options){
   });
 }
 
+
+/**
+ * 通过layer的iframe打开
+ */
+function openLayer(url,opt){
+  var defaults = {
+    type: 2,
+    area: ['700px', '90%'],
+    fixed: true,
+    maxmin: true,
+  }
+  var opt_s = {};
+  if(typeof(opt)=="string"){
+    defaults.title = opt;
+  }else{
+    opt_s = opt;
+  }
+  if(typeof(url)=="object"){
+    opt_s = url;
+  }else if(typeof(url)=="string"){
+    defaults.content = url;
+  }
+  var options = $.extend(true, defaults, opt_s);
+  layer.open(options);
+}
+
 function admin_init(){
   /**
    * 通用单图上传
    */
-
 
   /*layui.upload({
       url: "/index.php/api/upload/upload",
@@ -99,7 +124,6 @@ function admin_init(){
           success: function (res) {
               if (res.code === 0) {
                 var jump = $(data.form).data('jump') ? $(data.form).data('jump') : "";
-
                 if($(data.form).data('unrefresh')!=1 || jump!=""){
                   setTimeout(function () {
                     if(jump!=""){
