@@ -3,6 +3,8 @@ namespace app\common\controller;
 
 use think\Controller;
 
+use think\Container;
+use think\Response;
 use think\exception\HttpResponseException;
 
 
@@ -52,5 +54,26 @@ class Base extends Controller
   		// echo json_encode($data);
   		// exit;
   	}
+
+
+    public function jump($msg = '', $url = null, $data = '', $wait = 3, array $header = []){
+      if (is_null($url)) {
+          $url = Container::get('request')->isAjax() ? '' : 'javascript:history.back(-1);';
+      } elseif ('' !== $url) {
+          $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : Container::get('url')->build($url);
+      }
+      $result = [
+          'code' => 0,
+          'msg'  => $msg,
+          'data' => $data,
+          'url'  => $url,
+          'wait' => $wait,
+      ];
+      $type = 'jump';
+
+      $response = Response::create($result, "jump")->header($header)->options(['jump_template' => Container::get('config')->get('dispatch_error_tmpl')]);
+      throw new HttpResponseException($response);
+
+    }
 
 }

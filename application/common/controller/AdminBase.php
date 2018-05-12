@@ -45,6 +45,7 @@ class AdminBase extends Base
         $controller = $this->request->controller();
         $action     = $this->request->action();
 
+        // dump($this->request);exit;
 
         // 排除权限
         $not_check = ['admin/Index/index', 'admin/AuthGroup/getjson', 'admin/System/clear','admin/Index/main'];
@@ -56,9 +57,20 @@ class AdminBase extends Base
             // $admin_id = Session::get('admin_id');
             if (!$auth->check($module . '/' . $controller . '/' . $action, $admin_id) && $admin_id != 1) {
                 if($this->request->isAjax()){
-                  $this->jsonReturn(10004,'没有权限');
+
+                  $accept = $this->request->header('accept');
+                  if(strpos($accept,"text/html") !== false){
+                    $referer = $this->request->header('referer');
+                    $this->jump('没有权限',$referer);
+                    exit;
+                  }else{
+                    return $this->jsonReturn(10004,'没有权限');
+
+                  }
+
                 }else{
-                  return $this->error('没有权限');
+
+                  return $this->jump('没有权限');
                 }
             }
         }
