@@ -3,7 +3,6 @@ namespace app\common\controller;
 
 use think\Controller;
 
-use think\Container;
 use think\Response;
 use think\exception\HttpResponseException;
 
@@ -56,22 +55,26 @@ class Base extends Controller
   	}
 
 
-    public function jump($msg = '', $url = null, $data = '', $wait = 3, array $header = []){
+    public function jump($isSuccess=1 , $msg = '', $url = null, $data = '', $wait = 3, array $header = []){
       if (is_null($url)) {
-          $url = Container::get('request')->isAjax() ? '' : 'javascript:history.back(-1);';
+        if($isSuccess===1){
+          $url =  isset($_SERVER["HTTP_REFERER"]) ? $_SERVER["HTTP_REFERER"] : ((strpos($url, '://') || 0 === strpos($url, '/')) ? url($url) : '') ;
+        }else{
+          $url = $this->request->header('X-Requested-With')=="modal-html"  ? 'javascript:void(0);' : 'javascript:history.back(-1);';
+          // $url = $this->request->header('X-Requested-With')=="modal-html"  ? (isset($_SERVER["HTTP_REFERER"])?$_SERVER["HTTP_REFERER"]:'') : 'javascript:history.back(-1);';
+        }
       } elseif ('' !== $url) {
-          $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : Container::get('url')->build($url);
+          $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? url($url) : '';
       }
+      $tmpl = $isSuccess === 1 ? 'dispatch_success_tmpl' : 'dispatch_error_tmpl';
       $result = [
-          'code' => 0,
+          'code' => $isSuccess,
           'msg'  => $msg,
           'data' => $data,
           'url'  => $url,
           'wait' => $wait,
       ];
-      $type = 'jump';
-
-      $response = Response::create($result, "jump")->header($header)->options(['jump_template' => Container::get('config')->get('dispatch_error_tmpl')]);
+      $response = Response::create($result, "jump")->header($header)->options(['jump_template' => config($tmpl)]);
       throw new HttpResponseException($response);
 
     }

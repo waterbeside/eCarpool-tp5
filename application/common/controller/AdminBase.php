@@ -5,6 +5,7 @@ use org\Auth;
 use think\Loader;
 use think\facade\Cache;
 // use think\Controller;
+use think\Response;
 use app\common\controller\Base;
 use think\Db;
 use think\facade\Session;
@@ -38,6 +39,7 @@ class AdminBase extends Base
     protected function checkAuth()
     {
 
+
        // $this->checkToken(); //如果使用jwt验证
         $this->checkAuthSession(); //如果使用Session验证
 
@@ -56,21 +58,16 @@ class AdminBase extends Base
 
             // $admin_id = Session::get('admin_id');
             if (!$auth->check($module . '/' . $controller . '/' . $action, $admin_id) && $admin_id != 1) {
+                $referer = $this->request->header('referer');
                 if($this->request->isAjax()){
-
                   $accept = $this->request->header('accept');
                   if(strpos($accept,"text/html") !== false){
-                    $referer = $this->request->header('referer');
-                    $this->jump('没有权限',$referer);
-                    exit;
+                    $this->error('没有权限');
                   }else{
                     return $this->jsonReturn(10004,'没有权限');
-
                   }
-
                 }else{
-
-                  return $this->jump('没有权限');
+                    $this->error('没有权限');
                 }
             }
         }
@@ -181,6 +178,59 @@ class AdminBase extends Base
       $data['time'] = time();
       Db::name('admin_log')->insert($data);
     }
+
+
+    /**
+     * 操作成功跳转的快捷方法
+     * @access protected
+     * @param  mixed     $msg 提示信息
+     * @param  string    $url 跳转的URL地址
+     * @param  mixed     $data 返回的数据
+     * @param  integer   $wait 跳转等待时间
+     * @param  array     $header 发送的Header信息
+     * @return void
+     */
+    protected function success($msg = '', $url = null, $data = '', $wait = 3, array $header = [])
+    {
+      if($this->request->isAjax()){
+        $extra = is_array($wait) ? $wait :[];
+        if(!isset($extra['url']) &&   is_string($url) && !is_numeric($url) ){
+          $extra['url'] = $url;
+        }
+        $code = is_numeric($url) ? intval($url) : (is_numeric($data) ? $data : 0);
+        $data = is_array($data) ? $data : [];
+        $this->jsonReturn($code, $data, $msg ,$extra);
+      }else{
+        $this->jump(1 , $msg, $url, $data , $wait ,  $header );
+      }
+    }
+
+    /**
+     * 操作错误跳转的快捷方法
+     * @access protected
+     * @param  mixed     $msg 提示信息
+     * @param  string    $url 跳转的URL地址
+     * @param  mixed     $data 返回的数据
+     * @param  integer   $wait 跳转等待时间
+     * @param  array     $header 发送的Header信息
+     * @return void
+     */
+    protected function error($msg = '', $url = null, $data = '', $wait = 3, array $header = [])
+    {
+      if($this->request->isAjax()){
+        $extra = is_array($wait) ? $wait :[];
+        if(!isset($extra['url']) &&   is_string($url) && !is_numeric($url) ){
+          $extra['url'] = $url;
+        }
+        $code = is_numeric($url) ? intval($url) : (is_numeric($data) ? $data : -1);
+        $data = is_array($data) ? $data : [];
+        $this->jsonReturn($code, $data, $msg ,$extra);
+
+      }else{
+        $this->jump(0 , $msg, $url, $data , $wait ,  $header );
+      }
+    }
+
 
 
 
