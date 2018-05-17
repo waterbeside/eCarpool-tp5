@@ -10,6 +10,8 @@
 
                 <form class="layui-form layui-form-pane" action="{:url('admin/ScoreHistory/index')}" method="get">
                     <div class="layui-inline">
+                        <input type="hidden" name="type" value="{$type}">
+                        <input type="hidden" name="account" value="{$account}">
                         <input type="hidden" name="pagesize" value="{$pagesize}">
                         <div class="layui-input-inline">
                           <select name="filter[reason]" lay-verify="required" lay-search>
@@ -34,36 +36,34 @@
                     <thead>
                     <tr >
                         <th >#</th>
-                        <th>用户</th>
+                        <!-- <th>加减</th> -->
                         <th>原因</th>
                         <th class="t-number">变动</th>
                         <th class="t-number">余额</th>
                         <th>时间</th>
-
+                        <th width="80">操作</th>
                     </tr>
                     </thead>
                     <tbody>
                     {foreach name="lists" item="vo"}
                     <tr>
                         <td>{$vo.id}</td>
-                        <td>
-                          {php}
-                            if($vo['account_id']){
-                              $ac_url = url('admin/ScoreAccount/detail',['type'=>0,'account_id'=>$vo['account_id']]) ;
-                            }else{
-                              $ac_url = url('admin/ScoreAccount/detail',['type'=>2,'account'=>$vo['carpool_account']]) ;
-                            }
-                          {/php}
-                          <a onclick="openLayer('{$ac_url}','用户详情');" href="javascript:void(0);" >
-                          {$vo.account}{php}echo $vo['account_id'] ? ' <i class="text-red fa fa-id-card"></i>' : '';{/php}
-                          </a>
-                        </td>
                         <!-- <td>{php}echo $vo['reason'] > 0 ? '收入' : '支出' ;{/php}</td> -->
                         <td>{php}echo $reasons[$vo['reason']]; {/php}</td>
                         <td class="t-number">{php}echo $vo['reason']>=0 ? "<b class='text-green'>+ ".$vo['operand']."</b>" : "<b  class='text-red'>- ".$vo['operand']."</b>"; {/php}</td>
-                        <td class="t-number">{php}echo $vo['result'] ?  $vo['result'] : '-';{/php}  </td>
+                        <td class="t-number">{$vo.result}</td>
                         <td>{$vo.time|date='Y-m-d H:i'}</td>
 
+
+                        <td>
+                          <?php if($auth['admin/ScoreHistory/edit']){ ?>
+                          <a href="{:url('admin/ScoreHistory/edit',['id'=>$vo['id']])}"  class="layui-btn   layui-btn-xs " data-title="編輯"  data-trigger="modal" title="編輯"><i class="layui-icon">&#xe642;</i></a>
+                          <?php } ?>
+                          <?php if($auth['admin/ScoreHistory/delete']){ ?>
+                          <a href="{:url('admin/ScoreHistory/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除" ><i class="layui-icon">&#xe640;</i></a>
+                          <?php } ?>
+
+                        </td>
                     </tr>
                     {/foreach}
                     </tbody>
