@@ -94,6 +94,22 @@ class AdminBase extends Base
     }
 
     /**
+     * 验证验入session
+     * @return [type] [description]
+     */
+    public function checkActionAuth($r){
+      $auth     = new Auth();
+      $admin_id = $this->userBaseInfo['uid'];
+      // $admin_id = Session::get('admin_id');
+      if (!$auth->check($r, $admin_id) && $admin_id != 1) {
+        return false;
+      }else{
+        return true;
+      }
+
+    }
+
+    /**
      * 验证jwt
      */
     public function checkToken(){
