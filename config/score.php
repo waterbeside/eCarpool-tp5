@@ -9,5 +9,8 @@ return [
       "100"=>"拼车合法",
       "200"=>"取消商品兑换",
       "300"=>"系统操作",
+    ],
+    'platform' => [
+      'Unknow','iOS','Android','H5','master'
     ]
 ];

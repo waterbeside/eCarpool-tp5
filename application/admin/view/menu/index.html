@@ -10,7 +10,7 @@
         <div class="layui-tab-content">
             <blockquote class="layui-elem-quote">因菜单与帐号授权关联，故请勿随意更改菜单id。<br />若有必要，在更新菜单后，请检查后台用户组权限并重新授权。</blockquote>
             <div class="layui-tab-item layui-show">
-                <table class="layui-table">
+                <table class="layui-table" lay-size="sm" >
                     <thead>
                     <tr>
                         <th style="width: 30px;">ID</th>
@@ -23,7 +23,7 @@
                     </thead>
                     <tbody>
                     {foreach name="admin_menu_level_list" item="vo"}
-                    <tr>
+                    <tr style="font-size:14px">
                         <td>{$vo.id}</td>
                         <td>{$vo.sort}</td>
                         <td>{neq name="vo.level" value="1"}|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----';}{/php}{/neq} {$vo.title}</td>

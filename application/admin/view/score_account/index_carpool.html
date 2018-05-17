@@ -43,9 +43,18 @@
                     {foreach name="lists" item="vo"}
                     <tr class="account-list-item" data-id="{$vo.uid}" data-account="{$vo.loginname}">
                         <td>{$vo.uid}</td>
-                        <td>{$vo.loginname}</td>
-                        <td>{$vo.name}</td>
-                        <td class="field-score"><span></span></td>
+                        <td>
+                          <a onclick="openLayer('{:url('admin/ScoreAccount/detail',['type'=>2,'account'=>$vo['loginname']])}','用户详情');" href="javascript:void(0);" >
+                          {$vo.loginname}
+                          </a>
+
+                        </td>
+                        <td>
+                          <a onclick="openLayer('{:url('admin/ScoreAccount/detail',['type'=>2,'account'=>$vo['loginname']])}','用户详情');" href="javascript:void(0);" >
+                          {$vo.name}{php}echo $vo['accountInfo'] ? ' <i class="text-red fa fa-id-card"></i>' : '';{/php}
+                          </a>
+                        </td>
+                        <td class="field-score"><span>{$vo['accountInfo']?$vo['accountInfo']['balance']:'-'}</span></td>
                         <td>{$vo.phone}</td>
                         <td>{$vo.Department}</td>
                         <td>{php}echo $vo['companyname'] ? $vo['companyname'].' / ' : '';{/php}{$vo.company_name}</td>
@@ -56,8 +65,8 @@
                           {php}echo $vo['sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
                         </td>
                         <td>
-                          <a onclick="openLayer('{:url('admin/score/edit',['type'=>'carpool','uid'=>$vo['uid']])}','加减分');" href="javascript:void(0);"  class="layui-btn   layui-btn-xs "  title="加减分">加减分</a>
-                          <a onclick="openLayer('{:url('admin/scoreHistory/index',['type'=>'carpool','account'=>$vo['loginname']])}','积分历史');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary layui-btn-xs "  title="加减分">积分历史</a>
+                          <a onclick="openLayer('{:url('admin/score/change',['type'=>'carpool','uid'=>$vo['uid']])}','加减分:{$vo.loginname}');" href="javascript:void(0);"  class="layui-btn   layui-btn-xs "   >加减分</a>
+                          <a onclick="openLayer('{:url('admin/scoreHistory/lists',['type'=>'carpool','account'=>$vo['loginname']])}','积分历史:{$vo.loginname}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary layui-btn-xs "   >积分历史</a>
                         </td>
                     </tr>
                     {/foreach}
@@ -86,7 +95,7 @@ var RESOLVE_INIT = {
 
     this.renderTable();
 
-     $('.account-list-item').each(function(index, el) {
+    /* $('.account-list-item').each(function(index, el) {
 
        // console.log(_this.data.list[index]);
        var account = $(el).data('account');
@@ -95,7 +104,7 @@ var RESOLVE_INIT = {
            $(el).find(".field-score span").html(balance);
            _this.renderTable();
        })
-     });
+     });*/
 
 
   },
@@ -119,12 +128,12 @@ var RESOLVE_INIT = {
      });
   },
 
-  loadScoreAccount: function(acc,done,fail){
+  loadScoreAccount: function(account,done,fail){
     $.ajax({
-      url: '{:url("admin/score_account/public_get_balance",["type"=>1])}',
+      url: '{:url("admin/score_account/public_get_balance")}',
       type: 'get',
       dataType: 'json',
-      data: {type: 1, acc:acc}
+      data: {type: 2, account:account}
     })
     .done(function(res) {
       if(typeof(done)=="function"){
