@@ -81,7 +81,7 @@ function admin_init(){
   });*/
   var layUpload = layui.upload;
   var uploadInst = layUpload.render({
-    elem: '#test1' //绑定元素
+    elem: '#upload-input' //绑定元素
     ,url: '/index.php/api/upload/upload' //上传接口
     ,done: function(res){
       //上传完毕回调
