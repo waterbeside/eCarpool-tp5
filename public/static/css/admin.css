@@ -3,6 +3,8 @@
 .blank12 {height: 12px; overflow: hidden; line-height: 1;display: block;clear: both;}
 .blank20 {height: 20px; overflow: hidden; line-height: 1;display: block;clear: both;}
 .header{   width:100%;   height:60px;   display: flex; display: -webkit-flex; }
+.t-number , .layui-table th.t-number { text-align: right}
+
 .aframe-sidebox .layui-nav-title  { margin: 0; padding:8px 0; color:#AAA; background: #4A5064; cursor: pointer;}
 .aframe-sidebox .layui-nav-title .aframe-icon { margin-left: 0; padding-left: 12px}
 .aframe-sidebox  a { display: block;}
@@ -92,6 +94,7 @@
 
 /*文字色*/
 .text-red { color:rgb(198, 84, 84)}
+.text-green { color:rgb(87, 156, 100)}
 
 /* 模态框相关 */
 .modal-open {overflow: hidden;}
