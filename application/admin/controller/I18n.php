@@ -76,7 +76,7 @@ class I18n extends AdminBase
           $validate   = Validate::make($rule,$msg);
           $validate_result = $validate->check($data);
           if ($validate_result !== true) {
-              $this->jsonReturn(1,$validate->getError());
+              $this->jsonReturn(-1,$validate->getError());
           }
 
 
@@ -93,7 +93,7 @@ class I18n extends AdminBase
           }
           //验证中文内容是否存在
           if(!$data['langData']['zh-cn']['content']){
-            $this->jsonReturn(1,'请输入中文内容');
+            $this->jsonReturn(-1,'请输入中文内容');
           }
 
           // 启动事务
@@ -120,8 +120,8 @@ class I18n extends AdminBase
           } catch (\Exception $e) {
               // 回滚事务
               Db::rollback();
-              $this->log('新加字条失败',1);
-              $this->jsonReturn(1,'保存失败');
+              $this->log('新加字条失败',-1);
+              $this->jsonReturn(-1,'保存失败');
 
           }
           $this->log('新加字条成功，id='.$iid,0);
@@ -157,7 +157,7 @@ class I18n extends AdminBase
           $validate   = Validate::make($rule,$msg);
           $validate_result = $validate->check($data);
           if ($validate_result !== true) {
-              $this->jsonReturn(1,$validate->getError());
+              $this->jsonReturn(-1,$validate->getError());
           }
 
 
@@ -174,7 +174,7 @@ class I18n extends AdminBase
           }
           //验证中文内容是否存在
           if(!$data['langData']['zh-cn']['content']){
-            $this->jsonReturn(1,'请输入中文内容');
+            $this->jsonReturn(-1,'请输入中文内容');
           }
 
           // 启动事务
@@ -201,8 +201,8 @@ class I18n extends AdminBase
           } catch (\Exception $e) {
               // 回滚事务
               Db::rollback();
-              $this->log('更新字条失败，id='.$id,1);
-              $this->jsonReturn(1,'更新失败');
+              $this->log('更新字条失败，id='.$id,-1);
+              $this->jsonReturn(-1,'更新失败');
           }
           $this->log('更新字条成功，id='.$id,0);
           $this->jsonReturn(0,'更新成功');
@@ -241,8 +241,8 @@ class I18n extends AdminBase
 
           // 回滚事务
           Db::rollback();
-          $this->log('新加字条成功，id='.$id,1);
-          $this->jsonReturn(1,'删除失败');
+          $this->log('新加字条成功，id='.$id,-1);
+          $this->jsonReturn(-1,'删除失败');
 
       }
       $this->log('删除字条成功，id='.$id,0);
@@ -305,7 +305,7 @@ class I18n extends AdminBase
           // 开始验证
           $validate_result = $this->validate($data, 'I18nLang');
           if ($validate_result !== true) {
-            $this->jsonReturn(1,$validate_result);
+            $this->jsonReturn(-1,$validate_result);
           }
 
           $lang_model = new I18nLangModel();
@@ -315,8 +315,8 @@ class I18n extends AdminBase
               $this->log('新加语言成功，id='.$pk,0);
               return $this->jsonReturn(0,'保存成功');
           } else {
-              $this->log('新加语言失败',1);
-              return $this->jsonReturn(1,'保存失败');
+              $this->log('新加语言失败',-1);
+              return $this->jsonReturn(-1,'保存失败');
           }
 
        }else{
@@ -338,7 +338,7 @@ class I18n extends AdminBase
           // 开始验证
           $validate_result = $this->validate($data, 'I18nLang');
           if ($validate_result !== true) {
-            $this->jsonReturn(1,$validate_result);
+            $this->jsonReturn(-1,$validate_result);
           }
 
 
@@ -347,8 +347,8 @@ class I18n extends AdminBase
               $this->log('修改语言成功，id='.$id,0);
               return $this->jsonReturn(0,'修改成功');
           } else {
-              $this->log('修改语言失败，id='.$id,1);
-              return $this->jsonReturn(1,'修改失败');
+              $this->log('修改语言失败，id='.$id,-1);
+              return $this->jsonReturn(-1,'修改失败');
           }
 
        }else{
@@ -369,8 +369,8 @@ class I18n extends AdminBase
             $this->log('删除语言成功，id='.$id,0);
             return $this->jsonReturn(0,'删除成功');
         } else {
-            $this->log('删除语言失败，id='.$id,1);
-            return $this->jsonReturn(1,'删除失败');
+            $this->log('删除语言失败，id='.$id,-1);
+            return $this->jsonReturn(-1,'删除失败');
         }
     }
 

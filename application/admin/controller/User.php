@@ -60,7 +60,7 @@ class User extends AdminBase
 
           $validate_result = $this->validate($data, 'app\carpool\validate\User');
           if ($validate_result !== true) {
-            return $this->jsonReturn(1,$validate_result);
+            return $this->jsonReturn(-1,$validate_result);
           }
           $data['password'] = "";
           $data['md5password'] = md5($data['password']);
@@ -69,8 +69,8 @@ class User extends AdminBase
               $this->log('新加用户成功，id='.$uid_n,0);
               return $this->jsonReturn(0,'保存成功');
           } else {
-              $this->log('新加用户失败',1);
-              return $this->jsonReturn(1,'保存失败');
+              $this->log('新加用户失败',-1);
+              return $this->jsonReturn(-1,'保存失败');
           }
 
       }else{
@@ -105,12 +105,12 @@ class User extends AdminBase
 
           if (!empty($data['password'])) {
             if (!$validate->scene('edit_change_password')->check($data)) {
-              return $this->jsonReturn(1,$validate->getError());
+              return $this->jsonReturn(-1,$validate->getError());
             }
             $data['md5password'] = md5($data['password']);
           }else{
             if (!$validate->scene('edit')->check($data)) {
-              return $this->jsonReturn(1,$validate->getError());
+              return $this->jsonReturn(-1,$validate->getError());
             }
             unset($data['password']);
           }
@@ -127,14 +127,14 @@ class User extends AdminBase
           $validate   = Validate::make($rule,$msg);
           $validate_result = $validate->check($data);
           if ($validate_result !== true) {
-            return $this->jsonReturn(1,$validate->getError());
+            return $this->jsonReturn(-1,$validate->getError());
           }
           if ($this->user_model->allowField(true)->save($data, ['uid'=>$id]) !== false) {
               $this->log('保存用户成功，id='.$id,0);
               return $this->jsonReturn(0,'保存成功');
           } else {
-              $this->log('保存用户失败，id='.$id,1);
-              return $this->jsonReturn(1,'保存失败');
+              $this->log('保存用户失败，id='.$id,-1);
+              return $this->jsonReturn(-1,'保存失败');
           }
 
       }else{
@@ -158,8 +158,8 @@ class User extends AdminBase
             $this->log('删除用户成功，id='.$id,0);
             return $this->jsonReturn(0,'删除成功');
         } else {
-            $this->log('删除用户失败，id='.$id,1);
-            return $this->jsonReturn(1,'删除失败');
+            $this->log('删除用户失败，id='.$id,-1);
+            return $this->jsonReturn(-1,'删除失败');
         }
     }
 }

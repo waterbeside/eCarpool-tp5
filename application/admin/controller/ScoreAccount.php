@@ -2,6 +2,7 @@
 namespace app\admin\controller;
 
 use app\score\model\Account as ScoreAccountModel;
+use app\score\model\AccountMix as AccountMixModel;
 use app\carpool\model\User as CarpoolUserModel;
 use app\common\controller\AdminBase;
 use think\Db;
@@ -38,7 +39,7 @@ class ScoreAccount extends AdminBase
 
         $map = [];
         if ($keyword) {
-            $map[] = ['loginname|phone|Department|name|companyname','like', "%{$keyword}%"];
+            $map[] = ['uid|loginname|phone|Department|name|companyname','like', "%{$keyword}%"];
         }
         $join = [
           ['company c','u.company_id = c.company_id','left'],
@@ -59,30 +60,21 @@ class ScoreAccount extends AdminBase
 
       $accountInfo = null;
       $userInfo = null;
-      $carpoolUser_jion =  [
-        ['company c','u.company_id = c.company_id','left'],
-      ];
-      if( $type=='0' || $type=="score" ){ //直接从积分帐号取
-        if($account_id){
-          $accountInfo = ScoreAccountModel::where(['id'=>$account_id,['is_delete','<>', 1]])->find();
-        }else{
-          $accountInfo = ScoreAccountModel::where(['account'=>$account,['is_delete','<>', 1]])->find();
-        }
-        if(!$accountInfo){
-          $this->error("账号不存在");
-        }
-        if($accountInfo['carpool_account']){
-          $userInfo = CarpoolUserModel::alias('u')->join($carpoolUser_jion)->where(['loginname'=>$accountInfo['carpool_account']])->find();
-        }
-      }else if($type=='2'||$type=="carpool"){ //从拼车帐号取
-        $accountInfo = ScoreAccountModel::where(['carpool_account'=>$account,['is_delete','<>', 1]])->find();
-        $userInfo = CarpoolUserModel::alias('u')->join($carpoolUser_jion)->where(['loginname'=>$account])->find();
-
+      $accountModel = new AccountMixModel();
+      if( ($type=='0' || $type=="score") && $account_id ){ //直接从积分帐号取
+        $accountInfo = $accountModel->getDetailById($account_id);
       }else{
-        return $this->error("Lost parameter");
+        $accountInfo = $accountModel->getDetailByAccount($type,$account);
+      }
+
+      if($accountInfo && $accountInfo['carpool']){
+        $userInfo = $accountInfo['carpool'];
       }
       if($userInfo){
         $userInfo->avatar = $userInfo->imgpath ? config('app.avatarBasePath').$userInfo->imgpath : config('app.avatarBasePath')."im/default.png";
+      }
+      if(!isset($accountInfo['id'])){
+        $accountInfo = NULL ;
       }
 
       $returnData = [

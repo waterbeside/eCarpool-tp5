@@ -56,12 +56,12 @@ class Login extends BaseController
                     $this->jsonReturn(0,['token'=>$token,'user'=>$user],'登入成功');
 
                   }else{
-                    $AdminLog->add('后台用户登入失败，帐号受限 username ='.$data['username'],1);
+                    $AdminLog->add('后台用户登入失败，帐号受限 username ='.$data['username'],-1);
                     $this->jsonReturn(1,'此帐号受限');
                   }
 
                 }else{
-                  $AdminLog->add('后台用户登入失败，用户名或密码错误 username ='.$data['username'],1);
+                  $AdminLog->add('后台用户登入失败，用户名或密码错误 username ='.$data['username'],-1);
                   $this->jsonReturn(1,'用户名或密码错误');
                   // return json(array('code' => 0, 'msg' => '用户名或密码错误'));
                 }

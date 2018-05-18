@@ -87,7 +87,7 @@ class Nim extends AdminBase
         if($upDateSuccess || !$isUpdate){
           return $this->jsonReturn(0,$rs,'更新token成功');
         }else{
-          return $this->jsonReturn(1,'更新失败');
+          return $this->jsonReturn(-1,'更新失败');
         }
       }
 

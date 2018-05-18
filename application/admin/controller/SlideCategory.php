@@ -40,7 +40,7 @@ class SlideCategory extends AdminBase
           if (Db::name('slide_category')->insert($data)) {
             $this->jsonReturn(0,'保存成功');
           } else {
-            $this->jsonReturn(1,'保存失败');
+            $this->jsonReturn(-1,'保存失败');
           }
       }else{
         return $this->fetch();
@@ -62,7 +62,7 @@ class SlideCategory extends AdminBase
           if (Db::name('slide_category')->update($data) !== false) {
               $this->jsonReturn(0,'更新成功');
           } else {
-              $this->jsonReturn(1,'更新失败');
+              $this->jsonReturn(-1,'更新失败');
           }
       }else{
         $slide_category = Db::name('slide_category')->find($id);
@@ -82,7 +82,7 @@ class SlideCategory extends AdminBase
         if (Db::name('slide_category')->delete($id) !== false) {
           $this->jsonReturn(0,'删除成功');
         } else {
-          $this->jsonReturn(1,'删除失败');
+          $this->jsonReturn(-1,'删除失败');
         }
     }
 }

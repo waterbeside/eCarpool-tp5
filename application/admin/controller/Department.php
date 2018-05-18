@@ -89,7 +89,7 @@ class Department extends AdminBase
           $validate_result = $this->validate($data,'app\carpool\validate\Department');
 
           if ($validate_result !== true) {
-              $this->jsonReturn(1,$validate_result);
+              $this->jsonReturn(-1,$validate_result);
           }
 
           $sub_company_name = CompanySubModel::where(['sub_company_id'=>$data['sub_company_id']])->value('sub_company_name');
@@ -101,8 +101,8 @@ class Department extends AdminBase
               $this->log('新加部门成功，id='.$pk,0);
               $this->jsonReturn(0,'保存成功');
           } else {
-            $this->log('新加部门失败',1);
-            $this->jsonReturn(1,'保存失败');
+            $this->log('新加部门失败',-1);
+            $this->jsonReturn(-1,'保存失败');
           }
 
       }else{
@@ -125,7 +125,7 @@ class Department extends AdminBase
           $validate_result = $this->validate($data,'app\carpool\validate\Department');
 
           if ($validate_result !== true) {
-              $this->jsonReturn(1,$validate_result);
+              $this->jsonReturn(-1,$validate_result);
           }
 
           $sub_company_name = CompanySubModel::where(['sub_company_id'=>$data['sub_company_id']])->value('sub_company_name');
@@ -136,8 +136,8 @@ class Department extends AdminBase
               $this->log('更新部门成功，id='.$id,0);
               $this->jsonReturn(0,'更新成功');
           } else {
-              $this->log('更新部门失败，id='.$id,1);
-              $this->jsonReturn(1,'更新失败');
+              $this->log('更新部门失败，id='.$id,-1);
+              $this->jsonReturn(-1,'更新失败');
           }
 
        }else{
@@ -157,11 +157,11 @@ class Department extends AdminBase
     {
         if ($this->department_model->destroy($id)) {
             Cache::tag('public')->rm('departments');
-            $this->log('删除部门成功，id='.$id,1);
+            $this->log('删除部门成功，id='.$id,0);
             $this->jsonReturn(0,'删除成功');
         } else {
-            $this->log('删除部门失败，id='.$id,1);
-            $this->jsonReturn(1,'删除失败');
+            $this->log('删除部门失败，id='.$id,-1);
+            $this->jsonReturn(-1,'删除失败');
         }
     }
 }

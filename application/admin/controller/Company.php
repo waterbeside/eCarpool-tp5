@@ -73,7 +73,7 @@ class Company extends AdminBase
           $validate_result = $this->validate($data, 'app\carpool\validate\Company');
 
           if ($validate_result !== true) {
-              $this->jsonReturn(1,$validate_result);
+              $this->jsonReturn(-1,$validate_result);
           } else {
               if ($this->company_model->allowField(true)->save($data)) {
                   Cache::tag('public')->rm('companys');
@@ -81,8 +81,8 @@ class Company extends AdminBase
                   $this->log('添加公司成功，id='.$pk,0);
                   $this->jsonReturn(0,'保存成功');
               } else {
-                  $this->log('添加公司失败',1);
-                  $this->jsonReturn(1,'保存失败');
+                  $this->log('添加公司失败',-1);
+                  $this->jsonReturn(-1,'保存失败');
               }
           }
       }else{
@@ -101,13 +101,13 @@ class Company extends AdminBase
           $data            = $this->request->param();
           $validate_result = $this->validate($data, 'app\carpool\validate\Company.edit');
           if ($validate_result !== true) {
-              $this->jsonReturn(1,$validate_result);
+              $this->jsonReturn(-1,$validate_result);
           }
 
           $validate   = Validate::make(['company_name'  => 'unique:carpool/Company,company_name,'.$id],['company_name.unique' => '公司名已存在']);
           $validate_result = $validate->check($data);
           if ($validate_result !== true) {
-              $this->jsonReturn(1,$validate->getError());
+              $this->jsonReturn(-1,$validate->getError());
           }
 
 
@@ -116,8 +116,8 @@ class Company extends AdminBase
               $this->log('更新公司成功，id='.$id,0);
               $this->jsonReturn(0,'更新成功');
           } else {
-              $this->log('更新公司失败，id='.$id,1);
-              $this->jsonReturn(1,'更新失败');
+              $this->log('更新公司失败，id='.$id,-1);
+              $this->jsonReturn(-1,'更新失败');
           }
 
        }else{
@@ -139,8 +139,8 @@ class Company extends AdminBase
             $this->log('删除公司成功，id='.$id,0);
             $this->jsonReturn(0,'删除成功');
         } else {
-            $this->log('删除公司失败，id='.$id,1);
-            $this->jsonReturn(1,'删除失败');
+            $this->log('删除公司失败，id='.$id,-1);
+            $this->jsonReturn(-1,'删除失败');
         }
     }
 }

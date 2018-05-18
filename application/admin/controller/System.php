@@ -41,7 +41,7 @@ class System extends AdminBase
             if (Db::name('system')->where('name', 'site_config')->update($data) !== false) {
               $this->jsonReturn(0,'提交成功');
             } else {
-              $this->jsonReturn(1,'提交失败');
+              $this->jsonReturn(-1,'提交失败');
             }
         }
     }
@@ -54,7 +54,7 @@ class System extends AdminBase
         if (delete_dir_file(Env::get('runtime_path') . 'cache/') || delete_dir_file(Env::get('runtime_path'). 'temp/')) {
             $this->jsonReturn(0,'清除缓存成功');
         } else {
-            $this->jsonReturn(1,'清除缓存失败');
+            $this->jsonReturn(-1,'清除缓存失败');
 
         }
     }

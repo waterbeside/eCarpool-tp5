@@ -46,12 +46,12 @@ class Nav extends AdminBase
           $validate_result = $this->validate($data, 'Nav');
 
           if ($validate_result !== true) {
-              $this->jsonReturn(1,$validate_result);
+              $this->jsonReturn(-1,$validate_result);
           } else {
               if ($this->nav_model->save($data)) {
                 $this->jsonReturn(0,'保存成功');
               } else {
-                $this->jsonReturn(1,'保存失败');
+                $this->jsonReturn(-1,'保存失败');
               }
           }
       }else{
@@ -72,12 +72,12 @@ class Nav extends AdminBase
           $validate_result = $this->validate($data, 'Nav');
 
           if ($validate_result !== true) {
-              $this->jsonReturn(1,$validate_result);
+              $this->jsonReturn(-1,$validate_result);
           } else {
               if ($this->nav_model->save($data, $id) !== false) {
                 $this->jsonReturn(0,'更新成功');
               } else {
-                $this->jsonReturn(1,'更新失败');
+                $this->jsonReturn(-1,'更新失败');
               }
           }
       }else{
@@ -96,7 +96,7 @@ class Nav extends AdminBase
         if ($this->nav_model->destroy($id)) {
             $this->jsonReturn(0,'删除成功');
         } else {
-            $this->jsonReturn(1,'删除失败');
+            $this->jsonReturn(-1,'删除失败');
         }
     }
 }

@@ -33,7 +33,7 @@ class ChangePassword extends AdminBase
             $data   = $this->request->param();
 
             if (!$data['password'] == $data['confirm_password']) {
-              $this->jsonReturn(1,'两次密码输入不一致');
+              $this->jsonReturn(-1,'两次密码输入不一致');
             }
 
             $result = Db::name('admin_user')->find($admin_id);
@@ -41,7 +41,7 @@ class ChangePassword extends AdminBase
             $hash = $result['password'];
 
             if(!password_verify($data['old_password'], $hash)){
-              $this->jsonReturn(1,'密码错误');
+              $this->jsonReturn(-1,'密码错误');
             }
 
 
@@ -53,8 +53,8 @@ class ChangePassword extends AdminBase
                 $this->log('修改密码成功，id='.$admin_id,0);
                 $this->success('修改成功');
             } else {
-                $this->log('修改密码失败，id='.$admin_id,1);
-                $this->jsonReturn(1,'修改失败');
+                $this->log('修改密码失败，id='.$admin_id,-1);
+                $this->jsonReturn(-1,'修改失败');
             }
 
 

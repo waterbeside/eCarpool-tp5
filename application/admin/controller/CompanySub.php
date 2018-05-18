@@ -82,7 +82,7 @@ class CompanySub extends AdminBase
           $validate_result = $this->validate($data,'app\carpool\validate\CompanySub');
 
           if ($validate_result !== true) {
-              $this->jsonReturn(1,$validate_result);
+              $this->jsonReturn(-1,$validate_result);
           } else {
               if ($this->company_sub_model->allowField(true)->save($data)) {
                   Cache::tag('public')->rm('sub_companys');
@@ -90,8 +90,8 @@ class CompanySub extends AdminBase
                   $this->log('新加分厂成功，id='.$pk,0);
                   $this->jsonReturn(0,'保存成功');
               } else {
-                  $this->log('新加分厂失败',1);
-                  $this->jsonReturn(1,'保存失败');
+                  $this->log('新加分厂失败',-1);
+                  $this->jsonReturn(-1,'保存失败');
               }
           }
       }else{
@@ -114,7 +114,7 @@ class CompanySub extends AdminBase
           $validate_result = $this->validate($data,'app\carpool\validate\CompanySub.edit');
 
           if ($validate_result !== true) {
-              $this->jsonReturn(1,$validate_result);
+              $this->jsonReturn(-1,$validate_result);
           }
 
           /*//验证名称是否重复
@@ -129,8 +129,8 @@ class CompanySub extends AdminBase
               $this->log('更新分厂成功，id='.$id,0);
               $this->jsonReturn(0,'更新成功');
           } else {
-              $this->log('更新分厂失败，id='.$id,1);
-              $this->jsonReturn(1,'更新失败');
+              $this->log('更新分厂失败，id='.$id,-1);
+              $this->jsonReturn(-1,'更新失败');
           }
 
        }else{
@@ -152,8 +152,8 @@ class CompanySub extends AdminBase
             $this->log('删除分厂成功，id='.$id,0);
             $this->jsonReturn(0,'删除成功');
         } else {
-            $this->log('删除分厂失败，id='.$id,1);
-            $this->jsonReturn(1,'删除失败');
+            $this->log('删除分厂失败，id='.$id,-1);
+            $this->jsonReturn(-1,'删除失败');
         }
     }
 }
