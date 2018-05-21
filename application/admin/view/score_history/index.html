@@ -15,11 +15,10 @@
                           <select name="filter[reason]" lay-verify="required" lay-search>
                             <option value="">原因</option>
                             {foreach name="reasons" key="key" item="vo"}
-                             <option value="{$key}" {php}echo $filter['reason']== "$key" ? 'selected' : ''; {/php} >{$vo}</option>
+                             <option value="{$key}" {php}echo $filter['reason']== "$key" ? 'selected' : ''; {/php} >{$key>0?'+':'-'} {$vo}</option>
                             {/foreach}
                            </select>
                         </div>
-
                     </div>
                     <div class="layui-input-inline">
                       <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter.time}"  style="width:200px">

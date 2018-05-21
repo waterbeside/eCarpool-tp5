@@ -44,6 +44,9 @@ class ScoreHistory extends AdminBase
             $lists[$key]['account'] = $userInfo['carpool_account'] ? $userInfo['carpool_account'] : ($userInfo['phone'] ? $userInfo['carpool_account'] : $userInfo['identifier']);
           }else if($value['carpool_account']){
             $lists[$key]['account'] = $value['carpool_account'];
+          }else{
+            $lists[$key]['account'] = '-';
+
           }
         }
 
