@@ -2,6 +2,10 @@
  * 后台JS主入口
  */
   // layui.use('element', function(){
+if(typeof(GV)=="undefined"){
+  var GV = [];
+}
+GV.lockForm = false;
 
   var layer = layui.layer,
       // element = layui.element(),
@@ -116,31 +120,44 @@ function admin_init(){
    * 通用表单提交(AJAX方式)
    */
   form.on('submit(*)', function (data) {
-      $.ajax({
-          url: data.form.action,
-          dataType:'json',
-          type: data.form.method,
-          data: $(data.form).serialize(),
-          success: function (res) {
-              if (res.code === 0) {
-                var jump = $(data.form).data('jump') ? $(data.form).data('jump') : "";
-                if($(data.form).data('unrefresh')!=1 || jump!=""){
-                  setTimeout(function () {
-                    if(jump!=""){
-                      location.href = jump;
-                    }else if(res.url){
-                      location.href = res.url;
-                    }else{
-                      location.reload();
-                    }
-                  }, 1000);
-                }
-              }
-              layer.msg(res.desc);
-          }
-      });
-
+    if(GV.lockForm){
+      layer.msg('有表单正在提交，请稍候再试');
       return false;
+    }
+    GV.lockForm = true;
+    var loading = layer.load(2,{ shade: [0.2,'#fff']});
+    $.ajax({
+        url: data.form.action,
+        dataType:'json',
+        type: data.form.method,
+        data: $(data.form).serialize(),
+        success: function (res) {
+            GV.lockForm = false;
+            layer.close(loading);
+            if (res.code === 0) {
+              var jump = $(data.form).data('jump') ? $(data.form).data('jump') : "";
+              if($(data.form).data('unrefresh')!=1 || jump!=""){
+                setTimeout(function () {
+                  if(jump!=""){
+                    location.href = jump;
+                  }else if(res.url){
+                    location.href = res.url;
+                  }else{
+                    location.reload();
+                  }
+                }, 1000);
+              }
+            }
+            layer.msg(res.desc);
+        },
+        complete:function(){
+          GV.lockForm = false;
+          layer.close(loading);
+
+        }
+    });
+
+    return false;
   });
 
   /**
