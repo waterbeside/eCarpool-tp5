@@ -64,7 +64,7 @@ class Base extends Controller
           // $url = $this->request->header('X-Requested-With')=="modal-html"  ? (isset($_SERVER["HTTP_REFERER"])?$_SERVER["HTTP_REFERER"]:'') : 'javascript:history.back(-1);';
         }
       } elseif ('' !== $url) {
-          $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? url($url) : '';
+          $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : url($url);
       }
       $tmpl = $isSuccess === 1 ? 'dispatch_success_tmpl' : 'dispatch_error_tmpl';
       $result = [
