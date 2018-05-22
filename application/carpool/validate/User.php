@@ -10,11 +10,11 @@ class User extends Validate
         'password'         => 'require|confirm:confirm_password|min:6',
         'confirm_password' => 'confirm:password',
         'phone'            => 'unique:carpool/user',
-        'Department'       => 'require',
+        // 'Department'       => 'require',
     ];
 // |unique:carpool/user
     protected $message = [
-      'loginname.require'           => '请输入用户名',
+        'loginname.require'         => '请输入用户名',
         'loginname.length'          => '用户名不得少于3位',
         'loginname.unique'          => '用户名已存在',
         'password.confirm'          => '两次输入密码不一致',
@@ -23,7 +23,7 @@ class User extends Validate
         'confirm_password.confirm'  => '两次输入密码不一致',
         'phone.unique'              => '手机号已存在',
         'email.email'               => '邮箱格式错误',
-        'Department.require'        => '部门不能为空',
+        // 'Department.require'        => '部门不能为空',
     ];
 
     // edit 验证场景定义
