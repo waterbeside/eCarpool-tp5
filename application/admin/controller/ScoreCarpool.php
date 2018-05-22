@@ -54,14 +54,46 @@ class ScoreCarpool extends AdminBase
 
 
         $lists = WaitingProcess::alias('t')->join([$subSql=> 'ii'], 't.infoid = ii.infoid','left')->where($map)->order('wpid DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+        foreach ($lists as $key => $value) {
+          $lists[$key]['info_time'] =date('Y-m-d H:i',strtotime($value['time'].'00'))
+        }
       // $lists = WaitingProcess::alias('w')->join([$subSql=> 'ii'], '.w.infoid = ii.infoid','left')->where($map)->order('wpid DESC')->fetchSql()->select();
 
       return $this->fetch('fails', ['lists' => $lists, 'keyword' => $keyword,'pagesize'=>$pagesize,'isvalid'=>$isvalid]);
   }
 
 
+  //处理不合格拼车是否得分
   public function fail_operate(){
-    
+    if ($this->request->isPost()) {
+
+    }else{
+      $id = input("param.id/d",0);
+      if(!$id){
+        $this->error("lost id");
+      }
+      $subJoin = [
+        ['user d','i.carownid = d.uid','left'],
+        ['user p','i.passengerid = p.uid','left'],
+        ['address s','i.startpid = s.addressid','left'],
+        ['address e','i.endpid = e.addressid','left'],
+      ];
+      $subField = "infoid,i.time as info_time ,i.status as info_status, startpid ,endpid,carownid,passengerid,
+                    d.loginname as d_loginname , d.name as d_name , d.phone as d_phone,
+                    p.loginname as p_loginname , p.name as p_name , p.phone as p_phone,
+                    s.addressname as s_addressname , s.latitude as s_latitude , s.longtitude as s_longtitude ,
+                    e.addressname as e_addressname ,  e.latitude as e_latitude , e.longtitude as e_longtitude
+                    ";
+      $subSql = InfoModel::alias('i')
+        ->field($subField)
+        ->join($subJoin)
+        ->buildSql();
+      $data = WaitingProcess::alias('t')->join([$subSql=> 'ii'], 't.infoid = ii.infoid','left')->where('wpid',$id)->find();
+      return $this->fetch('', ['data' => $data]);
+
+
+
+    }
 
   }
 
