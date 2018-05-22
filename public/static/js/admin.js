@@ -3,7 +3,7 @@
  */
   // layui.use('element', function(){
 if(typeof(GV)=="undefined"){
-  var GV = [];
+  var GV = {};
 }
 GV.lockForm = false;
 
@@ -132,8 +132,7 @@ function admin_init(){
         type: data.form.method,
         data: $(data.form).serialize(),
         success: function (res) {
-            GV.lockForm = false;
-            layer.close(loading);
+
             if (res.code === 0) {
               var jump = $(data.form).data('jump') ? $(data.form).data('jump') : "";
               if($(data.form).data('unrefresh')!=1 || jump!=""){
@@ -145,15 +144,16 @@ function admin_init(){
                   }else{
                     location.reload();
                   }
-                }, 1000);
+                }, 400);
               }
             }
             layer.msg(res.desc);
         },
         complete:function(){
-          GV.lockForm = false;
           layer.close(loading);
-
+          setTimeout(function(){
+            GV.lockForm = false;
+          },1000)
         }
     });
 
