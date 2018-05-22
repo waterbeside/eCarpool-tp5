@@ -68,7 +68,7 @@
               <div class="layui-form-item">
                 <label class="layui-form-label">所属分厂</label>
                 <div class="layui-input-block">
-                  <select name="sub_company_id" lay-verify="required" lay-filter="sub_company_id" lay-search>
+                  <select name="sub_company_id"   lay-filter="sub_company_id" lay-search>
                      <option value="0">请选择分厂</option>
                    </select>
                 </div>
@@ -77,8 +77,8 @@
               <div class="layui-form-item">
                 <label class="layui-form-label">部门</label>
                 <div class="layui-input-block">
-                  <select name="departmentid" lay-verify="required" lay-search>
-                     <option value="0">请选择分厂</option>
+                  <select name="departmentid"  lay-search>
+                     <option value="0">请选择部门</option>
                    </select>
                 </div>
               </div>
@@ -131,13 +131,13 @@
                   <div class="layui-form-item">
                       <label class="layui-form-label">home address id</label>
                       <div class="layui-input-block">
-                        <input type="number" name="home_address_id" value="{$user.home_address_id}" placeholder="home_address_id" class="layui-input" lay-verify="number">
+                        <input type="number" name="home_address_id" value="{$user.home_address_id ? $user.home_address_id :  0}" placeholder="home_address_id" class="layui-input" lay-verify="number">
                       </div>
                   </div>
                   <div class="layui-form-item">
                       <label class="layui-form-label">company address id</label>
                       <div class="layui-input-block">
-                        <input type="number" name="company_address_id" value="{$user.company_address_id}" placeholder="company_address_id" class="layui-input" lay-verify="number">
+                        <input type="number" name="company_address_id" value="{$user.company_address_id ? $user.company_address_id :  0}" placeholder="company_address_id" class="layui-input" lay-verify="number">
                       </div>
                   </div>
                   <div class="layui-form-item">
