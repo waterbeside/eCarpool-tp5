@@ -10,33 +10,33 @@
       <tbody>
         {if isset($accountInfo['id'])}
         <tr>
-          <td class="label" width="100">积分账号名</td>
+          <td class="td-label" width="100">积分账号名</td>
           <td>{$accountInfo.account&& trim($accountInfo.account)!=''?$accountInfo.account:'-'}</td>
         </tr>
         <tr>
-          <td class="label">积分</td>
+          <td class="td-label">积分</td>
           <td><b class="text-red">{$accountInfo.balance}</b></td>
         </tr>
         {/if}
         {if $accountInfo['carpool']}
         <tr>
-          <td class="label" width="100">拼车帐号</td>
+          <td class="td-label" width="100">拼车帐号</td>
           <td>{$accountInfo.carpool.loginname}</td>
         </tr>
         <tr>
-          <td class="label">手机</td>
+          <td class="td-label">手机</td>
           <td>{$accountInfo.carpool.phone}</td>
         </tr>
         <tr>
-          <td class="label">姓名</td>
+          <td class="td-label">姓名</td>
           <td>{$accountInfo.carpool.name}</td>
         </tr>
         <tr>
-          <td class="label">所属公司</td>
+          <td class="td-label">所属公司</td>
           <td>{$accountInfo.carpool.company_name}</td>
         </tr>
         <tr>
-          <td class="label">部门</td>
+          <td class="td-label">部门</td>
           <td>{$accountInfo.carpool.Department}</td>
         </tr>
         {/if}

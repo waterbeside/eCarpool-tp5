@@ -13,23 +13,23 @@
     <table class="layui-table">
       <tbody>
         <tr>
-          <td class="label" width="100">uuid</td>
+          <td class="td-label" width="100">uuid</td>
           <td>{$accountInfo.identifier}</td>
         </tr>
         <tr>
-          <td class="label" width="100">账号名</td>
+          <td class="td-label" width="100">账号名</td>
           <td>{$accountInfo.account&& trim($accountInfo.account)!=''?$accountInfo.account:'-'}</td>
         </tr>
         <tr>
-          <td class="label">拼车账号</td>
+          <td class="td-label">拼车账号</td>
           <td>{$accountInfo.carpool_account}</td>
         </tr>
         <tr>
-          <td class="label">积分</td>
+          <td class="td-label">积分</td>
           <td><b class="text-red">{$accountInfo.balance}</b></td>
         </tr>
         <tr>
-          <td class="label">电话</td>
+          <td class="td-label">电话</td>
           <td>{$accountInfo.phone?$accountInfo.phone:'-'}</td>
         </tr>
       </tbody>
