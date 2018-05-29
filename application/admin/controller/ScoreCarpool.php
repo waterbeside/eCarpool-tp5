@@ -24,14 +24,14 @@ class ScoreCarpool extends AdminBase
    */
   public function fails($keyword = '', $page = 1,$pagesize = 30)
   {
-      $isvalid   = input('param.isvalid/s',"");
+      $status   = input('param.status/s',"");
 
       $map = [];
       if ($keyword) {
           $map[] = ['t.infoid|t.code|t.result','like', "%{$keyword}%"];
       }
-      if($isvalid!==""){
-        $map[] = ['t.isvalid','=',$isvalid];
+      if($status!==""){
+        $map[] = ['t.status','=',$status];
 
       }
 
@@ -47,30 +47,66 @@ class ScoreCarpool extends AdminBase
                     s.addressname as s_addressname , s.latitude as s_latitude , s.longtitude as s_longtitude ,
                     e.addressname as e_addressname ,  e.latitude as e_latitude , e.longtitude as e_longtitude
                     ";
-      $subSql = InfoModel::alias('i')
-        ->field($subField)
-        ->join($subJoin)
-        ->buildSql();
+      $subSql = InfoModel::alias('i')->field($subField)->join($subJoin)->buildSql();
 
-
-        $lists = WaitingProcess::alias('t')->join([$subSql=> 'ii'], 't.infoid = ii.infoid','left')->where($map)->order('wpid DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
-        foreach ($lists as $key => $value) {
-          $lists[$key]['info_time'] =date('Y-m-d H:i',strtotime($value['time'].'00'))
-        }
+      $lists = WaitingProcess::alias('t')->join([$subSql=> 'ii'], 't.infoid = ii.infoid','left')->where($map)->order('wpid DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+      foreach ($lists as $key => $value) {
+        $lists[$key]['info_time'] =date('Y-m-d H:i',strtotime($value['info_time'].'00'));
+      }
       // $lists = WaitingProcess::alias('w')->join([$subSql=> 'ii'], '.w.infoid = ii.infoid','left')->where($map)->order('wpid DESC')->fetchSql()->select();
 
-      return $this->fetch('fails', ['lists' => $lists, 'keyword' => $keyword,'pagesize'=>$pagesize,'isvalid'=>$isvalid]);
+      return $this->fetch('fails', ['lists' => $lists, 'keyword' => $keyword,'pagesize'=>$pagesize,'status'=>$status]);
   }
 
 
   //处理不合格拼车是否得分
   public function fail_operate(){
     if ($this->request->isPost()) {
+      $id = input("post.id/d",0);
+      $status = input("post.status/d",0);
+      $admin_id = $this->userBaseInfo['uid'];
+      if(!$id){
+        $this->error("Params error");
+      }
+      $rowData = WaitingProcess::where('wpid',$id)->find();
+      if(!$rowData ||!$rowData['infoid'] ){
+        $this->error("行程不存在");
+      }
+      if($rowData['status'] == 1 || $rowData['status']==-1){
+        $this->error("该条已处理，不可操作");
+      }
+      if($status === 1){
+
+        $result = Db::connect('database_carpool')->query('call update_score_by_infoid(:infoid,:admin_id)', [
+          'infoid' => $rowData['infoid'],
+          'admin_id' => $admin_id,
+        ]);
+        if($result){
+          $resultData = json_decode($result[0][0]["result"],true);
+          if($resultData['code']===0){
+            $this->success("提交成功");
+          }else{
+            $this->error("提交失败");
+          }
+        }else{
+          $this->error("提交失败");
+        }
+      }elseif($status === -1){
+         $result = WaitingProcess::where('wpid',$id)->update(["status"=>-1]);
+         if($result){
+           $this->success("提交成功");
+         }else{
+           $this->error("提交失败");
+         }
+      }else{
+        $this->error("不作处理");
+      }
+
 
     }else{
       $id = input("param.id/d",0);
       if(!$id){
-        $this->error("lost id");
+        $this->error("Lost id");
       }
       $subJoin = [
         ['user d','i.carownid = d.uid','left'],
@@ -89,6 +125,11 @@ class ScoreCarpool extends AdminBase
         ->join($subJoin)
         ->buildSql();
       $data = WaitingProcess::alias('t')->join([$subSql=> 'ii'], 't.infoid = ii.infoid','left')->where('wpid',$id)->find();
+      if(!$data){
+        $this->error("no data");
+      }
+      $data['info_time'] = date('Y-m-d H:i',strtotime($data['info_time'].'00'));
+
       return $this->fetch('', ['data' => $data]);
 
 
