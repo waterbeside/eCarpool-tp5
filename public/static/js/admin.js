@@ -30,13 +30,13 @@ GV.lockForm = false;
 
 function initLayuiTable(options){
   var defaults = {
-    limit: 50
+    limit: 50,
+    tabFilter:'listtable'
   }
   var opt = $.extend({}, defaults, options);
-
-  layui.table.init('listtable', opt);
+  layui.table.init(opt.tabFilter, opt);
   $(window).resize(function(event) {
-    layui.table.init('listtable', opt);
+    layui.table.init(opt.tabFilter, opt);
   });
 }
 
@@ -64,6 +64,62 @@ function openLayer(url,opt){
   }
   var options = $.extend(true, defaults, opt_s);
   layer.open(options);
+}
+
+
+function ajaxSubmit(setting){
+  if(GV.lockForm){
+    layer.msg('有表单正在提交，请稍候再试');
+    return false;
+  }
+  GV.lockForm = true;
+  var loading = layer.load(2,{ shade: [0.2,'#fff']});
+  var defaults = {
+    dataType:"json",
+    type:"post",
+    jump:"",
+    unrefresh:false
+  }
+  var opt = $.extend({}, defaults, setting);
+  $.ajax({
+      url: opt.url,
+      dataType:opt.dataType,
+      type: opt.type,
+      data: opt.data,
+      success: function (res) {
+        if (res.code === 0) {
+          if(opt.unrefresh!=1 || opt.jump!=""){
+            setTimeout(function () {
+              if(opt.jump!=""){
+                location.href = opt.jump;
+              }else if(res.url){
+                location.href = res.url;
+              }else{
+                location.reload();
+              }
+            }, 400);
+          }
+        }
+        layer.msg(res.desc);
+        if(typeof(opt.success)=="function"){
+          opt.success(res);
+        }
+      },
+      error:function(jqXHR, textStatus, errorThrown){
+        if(typeof(opt.error)=="function"){
+          opt.error(jqXHR, textStatus, errorThrown);
+        }
+      },
+      complete:function(){
+        layer.close(loading);
+        setTimeout(function(){
+          GV.lockForm = false;
+        },1000)
+        if(typeof(opt.complete)=="function"){
+          opt.complete();
+        }
+      }
+  });
 }
 
 function admin_init(){
@@ -120,43 +176,14 @@ function admin_init(){
    * 通用表单提交(AJAX方式)
    */
   form.on('submit(*)', function (data) {
-    if(GV.lockForm){
-      layer.msg('有表单正在提交，请稍候再试');
-      return false;
-    }
-    GV.lockForm = true;
-    var loading = layer.load(2,{ shade: [0.2,'#fff']});
-    $.ajax({
-        url: data.form.action,
-        dataType:'json',
-        type: data.form.method,
-        data: $(data.form).serialize(),
-        success: function (res) {
-
-            if (res.code === 0) {
-              var jump = $(data.form).data('jump') ? $(data.form).data('jump') : "";
-              if($(data.form).data('unrefresh')!=1 || jump!=""){
-                setTimeout(function () {
-                  if(jump!=""){
-                    location.href = jump;
-                  }else if(res.url){
-                    location.href = res.url;
-                  }else{
-                    location.reload();
-                  }
-                }, 400);
-              }
-            }
-            layer.msg(res.desc);
-        },
-        complete:function(){
-          layer.close(loading);
-          setTimeout(function(){
-            GV.lockForm = false;
-          },1000)
-        }
+    ajaxSubmit({
+      url: data.form.action,
+      dataType:'json',
+      type: data.form.method,
+      data: $(data.form).serialize(),
+      unrefresh: $(data.form).data('unrefresh') ? $(data.form).data('unrefresh') : false,
+      jump : $(data.form).data('jump') ? $(data.form).data('jump') : ""
     });
-
     return false;
   });
 
