@@ -15,7 +15,7 @@ return [
     'platform' => [
       'Unknow','iOS','Android','H5','master'
     ],
-    "accountType" => [
+    "account_type" => [
       ["name"=>"score","field"=>"account"],
       ["name"=>"phone","field"=>"phone"],
       ["name"=>"carpool","field"=>"carpool_account"],
