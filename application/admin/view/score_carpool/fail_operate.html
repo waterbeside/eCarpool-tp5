@@ -25,79 +25,36 @@
         </tr>
         <tr>
           <td class="td-label">时间</td>
-          <td>{$data.carpool.Department}</td>
+          <td>{$data.info_time}</td>
         </tr>
       </tbody>
     </table>
+    <div class="blank50"></div>
+    <?php if($data["status"]===0){ ?>
+    <div class="layui-btn-container" style="text-align: right; margin-right:-8px;">
+
+      <a onclick="RESOLVE_INIT.failOperate(-1,{$data.wpid})" href="javascript:void(0);" class="layui-btn layui-btn-warm " ><i class="layui-icon">&#xe69c;</i>处理为失败</a>
+      <a onclick="RESOLVE_INIT.failOperate(1,{$data.wpid})" href="javascript:void(0);" class="layui-btn layui-btn-success "><i class="layui-icon ">&#xe6af;</i>处理为成功</a>
+    </div>
+    <?php } ?>
 
 
-    <form class="layui-form form-container" action="{:url('admin/Score/change')}" method="post">
-        <fieldset class="amain-fieldset layui-elem-field"  >
-          <legend>操作分数</legend>
-            <div class="layui-input-inline"  style="width:60px">
-              <select name="isadd"   lay-filter="isadd" >
-                 <option value="0" selected>减</option>
-                 <option value="1" >加</option>
-               </select>
-            </div>
-            <div class="layui-input-inline">
-              <input type="number" name="operand" class="layui-input"   placeholder="操作分数" value=""  style="width:100px;text-align:right">
-            </div>
-            <div class="layui-inline">
-                <div class="layui-input-inline">
-                  <select name="reason" lay-verify="required" lay-search class="j-reason-select">
-                   </select>
-                </div>
-            </div>
-            <div class="layui-inline" style="float:right">
-              <button class="layui-btn  " lay-submit lay-filter="*" style="width:160px;">提交</button>
-            </div>
-            <input type="hidden" name="account"  value="{$account}"  >
-            <input type="hidden" name="account_id"  value="{$account_id}"  >
-            <input type="hidden" name="type"  value="{$type}" >
-
-        </fieldset>
-
-
-
-        <div class="blank12"></div>
-
-
-    </form>
 
 </div>
 
 <script>
 RESOLVE_INIT = {
-
   data:{
-    reasons:<?php echo json_encode($reasonsArray); ?>
+    id:<?php echo $data['wpid'] ?  $data['wpid']: 0; ?>,
   },
-  init: function(){
-    var _this = this;
-    this.renderReasons(-1);
-    form.on('select(isadd)', function(data){
-      if(data.value==1){
-        _this.renderReasons(1);
-      }else{
-        _this.renderReasons(-1);
-      }
-    })
+  init:function(){
+
   },
-  renderReasons:function(type){
-    var _this = this;
-    var html = "<option value=''>原因</option>"
-    $.each(_this.data.reasons,function(index, el) {
-       if(type>0 && el.code > 0){
-          html+="<option value='"+el.code+"'>+ "+el.title+"</option>"
-       }
-       if(type<0 && el.code < 0){
-          html+="<option value='"+el.code+"'>- "+el.title+"</option>"
-       }
-    });
-    $('.j-reason-select').html(html);
-    form.render();
+  failOperate:function(status,id){
+    failOperate(status,id);
+    return false;
   }
+
 }
 RESOLVE_INIT.init();
 </script>
