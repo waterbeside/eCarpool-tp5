@@ -285,6 +285,7 @@ class I18n extends AdminBase
             'id'=>$value['id'],
             'code'=>$value['code'],
             'name'=>$value['name'],
+            'is_default'=>$value['is_default'],
           ];
       }
       // return json(['data'=>['lists'=>$returnLists],'code'=>0,'desc'=>'success']);
@@ -301,6 +302,7 @@ class I18n extends AdminBase
       if ($this->request->isPost()) {
           $data            = $this->request->param();
           $data['status']  = $this->request->post('status/d',0);
+          $data['is_default']  = $this->request->post('is_default/d',0);
 
           // 开始验证
           $validate_result = $this->validate($data, 'I18nLang');
@@ -335,6 +337,7 @@ class I18n extends AdminBase
       if ($this->request->isPost()) {
           $data            = $this->request->param();
           $data['status']  = $this->request->post('status/d',0);
+          $data['is_default']  = $this->request->post('is_default/d',0);
           // 开始验证
           $validate_result = $this->validate($data, 'I18nLang');
           if ($validate_result !== true) {

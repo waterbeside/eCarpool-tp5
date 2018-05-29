@@ -194,12 +194,15 @@
         if(pageData && pageData.langs.length > 0){
           _this.data.langs = pageData.langs;
           _this.renderLangs(pageData.langs);
+          _this.addDefaultLangs();
         }else{
           $.get("{:url('admin/i18n/public_langs')}",function(res){
             if(res.code === 0){
               var options = '<option value="0">请选择语言</option>';
               _this.data.langs = res.data.lists;
               _this.renderLangs(res.data.lists);
+              _this.addDefaultLangs();
+              
               if(typeof(success)=="function"){
                 success(res);
               }
@@ -207,6 +210,16 @@
             }
           })
         }
+    },
+
+    addDefaultLangs: function(){
+      var _this = this;
+      $(_this.data.langs).each(function(index,el){
+        console.log()
+        if(el.code!="zh-cn" && el.is_default=="1"){
+          _this.addLang(el.code);
+        }
+      });
     },
 
     renderLangs: function(listData){
@@ -224,8 +237,8 @@
 
     },
 
-    addLang: function(){
-      var lang = $("#editForm select[name='langs']").val();
+    addLang: function(lang){
+      lang = lang || $("#editForm select[name='langs']").val();
       var langItemData = {};
       $(this.data.langs).each(function(index, el) {
         if(el.code==lang){
