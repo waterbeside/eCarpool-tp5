@@ -44,6 +44,7 @@
 .login .login-form button {width: 100%; }
 .logo {margin-top: 20px;margin-left: 20px;}
 
+.amain-body { background: #fafafa}
 .amain-body .layui-tab-content { padding-bottom: 20px}
 .amain-i18n-edit-list { padding: 12px; margin: 0 -12px; background: #fcfcfc; border-top:1px solid #ddd; border-bottom: 1px solid #DDD; margin-bottom: 10px;}
 .amain-i18n-edit-list li {position: relative; padding: 8px 0; margin-bottom: 0; border-bottom: 1px dotted #ccc}
@@ -168,30 +169,40 @@
 .affix {   position: fixed; }
 
 
+.amain-uploadImgBtn { border-radius: 4px;  min-height: 24px; display: inline-block; line-height: 1; position: relative; cursor: pointer; border: 1px solid #DDD; margin-top: 5px; background: #fafafa}
+.amain-uploadImgBtn .text { position: absolute; bottom: 0; left:0;right:0; padding:4px 10px 6px; background:rgba(0,0,0,.8); color: #fff; text-align: center; }
 /*******/
 .amain-tool-bar { padding: 0 10px; border-bottom:1px solid #dedede;     position: relative; height:40px; white-space: nowrap; transition:all .2s}
 .amain-tool-bar li { position: relative; display: inline-block; font-size: 14px; line-height: 40px; min-width: 65px; padding: 0 15px;
   text-align: center;vertical-align; middle; color:#7663af}
 .amain-tool-bar li.layui-this:after { border-bottom:2px solid #6854a5;position: absolute; left: 0; top: 0;   content: ''; width: 100%; height: 41px;
        box-sizing: border-box; pointer-events: none;}
+.amain-tool-bar li.btn-item {padding-right: 0;}
 .amain-tool-bar li .layui-btn-sm i {font-size: 12px!important; margin-right: 3px;}
 
 /**卡片列表**/
-.am-card { position: relative; padding: 10px; border:1px solid #DDD; margin-bottom: 10px; box-shadow: 0 0 4px rgba(0,0,0,.1); background: #FFF;}
+.am-card { position: relative; padding: 10px; border:1px solid #DDD; margin-bottom: 10px; box-shadow: 0 0 5px rgba(0,0,0,.1); background: #FFF; border-radius: 3px;}
 .am-card  + .am-card  {}
 .am-card .cover-thumb { margin-right: 10px;width: 120px; height: 90px; float: left;}
-.am-card-title { font-size: 18px; font-weight: 700;}
+.am-card-title { font-size: 16px; font-weight: 700;}
 
 /** 商品列表 **/
-.good-list .am-card { box-sizing: border-box; background: #fafafa}
+.good-list .am-card { box-sizing: border-box; background: #fff}
 .good-list .am-card:hover {background: rgb(247, 246, 255);  border:1px solid rgb(125, 107, 156);  border-left:1px solid rgb(106, 73, 159);}
-.good-list .am-card-title a {color:#444 }
+.good-list .am-card-title { max-width: 500px;}
+.good-list .am-card-title a {color:#666 }
 .good-list .am-card-title a:hover {color:#604c9e}
-.good-list .am-card .cover-thumb { border:2px solid #FFF}
-.good-list .am-card .price { margin-right: 30px}
-.good-list .am-card .price  b {font-size: 18px; }
+.good-list .am-card .cover-thumb {box-sizing: border-box;border:2px solid #FFF; border-radius: 4px;}
+.good-list .am-card .info { color: #aaa}
+.good-list .am-card .info b { color:#555}
+.good-list .am-card .price , .good-list .am-card .inventory{ margin-right: 30px}
+
+.good-list .am-card .price  b {font-size: 20px;color:#cb3434 }
 .good-list .am-card .id {position: absolute; right:10px; top:10px; color: #aaa;}
 .good-list .am-card:last-child  { margin-bottom: 20px; }
 .good-list .am-card-text {   padding: 2px 100px  0 0 ; color:#999;  max-width: 800px; height: 44px; overflow: hidden; }
-.good-list .am-card .btns-wrapper { position: absolute; width: 80px; right: 10px; bottom:10px; text-align: right}
-.good-list .am-card .btns-wrapper  .layui-btn { margin:8px 0 0 }
+.good-list .am-card .btns-wrapper { position: absolute; width: 180px; right: 10px; bottom:10px; text-align: right}
+.good-list .am-card .btns-wrapper  .layui-btn { }
+.good-list .am-card .btn-add { margin:8px 0 0 10px; padding:0 10px 0 6px; height:24px; font-size: 12px; line-height: 24px; float: right;}
+
+.goods-item-edit #item-thumb { width: 120px}
