@@ -62,7 +62,7 @@ class User extends AdminBase
           if ($validate_result !== true) {
             return $this->jsonReturn(-1,$validate_result);
           }
-          $data['password'] = "";
+          $data['password'] = trim($data['password']);
           $data['md5password'] = md5($data['password']);
           if ($this->user_model->allowField(true)->save($data)) {
               $uid_n = $this->user_model->uid; //插入成功后取得id
