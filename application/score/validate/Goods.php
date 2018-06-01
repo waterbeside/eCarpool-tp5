@@ -8,7 +8,7 @@ class Goods extends Validate
     protected $rule = [
       'name'  => 'require',
       'price'  => 'require|float',
-      'inventory'  => 'require|number',
+      'inventory'  => 'require',
     ];
 
     protected $message = [
