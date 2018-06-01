@@ -64,6 +64,7 @@ class User extends AdminBase
           }
           $data['password'] = trim($data['password']);
           $data['md5password'] = md5($data['password']);
+          $data['indentifier'] = uuid_create();
           if ($this->user_model->allowField(true)->save($data)) {
               $uid_n = $this->user_model->uid; //插入成功后取得id
               $this->log('新加用户成功，id='.$uid_n,0);
@@ -162,4 +163,63 @@ class User extends AdminBase
             return $this->jsonReturn(-1,'删除失败');
         }
     }
+
+
+    public function test_import_user($page=1){
+      $lists = Db::table('temp_user_unicom_20180531')->page($page,1)->select();
+      $url  = '';
+      $msg = '';
+      dump(uuid_create());
+      // dump($lists);exit;
+      if(count($lists)>0){
+        foreach ($lists as $key => $value) {
+
+          $data = [
+            'indentifier'=>uuid_create(),
+            'name' => $value['name'],
+            'nativename' => $value['name'],
+            'phone' => $value['phone'],
+            'loginname' => $value['phone'],
+            'sex' => $value['sex'],
+            'company_id' => 10,
+            'companyname' => '联通-佛山市分公司',
+            'is_active' => 1 ,
+            'home_address_id' => 0,
+            'company_address_id' => 0 ,
+            'md5password' => md5($value['phone']) ,
+          ];
+          if($value['status']!==0){
+            $msg =  "id:".$value['id'].";"."name:".$data['name'].";"."phone:".$data['phone'].";"."   Has finished";
+            continue;
+          }
+          // dump($data);
+          $item = UserModel::whereOr([['phone','=',$value['phone']],['loginname','=',$value['phone']]])->find();
+          if($item){
+            $st = Db::table('temp_user_unicom_20180531')->where("id",$value['id'])->update(['status'=>-1]);
+            $msg =  "id:".$value['id'].";"."name:".$data['name'].";"."phone:".$data['phone'].";"."uid:".$item['uid'].";"."  fail";
+            continue;
+
+          }
+          $is_ok = UserModel::insertGetId($data);
+          // dump($is_ok);exit;
+          if($is_ok){
+            $st = Db::table('temp_user_unicom_20180531')->where("id",$value['id'])->update(['status'=>1]);
+            $msg =  "id:".$value['id'].";"."name:".$data['name'].";"."phone:".$data['phone'].";"."  OK";
+          }else{
+            $msg =  "id:".$value['id'].";"."name:".$data['name'].";"."phone:".$data['phone'].";"."   fail";
+          }
+        }
+
+        $page = $page+1;
+        $url  = url('admin/user/test_import_user',['page'=>$page]);
+
+      }else{
+        $msg = "完成全部操作";
+
+      }
+
+      return $this->fetch('index/multi_jump',['url'=>$url,'msg'=>$msg]);
+
+    }
+
 }
