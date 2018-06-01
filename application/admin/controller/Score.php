@@ -152,7 +152,7 @@ class Score extends AdminBase
   public function test_multi_balance($page=1){
 
     $lists = Db::connect('database_score')->table('t_temp_carpool_score')->page($page,1)->select();
-    // dump($lists);exit;
+    dump($lists);exit;
     if(count($lists)>0){
       foreach ($lists as $key => $value) {
 
@@ -187,7 +187,7 @@ class Score extends AdminBase
 
     }
 
-    return $this->fetch('multi_jump',['url'=>$url,'msg'=>$msg]);
+    return $this->fetch('index/multi_jump',['url'=>$url,'msg'=>$msg]);
 
   }
 
