@@ -1,5 +1,5 @@
 <?php
-namespace org;
+namespace com;
 /**
  * 网易云信server API 接口 2.0
  * Class ServerAPI
@@ -258,7 +258,7 @@ class Nim {
         $request.="\r\n";
         $request.=$postdata."\r\n";
 
-        print_r($request);
+        // print_r($request);
         $fp = fsockopen($URL_Info["host"],$URL_Info["port"]);
         fputs($fp, $request);
         $result = '';
