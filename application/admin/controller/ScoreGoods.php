@@ -4,6 +4,8 @@ namespace app\admin\controller;
 
 use app\score\model\Goods as GoodsModel;
 use app\common\controller\AdminBase;
+use app\common\model\Configs;
+use my\CurlRequest;
 use think\Db;
 
 /**
@@ -44,11 +46,14 @@ class ScoreGoods extends AdminBase
       $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
     }
     $statusList = $this->good_status;
-    return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword,'pagesize'=>$pagesize,'type'=>$type,'statusList'=>$statusList,'filter'=>$filter]);
+    $scoreConfigs = (new Configs())->getConfigs("score");
+    return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword,'pagesize'=>$pagesize,'type'=>$type,'statusList'=>$statusList,'filter'=>$filter,'scoreConfigs'=>$scoreConfigs]);
   }
 
 
-
+  /**
+   * 添加商品
+   */
   public function add(){
     if ($this->request->isPost()) {
       $data               = $this->request->post();
@@ -74,6 +79,7 @@ class ScoreGoods extends AdminBase
 
       $id = GoodsModel::json(['images'])->insertGetId($upData);
       if ( $id ) {
+          $this->public_recache($id);
           $this->log('添加商品成功，id='.$id,0);
           return $this->jsonReturn(0,'保存成功');
       } else {
@@ -86,7 +92,10 @@ class ScoreGoods extends AdminBase
   }
 
 
-
+  /**
+   * 编辑
+   * @param  [int] $id 商品id
+   */
   public function edit($id){
     if ($this->request->isPost()) {
       $data               = $this->request->post();
@@ -112,6 +121,7 @@ class ScoreGoods extends AdminBase
 
 
       if (GoodsModel::json(['images'])->where('id',$id)->update($upData) !== false) {
+          $this->public_recache($id);
           $this->log('保存商品成功，id='.$id,0);
           return $this->jsonReturn(0,'保存成功');
       } else {
@@ -132,8 +142,20 @@ class ScoreGoods extends AdminBase
         $data['thumb'] = is_array($data["images"]) ? $data["images"][0] : "" ;
       }
       return $this->fetch('edit', ['data' => $data,'good_status' => $this->good_status]);
-
     }
+  }
+
+  /**
+   * 刷新缓存
+   * @var [type]
+   */
+  public function public_recache($id=0){
+    $scoreConfigs = (new Configs())->getConfigs("score");
+    $url = $scoreConfigs['score_host']."/secret/refresh_goods";
+    $token =  $scoreConfigs['score_token'];
+    $CurlRequest = new CurlRequest();
+    $res = $CurlRequest->postJsonDataFsockopen($url,["gid"=>$id,'token'=>$token]);
+    return $res;
   }
 
 
