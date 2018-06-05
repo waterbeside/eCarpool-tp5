@@ -1,0 +1,53 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <ul class="layui-tab-title amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/Score/config')}"  >积分配置</a></li>
+        </ul>
+
+        <div class="layui-tab-content">
+
+          <div class="blank20"></div>
+
+          <form class="layui-form form-container" action="{:url('admin/Score/config')}" method="post">
+
+              <div class="layui-form-item">
+                  <label class="layui-form-label">允许下单日</label>
+                  <div class="layui-input-block">
+                      <input type="text" name="order_date" value="{$data.order_date_str}" required  lay-verify="required" placeholder="每月允许下单日" class="layui-input">
+                      <div class="layui-form-mid layui-word-aux">每月允许下单日，多个日期请用英文","格开，例 3,4,5,6 </div>
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">兑换日</label>
+                  <div class="layui-input-block">
+                    <input type="text" name="exchange_date" value="{$data.exchange_date_str}" required  lay-verify="required" placeholder="每月兑换日" class="layui-input">
+                    <div class="layui-form-mid layui-word-aux">每月兑换日","格开，例 18,19,20 </div>
+                  </div>
+              </div>
+
+              <div class="blank20"></div>
+
+              <div class="layui-btn-container layui-row" style="text-align: right">
+                  <button class="layui-btn layui-btn-lg" lay-submit lay-filter="*">提交</button>
+              </div>
+
+          </form>
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+
+
+
+
+</script>
+{/block}
