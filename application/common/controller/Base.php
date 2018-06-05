@@ -2,9 +2,10 @@
 namespace app\common\controller;
 
 use think\Controller;
-
+use app\common\model\Configs;
 use think\Response;
 use think\exception\HttpResponseException;
+use think\facade\Cache;
 
 
 /**
@@ -15,9 +16,10 @@ use think\exception\HttpResponseException;
 class Base extends Controller
 {
 
-
+  public $systemConfig  = null;
     protected function initialize()
     {
+        $this->systemConfig = $this->getSystemConfigs();
         parent::initialize();
 
     }
@@ -77,6 +79,12 @@ class Base extends Controller
       $response = Response::create($result, "jump")->header($header)->options(['jump_template' => config($tmpl)]);
       throw new HttpResponseException($response);
 
+    }
+
+    public function getSystemConfigs(){
+      $ConfigsModel = new Configs();
+      $configs = $ConfigsModel->getConfigs();
+      return $configs;
     }
 
 }
