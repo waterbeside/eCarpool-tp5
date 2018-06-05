@@ -4,6 +4,7 @@ namespace app\admin\controller;
 use app\score\model\History as HistoryModel;
 use app\score\model\AccountMix as AccountMixModel;
 use app\score\model\Account as ScoreAccountModel;
+use my\RedisData;
 
 use app\common\controller\AdminBase;
 use think\Db;
@@ -70,7 +71,10 @@ class Score extends AdminBase
 
   }
 
-
+  /**
+   * 更新积分
+   * @param  Array $datas 更新的数据
+   */
   public function updateScore($datas){
 
     $type         = $datas['type'];
@@ -190,6 +194,55 @@ class Score extends AdminBase
     return $this->fetch('index/multi_jump',['url'=>$url,'msg'=>$msg]);
 
   }
+
+
+
+    /**
+     * 积分配置
+     */
+    public function config(){
+      $configs = $this->systemConfig;
+      $redis = new RedisData();
+      $soreSettingData=json_decode($redis->get("CONFIG_SETTING"),true);
+
+      if ($this->request->isPost()){
+        $datas          = $this->request->post('');
+        $order_date     = explode(',',$datas['order_date']);
+        $exchange_date  = explode(',',$datas['exchange_date']);
+        $data['order_date'] = $order_date;
+        $data['exchange_date'] = $exchange_date;
+        $soreSettingData['order_date'] = [];
+        $soreSettingData['exchange_date'] = [];
+
+        foreach ($order_date as $key => $value) {
+
+          if(is_numeric($value)){
+            $soreSettingData['order_date'][]= intval($value);
+          }
+        }
+        foreach ($exchange_date as $key => $value) {
+          if(is_numeric($value)){
+            $soreSettingData['exchange_date'][]=intval($value);
+          }
+        }
+        $soreSettingDataStr = json_encode($soreSettingData);
+        $redis->set('CONFIG_SETTING', $soreSettingDataStr);
+        $this->log('修改积分配置成功',0);
+        $this->success("修改成功");
+
+
+      }else{
+
+        $data = $soreSettingData;
+        $data['order_date_str'] = join(",",$data['order_date']);
+        $data['exchange_date_str'] = join(",",$data['exchange_date']);
+
+
+        return $this->fetch('config',['configs'=>$configs,'data'=>$data]);
+
+      }
+
+    }
 
 
 
