@@ -153,48 +153,6 @@ class Score extends AdminBase
   }
 
 
-  public function test_multi_balance($page=1){
-
-    $lists = Db::connect('database_score')->table('t_temp_carpool_score')->page($page,1)->select();
-    dump($lists);exit;
-    if(count($lists)>0){
-      foreach ($lists as $key => $value) {
-
-        $data = [
-          'type' => 'carpool',
-          'account' => $value['loginname'],
-          'operand' =>  $value['balance'],
-          'reason' => 1 ,
-          'isadd' =>1 ,
-        ];
-        if($value['status']>0){
-          $msg =  "id:".$value['id'].";"."account:".$data['account'].";"."operand:".$data['operand'].";"."   Has finished";
-          continue;
-        }
-        // dump($data);
-        $is_ok = $this->updateScore($data);
-        // dump($is_ok);exit;
-        if($is_ok){
-          $st = Db::connect('database_score')->table('t_temp_carpool_score')->where("id",$value['id'])->update(['status'=>1]);
-          $msg =  "id:".$value['id'].";"."account:".$data['account'].";"."operand:".$data['operand'].";"."   OK";
-        }else{
-          $msg =  "id:".$value['id'].";"."account:".$data['account'].";"."operand:".$data['operand'].";"."   fail";
-        }
-      }
-
-      $page = $page+1;
-      $url  = url('admin/Score/test_multi_balance',['page'=>$page]);
-
-    }else{
-      $url  = '';
-      $msg = "完成全部操作";
-
-    }
-
-    return $this->fetch('index/multi_jump',['url'=>$url,'msg'=>$msg]);
-
-  }
-
 
 
     /**
@@ -243,6 +201,53 @@ class Score extends AdminBase
       }
 
     }
+
+
+
+
+    /**
+     * 积分导入
+     * @param  integer $page [description]
+     * @return [type]        [description]
+     */
+      public function test_multi_balance($page=1){
+        $lists = Db::connect('database_carpool')->table('temp_carpool_score')->page($page,1)->select();
+        exit;
+        if(count($lists)>0){
+          $msg =   "";
+          foreach ($lists as $key => $value) {
+            $data = [
+              'type' => 'carpool',
+              'account' => $value['loginname'],
+              'operand' =>  $value['balance'],
+              'reason' => 1 ,
+              'isadd' =>1 ,
+            ];
+            if($value['status']>0){
+              $msg .=  "id:".$value['id'].";"."account:".$data['account'].";"."operand:".$data['operand'].";"."   Has finished <br />";
+              continue;
+            }
+            // dump($data);
+            $is_ok = $this->updateScore($data);
+            // dump($is_ok);exit;
+            if($is_ok){
+              $st = Db::connect('database_carpool')->table('temp_carpool_score')->where("id",$value['id'])->update(['status'=>1]);
+              $msg .=  "id:".$value['id'].";"."account:".$data['account'].";"."operand:".$data['operand'].";"."   OK   ";
+            }else{
+              $msg .=  "id:".$value['id'].";"."account:".$data['account'].";"."operand:".$data['operand'].";"."   fail ";
+            }
+          }
+          $page = $page+1;
+          $url  = url('admin/Score/test_multi_balance',['page'=>$page]);
+        }else{
+          $url  = '';
+          $msg = "完成全部操作";
+
+        }
+
+        return $this->fetch('index/multi_jump',['url'=>$url,'msg'=>$msg]);
+
+      }
 
 
 
