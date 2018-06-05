@@ -29,18 +29,22 @@ class Uploader extends AdminBase
           $this->jsonReturn(-1,'图片不能大于800K');
         }
 
+        $systemConfig = $this->systemConfig;
+        $site_domain  = trim($systemConfig['site_upload_domain']) ? trim($systemConfig['site_upload_domain']) : $this->request->root(true) ;
+        $upload_path  = trim($systemConfig['site_upload_path'])."/images" ;
+
         //判断图片文件是否已经上传
         $img = Attachment::where(['md5_code'=>$md5,'sha1_code'=>$sha1])->find();//我这里是将图片存入数据库，防止重复上传
         if(!empty($img)){
-            $this->jsonReturn(0,['img_id'=>$img['id'],'img_url'=>$this->request->root(true).'/'.$img['filepath']],'上传成功');
+            $this->jsonReturn(0,['img_id'=>$img['id'],'img_url'=>$site_domain.$img['filepath']],'上传成功');
         }else{
             $admin_id = $this->userBaseInfo['uid'];
             $module = input('param.module','admin');
             $request = request();
             $DS = DIRECTORY_SEPARATOR;
-            $imgPath = 'public' . $DS . 'uploads' . $DS . 'images';
+            $imgPath = 'public' . $upload_path ;
             $info = $images->move(Env::get('root_path') . $imgPath);
-            $path = 'uploads' . $DS . 'images' .$DS.date('Ymd',time()).$DS.$info->getFilename();
+            $path = $upload_path.$DS.date('Ymd',time()).$DS.$info->getFilename();
             $data = [
                 'module'=> $module,
                 'filesize'=> $upInfo['size'],
@@ -49,7 +53,7 @@ class Uploader extends AdminBase
                 'fileext'=> $info->getExtension(),
                 'is_image' => 1 ,
                 'is_admin' => 1 ,
-                'create_time' => time() ,
+                'create_time' => time(),
                 'userid'=> $admin_id,
                 'status' => 1 ,
                 'md5_code' => $md5 ,
@@ -58,7 +62,7 @@ class Uploader extends AdminBase
                 'ip' =>$request->ip(),
             ];
             if($img_id=Attachment::insertGetId($data)){
-                $this->jsonReturn(0,['img_id'=>$img_id,'img_url'=>$this->request->root(true).'/'.$path],'上传成功');
+                $this->jsonReturn(0,['img_id'=>$img_id,'img_url'=>$site_domain.$path],'上传成功');
             }else{
                 $this->jsonReturn(-1,'图片入库失败');
             }
