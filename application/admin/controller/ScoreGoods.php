@@ -151,10 +151,10 @@ class ScoreGoods extends AdminBase
    */
   public function public_recache($id=0){
     $scoreConfigs = (new Configs())->getConfigs("score");
-    $url = $scoreConfigs['score_host']."/secret/refresh_goods";
+    $url = "http://".$scoreConfigs['score_host'].":".$scoreConfigs['score_port']."/secret/refresh_goods";
     $token =  $scoreConfigs['score_token'];
     $CurlRequest = new CurlRequest();
-    $res = $CurlRequest->postJsonDataFsockopen($url,["gid"=>$id,'token'=>$token]);
+    $res = $CurlRequest->postJsonDataFsockopen($url,["gid"=>[intval($id)],'token'=>$token]);
     return $res;
   }
 
