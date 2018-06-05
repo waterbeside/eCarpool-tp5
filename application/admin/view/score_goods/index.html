@@ -11,10 +11,7 @@
               <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ScoreGoods/add')}"  data-title="添加商品"  data-trigger="modal" >
               <i class="fa fa-plus"></i> 添加商品</a>
             </li>
-            <li class="btn-item" >
-              <a class="layui-btn layui-btn-sm layui-btn-primary " href="javascript:void(0);"   >
-              <i class="fa fa-refresh"></i> 刷新前台商品缓存</a>
-            </li>
+
         </ul>
 
         <div class="layui-tab-content">
@@ -54,7 +51,7 @@
                   <form class="layui-form">
                     {if !count($lists)>0}无数据{/if}
                     {foreach name="lists" item="vo"}
-                    <div class="am-card good-item">
+                    <div class="am-card good-item <?php echo $vo['is_delete'] ? 'good-unshow' : '' ;?>">
                       <div class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>">  </div>
                       <div class="am-card-body">
                         <h5 class="am-card-title layui-elip" >
@@ -67,13 +64,13 @@
                         <div class="info">
                           <span class="price"> 价格：<b class="text-red">{$vo.price}</b></span>
                           <span class="inventory">库存：<b>{$vo.inventory >-1 ?$vo.inventory : '无限'}</b></span>
-                          <span class="status">状态：<b><?php echo $statusList[$vo['status']] ;?></b></span>
+                          <span class="status">状态：<b><?php echo $statusList[$vo['status']] ;?> / <small><?php echo $vo['is_delete'] ? "不显示" : "显示" ;?></small></b></span>
                         </div>
                         <div class="btns-wrapper">
-                            <a href="{:url('admin/ScoreGoods/edit',['id'=>$vo['id']])}"  data-title="編輯商品 #{$vo.id}"  data-trigger="modal" title="編輯商品 #{$vo.id}" class="btn-add layui-btn    layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a>
+                          <a href="javascript:void(0);" onclick="refreshGoodCache(this)" data-id="{$vo.id}"  data-disabled="0" class="ibtn layui-btn layui-btn-primary    layui-btn-radius   "><i class="fa fa-refresh"></i> 刷新</a>
 
-                            <input type="checkbox" name="is_delete" value="1" lay-skin="switch" lay-text="显示|隐藏" {if condition="$vo.is_delete!=1"} checked="checked"{/if}>
-
+                          <!-- <input type="checkbox" name="is_delete" value="1" lay-skin="switch" lay-text="显示|隐藏" {if condition="$vo.is_delete!=1"} checked="checked"{/if}> -->
+                          <a href="{:url('admin/ScoreGoods/edit',['id'=>$vo['id']])}"  data-title="編輯商品 #{$vo.id}"  data-trigger="modal" title="編輯商品 #{$vo.id}" class="ibtn layui-btn    layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a>
 
                         </div>
                       </div>
@@ -97,6 +94,39 @@
 <script>
 // initLayuiTable({ limit: {$pagesize} })
 
+function refreshGoodCache(obj){
+  var $btn = $(obj);
+  var id = $btn.data("id");
+  var isDisabled = $btn.data("disabled");
+  if(isDisabled){
+    layer.msg("请勿重复提交");
+    return false;
+  }
+  $btn.data("disabled",1);
+  $btn.find(".fa").addClass('fa-spin');
+  $.ajax({
+    type:"post",
+    dataType:"json",
+    url:"<?php echo url('admin/ScoreGoods/public_recache');?>",
+    data:{id:id},
+    success:function(res){
+
+      if (res.code === 0) {
+        layer.msg("刷新成功");
+      }else{
+        layer.msg("刷新失败");
+
+      }
+      setTimeout(function(){
+        $btn.data("disabled",0);
+        $btn.find(".fa").removeClass('fa-spin');
+      },800)
+
+    },
+  })
+  // console.log(id)
+
+}
 
 
 
