@@ -42,15 +42,8 @@ class Company extends AdminBase
 
 
     public function public_lists(){
-      $lists_cache = Cache::tag('public')->get('companys');
-      if($lists_cache){
-        $lists = $lists_cache;
-      }else{
-        $lists = $this->company_model->order('company_id ASC , company_name ')->select();
-        if($lists){
-          Cache::tag('public')->set('companys',$lists,3600);
-        }
-      }
+
+      $lists = $this->company_model->getCompanys();
       $returnLists = [];
       foreach($lists as $key => $value) {
         $returnLists[] = [

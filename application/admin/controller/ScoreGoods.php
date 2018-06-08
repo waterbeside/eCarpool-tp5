@@ -42,7 +42,6 @@ class ScoreGoods extends AdminBase
     }
     $lists = GoodsModel::where($map)->json(['images'])->order(' id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
     foreach ($lists as $key => $value) {
-
       $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
     }
     $statusList = $this->good_status;
@@ -151,11 +150,7 @@ class ScoreGoods extends AdminBase
    */
   public function public_recache($id=0){
     $scoreConfigs = (new Configs())->getConfigs("score");
-    $url = "http://".$scoreConfigs['score_host'].":".$scoreConfigs['score_port']."/secret/refresh_goods";
-    $token =  $scoreConfigs['score_token'];
-    $CurlRequest = new CurlRequest();
-    $res = $CurlRequest->postJsonDataFsockopen($url,["gid"=>[intval($id)],'token'=>$token]);
-    return $res;
+    return (new GoodsModel())->reBuildRedis($id);
   }
 
 
