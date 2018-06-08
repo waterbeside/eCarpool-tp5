@@ -26,11 +26,9 @@
                         <div class="layui-input-inline">
                           <select name="filter[status]" lay-verify="required" >
                             <option value="" >商品状态 - 不限</option>
-                            <option value="-2" {php}echo isset($filter['status']) && $filter['status'] === "-2" ? 'selected' : ''; {/php}>下架</option>
-                            <option value="-1" {php}echo isset($filter['status']) && $filter['status'] === "-1" ? 'selected' : ''; {/php}>准备上架</option>
-                            <option value="0" {php}echo isset($filter['status']) && $filter['status'] === "0" ? 'selected' : ''; {/php}>正常</option>
-                            <option value="1" {php}echo isset($filter['status']) && $filter['status'] === "1" ? 'selected' : ''; {/php}>推荐</option>
-                            <option value="2" {php}echo isset($filter['status']) && $filter['status'] === "2" ? 'selected' : ''; {/php}>置顶</option>
+                            {foreach name="statusList" key="key" item="vo"}
+                            <option value="{$key}" {php}echo isset($filter['status']) && $filter['status']!="" && intval($filter['status']) === intval($key) ? 'selected' : ''; {/php}>{$vo}</option>
+                            {/foreach}
                           </select>
                         </div>
                         <div class="layui-input-inline">
