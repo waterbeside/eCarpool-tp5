@@ -1,0 +1,94 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body page-order-list">
+
+    <!--tab标签-->
+    <div class="layui-tab ">
+
+        <ul class="  amain-tool-bar" >
+            <li ><a href="{:url('admin/ScoreOrder/index')}"  >订单查询</a></li>
+            <li class="layui-this"><a href="{:url('admin/ScoreOrder/goods')}"  >商品下单数查询</a></li>
+
+        </ul>
+
+        <div class="amain-content">
+          <form class="layui-form layui-form-pane" action="{:url('admin/ScoreOrder/goods')}" method="get" >
+              <div class="layui-inline">
+                  <label class="layui-form-label">检索</label>
+                  <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
+              </div>
+
+          </form>
+
+          <hr>
+
+
+
+          <div class="layui-tab">
+
+
+            <div class="layui-tab-content" style="margin:0 -10px">
+              <div class="layui-tab-item layui-show">
+                <?php if($lists && count($lists)>0){ ?>
+                <table class="layui-table">
+                  <thead>
+                  <tr >
+                      <th width="40">编号</th>
+                      <th>商品</th>
+                      <th width="40">单价</th>
+                      <th width="40">库存</th>
+                      <th width="100" >兑换数量</th>
+                  </tr>
+                  </thead>
+                  <tbody class="goods-table-list">
+                  <?php foreach($lists as $key => $good){ ?>
+                    <tr class="good-item">
+                      <td class="label" >{$good.id}</td>
+                      <td>
+                        <div  class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
+                        <span class="layui-elip">{$good.name}</span>
+                      </td>
+                      <td class="label" >{$good.price}</td>
+                      <td class="label" >{$good.inventory == -1 ? '不限' : $good.inventory }</td>
+                      <td class="label" >&times; {$good.num}</td>
+
+                    </tr>
+                    <?php } ?>
+
+
+                  </tbody>
+                </table>
+              <?php }else{
+                echo isset($filter['time']) && $filter['time'] ? "暂无数据" : "请选择时间段";
+              } ?>
+
+
+              </div>
+
+            </div>
+         </div>
+          <!--分页-->
+          <?php if(!$lists){ ?>
+          {$lists|raw}
+          <?php } ?>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+laydate.render({
+  elem: '#filter_time'
+  ,range: '~' //或 range: '~' 来自定义分割字符
+  ,done: function(value, date, endDate){
+    layer.load(2);
+    setTimeout(function(){
+      $("#filter_time").closest("form").submit();
+    },400)
+
+ }
+
+});
+</script>
+{/block}

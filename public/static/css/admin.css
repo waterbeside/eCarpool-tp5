@@ -46,6 +46,7 @@
 
 .amain-body { background: #fafafa}
 .amain-body .layui-tab-content { padding-bottom: 20px}
+.amain-content { padding: 10px 10px 20px}
 .amain-i18n-edit-list { padding: 12px; margin: 0 -12px; background: #fcfcfc; border-top:1px solid #ddd; border-bottom: 1px solid #DDD; margin-bottom: 10px;}
 .amain-i18n-edit-list li {position: relative; padding: 8px 0; margin-bottom: 0; border-bottom: 1px dotted #ccc}
 .amain-i18n-edit-list li:last-child { border-bottom: none}
@@ -63,7 +64,6 @@
 .amain-body .list-item-weak { background: #fefefe; color: #bbb}
 
 .cover-thumb { background-position: center; background-repeat: no-repeat; background-size: cover; background-image: url(../images/default_thumb.png);}
-.layui-table td .cover-thumb { height:60px; width:80px }
 
 
 .header {background-color: #393D49;}
@@ -167,12 +167,12 @@
 .text-hide {   font: 0/0 a; color: transparent;   text-shadow: none;   background-color: transparent;   border: 0; }
 .hidden {   display: none !important; }
 .affix {   position: fixed; }
-
+.modal-body .amain-body { margin: 0;background: none}
 
 .amain-uploadImgBtn { border-radius: 4px;  min-height: 24px; display: inline-block; line-height: 1; position: relative; cursor: pointer; border: 1px solid #DDD; margin-top: 5px; background: #fafafa}
 .amain-uploadImgBtn .text { position: absolute; bottom: 0; left:0;right:0; padding:4px 10px 6px; background:rgba(0,0,0,.8); color: #fff; text-align: center; }
 /*******/
-.amain-tool-bar { padding: 0 10px; border-bottom:1px solid #dedede;     position: relative; height:40px; white-space: nowrap; transition:all .2s}
+.amain-tool-bar { padding: 10px 10px 0 ; border-bottom:1px solid #dedede;     position: relative; height:40px; white-space: nowrap; transition:all .2s}
 .amain-tool-bar li { position: relative; display: inline-block; font-size: 14px; line-height: 40px; min-width: 65px; padding: 0 15px;
   text-align: center;vertical-align; middle; color:#7663af}
 .amain-tool-bar li.layui-this:after { border-bottom:2px solid #6854a5;position: absolute; left: 0; top: 0;   content: ''; width: 100%; height: 41px;
@@ -192,7 +192,7 @@
 .good-list .am-card-title { max-width: 500px;}
 .good-list .am-card-title a {color:#666 }
 .good-list .am-card-title a:hover {color:#604c9e}
-.good-list .am-card .cover-thumb {box-sizing: border-box;border:2px solid #FFF; border-radius: 4px;}
+.good-list .am-card .cover-thumb {box-sizing: border-box;border:2px solid #FFF; border-radius: 4px;  height:60px; width:80px }
 .good-list .am-card .info { color: #aaa}
 .good-list .am-card .info b { color:#555}
 .good-list .am-card .price , .good-list .am-card .inventory ,.good-list .am-card .status{ margin-right: 30px}
@@ -209,5 +209,40 @@
 .good-list .am-card .btns-wrapper  .layui-btn { }
 .good-list .am-card .ibtn { margin:8px 5px 0 5px; padding:0 10px 0 6px; height:24px; font-size: 12px; line-height: 24px; }
 
-
 .goods-item-edit #item-thumb { width: 120px}
+
+/** 订单列表 **/
+.page-order-list .layui-tab-title { margin: 0; padding-top: 10px;background: #e3e6ee; padding-left: 8px; border-bottom-color: #ddd}
+.page-order-list .layui-tab-title .layui-this   {background: #fafafa; border-radius: 4px 4px 0 0; }
+.page-order-list .layui-tab-title .layui-this:after {    border-color: #ddd; border-bottom-color:#FFF; border-radius: 4px 4px 0 0; }
+.page-order-list .layui-tab-title li {padding: 0;}
+.page-order-list .layui-tab-title li a { padding: 0 15px;}
+.page-order-list .layui-tab-title .layui-this a {color: #795f9c; font-weight: 700}
+.page-order-list .tab-title-wrapper { position: relative; }
+.page-order-list .tab-title-wrapper #form_filter_time {  position: absolute; right:10px; top:6px}
+.order-list .am-card { box-sizing: border-box; background: #fff; border-bottom-width: 2px}
+.order-list .am-card-heading { padding-bottom: 8px; border-bottom: 1px dotted #DDD; }
+.order-list .am-card-heading h3 { float: left; color:#aaa}
+.order-list .am-card-heading h4 { float: right; margin-right: 10px;}
+.order-list .am-card-heading h5 { float: right; color:#aaa}
+
+.order-list .am-card-body {clear: both; display: flex;}
+.order-list .am-card-body .user { width: 200px; background: #999}
+.order-list  .user { padding: 8px 0; }
+.order-list  .user-item { float: left; display: inline-block; font-size: 12px; color:#aaa}
+.order-list  .user-item b { color:#666; font-size: 14px;}
+.order-list  .user-item + .user-item { margin-left: 40px;}
+.order-list  .goods { padding:10px 0 0}
+.order-list  .good { margin-top: 8px;border:1px solid #DDD; width: 160px;padding: 4px 5px; display: inline-block; background: #f0f0f0; font-size: 12px; overflow: hi
+}
+.order-list  .good  .cover-thumb { float: left;width:60px; height:36px;}
+.order-list  .good .num { margin-top: 4px; font-size: 14px;}
+.order-list  .am-card .btns-wrapper { position: absolute; width: 220px; right: 10px; bottom:10px; text-align: right}
+.order-list .am-card .ibtn { margin:8px 5px 0 5px; padding:0 10px 0 6px; height:24px; font-size: 12px; line-height: 24px; }
+
+
+/**/
+.goodOrder-status_-1 { background-color: #aaa}
+.goodOrder-status_1 { background-color: rgb(67, 158, 131)}
+
+.goods-table-list .good-item .cover-thumb { vertical-align: middle; width: 50px; height:30px; display: inline-block;}

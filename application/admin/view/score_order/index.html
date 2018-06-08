@@ -1,0 +1,125 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body page-order-list">
+
+    <!--tab标签-->
+    <div class="layui-tab ">
+
+        <ul class="  amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/ScoreOrder/index')}"  >订单查询</a></li>
+            <li ><a href="{:url('admin/ScoreOrder/goods')}"  >商品下单数查询</a></li>
+
+        </ul>
+
+        <div class="amain-content">
+          <form class="layui-form layui-form-pane" action="{:url('admin/ScoreOrder/index')}" method="get" onsubmit="layer.load(1);">
+              <div class="layui-inline">
+                  <label class="layui-form-label">检索</label>
+                  <div class="layui-input-inline">
+                      <input type="text" name="filter[order_num]" value="{$filter['order_num'] ? $filter['order_num'] :''}" placeholder="请输入订单号" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-inline">
+                  <button class="layui-btn"><i class="fa fa-search"></i></button>
+              </div>
+          </form>
+
+          <hr>
+
+
+
+          <div class="layui-tab">
+            <div class="tab-title-wrapper">
+              <ul class="layui-tab-title">
+                <li <?php echo !isset($status) || $status==="" ? 'class="layui-this"' : '' ; ?> ><a href="{:url('admin/ScoreOrder/index')}">全部订单</a></li>
+                {foreach name="statusList" key="key" item="vo"}
+                <li <?php echo isset($status) && $status!="" && intval($status) === intval($key) ? 'class="layui-this"' : '' ; ?> >
+                  <a href="{:url('admin/ScoreOrder/index',['status'=>$key])}">{$vo}</a>
+                </li>
+                {/foreach}
+              </ul>
+              <form id="form_filter_time" action="<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>">
+                <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
+              </form>
+            </div>
+
+
+            <div class="layui-tab-content" style="margin:0 -10px">
+              <div class="layui-tab-item layui-show">
+                <div class="order-list">
+                  <form class="layui-form">
+                    {if !count($lists)>0}无数据{/if}
+                    {foreach name="lists" item="vo"}
+                    <div class="am-card order-item ">
+                       <div class="am-card-heading">
+                         <h3># {$vo.uuid|iconv_substr=0,8}/{$vo.id}</h3>
+                         <h5><i class="fa fa-clock-o"></i> {$vo.creation_time}</h5>
+                         <h4 class="layui-badge goodOrder-status_{$vo.status}"><?php echo $statusList[$vo['status']]; ?> </h5>
+                         <div class="layui-clear"></div>
+                       </div>
+                       <div class="user">
+                         <div class="user-item name">姓名：<b>{$vo.userInfo.name}</b></div>
+                         <div class="user-item" > 电话：<b>{$vo.userInfo.phone}</b> </div>
+                         <div class="user-item"> 帐号：<b>{$vo.userInfo.loginname}</b>  </div>
+                         <div class="user-item"> 公司：<b><?php echo isset($companys[$vo['userInfo']['company_id']]) ? $companys[$vo['userInfo']['company_id']] : ''; ?></b>  </div>
+                         <div class="user-item" title="{$vo.userInfo.Department}/{$vo.userInfo.companyname}"> 部门：<b>{$vo.userInfo.Department}</b>  </div>
+                       </div>
+                      <div class="am-card-body">
+                        <div class="goods">
+                          <?php foreach($vo['goods'] as $good_i => $good){
+                            ?>
+                            <div class="good" title="{$good.name} &times; {$good.num}">
+                              <div class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
+                              <h5 class="layui-elip">{$good.name}</h5>
+                              <div class="num"> &times; {$good.num} </div>
+                            </div>
+                          <?php } ?>
+
+
+                        </div>
+                        <div class="btns-wrapper">
+                          <a href="{:url('admin/ScoreOrder/detail',['id'=>$vo['id']])}"  data-title="查看订单 #{$vo.id}"  data-trigger="modal" title="查看订单 #{$vo.id}" class="ibtn layui-btn layui-btn  layui-btn-radius   "> <i class="fa fa-list"></i> 订单详情</a>
+                        </div>
+                      </div>
+                    </div>
+                    {/foreach}
+                  </form>
+                </div>
+
+              </div>
+
+            </div>
+         </div>
+          <!--分页-->
+          {$lists|raw}
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+// initLayuiTable({ limit: {$pagesize} })
+laydate.render({
+  elem: '#filter_time'
+  ,range: '~' //或 range: '~' 来自定义分割字符
+  ,done: function(value, date, endDate){
+    layer.load(1);
+    var url = "<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>";
+    // location.href = url;
+    var form = $("<form method='get'></form>");
+    form.attr({ "action": url });
+     var input = $("<input type='hidden'>");
+     input.attr({ "name": "filter[time]" });
+     input.val(value);
+     form.append(input);
+     $(document.body).append(form);
+    form.submit();
+ }
+});
+$(".layui-tab-title li a").click(function(){
+  layer.load(1);
+})
+</script>
+{/block}

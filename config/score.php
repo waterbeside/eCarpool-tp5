@@ -19,5 +19,12 @@ return [
       ["name"=>"score","field"=>"account"],
       ["name"=>"phone","field"=>"phone"],
       ["name"=>"carpool","field"=>"carpool_account"],
+    ],
+    "order_status"=>[
+      "-3"=>"订单过期",
+      "-2"=>"订单无效",
+      "-1"=>"订单已取消",
+      "0"=>"等待兑换",
+      "1"=>"已兑换",
     ]
 ];
