@@ -49,11 +49,10 @@
                     <tr>
                         <td>{$vo.id}</td>
                         <!-- <td>{php}echo $vo['reason'] > 0 ? '收入' : '支出' ;{/php}</td> -->
-                        <td>{php}echo $reasons[$vo['reason']]; {/php}</td>
+                        <td>{php}echo isset($reasons[$vo['reason']]) ? $reasons[$vo['reason']] : $vo['reason'] ; {/php}</td>
                         <td class="t-number">{php}echo $vo['reason']>=0 ? "<b class='text-green'>+ ".$vo['operand']."</b>" : "<b  class='text-red'>- ".$vo['operand']."</b>"; {/php}</td>
                         <td class="t-number">{$vo.result}</td>
                         <td>{$vo.time|date='Y-m-d H:i'}</td>
-
 
                         <td>
                           <?php if($auth['admin/ScoreHistory/edit']){ ?>
