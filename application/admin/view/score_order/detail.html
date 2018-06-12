@@ -88,5 +88,50 @@
 
       </tbody>
     </table>
+    <div class="blank10"></div>
+    <?php if($auth['admin/ScoreOrder/finish'] && $data['status']===0){ ?>
+    <div style="text-align:right">
+      <!--<div class="layui-input-inline">
+          <input type="text" name="order_no" value="" placeholder="请输入订单号确认" class="layui-input">
+      </div>-->
+        <a class="layui-btn" href="javascript:void(0);" onclick="RESOLVE_INIT.finish({$data.id})">完结兑换订单</a>
+
+    </div>
+    <div class="blank10"></div>
+    <?php  } ?>
+
 
 </div>
+
+
+<script>
+var RESOLVE_INIT = {
+
+  data : {
+
+  },
+  finish : function(id){
+    // var order_no = $("input[name=order_no]").val();
+    // console.log(order_no)
+    layer.confirm('您确定要完结本次兑换？',
+      {
+        closeBtn: 1,
+        btn: ['确定','取消'] //按钮
+      }, function(){
+        ajaxSubmit({
+          url:"<?php echo url('admin/ScoreOrder/finish');?>",
+          data:{id:id},
+          success:function(res){
+            console.log(res);
+          }
+        })
+      }
+    );
+
+  }
+
+
+}
+
+
+</script>

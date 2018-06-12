@@ -25,7 +25,7 @@ class ScoreOrder extends AdminBase
    * 订单列表
    * @return mixed
    */
-  public function index($filter=[],$status=null,$page = 1,$pagesize = 20)
+  public function index($filter=[],$status="0",$page = 1,$pagesize = 15)
   {
     $map = [];
     $map[] = ['t.is_delete','<>', 1];
@@ -55,14 +55,21 @@ class ScoreOrder extends AdminBase
     $join = [
       ['account ac','t.creator = ac.id', 'left'],
     ];
-    $lists = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order(' t.creation_time DESC , t.id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+    $lists = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time DESC, t.creation_time DESC , t.id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+    $goodList = [];
     $GoodsModel = new GoodsModel();
     foreach($lists as $key => $value) {
       $userInfo = CarpoolUserModel::where(['loginname'=>$value['carpool_account']])->find();
       $lists[$key]['userInfo'] = $userInfo ;
       $goods = [];
       foreach ($value['content'] as $gid => $num) {
-        $good = $GoodsModel->getFromRedis($gid);
+        if(isset($goodList[$gid])){
+          $good = $goodList[$gid];
+        }else{
+          $good = $GoodsModel->getFromRedis($gid);
+          $goodList[$gid] =  $good ;
+        }
+
         if($good){
           $images = json_decode($good['images'],true);
           $good['thumb'] = $images ? $images[0] : "" ;
@@ -135,7 +142,10 @@ class ScoreOrder extends AdminBase
       $companys[$value['company_id']] = $value['company_name'];
     }
     $statusList = config('score.order_status');
-    return $this->fetch('detail', ['data' => $data,'companys' => $companys,'statusList'=>$statusList]);
+    $auth = [];
+    $auth['admin/ScoreOrder/finish'] = $this->checkActionAuth('admin/ScoreOrder/finish');
+
+    return $this->fetch('detail', ['data' => $data,'companys' => $companys,'statusList'=>$statusList,'auth'=>$auth]);
 
   }
 
@@ -185,13 +195,57 @@ class ScoreOrder extends AdminBase
       $lists = false;
     }
 
-
-
-
     return $this->fetch('goods', ['lists' => $lists,'filter'=>$filter]);
 
   }
 
+
+
+
+  /**
+   * 完结订单
+   * @param  integer $id       订单id
+   * @param  string  $order_no 订单号
+   */
+  public function finish($id=0,$order_no=null){
+    $statusList = config('score.order_status');
+    $admin_id = $this->userBaseInfo['uid'];
+
+
+    if ($this->request->isPost()) {
+      if(!$id ){
+        $this->error("Params error");
+      }
+      /*if(!$order_no ){
+        $this->error("Params error");
+      }*/
+
+      $data = OrderModel::alias('t')->where('id',$id)->json(['content'])->find();
+      if(!$data || $data['is_delete']==1){
+        $this->error("订单不存在");
+      }
+
+      if($data['status']!==0){
+        $statusMsg = isset($statusList[$data['status']]) ? $statusList[$data['status']] : $data['status'];
+        $this->error("该订单状态为【".$statusMsg."】，不可操作。");
+      }
+
+      $result = OrderModel::where('id',$id)->update(["status"=>1,"handler"=> -1 * intval($admin_id)]);
+
+      if($result){
+        $this->log('完结订单成功'.json_encode($this->request->post()),0);
+        $this->success('完结订单成功');
+      }else{
+        $this->log('完结订单失败'.json_encode($this->request->post()),-1);
+        $this->success('完结订单失败');
+      }
+
+
+
+    }
+
+
+  }
 
 
 
