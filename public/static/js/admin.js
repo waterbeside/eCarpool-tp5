@@ -172,6 +172,14 @@ function admin_init(){
       })*/
   });
 
+  $(".pagination li a ").click(function(){
+    layer.load(2);
+  })
+
+  $("a[showloading]").click(function(){
+    layer.load(2);
+  })
+
   /**
    * 通用表单提交(AJAX方式)
    */

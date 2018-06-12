@@ -1,4 +1,7 @@
 /*后台公用样式*/
+html,body {height: 100px;}
+body {background:#FFF}
+
 .blank10 {height: 10px; overflow: hidden; line-height: 1;display: block; clear: both;}
 .blank12 {height: 12px; overflow: hidden; line-height: 1;display: block;clear: both;}
 .blank20 {height: 20px; overflow: hidden; line-height: 1;display: block;clear: both;}
@@ -26,7 +29,7 @@
 .aframe-con .layui-tab-title.layui-tab-more .layui-this {background:#7663af; color:#fff;}
 .aframe-con .layui-tab-title.layui-tab-more .layui-this::after { border:none; }
 .aframe-con .layui-tab-content > .layui-tab-item{   position: absolute; top: 41px; left: 0; right: 0; bottom: 0;   overflow: hidden; transition: all 0.3s;z-index: 2;}
-.aframe-con iframe{ background: #fff;   display: block;   width:100%; height:100%; border:0;}
+.aframe-con iframe{ background:#fff url(../images/loading-2.gif) center  no-repeat; display: block;   width:100%; height:100%; border:0;}
 .aframe-tab-tool { position: absolute; right: 0; top:0; width: 60px;border:1px solid #DDD;border-width: 0 0 1px 1px;z-index: 100; height: 40px; line-height: 41px; text-align: center; }
 .aframe-tab-tool-options { display: none;border-radius: 3px; border:1px solid #DDD; position: absolute; right: 10px; top:46px; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,.2)}
 .aframe-tab-tool-options li { padding: 8px 12px; background: #FFF;border-bottom:  1px solid #fafafa; }
