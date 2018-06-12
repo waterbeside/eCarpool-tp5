@@ -28,7 +28,7 @@ class ScoreCarpool extends AdminBase
 
       $map = [];
       if ($keyword) {
-          $map[] = ['t.infoid|t.code|t.result','like', "%{$keyword}%"];
+          $map[] = ['t.infoid|t.code|d_name|p_name','like', "%{$keyword}%"];
       }
       if($status!==""){
         $map[] = ['t.status','=',$status];
@@ -75,6 +75,7 @@ class ScoreCarpool extends AdminBase
       if($rowData['status'] == 1 || $rowData['status']==-1){
         $this->error("该条已处理，不可操作");
       }
+      // dump($rowData['infoid']);
       if($status === 1){
 
         $result = Db::connect('database_carpool')->query('call update_score_by_infoid(:infoid,:admin_id)', [
@@ -92,12 +93,24 @@ class ScoreCarpool extends AdminBase
           $this->error("提交失败");
         }
       }elseif($status === -1){
-         $result = WaitingProcess::where('wpid',$id)->update(["status"=>-1]);
+         // $result = WaitingProcess::where('wpid',$id)->update(["status"=>-1]);
+         //
+         $result = Db::connect('database_carpool')->query('call add_history_by_infoid(:infoid,:admin_id)', [
+           'infoid' => $rowData['infoid'],
+           'admin_id' => $admin_id,
+         ]);
          if($result){
-           $this->success("提交成功");
+           $resultData = json_decode($result[0][0]["result"],true);
+           // dump($resultData);
+           if($resultData['code']===0){
+             $this->success("提交成功");
+           }else{
+             $this->error("提交失败");
+           }
          }else{
            $this->error("提交失败");
          }
+
       }else{
         $this->error("不作处理");
       }
