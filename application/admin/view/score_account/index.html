@@ -6,14 +6,14 @@
     <div class="layui-tab layui-tab-brief">
 
         <ul class="layui-tab-title amain-tool-bar" >
-            <li class=""><a href="{:url('admin/score_account/index',['type'=>2])}"  >Carpool帐号</a></li>
-            <li class="layui-this"><a href="{:url('admin/score_account/index',['type'=>0])}" >积分帐号</a></li>
+            <li class=""><a href="{:url('admin/scoreAccount/index',['type'=>2])}"  >Carpool帐号</a></li>
+            <li class="layui-this"><a href="{:url('admin/scoreAccount/index',['type'=>0])}" >积分帐号</a></li>
         </ul>
 
         <div class="layui-tab-content">
 
 
-                <form class="layui-form layui-form-pane" action="{:url('admin/user/index')}" method="get">
+                <form class="layui-form layui-form-pane" action="{:url('admin/scoreAccount/index',['type'=>0])}" method="get">
                     <div class="layui-inline">
                         <label class="layui-form-label">检索</label>
                         <div class="layui-input-inline">
@@ -29,32 +29,36 @@
                 <table lay-filter="listtable">
                     <thead>
                     <tr >
-                        <th lay-data="{field:'id', width:100}" fixed="left">ID</th>
-                        <th lay-data="{field:'account',width:100}">积分账号</th>
+                        <th lay-data="{field:'id', width:100,fixed: 'left'}">#</th>
+                        <!-- <th lay-data="{field:'account',width:100}">积分账号</th> -->
                         <th lay-data="{field:'carpool_account', width:120}">拼车账号</th>
-                        <th lay-data="{field:'identifier'}">UUID</th>
-                        <th lay-data="{field:'platform', width:100}">平台</th>
+                        <th lay-data="{field:'name',width:120}" >姓名</th>
+                        <th lay-data="{field:'phone',width:120}">电话</th>
+                        <th lay-data="{field:'identifier',width:120}">UUID</th>
+                        <th lay-data="{field:'platform', width:80}">平台</th>
                         <th lay-data="{field:'register_date', width:200}">注册日</th>
                         <th lay-data="{field:'balance', width:100}">分数</th>
                         <!-- <th lay-data="{field:'score', width:80}">分</th> -->
                         <th lay-data="{field:'other', width:60}">...</th>
-                        <th lay-data="{field:'options', width:120}">操作</th>
+                        <th lay-data="{field:'options', width:160,fixed: 'right'}">操作</th>
                     </tr>
                     </thead>
                     <tbody>
                     {foreach name="lists" item="vo"}
                     <tr>
                         <td>{$vo.id}</td>
-                        <td>
+                        <!-- <td>
                           <a onclick="openLayer('{:url('admin/ScoreAccount/detail',['type'=>0,'account_id'=>$vo['id']])}','用户详情');" href="javascript:void(0);" >
                           {$vo.account}
                           </a>
-                        </td>
+                        </td> -->
                         <td>
                           <a onclick="openLayer('{:url('admin/ScoreAccount/detail',['type'=>2,'account'=>$vo['carpool_account']])}','用户详情');" href="javascript:void(0);" >
                           {$vo.carpool_account}
                           </a>
                         </td>
+                        <td>{$vo.carpoolUserInfo.name}</td>
+                        <td>{$vo.carpoolUserInfo.phone}</td>
                         <td>{$vo.identifier}</td>
                         <td>{$vo.platform}</td>
                         <td>{$vo.register_date}</td>
@@ -64,8 +68,9 @@
 
                         </td>
                         <td>
-                          <a href="{:url('admin/ScoreAccount/edit',['id'=>$vo['id']])}"  class="layui-btn   layui-btn-xs " data-title="編輯"  data-trigger="modal" title="編輯"><i class="layui-icon">&#xe642;</i></a>
-                          <a href="{:url('admin/ScoreAccount/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除" ><i class="layui-icon">&#xe640;</i></a>
+                          <!-- <a href="{:url('admin/ScoreAccount/edit',['id'=>$vo['id']])}"  class="layui-btn   layui-btn-xs " data-title="編輯"  data-trigger="modal" title="編輯"><i class="layui-icon">&#xe642;</i></a> -->
+                          <a href="{:url('admin/Score/change',['type'=>'0','account_id'=>$vo['id']])}"   data-trigger="modal" data-title="加减分 {$vo.carpool_account}" class="layui-btn   layui-btn-xs "   >加减分</a>
+                          <a onclick="openLayer('{:url('admin/ScoreHistory/lists',['type'=>'0','account_id'=>$vo['id']])}','积分历史:{$vo.carpool_account}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary layui-btn-xs "   >积分历史</a>
                         </td>
                     </tr>
                     {/foreach}

@@ -30,6 +30,10 @@ class ScoreAccount extends AdminBase
         }
 
         $lists = ScoreAccountModel::where($map)->order('id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+        foreach ($lists as $key => $value) {
+          $carpool = CarpoolUserModel::where(['loginname'=>$value['carpool_account']])->find();
+          $lists[$key]['carpoolUserInfo'] = $carpool ? $carpool : ['name'=>'-','phone'=>'-'];
+        }
 
         return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword,'pagesize'=>$pagesize,'type'=>$type]);
 
