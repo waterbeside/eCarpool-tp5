@@ -6,8 +6,8 @@
     <div class="layui-tab ">
 
         <ul class="  amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/ScoreOrder/index')}"  >订单查询</a></li>
-            <li ><a href="{:url('admin/ScoreOrder/goods')}"  >商品下单数查询</a></li>
+            <li class="layui-this"><a href="{:url('admin/ScoreOrder/index')}"  showloading >订单查询</a></li>
+            <li ><a href="{:url('admin/ScoreOrder/goods')}"  showloading >商品下单数查询</a></li>
 
         </ul>
 
@@ -31,9 +31,9 @@
           <div class="layui-tab">
             <div class="tab-title-wrapper">
               <ul class="layui-tab-title">
-                <li <?php echo !isset($status) || $status==="" ? 'class="layui-this"' : '' ; ?> ><a href="{:url('admin/ScoreOrder/index')}">全部订单</a></li>
+                <li <?php echo !isset($status) || $status==="" || $status==="all" ? 'class="layui-this"' : '' ; ?> ><a href="{:url('admin/ScoreOrder/index',['status'=>'all'])}">全部订单</a></li>
                 {foreach name="statusList" key="key" item="vo"}
-                <li <?php echo isset($status) && $status!="" && intval($status) === intval($key) ? 'class="layui-this"' : '' ; ?> >
+                <li <?php echo isset($status) && $status!=="all" && intval($status) === intval($key) ? 'a class="layui-this"' : 'b' ; ?> >
                   <a href="{:url('admin/ScoreOrder/index',['status'=>$key])}">{$vo}</a>
                 </li>
                 {/foreach}
