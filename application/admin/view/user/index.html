@@ -3,14 +3,19 @@
 <div class="amain-body">
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
-        <ul class="layui-tab-title">
-            <li class="layui-this">用户管理</li>
-            <li class=""><a href="{:url('admin/user/add')}"  data-title="添加用户"  data-trigger="modal" >添加用户</a></li>
-        </ul>
+      <ul class="  amain-tool-bar" >
+          <li class="layui-this"><a href="{:url('admin/User/index')}"  >用户管理</a></li>
+          <li class="btn-item btn-item-add">
+            <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/User/add')}"  data-title="添加用户"  data-trigger="modal" >
+            <i class="fa fa-plus"></i> 添加用户</a>
+          </li>
+
+      </ul>
+
         <div class="layui-tab-content">
 
 
-                <form class="layui-form layui-form-pane" action="{:url('admin/user/index')}" method="get">
+                <form class="layui-form layui-form-pane" action="{:url('admin/User/index')}" method="get">
                     <div class="layui-inline">
                         <label class="layui-form-label">检索</label>
                         <div class="layui-input-inline">

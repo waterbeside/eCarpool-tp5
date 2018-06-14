@@ -3,9 +3,12 @@
 <div class="amain-body">
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
-        <ul class="layui-tab-title">
-            <li class="layui-this">后台菜单</li>
-            <li class=""><a href="{:url('admin/menu/add')}" data-title="添加菜单"  data-trigger="modal">添加菜单</a></li>
+        <ul class="  amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/menu/index')}"  >后台菜单</a></li>
+            <li class="btn-item btn-item-add">
+              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/menu/add')}"  data-title="添加菜单"  data-trigger="modal" >
+              <i class="fa fa-plus"></i> 添加菜单</a>
+            </li>
         </ul>
         <div class="layui-tab-content">
             <blockquote class="layui-elem-quote">因菜单与帐号授权关联，故请勿随意更改菜单id。<br />若有必要，在更新菜单后，请检查后台用户组权限并重新授权。</blockquote>
