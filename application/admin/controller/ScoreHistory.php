@@ -32,7 +32,7 @@ class ScoreHistory extends AdminBase
           $time_arr = explode(' ~ ',$filter['time']);
           if(is_array($time_arr)){
             $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
-            $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]));
+            $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
             $map[] = ['time', 'between time', [$time_s, $time_e]];
           }
         }
@@ -80,7 +80,7 @@ class ScoreHistory extends AdminBase
         $time_arr = explode(' ~ ',$filter['time']);
         if(is_array($time_arr)){
           $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
-          $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]));
+          $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
           $map[] = ['time', 'between time', [$time_s, $time_e]];
         }
       }
