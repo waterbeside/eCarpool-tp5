@@ -175,13 +175,14 @@ body {background:#FFF}
 .amain-uploadImgBtn { border-radius: 4px;  min-height: 24px; display: inline-block; line-height: 1; position: relative; cursor: pointer; border: 1px solid #DDD; margin-top: 5px; background: #fafafa}
 .amain-uploadImgBtn .text { position: absolute; bottom: 0; left:0;right:0; padding:4px 10px 6px; background:rgba(0,0,0,.8); color: #fff; text-align: center; }
 /*******/
-.amain-tool-bar { padding: 10px 10px 0 ; border-bottom:1px solid #dedede;     position: relative; height:40px; white-space: nowrap; transition:all .2s}
+.amain-tool-bar { padding: 4px 10px 0 ; border-bottom:1px solid #dedede;     position: relative; height:40px; white-space: nowrap; transition:all .2s}
 .amain-tool-bar li { position: relative; display: inline-block; font-size: 14px; line-height: 40px; min-width: 65px; padding: 0 15px;
   text-align: center;vertical-align; middle; color:#7663af}
 .amain-tool-bar li.layui-this:after { border-bottom:2px solid #6854a5;position: absolute; left: 0; top: 0;   content: ''; width: 100%; height: 41px;
        box-sizing: border-box; pointer-events: none;}
 .amain-tool-bar li.btn-item {padding-right: 0;}
 .amain-tool-bar li .layui-btn-sm i {font-size: 12px!important; margin-right: 3px;}
+.amain-tool-bar li.btn-item-add { float:right}
 
 /**卡片列表**/
 .am-card { position: relative; padding: 10px; border:1px solid #DDD; margin-bottom: 10px; box-shadow: 0 0 5px rgba(0,0,0,.1); background: #FFF; border-radius: 3px;}
@@ -223,6 +224,7 @@ body {background:#FFF}
 .page-order-list .layui-tab-title .layui-this a {color: #795f9c; font-weight: 700}
 .page-order-list .tab-title-wrapper { position: relative; }
 .page-order-list .tab-title-wrapper #form_filter_time {  position: absolute; right:10px; top:6px}
+
 .order-list .am-card { box-sizing: border-box; background: #fff; border-bottom-width: 2px}
 .order-list .am-card-heading { padding-bottom: 8px; border-bottom: 1px dotted #DDD; }
 .order-list .am-card-heading h3 { float: left; color:#aaa}
@@ -243,7 +245,7 @@ body {background:#FFF}
 .order-list  .am-card .btns-wrapper { position: absolute; width: 220px; right: 10px; bottom:10px; text-align: right}
 .order-list .am-card .ibtn { margin:8px 5px 0 5px; padding:0 10px 0 6px; height:24px; font-size: 12px; line-height: 24px; }
 
-
+.page-orderGoods-list .sumNum , .page-orderGoods-list .sumPrice { font-size: 20px; color:rgb(233, 91, 45)}
 /**/
 .goodOrder-status_-1 { background-color: #aaa}
 .goodOrder-status_1 { background-color: rgb(67, 158, 131)}
