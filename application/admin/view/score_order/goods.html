@@ -1,6 +1,6 @@
 {extend name="base" /}
 {block name="body"}
-<div class="amain-body page-order-list">
+<div class="amain-body page-orderGoods-list">
 
     <!--tab标签-->
     <div class="layui-tab ">
@@ -8,7 +8,6 @@
         <ul class="  amain-tool-bar" >
             <li ><a href="{:url('admin/ScoreOrder/index')}" showloading >订单查询</a></li>
             <li class="layui-this"><a href="{:url('admin/ScoreOrder/goods')}" showloading >商品下单数查询</a></li>
-
         </ul>
 
         <div class="amain-content">
@@ -17,16 +16,10 @@
                   <label class="layui-form-label">检索</label>
                   <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
               </div>
-
           </form>
-
           <hr>
 
-
-
           <div class="layui-tab">
-
-
             <div class="layui-tab-content" style="margin:0 -10px">
               <div class="layui-tab-item layui-show">
                 <?php if($lists && count($lists)>0){ ?>
@@ -35,9 +28,10 @@
                   <tr >
                       <th width="40">编号</th>
                       <th>商品</th>
-                      <th width="40">单价</th>
                       <th width="40">库存</th>
+                      <th width="40">单价</th>
                       <th width="100" >兑换数量</th>
+                      <th width="100" >总价</th>
                   </tr>
                   </thead>
                   <tbody class="goods-table-list">
@@ -46,11 +40,14 @@
                       <td class="label" >{$good.id}</td>
                       <td>
                         <div  class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
-                        <span class="layui-elip">{$good.name}</span>
+                        <span class="layui-elip">
+                          <a onclick="openLayer('{:url('admin/ScoreOrder/good_owners',['gid'=>$good['id'],'time'=>$filter['time']])}',{area: ['800px', '90%'], title:'{$good.name}'});" href="javascript:void(0);"    >{$good.name}</a>
+                        </span>
                       </td>
-                      <td class="label" >{$good.price}</td>
                       <td class="label" >{$good.inventory == -1 ? '不限' : $good.inventory }</td>
-                      <td class="label" >&times; {$good.num}</td>
+                      <td class="label" ><b class="price">{$good.price}</b></td>
+                      <td class="label" >&times; <b class="num">{$good.num}</b></td>
+                      <td class="label" > <b class="total">{$good.num * $good.price}</b></td>
 
                     </tr>
                     <?php } ?>
@@ -58,19 +55,17 @@
 
                   </tbody>
                 </table>
+                <blockquote class="layui-elem-quote layui-quote-nm" style="background:#FFF; text-align:right">
+                  总价:<b class="sumPrice"></b> &nbsp;&nbsp; <b  class="sumNum"></b>
+                </blockquote>
               <?php }else{
                 echo isset($filter['time']) && $filter['time'] ? "暂无数据" : "请选择时间段";
               } ?>
-
-
               </div>
 
             </div>
          </div>
-          <!--分页-->
-          <?php if(!$lists){ ?>
-          {$lists|raw}
-          <?php } ?>
+
         </div>
     </div>
 </div>
@@ -86,9 +81,21 @@ laydate.render({
     setTimeout(function(){
       $("#filter_time").closest("form").submit();
     },400)
-
  }
-
 });
+
+var goodSum = {
+  price:0,
+  num:0
+}
+$('.goods-table-list .good-item').each(function(index, el) {
+  var num =  parseInt($(this).find('.num').text());
+  var price =  parseInt($(this).find('.price').text());
+  goodSum['num'] += num;
+  goodSum['price'] += num * price;
+});
+$('.sumPrice').text(goodSum.price);
+// $('.sumNum').text(goodSum.num);
+console.log(goodSum);
 </script>
 {/block}
