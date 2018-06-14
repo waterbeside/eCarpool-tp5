@@ -18,6 +18,9 @@
                   <div class="layui-input-inline">
                       <input type="text" name="filter[order_num]" value="{$filter['order_num'] ? $filter['order_num'] :''}" placeholder="请输入订单号" class="layui-input">
                   </div>
+                  <div class="layui-input-inline">
+                      <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input">
+                  </div>
               </div>
               <div class="layui-inline">
                   <button class="layui-btn"><i class="fa fa-search"></i></button>
@@ -58,11 +61,11 @@
                          <div class="layui-clear"></div>
                        </div>
                        <div class="user">
-                         <div class="user-item name">姓名：<b>{$vo.userInfo.name}</b></div>
-                         <div class="user-item" > 电话：<b>{$vo.userInfo.phone}</b> </div>
-                         <div class="user-item"> 帐号：<b>{$vo.userInfo.loginname}</b>  </div>
-                         <div class="user-item"> 公司：<b><?php echo isset($companys[$vo['userInfo']['company_id']]) ? $companys[$vo['userInfo']['company_id']] : ''; ?></b>  </div>
-                         <div class="user-item" title="{$vo.userInfo.Department}/{$vo.userInfo.companyname}"> 部门：<b>{$vo.userInfo.Department}</b>  </div>
+                         <div class="user-item name">姓名：<b>{$vo.name}</b></div>
+                         <div class="user-item" > 电话：<b>{$vo.phone}</b> </div>
+                         <div class="user-item"> 帐号：<b>{$vo.loginname}</b>  </div>
+                         <div class="user-item"> 公司：<b><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></b>  </div>
+                         <div class="user-item" title="{$vo.Department}/{$vo.companyname}"> 部门：<b>{$vo.Department}</b>  </div>
                        </div>
                       <div class="am-card-body">
                         <div class="goods">

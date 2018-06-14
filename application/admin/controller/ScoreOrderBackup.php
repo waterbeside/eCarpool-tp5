@@ -44,8 +44,7 @@ class ScoreOrder extends AdminBase
       }
     }
 
-
-    if (isset($filter['order_num']) && $filter['order_num']){
+    if (isset($filter['order_num'])){
       if( strpos($filter['order_num'],"/")>0){
         $oNums = explode("/",$filter['order_num']);
         $map[] = ['t.uuid','like', "%{$oNums[0]}%"];
@@ -53,26 +52,17 @@ class ScoreOrder extends AdminBase
         $map[] = ['t.uuid','like', "%{$filter['order_num']}%"];
       }
     }
-
-    if (isset($filter['keyword']) && $filter['keyword'] ){
-      $map[] = ['cu.loginname|cu.phone|cu.Department|cu.name|cu.companyname','like', "%{$filter['keyword']}%"];
-    }
-
-
-    $fields = 't.*, ac.carpool_account, ac.balance ,
-    cu.uid, cu.loginname,cu.name, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname
-    ';
+    $fields = 't.*, ac.carpool_account, ac.balance ';
 
     $join = [
       ['account ac','t.creator = ac.id', 'left'],
-      ['carpool.user cu','cu.loginname = ac.carpool_account', 'left'],
     ];
-    $lists = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+    $lists = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time DESC, t.creation_time DESC , t.id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
     $goodList = [];
     $GoodsModel = new GoodsModel();
     foreach($lists as $key => $value) {
-      // $userInfo = CarpoolUserModel::where(['loginname'=>$value['carpool_account']])->find();
-      // $lists[$key]['userInfo'] = $userInfo ;
+      $userInfo = CarpoolUserModel::where(['loginname'=>$value['carpool_account']])->find();
+      $lists[$key]['userInfo'] = $userInfo ;
       $goods = [];
       foreach ($value['content'] as $gid => $num) {
         if(isset($goodList[$gid])){
@@ -180,13 +170,28 @@ class ScoreOrder extends AdminBase
         $map[] = ['o.creation_time', '<', $time_e];
       }
 
-      $join = [
-        ['order o','o.id = t.oid', 'left'],
-        ['goods g','g.id = t.gid', 'left'],
-      ];
-      $lists = OrderGoodsModel::alias('t')->field("g.*, sum(t.count) as num ")->json(['images'])->join($join)->where($map)->group('t.gid')->order(' t.gid DESC')->select();
+      $fields = 'o.id, o.content, o.creation_time ';
+      $orders_list = OrderModel::alias('o')->field($fields)->where($map)->json(['content'])->order(' o.creation_time ASC , o.id ASC')->select();
+      $goods = [];
+      $good_ids = [];
+      foreach ($orders_list as $key => $value) {
+        foreach ($value['content'] as $gid => $num) {
+          $gid = strval($gid);
+          $goods[$gid] = isset($goods[$gid]) ? intval($goods[$gid])+intval($num) : intval($num);
+          if(!in_array($gid,$good_ids)){
+            $good_ids[] = $gid;
+          }
+        }
+      }
+      $GoodsModel = new GoodsModel();
+      $lists = $GoodsModel->json(['images'])->order(' id DESC')->where('id','in',$good_ids)->select();
       foreach ($lists as $key => $value) {
         $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
+        $num = 0;
+        if($value['id']){
+          $num = $goods[strval($value['id'])] ? $goods[strval($value['id'])] : 0;
+        }
+        $lists[$key]['num'] = $num;
       }
 
     }else{
@@ -240,78 +245,47 @@ class ScoreOrder extends AdminBase
     }
   }
 
-
-
   /**
    * 商品订单 下单者列表
    */
-  public function good_owners($gid,$time,$pagesize = 30,$filter=['keyword'=>'']){
+  public function good_owners($gid,$time,$pagesize = 20,$filter=['keyword'=>'']){
     if(!$gid){
       $this->error('Lost id');
     }
-    $good = GoodsModel::where("id",$gid)->json(['images'])->find();
-    if(!$good){
+    $goodInfo = GoodsModel::where("id",$gid)->json(['images'])->find();
+    if(!$goodInfo){
       $this->error("商品不存在");
     }
-    $good['thumb'] = is_array($good["images"]) ? $good["images"][0] : "" ;
 
-
-
-    $map = [];
-    $map[] = ['t.gid', '=', $gid];
-    $map[] = ['o.is_delete','<>', 1];
-    $map[] = ['o.status','=', 0];
-
-
-    $time_arr = explode(' ~ ',$time);
-    $time_arr = count($time_arr) > 1 ? $time_arr : explode('+~+',$time);
-
+    $map[] = ['t.is_delete','<>', 1];
+    $map[] = ['t.status','=', 0];
+    $map[] = ['t.content->"'.$gid.'"', '>', ':good_num'];
     if(is_array($time_arr)){
       $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
-      $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
-      // $map[] = ['o.creation_time', 'between', [$time_s, $time_e]];
-      $map[] = ['o.creation_time', '>=', $time_s];
-      $map[] = ['o.creation_time', '<', $time_e];
+      $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1])+24*60*60);
+      $map[] = ['t.creation_time', 'between time', [$time_s, $time_e]];
     }
-
-
-
-
-    $map_sub  = [];
-    $fields_sub = "SUM(t.count) as num, t.creator , MIN(t.add_time) as add_time ";
-    $join_sub = [
-      ['order o','o.id = t.oid', 'left'],
-    ];
-    $subQuery = OrderGoodsModel::alias('t')->field($fields_sub)->join($join_sub)->where($map)->group('t.creator')->buildSql();
-
-    $map_2  = [];
-    if (isset($filter['keyword']) && $filter['keyword']){
-      $map_2[] = ['cu.loginname|cu.phone|cu.Department|cu.name|cu.companyname','like', "%{$filter['keyword']}%"];
-    }
-    if (isset($filter['company_id']) && $filter['company_id']){
-      $map_2[] = ['cu.company_id','=', $filter['company_id']];
-    }
-
-    $fields = "s.num , s.creator, s.add_time,  ac.id as account_id , ac.carpool_account,  ac.is_delete as ac_is_delete, ac.balance,
-    cu.uid, cu.loginname,cu.name, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname
-     ";
+    $fields = "t.*,
+    ac.carpool_account, ac.balance,
+    cu.uid, cu.loginname,cu.name, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname ";
     $join = [
-      ['account ac','s.creator = ac.id', 'left'],
+      ['account ac','t.creator = ac.id', 'left'],
       ['carpool.user cu','cu.loginname = ac.carpool_account', 'left'],
     ];
+    // $lists = OrderModel::alias('t')->field($fields)->join($join)->json(['content'])->where($map)->bind('good_num', 0, \PDO::PARAM_INT)->order('t.creator ASC ')->fetchSql()->select();
+    $lists = OrderModel::alias('t')->field($fields)->join($join)->json(['content'])->where($map)->bind('good_num', 0, \PDO::PARAM_INT)->order('t.creator ASC ')->paginate($pagesize, false,  ['query'=>request()->param()]);
+    
 
-    $sumRes = Db::connect('database_score')->table($subQuery . ' s')->field('sum(s.num) as sum')->join($join)->where($map_2)->find();
-    $lists = Db::connect('database_score')->table($subQuery . ' s')->field($fields)->join($join)->where($map_2)->order('s.creator ASC ')->paginate($pagesize, false,  ['query'=>request()->param()]);
-    // $lists = Db::connect('database_score')->table($subQuery . ' s')->field($fields)->join($join)->where($map_2)->fetchSql()->select();
-    $total = $lists->total();
-    $sum = $sumRes ? $sumRes['sum'] : 0;
-
+    foreach ($lists as $key => $value) {
+      $lists[$key]['userInfo'] = CarpoolUserModel::where(['loginname'=>$value['carpool_account']])->find();
+      // $lists[$key]['num'] = $value['content']->$gid;
+    }
     $companyLists = (new CompanyModel())->getCompanys();
     $companys = [];
     foreach($companyLists as $key => $value) {
       $companys[$value['company_id']] = $value['company_name'];
     }
-    return $this->fetch('good_owners', ['good'=>$good,'lists' => $lists,'companys'=>$companys,'time'=>$time,'filter'=>$filter,'pagesize'=>$pagesize,'total'=>$total,'sum'=>$sum]);
+    return $this->fetch('good_owners', ['goodInfo'=>$goodInfo,'lists' => $lists,'companys'=>$companys,'time'=>$time,'filter'=>$filter,'pagesize'=>$pagesize]);
 
 
   }

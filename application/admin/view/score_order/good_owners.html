@@ -1,0 +1,92 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <div class="layui-tab-content">
+          <h3>商品：</h3>
+          <table class="layui-table">
+            <tbody class="goods-table-list">
+              <tr class="good-item">
+                <td class="label" ># {$good.id}</td>
+                <td>
+                  <div  class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
+                  <span class="layui-elip">{$good.name}</span>
+                </td>
+                <td   >单价 {$good.price}</td>
+                <td   >人数 {$total}</td>
+                <td   >兑换总数 {$sum}</td>
+              </tr>
+
+            </tbody>
+          </table>
+          <div class="blank20"></div>
+          <h3>下单用户：</h3>
+          <div class="blank10"></div>
+                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreOrder/good_owners',['gid'=>$good['id'],'time'=>$time])}" method="get">
+                    <div class="layui-input-inline">
+                      <input type="text" name="filter[keyword]" class="layui-input"  placeholder="查找用户" value="{$filter.keyword}"  >
+                    </div>
+                    <div class="layui-input-inline">
+                      <select name="filter[company_id]" lay-verify="required" lay-filter="company_id">
+                         <option value="0">公司</option>
+                         <?php foreach($companys as $key=>$value){ ?>
+                           <option value="{$key}" <?php echo isset($filter['company_id']) && $filter['company_id'] == $key ? 'selected':''; ?> >{$value}</option>
+                         <?php } ?>
+                       </select>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn"><i class="fa fa-search"></i></button>
+                    </div>
+                </form>
+                <hr>
+
+                <table  lay-filter="listtable"  class="layui-table">
+                    <thead>
+                    <tr >
+                      <th lay-data="{field:'uid', width:70,fixed:'left'}" >#</th>
+                      <th lay-data="{field:'loginname',width:120,fixed:'left'}">用户名</th>
+                      <th lay-data="{field:'name', width:120}">姓名</th>
+                      <th lay-data="{field:'phone', width:130}">手机</th>
+                      <th lay-data="{field:'Department', width:120}">部门</th>
+                      <th lay-data="{field:'company_name', width:110}">公司</th>
+                      <!-- <th lay-data="{field:'companyname', width:100}">分厂</th> -->
+                      <th lay-data="{field:'num', width:100, fixed:'right'}">数目</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {foreach name="lists" item="vo"}
+                    <tr>
+                      <td>{$vo.uid}</td>
+                      <td>{$vo.loginname}</td>
+                      <td>{$vo.name}</td>
+                      <td>{$vo.phone}</td>
+                      <td>{$vo.Department}</td>
+                      <td><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></td>
+                      <!-- <td>{$vo.companyname}</td> -->
+                      <td  ><b style="font-size:14px; color:#943e3e">{$vo.num}</b></td>
+
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+                <!--分页-->
+                {$lists|raw}
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+initLayuiTable({ limit: {$pagesize} })
+
+
+
+
+</script>
+{/block}
