@@ -61,12 +61,21 @@ body {background:#FFF}
 .amain-additem-bar { background: #e0e9eb; border:1px solid #ddd; padding: 4px; border-radius: 3px;}
 .amain-additem-bar .layui-form-item:last-child { margin-bottom: 0;}
 
-
+/* 内容里的tab */
+.amain-content-tab .layui-tab-title { margin: 0; padding-top: 10px;background: #e3e6ee; padding-left: 8px; border-bottom-color: #ddd}
+.amain-content-tab .layui-tab-title .layui-this   {background: #fafafa; border-radius: 4px 4px 0 0; }
+.amain-content-tab .layui-tab-title .layui-this:after {    border-color: #ddd; border-bottom-color:#FFF; border-radius: 4px 4px 0 0; }
+.amain-content-tab .layui-tab-title li {padding: 0;}
+.amain-content-tab .layui-tab-title li a { padding: 0 15px;}
+.amain-content-tab .layui-tab-title .layui-this a {color: #795f9c; font-weight: 700}
+.amain-content-tab .tab-title-wrapper { position: relative; }
+.amain-content-tab .tab-title-wrapper #form_filter_time {  position: absolute; right:10px; top:6px}
 
 .amain-body .list_status_0 { background: #fcfcfc; color: #aaa}
 .amain-body .list-item-weak { background: #fefefe; color: #bbb}
 
 .cover-thumb { background-position: center; background-repeat: no-repeat; background-size: cover; background-image: url(../images/default_thumb.png);}
+
 
 
 .header {background-color: #393D49;}
@@ -183,6 +192,7 @@ body {background:#FFF}
 .amain-tool-bar li.btn-item {padding-right: 0;}
 .amain-tool-bar li .layui-btn-sm i {font-size: 12px!important; margin-right: 3px;}
 .amain-tool-bar li.btn-item-add { float:right}
+.amain-tool-bar li.btn-item-right { float:right}
 
 /**卡片列表**/
 .am-card { position: relative; padding: 10px; border:1px solid #DDD; margin-bottom: 10px; box-shadow: 0 0 5px rgba(0,0,0,.1); background: #FFF; border-radius: 3px;}
@@ -216,14 +226,7 @@ body {background:#FFF}
 .goods-item-edit #item-thumb { width: 120px}
 
 /** 订单列表 **/
-.page-order-list .layui-tab-title { margin: 0; padding-top: 10px;background: #e3e6ee; padding-left: 8px; border-bottom-color: #ddd}
-.page-order-list .layui-tab-title .layui-this   {background: #fafafa; border-radius: 4px 4px 0 0; }
-.page-order-list .layui-tab-title .layui-this:after {    border-color: #ddd; border-bottom-color:#FFF; border-radius: 4px 4px 0 0; }
-.page-order-list .layui-tab-title li {padding: 0;}
-.page-order-list .layui-tab-title li a { padding: 0 15px;}
-.page-order-list .layui-tab-title .layui-this a {color: #795f9c; font-weight: 700}
-.page-order-list .tab-title-wrapper { position: relative; }
-.page-order-list .tab-title-wrapper #form_filter_time {  position: absolute; right:10px; top:6px}
+
 
 .order-list .am-card { box-sizing: border-box; background: #fff; border-bottom-width: 2px}
 .order-list .am-card-heading { padding-bottom: 8px; border-bottom: 1px dotted #DDD; }
@@ -247,7 +250,9 @@ body {background:#FFF}
 
 .page-orderGoods-list .sumNum , .page-orderGoods-list .sumPrice { font-size: 20px; color:rgb(233, 91, 45)}
 /**/
+
 .goodOrder-status_-1 { background-color: #aaa}
 .goodOrder-status_1 { background-color: rgb(67, 158, 131)}
+.goodOrder-status_0 { background-color: rgb(255, 176, 0)}
 
 .goods-table-list .good-item .cover-thumb { vertical-align: middle; width: 50px; height:30px; display: inline-block;}
