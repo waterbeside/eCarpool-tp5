@@ -8,21 +8,35 @@
         <ul class="  amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/ScoreOrder/index')}"  showloading >订单查询</a></li>
             <li ><a href="{:url('admin/ScoreOrder/goods')}"  showloading >商品下单数查询</a></li>
-
+            <li class="btn-item-right">
+              <a class="layui-btn layui-btn-sm  layui-btn-success " href="javascript:void(0);" onclick="exportExcel()"  ><i class="fa fa-file-excel-o"></i> 导出报表</a>
+            </li>
         </ul>
 
         <div class="amain-content">
-          <form class="layui-form layui-form-pane" action="{:url('admin/ScoreOrder/index')}" method="get" onsubmit="layer.load(1);">
+          <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreOrder/index')}" method="get" onsubmit="submitForm()">
               <div class="layui-inline">
                   <label class="layui-form-label">检索</label>
                   <div class="layui-input-inline">
                       <input type="text" name="filter[order_num]" value="{$filter['order_num'] ? $filter['order_num'] :''}" placeholder="请输入订单号" class="layui-input">
                   </div>
                   <div class="layui-input-inline">
-                      <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input">
+                      <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
+                  </div>
+                  <div class="layui-input-inline">
+                      <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
                   </div>
               </div>
+              <!-- <div class="blank10">  </div> -->
               <div class="layui-inline">
+                  <div class="layui-input-inline">
+                    <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:180px" autocomplete="off">
+                  </div>
+              </div>
+
+              <div class="layui-inline">
+                <input type="hidden" name="status" value="{$status}">
+                <input type="hidden" name="export" value="0">
                   <button class="layui-btn"><i class="fa fa-search"></i></button>
               </div>
           </form>
@@ -31,19 +45,19 @@
 
 
 
-          <div class="layui-tab">
+          <div class="layui-tab amain-content-tab">
             <div class="tab-title-wrapper">
               <ul class="layui-tab-title">
-                <li <?php echo !isset($status) || $status==="" || $status==="all" ? 'class="layui-this"' : '' ; ?> ><a href="{:url('admin/ScoreOrder/index',['status'=>'all'])}">全部订单</a></li>
+                <li <?php echo !isset($status) || $status==="" || $status==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeStatus('all')" href="javascript:void(0);" >全部订单</a></li>
                 {foreach name="statusList" key="key" item="vo"}
                 <li <?php echo isset($status) && $status!=="all" && intval($status) === intval($key) ? 'a class="layui-this"' : 'b' ; ?> >
-                  <a href="{:url('admin/ScoreOrder/index',['status'=>$key])}">{$vo}</a>
+                  <a onclick="changeStatus('<?php echo $key;?>')" href="javascript:void(0);">{$vo}</a>
                 </li>
                 {/foreach}
               </ul>
-              <form id="form_filter_time" action="<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>">
+              <!--<form id="form_filter_time" action="<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>">
                 <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
-              </form>
+              </form>-->
             </div>
 
 
@@ -57,7 +71,7 @@
                        <div class="am-card-heading">
                          <h3># {$vo.uuid|iconv_substr=0,8}/{$vo.id}</h3>
                          <h5><i class="fa fa-clock-o"></i> {$vo.creation_time}</h5>
-                         <h4 class="layui-badge goodOrder-status_{$vo.status}"><?php echo $statusList[$vo['status']]; ?> </h5>
+                         <h4 class="layui-badge goodOrder-status_{$vo.status}"><?php echo $statusList[$vo['status']]; ?> </h4>
                          <div class="layui-clear"></div>
                        </div>
                        <div class="user">
@@ -69,8 +83,7 @@
                        </div>
                       <div class="am-card-body">
                         <div class="goods">
-                          <?php foreach($vo['goods'] as $good_i => $good){
-                            ?>
+                          <?php foreach($vo['goods'] as $good_i => $good){ ?>
                             <div class="good" title="{$good.name} &times; {$good.num}">
                               <div class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
                               <h5 class="layui-elip">{$good.name}</h5>
@@ -103,12 +116,32 @@
 {/block}
 {block name="script"}
 <script>
+function exportExcel(){
+  var form = $("#filter-form");
+  form.find("input[name='export']").val(1);
+  form.attr('target','_blank') ;
+  form.submit();
+  form.find("input[name='export']").val(0);
+  form.attr('target','_self') ;
+}
+function changeStatus(status){
+  var form = $("#filter-form");
+  form.find("input[name='status']").val(status);
+  form.submit();
+}
+function submitForm(){
+  var form = $("#filter-form");
+  var isExport = form.find("input[name='export']").val();
+  if(isExport!=1){
+    layer.load(1);
+  }
+}
 // initLayuiTable({ limit: {$pagesize} })
 laydate.render({
   elem: '#filter_time'
   ,range: '~' //或 range: '~' 来自定义分割字符
   ,done: function(value, date, endDate){
-    layer.load(1);
+    /*layer.load(1);
     var url = "<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>";
     // location.href = url;
     var form = $("<form method='get'></form>");
@@ -118,7 +151,7 @@ laydate.render({
      input.val(value);
      form.append(input);
      $(document.body).append(form);
-    form.submit();
+    form.submit();*/
  }
 });
 $(".layui-tab-title li a").click(function(){

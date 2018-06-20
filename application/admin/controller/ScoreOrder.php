@@ -2,6 +2,7 @@
 namespace app\admin\controller;
 
 
+use think\facade\Env;
 use app\common\controller\AdminBase;
 use app\common\model\Configs;
 use app\carpool\model\User as CarpoolUserModel;
@@ -10,6 +11,8 @@ use app\score\model\Account as ScoreAccountModel;
 use app\score\model\Order as OrderModel;
 use app\score\model\Goods as GoodsModel;
 use app\score\model\OrderGoods as OrderGoodsModel;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use my\CurlRequest;
 use think\Db;
 
@@ -27,66 +30,100 @@ class ScoreOrder extends AdminBase
    * 订单列表
    * @return mixed
    */
-  public function index($filter=[],$status="0",$page = 1,$pagesize = 15)
+  public function index($filter=[],$status="0",$page = 1,$pagesize = 15,$export=0)
   {
     $map = [];
     $map[] = ['t.is_delete','<>', 1];
 
+
+    //筛选状态
     if(is_numeric($status)){
       $map[] = ['t.status','=', $status];
     }
-    if(isset($filter['time']) && $filter['time']){
-      $time_arr = explode(' ~ ',$filter['time']);
-      if(is_array($time_arr)){
-        $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
-        $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
-        $map[] = ['creation_time', 'between time', [$time_s, $time_e]];
-      }
+    //筛选时间
+    if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
+      $time_s = date("Y-m-01");
+      $time_e = date("Y-m-d",strtotime("$time_s +1 month"));
+      $time_e_o = date("Y-m-d",strtotime($time_e)- 24*60*60);
+      $filter['time'] = $time_s." ~ ".$time_e_o;
     }
+    $time_arr = explode(' ~ ',$filter['time']);
+    $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
+    $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
+    $map[] = ['creation_time', 'between time', [$time_s, $time_e]];
 
-
+    //筛选单号
     if (isset($filter['order_num']) && $filter['order_num']){
       if( strpos($filter['order_num'],"/")>0){
         $oNums = explode("/",$filter['order_num']);
         $map[] = ['t.uuid','like', "%{$oNums[0]}%"];
       }else{
-        $map[] = ['t.uuid','like', "%{$filter['order_num']}%"];
+        if(is_numeric($filter['order_num'])){
+          $map[] = ['t.id','=', $filter['order_num']];
+        }else{
+          $map[] = ['t.uuid','like', "%{$filter['order_num']}%"];
+        }
       }
     }
 
+    //筛选用户信息
     if (isset($filter['keyword']) && $filter['keyword'] ){
-      $map[] = ['cu.loginname|cu.phone|cu.Department|cu.name|cu.companyname','like', "%{$filter['keyword']}%"];
+      $map[] = ['cu.loginname|cu.phone|cu.name','like', "%{$filter['keyword']}%"];
+    }
+    //筛选部门
+    if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
+      $map[] = ['cu.Department|cu.companyname','like', "%{$filter['keyword_dept']}%"];
+    }
+
+    //构建sql
+    $fields = 't.*, ac.carpool_account, ac.balance    ';
+    $join = [
+      ['account ac','t.creator = ac.id', 'left'],
+    ];
+    if( (isset($filter['keyword']) && $filter['keyword']) || (isset($filter['keyword_dept']) && $filter['keyword_dept'])){
+      $fields .= ',cu.uid, cu.loginname,cu.name, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname';
+      $join[] = ['carpool.user cu','cu.loginname = ac.carpool_account', 'left'];
     }
 
 
-    $fields = 't.*, ac.carpool_account, ac.balance ,
-    cu.uid, cu.loginname,cu.name, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname
-    ';
+    if($export){
+      $lists = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC')->select();
+    }else{
+      $lists = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+    }
 
-    $join = [
-      ['account ac','t.creator = ac.id', 'left'],
-      ['carpool.user cu','cu.loginname = ac.carpool_account', 'left'],
-    ];
-    $lists = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC')->paginate($pagesize, false,  ['query'=>request()->param()]);
-    $goodList = [];
+
+    $goodList = []; //商品缓存
     $GoodsModel = new GoodsModel();
     foreach($lists as $key => $value) {
-      // $userInfo = CarpoolUserModel::where(['loginname'=>$value['carpool_account']])->find();
-      // $lists[$key]['userInfo'] = $userInfo ;
-      $goods = [];
+      if( !(isset($filter['keyword']) && $filter['keyword']) && !(isset($filter['keyword_dept']) && $filter['keyword_dept'])){
+        $userInfo = CarpoolUserModel::where(['loginname'=>$value['carpool_account']])->find();
+        $lists[$key]['uid'] = $userInfo['uid'] ;
+        $lists[$key]['loginname'] = $userInfo['loginname'] ;
+        $lists[$key]['name'] = $userInfo['name'] ;
+        $lists[$key]['phone'] = $userInfo['phone'] ;
+        $lists[$key]['Department'] = $userInfo['Department'] ;
+        $lists[$key]['sex'] = $userInfo['sex'] ;
+        $lists[$key]['company_id'] = $userInfo['company_id'] ;
+        $lists[$key]['companyname'] = $userInfo['companyname'] ;
+      }
+
+      //
+      $goods = []; //信品
       foreach ($value['content'] as $gid => $num) {
         if(isset($goodList[$gid])){
           $good = $goodList[$gid];
         }else{
           $good = $GoodsModel->getFromRedis($gid);
-          $goodList[$gid] =  $good ;
+          $goodList[$gid] =  $good ? $good : [];
         }
 
         if($good){
           $images = json_decode($good['images'],true);
           $good['thumb'] = $images ? $images[0] : "" ;
         }else{
-          $good['id'] = $gid;
+          $good['id'] = $gid ;
+          $good['name'] = "#".$gid ;
           $good['thumb'] = '';
         }
         $good['num'] = $num;
@@ -94,16 +131,75 @@ class ScoreOrder extends AdminBase
       }
       $lists[$key]['goods'] = $goods;
     }
+
+
     $companyLists = (new CompanyModel())->getCompanys();
     $companys = [];
     foreach($companyLists as $key => $value) {
       $companys[$value['company_id']] = $value['company_name'];
     }
 
-    // dump($lists);
-    $statusList = config('score.order_status');
 
-    return $this->fetch('index', ['lists' => $lists, 'pagesize'=>$pagesize,'statusList'=>$statusList,'filter'=>$filter,'status'=>$status,'companys'=>$companys]);
+    /* 导出报表 */
+    if($export){
+      $filename = md5(json_encode($filter)).'_'.$status.'_'.time().'.xlsx';
+
+      $spreadsheet = new Spreadsheet();
+      $sheet = $spreadsheet->getActiveSheet();
+
+      /*设置表头*/
+      $sheet->setCellValue('A1', '单号')
+      ->setCellValue('B1','姓名')
+      ->setCellValue('C1','电话')
+      ->setCellValue('D1','账号')
+      ->setCellValue('E1','公司')
+      ->setCellValue('F1','部门')
+      ->setCellValue('G1','分厂')
+      ->setCellValue('H1','下单时间')
+      ->setCellValue('I1','奖品')
+      ->setCellValue('J1','状态')
+      ;
+
+      foreach ($lists as $key => $value) {
+        $rowNum = $key+2;
+        $goodStr = '';
+
+        foreach ($value['goods'] as $k => $good) {
+          $goodStr .= $good['name'].'×'.$good['num'].PHP_EOL;
+        }
+
+        $sheet->setCellValue('A'.$rowNum, iconv_substr($value['uuid'],0,8).'/'.$value['id'])
+        ->setCellValue('B'.$rowNum,$value['name']."(#".$value['uid'].")")
+        ->setCellValue('C'.$rowNum,$value['phone'])
+        ->setCellValue('D'.$rowNum,$value['loginname'])
+        ->setCellValue('E'.$rowNum,isset($companys[$value['company_id']]) ? $companys[$value['company_id']] :  $value['company_id'] )
+        ->setCellValue('F'.$rowNum,$value['companyname'])
+        ->setCellValue('G'.$rowNum,$value['Department'])
+        ->setCellValue('H'.$rowNum,$value['creation_time'])
+        ->setCellValue('I'.$rowNum,$goodStr)
+        ->setCellValue('J'.$rowNum,$value['status']);
+        $sheet->getStyle('I'.$rowNum)->getAlignment()->setWrapText(true);
+      }
+      /*$value = "Hello World!" . PHP_EOL . "Next Line";
+      $sheet->setCellValue('A1', $value)；
+      $sheet->getStyle('A1')->getAlignment()->setWrapText(true);*/
+
+      $writer = new Xlsx($spreadsheet);
+      /*$filename = Env::get('root_path') . "public/uploads/temp/hello_world.xlsx";
+      $writer->save($filename);*/
+      header('Content-Disposition: attachment;filename="'.$filename.'"');//告诉浏览器输出浏览器名称
+      header('Cache-Control: max-age=0');//禁止缓存
+      $writer->save('php://output');
+      $spreadsheet->disconnectWorksheets();
+      unset($spreadsheet);
+      // dump($lists);
+      exit;
+    }else{
+      // dump($lists);
+      $statusList = config('score.order_status');
+      return $this->fetch('index', ['lists' => $lists, 'pagesize'=>$pagesize,'statusList'=>$statusList,'filter'=>$filter,'status'=>$status,'companys'=>$companys]);
+    }
+
 
   }
 
@@ -139,7 +235,9 @@ class ScoreOrder extends AdminBase
           $images = json_decode($good['images'],true);
           $good['thumb'] = $images ? $images[0] : "" ;
         }else{
+          $good['name'] = "#".$gid ;
           $good['id'] = $gid;
+          $good['price'] = '-';
           $good['thumb'] = '';
         }
         $good['num'] = $num;
@@ -166,34 +264,42 @@ class ScoreOrder extends AdminBase
    * 商品兑换数统计
    * @return mixed
    */
-  public function goods($filter=[]){
+  public function goods($filter=['status'=>0]){
     $map = [];
     $map[] = ['o.is_delete','<>', 1];
-    $map[] = ['o.status','=', 0];
-    if(isset($filter['time']) && $filter['time']){
-      $time_arr = explode(' ~ ',$filter['time']);
-      if(is_array($time_arr)){
-        $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
-        $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
-        // $map[] = ['t.creation_time', 'between', [$time_s, $time_e]];
-        $map[] = ['o.creation_time', '>=', $time_s];
-        $map[] = ['o.creation_time', '<', $time_e];
-      }
-
-      $join = [
-        ['order o','o.id = t.oid', 'left'],
-        ['goods g','g.id = t.gid', 'left'],
-      ];
-      $lists = OrderGoodsModel::alias('t')->field("g.*, sum(t.count) as num ")->json(['images'])->join($join)->where($map)->group('t.gid')->order(' t.gid DESC')->select();
-      foreach ($lists as $key => $value) {
-        $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
-      }
-
-    }else{
-      $lists = false;
+    //筛选状态
+    if(is_numeric($filter['status'])){
+      $map[] = ['o.status','=', $filter['status']];
+    }elseif($filter['status']=="all_01"){
+      $map[] = ['o.status','in', [0,1]];
     }
 
-    return $this->fetch('goods', ['lists' => $lists,'filter'=>$filter]);
+    //筛选时间
+    if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
+      $time_s = date("Y-m-01");
+      $time_e = date("Y-m-d",strtotime("$time_s +1 month"));
+      $time_e_o = date("Y-m-d",strtotime($time_e)- 24*60*60);
+      $filter['time'] = $time_s." ~ ".$time_e_o;
+    }
+    $time_arr = explode(' ~ ',$filter['time']);
+    $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
+    $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
+    $map[] = ['o.creation_time', '>=', $time_s];
+    $map[] = ['o.creation_time', '<', $time_e];
+
+    $join = [
+      ['order o','o.id = t.oid', 'left'],
+      ['goods g','g.id = t.gid', 'left'],
+    ];
+    $lists = OrderGoodsModel::alias('t')->field("g.*, sum(t.count) as num ")->json(['images'])->join($join)->where($map)->group('t.gid')->order(' t.gid DESC')->select();
+    foreach ($lists as $key => $value) {
+      $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
+    }
+
+    $statusList = config('score.order_status');
+
+
+    return $this->fetch('goods', ['lists' => $lists,'filter'=>$filter,'statusList'=>$statusList]);
 
   }
 
@@ -245,7 +351,8 @@ class ScoreOrder extends AdminBase
   /**
    * 商品订单 下单者列表
    */
-  public function good_owners($gid,$time,$pagesize = 30,$filter=['keyword'=>'']){
+  public function good_owners($gid,$time,$pagesize = 30,$status= 0, $filter=['keyword'=>'' ]){
+
     if(!$gid){
       $this->error('Lost id');
     }
@@ -260,7 +367,12 @@ class ScoreOrder extends AdminBase
     $map = [];
     $map[] = ['t.gid', '=', $gid];
     $map[] = ['o.is_delete','<>', 1];
-    $map[] = ['o.status','=', 0];
+    //筛选状态
+    if(is_numeric($status)){
+      $map[] = ['o.status','=', $status];
+    }elseif($status=="all_01"){
+      $map[] = ['o.status','in', [0,1]];
+    }
 
 
     $time_arr = explode(' ~ ',$time);
@@ -311,8 +423,18 @@ class ScoreOrder extends AdminBase
     foreach($companyLists as $key => $value) {
       $companys[$value['company_id']] = $value['company_name'];
     }
-    return $this->fetch('good_owners', ['good'=>$good,'lists' => $lists,'companys'=>$companys,'time'=>$time,'filter'=>$filter,'pagesize'=>$pagesize,'total'=>$total,'sum'=>$sum]);
+    $statusList = config('score.order_status');
 
+    return $this->fetch('good_owners', ['good'=>$good,'lists' => $lists,'companys'=>$companys,'time'=>$time,'filter'=>$filter,'status'=>$status,'statusList'=>$statusList,'pagesize'=>$pagesize,'total'=>$total,'sum'=>$sum]);
+
+
+  }
+
+
+  /**
+   *
+   */
+  public function owners($time,$pagesize = 30,$filter=['keyword'=>'']){
 
   }
 
