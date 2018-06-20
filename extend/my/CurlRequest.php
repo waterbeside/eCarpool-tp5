@@ -21,14 +21,16 @@ class CurlRequest {
             $json_str = json_decode($json_str,true);
         }
         $json_arr=array();
-        foreach($json_str as $k=>$w){
-            if(is_object($w)){
-                $json_arr[$k]= $this->json_to_array($w); //判断类型是不是object
-            }else if(is_array($w)){
-                $json_arr[$k]= $this->json_to_array($w);
-            }else{
-                $json_arr[$k]= $w;
-            }
+        if(is_array($json_str)){
+          foreach($json_str as $k=>$w){
+              if(is_object($w)){
+                  $json_arr[$k]= $this->json_to_array($w); //判断类型是不是object
+              }else if(is_array($w)){
+                  $json_arr[$k]= $this->json_to_array($w);
+              }else{
+                  $json_arr[$k]= $w;
+              }
+          }
         }
         return $json_arr;
     }
