@@ -162,7 +162,6 @@ class Score extends AdminBase
       $configs = $this->systemConfig;
       $redis = new RedisData();
       $soreSettingData=json_decode($redis->get("CONFIG_SETTING"),true);
-
       if ($this->request->isPost()){
         $datas          = $this->request->post('');
         $order_date     = explode(',',$datas['order_date']);
