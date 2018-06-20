@@ -6,24 +6,48 @@
     <div class="layui-tab layui-tab-brief">
 
         <div class="layui-tab-content">
-          <h3>商品：</h3>
-          <table class="layui-table">
-            <tbody class="goods-table-list">
-              <tr class="good-item">
-                <td class="label" ># {$good.id}</td>
-                <td>
+          <blockquote class="layui-elem-quote layui-quote-nm" style="background:#FFF">
+            <div>
+              
+              <?php if(is_numeric($status)){ ?>
+                <h4 class="layui-badge goodOrder-status_{$status}"><?php echo $statusList[$status]; ?> </h4>
+              <?php  }elseif($status == 'all_01' ){ ?>
+                <h4 class="layui-badge goodOrder-status_{$status}">未兑和已兑 </h4>
+              <?php  }else{ ?>
+                <h4 class="layui-badge goodOrder-status_{$status}">所有订单状态 </h4>
+              <?php  } ?>
+              &nbsp;&nbsp;<?php echo str_replace("+"," ",$time) ; ?>
+            </div>
+            <hr />
+
+            <div class="goods-table-list">
+              <div class="good-item">
                   <div  class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
                   <span class="layui-elip">{$good.name}</span>
-                </td>
-                <td   >单价 {$good.price}</td>
-                <td   >人数 {$total}</td>
-                <td   >兑换总数 {$sum}</td>
-              </tr>
+              </div>
+            </div>
+            <hr />
+            <div class="layui-row ">
+              <div class="layui-col-sm3">
+                单价： <b class="layui-badge-rim" > {$good.price} </b>
+              </div>
+              <div class="layui-col-sm3">
+                人数：<b class="layui-badge-rim"> {$total}</b>
+              </div>
+              <div class="layui-col-sm3">
+                数量：<b class="layui-badge-rim"> {$sum}</b>
+              </div>
+              <div class="layui-col-sm3">
+                总价：<b class="layui-badge-rim"> {$sum*$good.price}</b>
+              </div>
+            </div>
+          </blockquote>
 
-            </tbody>
-          </table>
+
+
+
           <div class="blank20"></div>
-          <h3>下单用户：</h3>
+          <!-- <h3>下单用户：</h3> -->
           <div class="blank10"></div>
                 <form class="layui-form layui-form-pane" action="{:url('admin/ScoreOrder/good_owners',['gid'=>$good['id'],'time'=>$time])}" method="get">
                     <div class="layui-input-inline">
