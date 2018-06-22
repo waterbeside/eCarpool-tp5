@@ -67,7 +67,8 @@
       <tr >
           <th width="40">编号</th>
           <th>商品</th>
-          <th width="40">单价</th>
+          <th width="50">兑换价</th>
+          <th width="50">采购价</th>
           <th width="100" >数量</th>
       </tr>
       </thead>
@@ -80,6 +81,7 @@
             <span class="layui-elip">{$good.name}</span>
           </td>
           <td class="label" >{$good.price}</td>
+          <td class="label" >{$good.amount ? $good.amount : '-' }</td>
           <td class="label" >&times; {$good.num}</td>
 
         </tr>

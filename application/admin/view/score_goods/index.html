@@ -60,7 +60,8 @@
                         <span class="id">#{$vo.id}</span>
                         <p class="am-card-text">{$vo.desc|iconv_substr=0,80}...</p>
                         <div class="info">
-                          <span class="price"> 价格：<b class="text-red">{$vo.price}</b></span>
+                          <span class="price"> 兑换价：<b >{$vo.price}</b></span>
+                          <span class="amount"> 采购价：<b >{$vo.amount}</b></span>
                           <span class="inventory">库存：<b>{$vo.inventory >-1 ?$vo.inventory : '无限'}</b></span>
                           <span class="status">状态：<b><?php echo $statusList[$vo['status']] ;?> / <small><?php echo $vo['is_delete'] ? "不显示" : "显示" ;?></small></b></span>
                         </div>

@@ -43,7 +43,8 @@
                       <th width="40">编号</th>
                       <th>商品</th>
                       <th width="40">库存</th>
-                      <th width="40">单价</th>
+                      <th width="50">兑换价</th>
+                      <th width="50">采购价</th>
                       <th width="100" >兑换数量</th>
                       <th width="100" >总价</th>
                   </tr>
@@ -60,8 +61,9 @@
                       </td>
                       <td class="label" >{$good.inventory == -1 ? '不限' : $good.inventory }</td>
                       <td class="label" ><b class="price">{$good.price}</b></td>
+                      <td class="label" ><b class="amount">{$good.amount}</b></td>
                       <td class="label" >&times; <b class="num">{$good.num}</b></td>
-                      <td class="label" > <b class="total">{$good.num * $good.price}</b></td>
+                      <td class="label" > <b class="total">{$good.num * $good.amount}</b></td>
                     </tr>
                     <?php } ?>
 
@@ -69,7 +71,7 @@
                   </tbody>
                 </table>
                 <blockquote class="layui-elem-quote layui-quote-nm" style="background:#FFF; text-align:right">
-                  总价:<b class="sumPrice"></b> &nbsp;&nbsp; <b  class="sumNum"></b>
+                  总采购价:<b class="sumPrice"></b> &nbsp;&nbsp; <b  class="sumNum"></b>
                 </blockquote>
               <?php }else{
                 echo isset($filter['time']) && $filter['time'] ? "暂无数据" : "请选择时间段";
@@ -108,9 +110,9 @@ var goodSum = {
 }
 $('.goods-table-list .good-item').each(function(index, el) {
   var num =  parseInt($(this).find('.num').text());
-  var price =  parseInt($(this).find('.price').text());
+  var amount =  parseInt($(this).find('.amount').text());
   goodSum['num'] += num;
-  goodSum['price'] += num * price;
+  goodSum['price'] += num * amount;
 });
 $('.sumPrice').text(goodSum.price);
 // $('.sumNum').text(goodSum.num);
