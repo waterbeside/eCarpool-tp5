@@ -5,17 +5,28 @@ body {background:#FFF}
 .blank10 {height: 10px; overflow: hidden; line-height: 1;display: block; clear: both;}
 .blank12 {height: 12px; overflow: hidden; line-height: 1;display: block;clear: both;}
 .blank20 {height: 20px; overflow: hidden; line-height: 1;display: block;clear: both;}
-.header{   width:100%;   height:60px;   display: flex; display: -webkit-flex; }
+.header{   width:100%;   height:60px;   display: flex; display: -webkit-flex;  }
 .t-number , .layui-table th.t-number { text-align: right}
+/* .layui-layout-admin .layui-header.header {background: rgb(119, 13, 13)} */
+
 
 .aframe-sidebox .layui-nav-title  { margin: 0; padding:8px 0; color:#AAA; background: #4A5064; cursor: pointer;}
 .aframe-sidebox .layui-nav-title .aframe-icon { margin-left: 0; padding-left: 12px}
 .aframe-sidebox  a { display: block;}
 .aframe-sidebox .aframe-icon {margin:0 12px 0 -8px;   display: inline-block; width: 22px; text-align: center; font-size: 16px;}
-.aframe-sidebox .layui-nav-child  .aframe-icon { font-size: 12px;}
+.aframe-sidebox .layui-nav-item > a { font-weight: 400; font-size: 14px}
+.aframe-sidebox .layui-nav-itemed > a { box-shadow: 12px 0 10px rgba(0,0,0,.4)}
+
+.aframe-sidebox .layui-nav-child { padding: 4px 0}
+.aframe-sidebox .layui-nav-child dd a {font-size: 13px; height: 38px; line-height: 38px;}
+.aframe-sidebox .layui-nav-child .aframe-icon { margin:0 8px 0 -8px; font-size: 12px;}
+
 .aframe-sidebox.fold a { padding-left: 0; padding-right: 0;width: 46px; overflow: hidden; text-overflow:inherit;}
 .aframe-sidebox.fold .layui-nav-more { display: none}
 .aframe-sidebox.fold .aframe-icon { margin-left:0; padding-left: 12px;}
+.aframe-sidebox.fold .layui-nav-child .aframe-icon { margin-left:0; }
+
+
 .aframe-box{   width:100%;   height:100%;   overflow: hidden; display: flex;   display: -webkit-flex; position:absolute;   top:60px; left:0; right:0;   bottom:0;   z-index: 1;}
 .aframe-box > .aframe-sidebox{ width:200px;   flex:0 0 auto; height:100%; z-index: 8}
 .aframe-con {      flex:auto; z-index: 9; background: #fff;}
@@ -209,13 +220,14 @@ body {background:#FFF}
 .good-list .am-card .cover-thumb {box-sizing: border-box;border:2px solid #FFF; border-radius: 4px;  height:60px; width:80px }
 .good-list .am-card .info { color: #aaa}
 .good-list .am-card .info b { color:#555}
-.good-list .am-card .price , .good-list .am-card .inventory ,.good-list .am-card .status{ margin-right: 30px}
+.good-list .am-card .price , .good-list .am-card .amount, .good-list .am-card .inventory ,.good-list .am-card .status{ margin-right: 30px}
 .good-list .am-card.good-unshow { background: #f0f0f0; }
 .good-list .am-card.good-unshow .am-card-title a {color:#888 }
 .good-list .am-card.good-unshow .info b {color:#aaa }
 .good-list .am-card.good-unshow .status small { color: rgb(247, 145, 25)}
 
-.good-list .am-card .price  b {font-size: 20px;color:#cb3434 }
+.good-list .am-card .price  b {font-size: 16px;color:#d54141 }
+.good-list .am-card .amount  b {font-size: 20px;color:#cb3434 }
 .good-list .am-card .id {position: absolute; right:10px; top:10px; color: #aaa;}
 .good-list .am-card:last-child  { margin-bottom: 20px; }
 .good-list .am-card-text {   padding: 2px 100px  0 0 ; color:#999;  max-width: 800px; height: 44px; overflow: hidden; }
