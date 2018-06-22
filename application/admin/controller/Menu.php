@@ -21,7 +21,6 @@ class Menu extends AdminBase
         $this->auth_rule_model = new AuthRuleModel();
         $admin_menu_list       = $this->auth_rule_model->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
         $admin_menu_level_list = array2level($admin_menu_list);
-
         $this->assign('admin_menu_level_list', $admin_menu_level_list);
     }
 
