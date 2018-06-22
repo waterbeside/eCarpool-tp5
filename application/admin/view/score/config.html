@@ -14,21 +14,51 @@
           <div class="blank20"></div>
 
           <form class="layui-form form-container" action="{:url('admin/Score/config')}" method="post">
-
-              <div class="layui-form-item">
-                  <label class="layui-form-label">允许下单日</label>
-                  <div class="layui-input-block">
-                      <input type="text" name="order_date" value="{$data.order_date_str}" required  lay-verify="required" placeholder="每月允许下单日" class="layui-input">
-                      <div class="layui-form-mid layui-word-aux">每月允许下单日，多个日期请用英文","格开，例 3,4,5,6 </div>
-                  </div>
-              </div>
-              <div class="layui-form-item">
-                  <label class="layui-form-label">兑换日</label>
-                  <div class="layui-input-block">
+            <table class="layui-table">
+              <tbody>
+                <tr>
+                  <td>允许下单日 </td>
+                  <td>
+                    <input type="text" name="order_date" value="{$data.order_date_str}" required  lay-verify="required" placeholder="每月允许下单日" class="layui-input">
+                    <div class="layui-form-mid layui-word-aux">每月允许下单日，多个日期请用英文","格开，例 3,4,5,6 </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>兑换日 </td>
+                  <td>
                     <input type="text" name="exchange_date" value="{$data.exchange_date_str}" required  lay-verify="required" placeholder="每月兑换日" class="layui-input">
                     <div class="layui-form-mid layui-word-aux">每月兑换日","格开，例 18,19,20 </div>
-                  </div>
-              </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>启用积分兑换 </td>
+                  <td>
+                    <input type="checkbox" name="order_switch" value="1" lay-skin="switch" lay-text="开启|禁用" <?php echo isset($data['order_switch']) && $data['order_switch']==1 ? 'checked="checked"':''; ?> >
+                  </td>
+                </tr>
+                <tr>
+                  <td>启用积分抽奖 </td>
+                  <td>
+                    <input type="checkbox" name="lottery_integral_switch" value="1" lay-skin="switch" lay-text="开启|禁用" <?php echo isset($data['lottery_integral_switch']) && $data['lottery_integral_switch']==1 ? 'checked="checked"': ''; ?> >
+                  </td>
+                </tr>
+                <tr>
+                  <td>积分抽奖价</td>
+                  <td>
+                    <input type="text" name="lottery_integral_price" value="{$data.lottery_integral_price ? $data.lottery_integral_price : ''}" required  lay-verify="required" placeholder="每次积分抽奖的单价" class="layui-input">
+                    <div class="layui-form-mid layui-word-aux">每次积分抽奖的单价 </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>启用实物抽奖 </td>
+                  <td>
+                    <input type="checkbox" name="lottery_material_switch" value="1" lay-skin="switch" lay-text="开启|禁用" <?php echo isset($data['lottery_material_switch']) && $data['lottery_material_switch']==1 ? 'checked="checked"': ''; ?> >
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+
 
               <div class="blank20"></div>
 

@@ -159,9 +159,15 @@ class Score extends AdminBase
      * 积分配置
      */
     public function config(){
+      # 控制积分兑换&&积分抽奖&&实物抽奖开关
+                // "order_switch" : 1,
+                // "lottery_integral_switch" : 1,
+                // "lottery_material_switch" : 1,
+
       $configs = $this->systemConfig;
       $redis = new RedisData();
       $soreSettingData=json_decode($redis->get("CONFIG_SETTING"),true);
+      // dump($soreSettingData);
       if ($this->request->isPost()){
         $datas          = $this->request->post('');
         $order_date     = explode(',',$datas['order_date']);
@@ -182,6 +188,11 @@ class Score extends AdminBase
             $soreSettingData['exchange_date'][]=intval($value);
           }
         }
+
+        $soreSettingData['order_switch']              = isset($datas['order_switch'])            ? $datas['order_switch']            : 0 ;
+        $soreSettingData['lottery_integral_switch']   = isset($datas['lottery_integral_switch']) ? $datas['lottery_integral_switch'] : 0 ;
+        $soreSettingData['lottery_material_switch']   = isset($datas['lottery_material_switch']) ? $datas['lottery_material_switch'] : 0 ;
+        $soreSettingData['lottery_integral_price']    = isset($datas['lottery_integral_price'])  ? $datas['lottery_integral_price']  : 0 ;
         $soreSettingDataStr = json_encode($soreSettingData);
         $redis->set('CONFIG_SETTING', $soreSettingDataStr);
         $this->log('修改积分配置成功',0);
@@ -191,8 +202,12 @@ class Score extends AdminBase
       }else{
 
         $data = $soreSettingData;
-        $data['order_date_str'] = join(",",$data['order_date']);
-        $data['exchange_date_str'] = join(",",$data['exchange_date']);
+        $data['order_date_str']           =  !isset($data['order_date'])  ? '' : (is_array($data['order_date']) ? join(",",$data['order_date']) : $data['order_date']);
+        $data['exchange_date_str']        =  !isset($data['exchange_date'])  ? '' : (is_array($data['exchange_date']) ? join(",",$data['exchange_date']) : $data['exchange_date']);
+        /*$data['(order_switch)']             =  isset($data['order_switch'])             ? $data['order_switch']            : 0  ;
+        $data['lottery_integral_switch']  =  isset($data['lottery_integral_switch'])  ? $data['lottery_integral_switch'] : 0  ;
+        $data['lottery_material_switch']  =  isset($data['lottery_material_switch'])  ? $data['lottery_material_switch'] : 0  ;
+        $data['lottery_integral_price']   =  isset($data['lottery_integral_price'])   ? $data['lottery_integral_price']  : 0  ;*/
 
 
         return $this->fetch('config',['configs'=>$configs,'data'=>$data]);
