@@ -33,7 +33,17 @@ class AdminUser extends AdminBase
      */
     public function index()
     {
+
+        $auth_group_list = $this->auth_group_model->select();
         $admin_user_list = $this->admin_user_model->select();
+        $groups = [];
+        foreach ($auth_group_list as $key => $value) {
+          $groups[$value['id']] = $value;
+        }
+        foreach ($admin_user_list as $key => $value) {
+          $group_id = $this->auth_group_access_model->where('uid',$value['id'])->value('group_id');
+          $admin_user_list[$key]['group_name'] = isset($groups[$group_id]) ? $groups[$group_id]['title'] : $group_id;
+        }
 
         return $this->fetch('index', ['admin_user_list' => $admin_user_list]);
     }
