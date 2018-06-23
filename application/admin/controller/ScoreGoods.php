@@ -15,14 +15,13 @@ use think\Db;
  */
 class ScoreGoods extends AdminBase
 {
-  protected $good_status = [
-    "-2" => "下架",
-    "-1" => "准备中",
-    "0" => "正常",
-    "1" => "推荐",
-    "2" => "置顶",
-  ];
+  protected $goods_status ;
 
+  protected function initialize()
+  {
+      parent::initialize();
+      $this->goods_status  = config('score.goods_status');
+  }
 
   /**
    * 商品列表
@@ -31,7 +30,7 @@ class ScoreGoods extends AdminBase
   public function index($type='2',$keyword="",$filter=[],$page = 1,$pagesize = 20)
   {
     $map = [];
-    if(isset($filter['status']) && $filter['status']!==false){
+    if(isset($filter['status']) && $filter['status']!==''){
       $map[] = ['status','=', $filter['status']];
     }
     if(isset($filter['is_hidden']) && $filter['is_hidden']!==false){
@@ -44,7 +43,7 @@ class ScoreGoods extends AdminBase
     foreach ($lists as $key => $value) {
       $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
     }
-    $statusList = $this->good_status;
+    $statusList = $this->goods_status;
     $scoreConfigs = (new Configs())->getConfigs("score");
     return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword,'pagesize'=>$pagesize,'type'=>$type,'statusList'=>$statusList,'filter'=>$filter,'scoreConfigs'=>$scoreConfigs]);
   }
@@ -87,7 +86,7 @@ class ScoreGoods extends AdminBase
           return $this->jsonReturn(-1,'保存失败');
       }
     }else{
-      return $this->fetch('add', ['good_status' => $this->good_status]);
+      return $this->fetch('add', ['goods_status' => $this->goods_status]);
     }
   }
 
@@ -142,7 +141,7 @@ class ScoreGoods extends AdminBase
         $data['is_show'] = $data['is_delete'] ? 0 : 1 ;
         $data['thumb'] = is_array($data["images"]) ? $data["images"][0] : "" ;
       }
-      return $this->fetch('edit', ['data' => $data,'good_status' => $this->good_status]);
+      return $this->fetch('edit', ['data' => $data,'goods_status' => $this->goods_status]);
     }
   }
 
