@@ -52,7 +52,7 @@
                   <label class="layui-form-label">状态</label>
                   <div class="layui-input-block">
                     <select name="status"  >
-                      {foreach name="good_status" item="vo" key="key"}
+                      {foreach name="goods_status" item="vo" key="key"}
                        <option value="{$key}" {php}echo $key === $data['status'] ? 'selected' : ''; {/php}>{$vo}</option>
                       {/foreach}
                      </select>
