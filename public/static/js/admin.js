@@ -94,6 +94,8 @@ function ajaxSubmit(setting){
                 location.href = opt.jump;
               }else if(res.url){
                 location.href = res.url;
+              }else if(res.extra.url){
+                location.href = res.extra.url;
               }else{
                 location.reload();
               }
