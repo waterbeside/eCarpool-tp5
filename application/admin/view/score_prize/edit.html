@@ -1,0 +1,182 @@
+
+<div class="layui-tab-content goods-item-edit prize-item-edit ">
+  <div class="progress layui-progress layui-progress-big" lay-showPercent="true">
+    <div class="layui-progress-bar " lay-percent="{$data.real_count} /{$data.total_count}"></div>
+  </div>
+    <div>
+        <form class="layui-form form-container" action="{:url('admin/ScorePrize/edit')}" method="post" onsubmit="return RESOLVE_INIT.submitForm(this);">
+
+
+              <div class="layui-form-item">
+                  <label class="layui-form-label">奖品名</label>
+                  <div class="layui-input-block">
+                      <input type="text" name="name" value="{$data.name}" required  lay-verify="required" placeholder="请输入奖品名" class="layui-input" <?php if( !in_array($data['status'],[-1,-2])){echo 'readonly disabled';  } ?>>
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">期数</label>
+                  <div class="layui-input-block">
+                      <input type="number"  value="{$data.publication_number}"  placeholder="期数" class="layui-input" readonly disabled>
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">描述</label>
+                  <div class="layui-input-block">
+                     <textarea name="desc" placeholder="请输入描述" class="layui-textarea">{$data.desc}</textarea>
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">缩略图</label>
+                  <div class="layui-input-block">
+                    <input type="text" name="thumb" value="{$data.thumb}" class="layui-input">
+                    <a   class="amain-uploadImgBtn" <?php if( $data['status'] > -2){echo 'id="upload-btn"';  } ?>" >
+                       <img class="layui-upload-img" id="item-thumb" src="{$data.thumb}" >
+                       <div class="text <?php if( $data['status'] < -1){echo 'layui-hide';  } ?>"   >
+                         <i class="fa fa-upload"></i>上传图片
+                       </div>
+                    </a>
+                    <p id="uploadText"></p>
+
+                  </div>
+              </div>
+               <div class="layui-form-item">
+                  <label class="layui-form-label">采购价</label>
+                  <div class="layui-input-block">
+                      <input type="text" name="amount" value="{$data.amount}"  required  lay-verify="required" placeholder="请输入奖品采购价" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">抽奖所需分</label>
+                  <div class="layui-input-block">
+                      <input type="text" name="price" value="{$data.price}"  required  lay-verify="required" placeholder="抽奖所需积分" class="layui-input" <?php if( !in_array($data['status'],[-1,-2])){echo 'readonly disabled';  } ?>>
+                  </div>
+              </div>
+
+              <div class="layui-form-item">
+                  <label class="layui-form-label">开奖阈值</label>
+                  <div class="layui-input-block">
+                      <input type="number" name="total_count"  value="{$data.total_count}"  required  lay-verify="required" placeholder="开奖阈值" class="layui-input" <?php if( !in_array($data['status'],[-1,-2])){echo 'readonly disabled';  } ?>>
+                      <div class="layui-form-mid layui-word-aux"    >当购买票数达到该数量时开奖</div>
+                  </div>
+              </div>
+
+              <div class="layui-form-item">
+                  <label class="layui-form-label">级别</label>
+                  <div class="layui-input-block">
+                      <input type="number" name="level" min="-1" value="{$data.level}"  required  lay-verify="required" placeholder="奖品级别" class="layui-input">
+                      <div class="layui-form-mid layui-word-aux">奖品级别(第几等奖)</div>
+                  </div>
+              </div>
+              <?php if( $data['status'] > -3 ){ ?>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">状态</label>
+                  <div class="layui-input-block">
+                    <select name="status"  >
+                      <?php if( in_array($data['status'],[-1,-2]) || $data['real_count'] < 1 ){ ?>
+                        <option value="-2" {php}echo $data['status'] == -2  ? 'selected' : ''; {/php}>下架</option>
+                        <option value="-1" {php}echo $data['status'] == -1  ? 'selected' : ''; {/php}>准备开始</option>
+                      <?php } ?>
+                      <option value="0" {php}echo $data['status'] == 0  ? 'selected' : ''; {/php}>进行中（正常）</option>
+                      <option value="1" {php}echo $data['status'] == 1  ? 'selected' : ''; {/php}>进行中（推荐）</option>
+                       <option value="2" {php}echo $data['status'] == 2  ? 'selected' : ''; {/php}>进行中（置顶）</option>
+                     </select>
+                     <div class="layui-form-mid layui-word-aux">默认为“准备开始”，抽奖一旦设为进行中或下架，则不允许再对奖品信息进行修改，请三思而行。</div>
+
+                  </div>
+              </div>
+              <?php } ?>
+              <?php if( $data['status'] > -2 ){ ?>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">自动续期</label>
+                  <div class="layui-input-block">
+                      <input type="checkbox" name="is_shelves" value="1" lay-skin="switch" lay-text="是|否" {if condition="$data.is_shelves==1"} checked="checked"{/if}>
+                      <div class="layui-form-mid layui-word-aux" >开奖后，是否自动生成并开始下一期抽奖。</div>
+                  </div>
+              </div>
+              <?php } ?>
+
+
+
+
+            <div class="blank20"></div>
+
+            <div class="layui-btn-container layui-row">
+                <input type="hidden" name="id" value="{$data.id}">
+                <button class="layui-btn layui-btn-lg layui-col-xs12 " <?php if( $data['status'] < -1){echo 'disabled';  } ?> >
+                  <?php echo $data['status'] > -2 ? '提交' : (isset($prize_status[$data['status']])? $prize_status[$data['status']] : '提交') ; ?>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+<script>
+
+RESOLVE_INIT = {
+  data : {
+    status: <?php echo isset($data['status']) ? $data['status'] : -2 ?>
+  },
+  upload : layui.upload,
+  init: function(){
+    var $thumbInput = $('.goods-item-edit').find("input[name=thumb]");
+    //普通图片上传
+     var uploadInst = this.upload.render({
+       elem: '#upload-btn'
+       ,url: "{:url('admin/Uploader/images')}"
+       ,before: function(obj){
+         //预读本地文件示例，不支持ie8
+         obj.preview(function(index, file, result){
+           // $('#item-thumb').attr('src', result); //图片链接（base64）
+         });
+       }
+       ,done: function(res){
+         console.log(res);
+         //如果上传失败
+         if(res.code > 0){
+           return layer.msg('上传失败');
+         }
+         if(res.code===0){
+           layer.msg('上传成功');
+           $('#item-thumb').attr('src', res.data.img_url); //图片链接（base64）
+           $thumbInput.val(res.data.img_url);
+         }
+         //上传成功
+       }
+       ,error: function(){
+         //演示失败状态，并实现重传
+         var $uploadText = $('#uploadText');
+         var html = '<span style="color: #FF5722;">上传失败,请稍候再试</span>';
+         // html += '<a class="layui-btn layui-btn-xs reUpload">重试</a>';
+         $uploadText.html(html);
+         /*$uploadText.find('.reUpload').on('click', function(){
+           uploadInst.upload();
+         });*/
+       }
+     });
+     $thumbInput.keyup(function(event) {
+       /* Act on the event */
+       var thumbPath = $thumbInput.val();
+       $('#item-thumb').attr('src', thumbPath);
+     });
+     element.render();
+     form.render();
+  },
+  submitForm(form){
+    var $form = $(form);
+    if(this.data.status < -1){
+      layer.msg('该抽奖已结束或下架，无法修改');
+      return false
+    }
+    ajaxSubmit({
+      data: $form.serialize(),
+      url:$form.attr('action'),
+    })
+    return false;
+  }
+}
+
+
+RESOLVE_INIT.init();
+
+
+</script>

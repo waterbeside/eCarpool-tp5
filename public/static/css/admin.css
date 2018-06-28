@@ -8,7 +8,7 @@ body {background:#FFF}
 .header{   width:100%;   height:60px;   display: flex; display: -webkit-flex;  }
 .t-number , .layui-table th.t-number { text-align: right}
 /* .layui-layout-admin .layui-header.header {background: rgb(119, 13, 13)} */
-
+.dark-grey-wrapper {background: #f0f0f0}
 
 .aframe-sidebox .layui-nav-title  { margin: 0; padding:8px 0; color:#AAA; background: #4A5064; cursor: pointer;}
 .aframe-sidebox .layui-nav-title .aframe-icon { margin-left: 0; padding-left: 12px}
@@ -58,7 +58,11 @@ body {background:#FFF}
 .login .login-form button {width: 100%; }
 .logo {margin-top: 20px;margin-left: 20px;}
 
-.amain-body { background: #fafafa}
+
+.layui-input:disabled { background: #f0f0f0; color:#888}
+.layui-btn:disabled { background: #cacaca; color:#fff}
+
+.amain-body { background: #f9f9f9}
 .amain-body .layui-tab-content { padding-bottom: 20px}
 .amain-content { padding: 10px 10px 20px}
 .amain-i18n-edit-list { padding: 12px; margin: 0 -12px; background: #fcfcfc; border-top:1px solid #ddd; border-bottom: 1px solid #DDD; margin-bottom: 10px;}
@@ -206,24 +210,24 @@ body {background:#FFF}
 .amain-tool-bar li.btn-item-right { float:right}
 
 /**卡片列表**/
-.am-card { position: relative; padding: 10px; border:1px solid #d0d0d0; margin-bottom: 10px; box-shadow: 0 0 5px rgba(0,0,0,.1); background: #FFF; border-radius: 3px;}
+.am-card { position: relative; padding: 10px; border:1px solid #ddd; margin-bottom: 10px; /*box-shadow: 0 3px 5px rgba(0,0,0,.1);*/ background: #FFF; border-radius: 3px;}
 .am-card  + .am-card  {}
 .am-card .cover-thumb { margin-right: 10px;width: 120px; height: 90px; float: left;}
 .am-card-title { font-size: 16px; font-weight: 700;}
 
 /** 商品列表 **/
-.good-list .am-card { box-sizing: border-box; background: #fff}
+.good-list .am-card { box-sizing: border-box; background: #fff; border-color: #c0c0c0 }
 .good-list .am-card-title { max-width: 500px;}
-.good-list .am-card-title a {color:#666 }
+.good-list .am-card-title a {color:#444 }
 .good-list .am-card-title a:hover {color:#604c9e}
 .good-list .am-card .cover-thumb {box-sizing: border-box;border:2px solid #FFF; border-radius: 4px;  height:40px; width:60px }
-.good-list .am-card .info {margin: 10px -10px -10px; padding: 8px 10px; border-top: 1px solid #ddd;  background: rgb(242, 240, 234); color: #999}
+.good-list .am-card .info {position: relative;  margin: 10px -10px -10px; padding: 8px 10px; border-top: 1px solid #ddd;  background: rgba(231, 236, 241, 0.25); color: #999; border-radius: 0 0 3px 3px}
 .good-list .am-card .info b { color:#888}
 .good-list .am-card .info-item { margin-right: 30px}
-.good-list .am-card.good-unshow { background: #f0f0f0; }
-.good-list .am-card.good-unshow .am-card-title a {color:#888 }
-.good-list .am-card.good-unshow .info b {color:#aaa }
-.good-list .am-card.good-unshow .status small { color: rgb(247, 145, 25)}
+.good-list .am-card.unshow { background: #f0f0f0; }
+.good-list .am-card.unshow .am-card-title a {color:#888 }
+.good-list .am-card.unshow .info b {color:#aaa }
+.good-list .am-card.unshow .status small { color: rgb(247, 145, 25)}
 
 .good-list .am-card:hover {background: rgb(247, 246, 255);  border:1px solid rgb(125, 107, 156);  border-left:1px solid rgb(106, 73, 159);}
 .good-list .am-card:hover .info { background:  rgb(234, 233, 242)}
@@ -238,6 +242,7 @@ body {background:#FFF}
 .good-list .am-card .ibtn { margin:8px 5px 0 5px; padding:0 10px 0 6px; height:24px; font-size: 12px; line-height: 24px; }
 
 .goods-item-edit #item-thumb { width: 120px}
+
 
 /** 订单列表 **/
 .order-list .am-card { box-sizing: border-box; background: #fff; border-bottom-width: 2px}
@@ -255,12 +260,14 @@ body {background:#FFF}
 .order-list  .goods { padding:10px 0 0}
 .order-list  .good { margin-top: 8px;border:1px solid #DDD; width: 160px;padding: 4px 5px; display: inline-block; background: #f0f0f0; font-size: 12px; overflow: hi
 }
+
 .order-list  .good  .cover-thumb { float: left;width:60px; height:36px;}
 .order-list  .good .num { margin-top: 4px; font-size: 14px;}
 .order-list  .am-card .btns-wrapper { position: absolute; width: 220px; right: 10px; bottom:10px; text-align: right}
 .order-list .am-card .ibtn { margin:8px 5px 0 5px; padding:0 10px 0 6px; height:24px; font-size: 12px; line-height: 24px; }
 
 .page-orderGoods-list .sumNum , .page-orderGoods-list .sumPrice { font-size: 20px; color:rgb(233, 91, 45)}
+
 /**/
 
 .goodOrder-status_-1 { background-color: #aaa}
@@ -268,3 +275,27 @@ body {background:#FFF}
 .goodOrder-status_0 { background-color: rgb(255, 176, 0)}
 
 .goods-table-list .good-item .cover-thumb { vertical-align: middle; width: 50px; height:30px; display: inline-block;}
+
+
+/**** 抽奖相关 *****/
+
+.prize-list .am-card { margin-top:18px}
+.prize-list .am-card.unshow { background: #f7f7f7; }
+
+.prize-list .progress { position: absolute; top: 0; left:0; right: 0 ; height: 2px;/*margin: 20px -10px -14px; */border-radius: 0; z-index: 1}
+.prize-list .progress .layui-progress-bar { border-radius: 0 ; height: 2px; background-color: rgb(154, 138, 228)}
+.prize-list .progress .layui-progress-text {   white-space:nowrap;  top:-8px; text-align: center; min-width: 38px; display: inline-block; background:rgb(154, 138, 228); color:#fff; padding:0px 4px; border-radius: 3px; transform: scale(.9);}
+.prize-list .am-card  .info {}
+.prize-list .am-card-body , .prize-list .am-card .cover-thumb { margin-top: 8px;}
+
+.prize-status_b { background-color: #aaa}
+.prize-status_-4 {background-color: #348e22}
+.prize-status_-3 {background-color: #80a730}
+.prize-status_-2 {background-color: #989482}
+.prize-status_-1 {background-color: #f2d141}
+.prize-status_0 {background-color: #d46536}
+.prize-status_1 {background-color: #d93939}
+.prize-status_2 {background-color: #a71616}
+
+.prize-item-edit .progress { margin: -25px -25px 40px; border-radius: 0;}
+.prize-item-edit .progress  .layui-progress-bar { border-radius: 0 ;  }
