@@ -27,14 +27,16 @@ class ScoreGoods extends AdminBase
    * 商品列表
    * @return mixed
    */
-  public function index($type='2',$keyword="",$filter=[],$page = 1,$pagesize = 20)
+  public function index($type='2',$keyword="",$filter=['status'=>'','is_hidden'=>''],$page = 1,$pagesize = 20)
   {
     $map = [];
-    if(isset($filter['status']) && $filter['status']!==''){
+
+    if(isset($filter['status']) && is_numeric($filter['status'])){
       $map[] = ['status','=', $filter['status']];
     }
-    if(isset($filter['is_hidden']) && $filter['is_hidden']!==false){
-      $map[] = ['is_delete','=', $filter['is_hidden']];
+    if(isset($filter['is_hidden']) && is_numeric($filter['is_hidden']) && $filter['is_hidden']!==0){
+      $is_delete = $filter['is_hidden'] ? 1 : 0 ;
+      $map[] = ['is_delete','=', $filter['is_hidden']] ;
     }
     if ($keyword) {
         $map[] = ['name|desc','like', "%{$keyword}%"];

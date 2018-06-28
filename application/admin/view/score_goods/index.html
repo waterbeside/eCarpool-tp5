@@ -14,7 +14,7 @@
 
         </ul>
 
-        <div class="layui-tab-content">
+        <div class="layui-tab-content dark-grey-wrapper ">
 
 
                 <form class="layui-form layui-form-pane" action="{:url('admin/ScoreGoods/index')}" method="get">
@@ -27,15 +27,15 @@
                           <select name="filter[status]" lay-verify="required" >
                             <option value="" >商品状态 - 不限</option>
                             {foreach name="statusList" key="key" item="vo"}
-                            <option value="{$key}" {php}echo isset($filter['status']) && $filter['status']!="" && intval($filter['status']) === intval($key) ? 'selected' : ''; {/php}>{$vo}</option>
+                            <option value="{$key}" {php}echo isset($filter['status']) && is_numeric($filter['status']) === intval($key) ? 'selected' : ''; {/php}>{$vo}</option>
                             {/foreach}
                           </select>
                         </div>
                         <div class="layui-input-inline">
                           <select name="filter[is_hidden]" lay-verify="required" >
                             <option value="" >是否显示 - 不限</option>
-                            <option value="-2" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "1" ? 'selected' : ''; {/php}>不显示</option>
-                            <option value="-1" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "0" ? 'selected' : ''; {/php}>显示</option>
+                            <option value="1" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "1" ? 'selected' : ''; {/php}>不显示</option>
+                            <option value="0" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "0" ? 'selected' : ''; {/php}>显示</option>
 
                           </select>
                         </div>
@@ -49,7 +49,7 @@
                   <form class="layui-form">
                     {if !count($lists)>0}无数据{/if}
                     {foreach name="lists" item="vo"}
-                    <div class="am-card good-item <?php echo $vo['is_delete'] ? 'good-unshow' : '' ;?>">
+                    <div class="am-card  <?php echo $vo['is_delete'] ? 'unshow' : '' ;?>">
                       <div class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>">  </div>
                       <div class="am-card-body">
                         <h5 class="am-card-title layui-elip" >
