@@ -108,7 +108,7 @@ class ScoreAccount extends AdminBase
         $fieldName = "carpool_account";
         $map[$fieldName] = $account;
         $map["is_delete"]= 0;
-        $data = ScoreAccountModel::where($map)->field("id,account,platform,register_date,indentifier,balance")->find();
+        $data = ScoreAccountModel::where($map)->field("id,account,platform,register_date,identifier,balance")->find();
         $this->jsonReturn(0,$data,'success');
       }
     }
