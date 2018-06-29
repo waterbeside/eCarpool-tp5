@@ -46,17 +46,19 @@
                   </div>
               </div>
               <div class="layui-form-item">
-                  <label class="layui-form-label">抽奖所需分</label>
+                  <label class="layui-form-label">抽奖单价</label>
                   <div class="layui-input-block">
                       <input type="text" name="price" value="{$data.price}"  required  lay-verify="required" placeholder="抽奖所需积分" class="layui-input" <?php if( !in_array($data['status'],[-1,-2])){echo 'readonly disabled';  } ?>>
+                      <div class="layui-form-mid layui-word-aux"  >每次抽奖所消耗积分</div>
                   </div>
+
               </div>
 
               <div class="layui-form-item">
-                  <label class="layui-form-label">开奖阈值</label>
+                  <label class="layui-form-label">期望总数</label>
                   <div class="layui-input-block">
                       <input type="number" name="total_count"  value="{$data.total_count}"  required  lay-verify="required" placeholder="开奖阈值" class="layui-input" <?php if( !in_array($data['status'],[-1,-2])){echo 'readonly disabled';  } ?>>
-                      <div class="layui-form-mid layui-word-aux"    >当购买票数达到该数量时开奖</div>
+                      <div class="layui-form-mid layui-word-aux"  >当购买票数达到该数量时开奖</div>
                   </div>
               </div>
 
@@ -72,8 +74,11 @@
                   <label class="layui-form-label">状态</label>
                   <div class="layui-input-block">
                     <select name="status"  >
-                      <?php if( in_array($data['status'],[-1,-2]) || $data['real_count'] < 1 ){ ?>
+
+                      <?php if($data['status']==-1  ){ ?>
                         <option value="-2" {php}echo $data['status'] == -2  ? 'selected' : ''; {/php}>下架</option>
+                      <?php } ?>
+                      <?php if( in_array($data['status'],[-1]) || $data['real_count'] < 1 ){ ?>
                         <option value="-1" {php}echo $data['status'] == -1  ? 'selected' : ''; {/php}>准备开始</option>
                       <?php } ?>
                       <option value="0" {php}echo $data['status'] == 0  ? 'selected' : ''; {/php}>进行中（正常）</option>
@@ -89,7 +94,7 @@
               <div class="layui-form-item">
                   <label class="layui-form-label">自动续期</label>
                   <div class="layui-input-block">
-                      <input type="checkbox" name="is_shelves" value="1" lay-skin="switch" lay-text="是|否" {if condition="$data.is_shelves==1"} checked="checked"{/if}>
+                      <input type="checkbox" name="un_shelves" value="1" lay-skin="switch" lay-text="是|否" {if condition="$data.is_shelves === 0 "} checked="checked"{/if}>
                       <div class="layui-form-mid layui-word-aux" >开奖后，是否自动生成并开始下一期抽奖。</div>
                   </div>
               </div>

@@ -43,7 +43,9 @@ class ScorePrize extends AdminBase
         $map[] = ['name|desc','like', "%{$keyword}%"];
     }
 
-    $lists = PrizeModel::where($map)->json(['images'])->order(' id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+    $lists = PrizeModel::where($map)->json(['images'])->order('id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+    // $lists = PrizeModel::where($map)->json(['images'])->order('id DESC')->fetchSql()->select();
+    // dump($lists);exit;
     foreach ($lists as $key => $value) {
       $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
     }
@@ -99,7 +101,7 @@ class ScorePrize extends AdminBase
         'publication_number' => $data['publication_number'],
         'real_count' => 0,
         'total_count' => $data['total_count'],
-        'is_shelves' => 0,
+        'is_shelves' => isset($data['un_shelves']) &&  isset($data['un_shelves']) == 1 ? 0 : 1,
 
         'status' =>  in_array($data['status'],[-1,0,1,2]) ? $data['status'] : -1 ,
         'is_delete'=> 0,
@@ -174,7 +176,7 @@ class ScorePrize extends AdminBase
         'amount' => $data['amount'],
         'level' => $data['level'] ,
         'update_time' => date('Y-m-d H:i:s'),
-        'is_shelves' =>isset($data['is_shelves']) && $data['is_shelves'] == 1 ? 1 : 0,
+        'is_shelves' =>isset($data['un_shelves']) && $data['un_shelves'] == 1 ? 1 : 0,
 
       ];
 
@@ -208,7 +210,6 @@ class ScorePrize extends AdminBase
       }
 
     }else{
-
 
      $prize_data['is_show'] = $prize_data['is_delete'] ? 0 : 1 ;
      $prize_data['thumb'] = is_array($prize_data["images"]) ? $prize_data["images"][0] : "" ;

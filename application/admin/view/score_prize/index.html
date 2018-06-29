@@ -79,7 +79,14 @@
                           <small class="periods">【第{$vo.publication_number}期】</small>
                         </a>
                       </h5>
-                      <span class="id">#{$vo.id}</span>
+
+                      <span class="id">
+                        {php} if($vo['is_shelves'] === 0){
+                          echo '<i class="fa fa-rocket" title="自动续期"></i>';
+                        }
+                        {/php}
+                        #{$vo.id}
+                      </span>
                       <p class="am-card-text">{$vo.desc|iconv_substr=0,80}...</p>
                       <div class="progress layui-progress" lay-showPercent="true">
                         <div class="layui-progress-bar" lay-percent="{$vo.real_count} /{$vo.total_count}"></div>
@@ -92,7 +99,8 @@
                         <span class="info-item status"> 状态：<b><span class="layui-badge prize-status_b prize-status_{$vo.status}"><?php echo $statusList[$vo['status']] ;?></span> / <small><?php echo $vo['is_delete'] ? "不显示" : "显示" ;?></small></b></span>
                       </div>
                       <div class="btns-wrapper">
-                        <?php  if($auth['admin/ScorePrize/add']  ){ ?>
+
+                        <?php  if($auth['admin/ScorePrize/add']   ){ ?>
                         <a href="{:url('admin/ScorePrize/add',['id'=>$vo['id']])}"  data-title="复制添加抽奖 "  data-trigger="modal" title="复制添加抽奖" class="ibtn layui-btn  layui-btn-success layui-btn-radius   "><i class="fa fa-copy"></i> 新建下期</a>
                         <?php  } ?>
                         <a href="{:url('admin/ScorePrize/edit',['id'=>$vo['id']])}"  data-title="編輯抽奖 #{$vo.id}"  data-trigger="modal" title="編輯抽奖 #{$vo.id}" class="ibtn layui-btn  layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a>
