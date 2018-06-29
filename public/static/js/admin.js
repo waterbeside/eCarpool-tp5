@@ -108,6 +108,7 @@ function ajaxSubmit(setting){
         }
       },
       error:function(jqXHR, textStatus, errorThrown){
+        layer.msg('网络出错，请稍候再试');
         if(typeof(opt.error)=="function"){
           opt.error(jqXHR, textStatus, errorThrown);
         }
