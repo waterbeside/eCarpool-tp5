@@ -5,6 +5,20 @@
 if(typeof(GV)=="undefined"){
   var GV = {};
 }
+
+
+function redirect(url,win) {
+    var lct = typeof(win)!="undefined"  && win ? win.location : location;
+    //console.log(lct);
+    lct.href = url;
+}
+
+function reload(win) {
+    var lct = typeof(win)!="undefined" && win ? win.location : location;
+    //console.log(lct);
+    lct.reload();
+}
+
 GV.lockForm = false;
 
   var layer = layui.layer,
@@ -78,7 +92,8 @@ function ajaxSubmit(setting){
     dataType:"json",
     type:"post",
     jump:"",
-    unrefresh:false
+    unrefresh:false,
+    jumpWin:null,
   }
   var opt = $.extend({}, defaults, setting);
   $.ajax({
@@ -91,13 +106,13 @@ function ajaxSubmit(setting){
           if(opt.unrefresh!=1 || opt.jump!=""){
             setTimeout(function () {
               if(opt.jump!=""){
-                location.href = opt.jump;
+                redirect(opt.jump,opt.jumpWin);
               }else if(res.url){
-                location.href = res.url;
+                redirect(res.url,opt.jumpWin);
               }else if(res.extra.url){
-                location.href = res.extra.url;
+                redirect(res.extra.url,opt.jumpWin);
               }else{
-                location.reload();
+                reload(opt.jumpWin);
               }
             }, 400);
           }
@@ -193,7 +208,8 @@ function admin_init(){
       type: data.form.method,
       data: $(data.form).serialize(),
       unrefresh: $(data.form).data('unrefresh') ? $(data.form).data('unrefresh') : false,
-      jump : $(data.form).data('jump') ? $(data.form).data('jump') : ""
+      jump : $(data.form).data('jump') ? $(data.form).data('jump') : "" ,
+      jumpWin: $(data.form).data('jump-target') == "parent" ? parent : null
     });
     return false;
   });
