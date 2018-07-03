@@ -4,6 +4,8 @@ namespace app\admin\controller;
 use app\score\model\History as HistoryModel;
 use app\score\model\AccountMix as AccountMixModel;
 use app\score\model\Account as ScoreAccountModel;
+use app\common\model\Docs as DocsModel;
+use app\common\model\DocsCategory as DocsCategoryModel;
 use my\RedisData;
 
 use app\common\controller\AdminBase;
@@ -212,6 +214,116 @@ class Score extends AdminBase
 
         return $this->fetch('config',['configs'=>$configs,'data'=>$data]);
 
+      }
+
+    }
+
+
+    /**
+     * 文档管理
+     * @param int    $cid     分类ID
+     * @param string $keyword 关键词
+     * @param int    $page
+     * @return mixed
+     */
+    public function doc($cate = 'score', $keyword = '', $page = 1)
+    {
+
+        $map   = [];
+        $field = 't.id,t.title,t.cid,t.update_time,t.create_time,t.listorder,t.status,t.lang,c.name as cate, c.title as cate_title';
+
+        if ($cate) {
+            $map[] = ['c.name','=',$cate];
+        }
+
+        if (!empty($keyword)) {
+            $map[] = ['title','like', "%{$keyword}%"];
+        }
+
+        $join = [
+          ['docs_category c','t.cid = c.id', 'left'],
+        ];
+        $lists  = DocsModel::field($field)->alias('t')->join($join)->where($map)->order('t.cid DESC , t.create_time DESC')->paginate(15, false, ['page' => $page]);
+        // $category_list = $this->category_model->field('id,name,title')->where([['is_delete','=',0]])->select();
+        $category_list = DocsCategoryModel::column('title', 'name');
+        return $this->fetch('doc', ['lists' => $lists, 'category_list' => $category_list, 'cate' => $cate, 'keyword' => $keyword]);
+    }
+
+
+    /**
+     * 添加文档
+     * @return mixed
+     */
+    public function doc_add($cate = 'score')
+    {
+      if ($this->request->isPost()) {
+          $data            = $this->request->param();
+          $validate_result = $this->validate($data, 'Docs');
+          $data['description'] = $data['description'] ? iconv_substr($data['description'],0,250) : '' ;
+          if ($validate_result !== true) {
+              $this->jsonReturn(-1,$validate_result);
+          } else {
+              $docsModel = new DocsModel();
+              if ($docsModel->allowField(true)->save($data)) {
+                  $this->log('保存文档成功',0);
+                  $this->jsonReturn(0,'保存成功');
+              } else {
+                  $this->log('保存文档失败',-1);
+                  $this->jsonReturn(-1,'保存失败');
+              }
+          }
+      }else{
+        $category_list = DocsCategoryModel::where([['is_delete','=',0]])->select();
+        $cate_data = '';
+        foreach ($category_list as $key => $value) {
+          if($value['name'] == $cate){
+            $cate_data = $value;
+          }
+        }
+
+        return $this->assign('category_list',$category_list)
+             ->assign('cate_data',$cate_data)
+             ->assign('cate',$cate)
+             ->fetch();
+
+      }
+    }
+
+
+
+    /**
+     * 编辑文档
+     * @param $id
+     * @return mixed
+     */
+    public function doc_edit($id)
+    {
+      if ($this->request->isPost()) {
+          $data            = $this->request->param();
+          $validate_result = $this->validate($data, 'Docs');
+          $data['description'] = $data['description'] ? iconv_substr($data['description'],0,250) : '' ;
+          if ($validate_result !== true) {
+              $this->jsonReturn(-1,$validate_result);
+          } else {
+              unset($data['cid']);
+              $docsModel = new DocsModel();
+              if ($docsModel->allowField(true)->save($data, $id) !== false) {
+                  $this->log('编辑文档成功',0);
+                  $this->jsonReturn(0,'修改成功');
+              } else {
+                  $this->log('编辑文档失败',-1);
+                  $this->jsonReturn(-1,'修改失败');
+              }
+          }
+      }else{
+        $field = 't.*,c.name as cate, c.title as cate_title';
+        $join = [
+          ['docs_category c','t.cid = c.id', 'left'],
+        ];
+        $data = DocsModel::field($field)->alias('t')->join($join)->find($id);
+        $category_list = DocsCategoryModel::where([['is_delete','=',0]])->select();
+
+        return $this->fetch('doc_edit', ['data' => $data,'category_list'=>$category_list]);
       }
 
     }
