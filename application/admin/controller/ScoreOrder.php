@@ -291,7 +291,7 @@ class ScoreOrder extends AdminBase
       ['order o','o.id = t.oid', 'left'],
       ['goods g','g.id = t.gid', 'left'],
     ];
-    $lists = OrderGoodsModel::alias('t')->field("g.*, sum(t.count) as num ")->json(['images'])->join($join)->where($map)->group('t.gid')->order(' t.gid DESC')->select();
+    $lists = OrderGoodsModel::alias('t')->field("g.*, sum(t.count) as num ")->json(['images'])->join($join)->where($map)->group('t.gid')->order('t.gid DESC')->select();
     foreach ($lists as $key => $value) {
       $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
     }
