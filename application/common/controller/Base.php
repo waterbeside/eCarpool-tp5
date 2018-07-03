@@ -21,7 +21,11 @@ class Base extends Controller
     public $language_l = [];
     protected function initialize()
     {
-        
+        // header('Access-Control-Allow-Origin: *');
+    		// header('Access-Control-Allow-Headers:*');
+    		// if($_SERVER['REQUEST_METHOD']=='OPTIONS'){
+    		// 	exit;
+    		// }
         $lang_s = request()->header('Accept-Lag');
         $lang_s = $lang_s ? $lang_s : request()->header('Accept-Language');
         $lang_l = $this->formatAcceptLang($lang_s);

@@ -11,11 +11,6 @@
 
 // [ 应用入口文件 ]
 namespace think;
-header('Access-Control-Allow-Headers: authorization,x-requested-with,content-type,Content-Length,accecpt-lag,accecpt-language');
-header('Access-Control-Allow-Origin: *');
-if($_SERVER['REQUEST_METHOD']=='OPTIONS'){
-	exit;
-}
 // 加载基础文件
 require __DIR__ . '/../thinkphp/base.php';
 
