@@ -41,7 +41,7 @@ class ScoreGoods extends AdminBase
     if ($keyword) {
         $map[] = ['name|desc','like', "%{$keyword}%"];
     }
-    $lists = GoodsModel::where($map)->json(['images'])->order(' id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+    $lists = GoodsModel::where($map)->json(['images'])->order('id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
     foreach ($lists as $key => $value) {
       $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
     }
