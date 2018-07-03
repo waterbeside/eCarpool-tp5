@@ -53,9 +53,9 @@ class AccountMix extends Model
       $accountInfo = NULL;
       if( $type=='0' || $type=="score" ){ //直接从积分帐号取
         if($account_id){
-          $accountInfo = $this->where(['id'=>$account_id,['is_delete','<>', 1]])->find();
+          $accountInfo = $this->where([['id','=',$account_id],['is_delete','<>', 1]])->find();
         }else{
-          $accountInfo = $this->where(['account'=>$account,['is_delete','<>', 1]])->find();
+          $accountInfo = $this->where([['account','=',$account],['is_delete','<>', 1]])->find();
         }
         if(!$accountInfo){
           return false;
@@ -64,13 +64,12 @@ class AccountMix extends Model
           $accountInfo['carpool'] = $this->getCarpoolAccount($accountInfo['carpool_account']);
         }
       }else if($type=='2'||$type=="carpool"){ //从拼车帐号取
-        $accountInfo = $this->where(['carpool_account'=>$account,['is_delete','<>', 1]])->find();
+        $accountInfo = $this->where([['carpool_account','=',$account],['is_delete','<>', 1]])->find();
         if($returnAll){
           $accountInfo['carpool'] = $this->getCarpoolAccount($account);
         }
       }
       return $accountInfo;
-
     }
 
     //取得拼车帐号
