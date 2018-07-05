@@ -52,18 +52,18 @@
                   <tbody class="goods-table-list">
                   <?php foreach($lists as $key => $good){ ?>
                     <tr class="good-item">
-                      <td class="label" >{$good.id}</td>
+                      <td >{$good.id}</td>
                       <td>
                         <div  class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
                         <span class="layui-elip">
                           <a onclick="openLayer('{:url('admin/ScoreOrder/good_owners',['gid'=>$good['id'],'time'=>$filter['time'],'status'=>$filter['status']])}',{area: ['800px', '90%'], title:'{$good.name}'});" href="javascript:void(0);"    >{$good.name}</a>
                         </span>
                       </td>
-                      <td class="label" >{$good.inventory == -1 ? '不限' : $good.inventory }</td>
-                      <td class="label" ><b class="price">{$good.price}</b></td>
-                      <td class="label" ><b class="amount">{$good.amount}</b></td>
-                      <td class="label" >&times; <b class="num">{$good.num}</b></td>
-                      <td class="label" > <b class="total">{$good.num * $good.amount}</b></td>
+                      <td>{$good.inventory == -1 ? '不限' : $good.inventory }</td>
+                      <td><b class="price">{$good.price}</b></td>
+                      <td><b class="amount">{$good.amount}</b></td>
+                      <td>&times; <b class="num">{$good.num}</b></td>
+                      <td > <b class="total">{$good.num * $good.amount}</b></td>
                     </tr>
                     <?php } ?>
 
