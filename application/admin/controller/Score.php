@@ -191,10 +191,15 @@ class Score extends AdminBase
           }
         }
 
-        $soreSettingData['order_switch']              = isset($datas['order_switch'])            ? $datas['order_switch']            : 0 ;
-        $soreSettingData['lottery_integral_switch']   = isset($datas['lottery_integral_switch']) ? $datas['lottery_integral_switch'] : 0 ;
-        $soreSettingData['lottery_material_switch']   = isset($datas['lottery_material_switch']) ? $datas['lottery_material_switch'] : 0 ;
-        $soreSettingData['lottery_integral_price']    = isset($datas['lottery_integral_price'])  ? $datas['lottery_integral_price']  : 0 ;
+        $soreSettingData['order_switch']              = isset($datas['order_switch'])            ? 1 : 0 ;
+        $soreSettingData['lottery_integral_switch']   = isset($datas['lottery_integral_switch']) ? 1 : 0 ;
+        $soreSettingData['lottery_material_switch']   = isset($datas['lottery_material_switch']) ? 1 : 0 ;
+
+        if(!is_numeric($datas['lottery_integral_price']) || $datas['lottery_integral_price'] < 1 ){
+          $this->error("积分抽奖价必须为数字,并且要大于0");
+        }
+        $soreSettingData['lottery_integral_price']    = $datas['lottery_integral_price'];
+
         $soreSettingDataStr = json_encode($soreSettingData);
         $redis->set('CONFIG_SETTING', $soreSettingDataStr);
         $this->log('修改积分配置成功',0);
