@@ -17,7 +17,7 @@ use my\CurlRequest;
 use think\Db;
 
 /**
- * 商品管理
+ * 订单管理
  * Class ScoreGoods
  * @package app\admin\controller
  */
