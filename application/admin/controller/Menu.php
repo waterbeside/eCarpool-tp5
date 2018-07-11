@@ -42,7 +42,7 @@ class Menu extends AdminBase
     {
       if ($this->request->isPost()) {
           $data            = $this->request->post();
-
+          $data['name']    = trim($data['name']);
           $validate_result = $this->validate($data, 'Menu');
 
           if ($validate_result !== true) {
@@ -73,6 +73,7 @@ class Menu extends AdminBase
     {
       if ($this->request->isPost()) {
           $data            = $this->request->post();
+          $data['name']    = trim($data['name']);
           $validate_result = $this->validate($data, 'Menu');
 
           if ($validate_result !== true) {

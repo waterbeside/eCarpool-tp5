@@ -254,11 +254,11 @@ class Auth
                 $command = preg_replace('/\{(\w*?)\}/', '$user[\'\\1\']', $rule['condition']);
                 @(eval('$condition=(' . $command . ');'));
                 if ($condition) {
-                    $authList[] = strtolower($rule['name']);
+                    $authList[] = trim(strtolower($rule['name']));
                 }
             } else {
                 //只要存在就记录
-                $authList[] = strtolower($rule['name']);
+                $authList[] = trim(strtolower($rule['name']));
             }
         }
         $_authList[$uid . $t] = $authList;
