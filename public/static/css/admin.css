@@ -300,5 +300,8 @@ body {background:#FFF;}
 .prize-item-edit .progress { margin: -25px -25px 40px; border-radius: 0;}
 .prize-item-edit .progress  .layui-progress-bar { border-radius: 0 ;  }
 
+
+.lottery-table-list-wrapper .cover-thumb { display: inline-block; height: 30px; width: 40px; vertical-align: middle;}
+
 /** 文档文章编辑相关 **/
 .article-item-eidt .col-wrapper {padding-right: 30px;}
