@@ -121,7 +121,6 @@ class ScoreWinners extends AdminBase
     $data = WinnersModel::alias('t')->field($fields)
             ->join($join)
             ->json(['images'])
-            ->order('end_time DESC')
             // ->fetchSql()->select();
             ->find($id);
 
