@@ -30,17 +30,22 @@ class User extends AdminBase
      * @param int    $page
      * @return mixed
      */
-    public function index($keyword = '', $page = 1,$pagesize = 50)
+    public function index($filter = [], $page = 1,$pagesize = 50)
     {
         $map = [];
-        if ($keyword) {
-            $map[] = ['loginname|phone|Department|name|companyname','like', "%{$keyword}%"];
+        //筛选用户信息
+        if (isset($filter['keyword']) && $filter['keyword'] ){
+          $map[] = ['u.loginname|u.phone|u.name','like', "%{$filter['keyword']}%"];
+        }
+        //筛选部门
+        if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
+          $map[] = ['u.Department|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
         }
         $join = [
           ['company c','u.company_id = c.company_id','left'],
         ];
         $user_list = $this->user_model->alias('u')->join($join)->where($map)->order('uid DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
-        return $this->fetch('index', ['user_list' => $user_list, 'keyword' => $keyword,'pagesize'=>$pagesize]);
+        return $this->fetch('index', ['user_list' => $user_list, 'filter' => $filter,'pagesize'=>$pagesize]);
     }
 
     /**

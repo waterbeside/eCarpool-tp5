@@ -5,7 +5,7 @@
     <div class="layui-tab layui-tab-brief">
       <ul class="  amain-tool-bar" >
           <li class="layui-this"><a href="{:url('admin/User/index')}"  >用户管理</a></li>
-          <li class="btn-item btn-item-add">
+          <li class="btn-item btn-item-right">
             <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/User/add')}"  data-title="添加用户"  data-trigger="modal" >
             <i class="fa fa-plus"></i> 添加用户</a>
           </li>
@@ -18,11 +18,16 @@
                 <form class="layui-form layui-form-pane" action="{:url('admin/User/index')}" method="get">
                     <div class="layui-inline">
                         <label class="layui-form-label">检索</label>
+
                         <div class="layui-input-inline">
-                            <input type="text" name="keyword" value="{$keyword}" placeholder="请输入关键词" class="layui-input">
+                            <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
                         </div>
                     </div>
                     <div class="layui-inline">
+                        <input type="hidden" name="export" value="0">
                         <button class="layui-btn"><i class="fa fa-search"></i></button>
                     </div>
                 </form>
