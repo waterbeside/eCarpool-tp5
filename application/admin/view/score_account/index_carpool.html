@@ -5,21 +5,39 @@
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
 
-        <ul class="layui-tab-title amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/scoreAccount/index',['type'=>2])}"  >Carpool帐号</a></li>
-            <li class=""><a href="{:url('admin/scoreAccount/index',['type'=>0])}" >积分帐号</a></li>
+        <ul class="amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/scoreAccount/index',['type'=>2])}"  showloading>Carpool帐号</a></li>
+            <li class=""><a href="{:url('admin/scoreAccount/index',['type'=>0])}" showloading >积分帐号</a></li>
+            <li class="btn-item btn-item-right">
+              <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="exportExcel()"  ><i class="fa fa-file-excel-o"></i> 导出报表</a>
+            </li>
         </ul>
 
         <div class="layui-tab-content">
 
-                <form class="layui-form layui-form-pane" action="{:url('admin/scoreAccount/index',['type'=>2])}" method="get">
+                <form class="layui-form layui-form-pane"  id="filter-form" action="{:url('admin/scoreAccount/index',['type'=>2])}" method="get">
                     <div class="layui-inline">
                         <label class="layui-form-label">检索</label>
                         <div class="layui-input-inline">
-                            <input type="text" name="keyword" value="{$keyword}" placeholder="请输入关键词" class="layui-input">
+                            <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input"  >
+                        </div>
+
+                    </div>
+                    <div class="layui-inline">
+                        &nbsp;&nbsp;&nbsp;&nbsp;分数范围:
+                        <div class="layui-input-inline">
+                          <input type="number" name="filter[floor]" value="{$filter['floor'] ? $filter['floor'] :'0'}" placeholder="" class="layui-input"  style="width:60px" >
+                        </div>
+                        〜
+                        <div class="layui-input-inline">
+                          <input type="number" name="filter[ceiling]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="不限" class="layui-input"  style="width:60px" >
                         </div>
                     </div>
                     <div class="layui-inline">
+                        <input type="hidden" name="export" value="0">
                         <button class="layui-btn"><i class="fa fa-search"></i></button>
                     </div>
                 </form>
@@ -29,12 +47,12 @@
                     <thead>
                     <tr >
                         <th lay-data="{field:'uid', width:80,fixed: 'left' }" >#</th>
-                        <th lay-data="{field:'loginname', width:100, fixed: 'left'}">用户名</th>
+                        <th lay-data="{field:'loginname', width:120, fixed: 'left'}">用户名</th>
                         <th lay-data="{field:'name' }">姓名</th>
-                        <th lay-data="{field:'score', width:80}">分</th>
-                        <th lay-data="{field:'phone', width:100}">手机</th>
-                        <th lay-data="{field:'Department', width:100}">部门</th>
-                        <th lay-data="{field:'company_name', width:100}">公司</th>
+                        <th lay-data="{field:'score', width:100}">积分余额</th>
+                        <th lay-data="{field:'phone', width:120}">手机</th>
+                        <th lay-data="{field:'Department', width:120}">部门</th>
+                        <th lay-data="{field:'company_name', width:140}">公司</th>
                         <th lay-data="{field:'other', width:60}">...</th>
                         <th lay-data="{field:'options', width:150,fixed: 'right'}">操作</th>
                     </tr>
@@ -50,10 +68,10 @@
                         </td>
                         <td>
                           <a onclick="openLayer('{:url('admin/ScoreAccount/detail',['type'=>2,'account'=>$vo['loginname']])}','用户详情');" href="javascript:void(0);" >
-                          {$vo.name}{php}echo $vo['accountInfo'] ? ' <i class="text-red fa fa-id-card"></i>' : '';{/php}
+                          {$vo.name}{php}echo $vo['account_id'] ? ' <i class="text-red fa fa-id-card"></i>' : '';{/php}
                           </a>
                         </td>
-                        <td class="field-score"><span>{$vo['accountInfo']?$vo['accountInfo']['balance']:'-'}</span></td>
+                        <td class="field-score"><span>{$vo['balance']}</span></td>
                         <td>{$vo.phone}</td>
                         <td>{$vo.Department}</td>
                         <td>{php}echo $vo['companyname'] ? $vo['companyname'].' / ' : '';{/php}{$vo.company_name}</td>
@@ -64,7 +82,7 @@
                           {php}echo $vo['sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
                         </td>
                         <td>
-                          {php}$openAccountUrlParam =  $vo['accountInfo'] ? ['type'=>'0','account_id'=>$vo['accountInfo']['id']] : ['type'=>'carpool','account'=>$vo['loginname']];{/php}
+                          {php}$openAccountUrlParam =  $vo['account_id'] ? ['type'=>'0','account_id'=>$vo['account_id']] : ['type'=>'carpool','account'=>$vo['loginname']];{/php}
                           <a href="{:url('admin/Score/change',$openAccountUrlParam)}"   data-trigger="modal" data-title="加减分 {$vo.loginname}" class="layui-btn   layui-btn-xs "   >加减分</a>
                           <a onclick="openLayer('{:url('admin/ScoreHistory/lists',$openAccountUrlParam)}','积分历史:{$vo.loginname}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary layui-btn-xs "   >积分历史</a>
                         </td>
@@ -84,7 +102,6 @@
 <script>
 var RESOLVE_INIT = {
   data : {
-    list:<?php echo json_encode(json_decode(json_encode($lists),true)["data"]) ?>,
     pagesize:{$pagesize},
     tableHeight: "auto"
   },
@@ -95,17 +112,6 @@ var RESOLVE_INIT = {
 
     this.renderTable();
 
-    /* $('.account-list-item').each(function(index, el) {
-
-       // console.log(_this.data.list[index]);
-       var account = $(el).data('account');
-       _this.loadScoreAccount(account,function(res){
-         var balance = res.data ? res.data : "-";
-           $(el).find(".field-score span").html(balance);
-           _this.renderTable();
-       })
-     });*/
-
 
   },
 
@@ -114,17 +120,7 @@ var RESOLVE_INIT = {
        limit: this.data.pagesize,
        cellMinWidth:200,
        height:this.tableHeight,
-       /*data: this.data.list,
-       cols: [[
-          {field:'uid', width:80}
-          ,{field:'id', width:80, title: '#',  fixed: 'left'}
-          ,{field:'loginname', width:80, title: '用户名', fixed: 'left'}
-          ,{field:'phone', width:80, title: '电话'}
-          ,{field:'score', width:80, title: '评分'}
-          ,{field:'sex', width:80, title: '性别' }
-          ,{field:'Department', width:80, title: '部门'}
-          ,{field:'experience', width:80, title: '积分', sort: true}
-        ]]*/
+
      });
   },
 
@@ -152,5 +148,13 @@ var RESOLVE_INIT = {
 }
 
 RESOLVE_INIT.init();
+function exportExcel(){
+  var form = $("#filter-form");
+  form.find("input[name='export']").val(1);
+  form.attr('target','_blank') ;
+  form.submit();
+  form.find("input[name='export']").val(0);
+  form.attr('target','_self') ;
+}
 </script>
 {/block}
