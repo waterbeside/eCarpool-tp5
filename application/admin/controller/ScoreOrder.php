@@ -13,6 +13,7 @@ use app\score\model\Goods as GoodsModel;
 use app\score\model\OrderGoods as OrderGoodsModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use my\CurlRequest;
 use think\Db;
 
@@ -23,8 +24,6 @@ use think\Db;
  */
 class ScoreOrder extends AdminBase
 {
-
-
 
   /**
    * 订单列表
@@ -142,7 +141,7 @@ class ScoreOrder extends AdminBase
 
     /* 导出报表 */
     if($export){
-      $filename = md5(json_encode($filter)).'_'.$status.'_'.time().'.xlsx';
+      $filename = md5(json_encode($filter)).'_'.$status.'_'.time().'.csv';
 
       $spreadsheet = new Spreadsheet();
       $sheet = $spreadsheet->getActiveSheet();
@@ -184,7 +183,7 @@ class ScoreOrder extends AdminBase
       $sheet->setCellValue('A1', $value)；
       $sheet->getStyle('A1')->getAlignment()->setWrapText(true);*/
 
-      $writer = new Xlsx($spreadsheet);
+      $writer = new Csv($spreadsheet);
       /*$filename = Env::get('root_path') . "public/uploads/temp/hello_world.xlsx";
       $writer->save($filename);*/
       header('Content-Disposition: attachment;filename="'.$filename.'"');//告诉浏览器输出浏览器名称
