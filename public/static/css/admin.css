@@ -104,6 +104,8 @@ body {background:#FFF;}
 .layui-tab {overflow: visible;}
 .layui-tab-title > li > a {display: block;}
 .layui-btn-success {background: #4caf50;}
+.layui-btn-excel {border:1px solid #367e39; color:#367e39;  background: #f3f9f0 }
+.layui-btn-excel:hover {border:1px solid #367e39; color:#367e39;  background: #fff}
 
 /* .layui-btn-danger {background: #e90d24;} */
 /* .layui-nav-tree .layui-nav-child dd a {text-indent: 16px;} */
