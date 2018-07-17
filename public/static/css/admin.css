@@ -1,5 +1,5 @@
 /*后台公用样式*/
-html,body {height: 100px;}
+html,body, body > .layui-layout , .amain-body {height: 100%;}
 body {background:#FFF;}
 
 .blank10 {height: 10px; overflow: hidden; line-height: 1;display: block; clear: both;}
@@ -307,3 +307,32 @@ body {background:#FFF;}
 
 /** 文档文章编辑相关 **/
 .article-item-eidt .col-wrapper {padding-right: 30px;}
+
+.page-trips-list table .driver , .page-trips-list table .driver a {color:#3d7ea3;}
+.page-trips-list table .passenger , .page-trips-list table .passenger a {color:#379e8f;}
+.page-trips-list table .start {color:#d4772b;}
+.page-trips-list table .end {color:#ba5d48;}
+.page-trips-list table .status_2 , .page-trips-list table .status_2 a {color:#aaa}
+.page-trip-detail { }
+
+.page-trip-detail-inner { display: flex; height: 100%; flex-direction: column; justify-content: space-around;}
+.page-trip-detail .trip-time { background: #583f8e; color: #FFF; text-align: center; padding: 4px 0;}
+.page-trip-detail .trip-start-end { position: relative; z-index: 1; padding: 10px 0; display: flex; justify-content: center;width: 100%; background: #f0f3f4; border-top:1px solid #eee; border-bottom:1px solid #bbb; box-shadow: 0 8px 8px rgba(0,0,0,.1);  }
+.page-trip-detail .trip-start-end .line { padding: 3px 20px 0; color:rgb(162, 81, 182)}
+.page-trip-detail .trip-start-end .start, .page-trip-detail .trip-start-end .end {  font-size:16px ; color: #221f1f}
+.page-trip-detail .trip-start-end .start .fa { color: rgb(62, 109, 224)}
+.page-trip-detail .trip-start-end .end  .fa { color: rgb(199, 43, 85)}
+.page-trip-detail .map-content { height: 100%; position: relative; z-index: 0}
+.page-trip-detail .member-bar {  background: #FFF;  width: 100%; overflow: hidden; overflow-x:scroll; border-top:1px solid #DDD; box-shadow: 0 -10px 10px rgba(0,0,0,.1); }
+.page-trip-detail .member-bar-inner {  position: relative; z-index: 1;  display: flex;   }
+.page-trip-detail .member-bar .avatar { float: left; margin-right: 8px; width: 36px; height:36px; border-radius: 50%; background-size: cover; background-position: center;}
+.page-trip-detail .member-item { box-sizing: border-box;padding: 8px 12px 12px;  position: relative; min-width: 160px; display: block; width: 100%;  border-right: 1px solid rgb(199, 215, 224); border-bottom: 1px solid rgb(199, 215, 224);}
+.page-trip-detail .member-item .type {position: absolute; transform: scale(.8) translate(-4px,-4px);left: 0; top:0; padding: 2px 4px; background: rgb(53, 94, 94); color: #FFF; font-size: 12px; }
+.page-trip-detail .member-item .phone { font-size: 10px;}
+.page-trip-detail .member-item .department { font-size: 10px; color:#ddd}
+.page-trip-detail .member-item.driver { background: rgb(235, 239, 244);}
+.page-trip-detail .member-item.driver .type { background:rgb(56, 102, 157); }
+.page-trip-detail .member-item.passenger { background: rgb(235, 244, 240); }
+.page-trip-detail .member-item.passenger .type { background:rgb(56, 157, 90); }
+.page-trip-detail .info-table { margin-top: 0}
+.page-trip-detail .info-table .department { color: #aaa}
