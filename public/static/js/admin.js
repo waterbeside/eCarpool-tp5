@@ -6,6 +6,38 @@ if(typeof(GV)=="undefined"){
   var GV = {};
 }
 
+GV['config'] = {
+  url : {
+    amapScript : 'http://webapi.amap.com/maps?v=1.4.6&key=a9c78e8c6c702cc8ab4e17f5085ffd2a'
+
+  }
+}
+
+/**
+ * 动态加载JS
+ * @param  {String}   url      URL
+ * @param  {Function} callback 回调函数
+ */
+function cLoadScript(url, callback) {
+  var script = document.createElement("script");
+  script.type = "text/javascript";
+  if(typeof(callback) != "undefined"){
+    if (script.readyState) {
+      script.onreadystatechange = function () {
+        if (script.readyState == "loaded" || script.readyState == "complete") {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else {
+      script.onload = function () {
+        callback();
+      };
+    }
+  }
+  script.src = url;
+  document.body.appendChild(script);
+}
 
 function redirect(url,win) {
     var lct = typeof(win)!="undefined"  && win ? win.location : location;
@@ -78,6 +110,36 @@ function openLayer(url,opt){
   }
   var options = $.extend(true, defaults, opt_s);
   layer.open(options);
+}
+
+
+/**
+ * 通过layer的iframe打开
+ */
+function openParentLayer(url,opt){
+  var defaults = {
+    type: 2,
+    area: ['700px', '90%'],
+    fixed: true,
+    maxmin: true,
+  }
+  var opt_s = {};
+  if(typeof(opt)=="string"){
+    defaults.title = opt;
+  }else{
+    opt_s = opt;
+  }
+  if(typeof(url)=="object"){
+    opt_s = url;
+  }else if(typeof(url)=="string"){
+    defaults.content = url;
+  }
+  var options = $.extend(true, defaults, opt_s);
+  if(parent){
+    parent.layer.open(options);
+  }else{
+    layer.open(options);
+  }
 }
 
 
