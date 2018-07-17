@@ -4,6 +4,7 @@ namespace app\admin\controller;
 use app\carpool\model\User as UserModel;
 use app\carpool\model\CompanySub as CompanySubModel;
 use app\carpool\model\Department as DepartmentModel;
+use app\carpool\model\Company as CompanyModel;
 use app\common\controller\AdminBase;
 use think\facade\Config;
 use think\facade\Validate;
@@ -47,6 +48,32 @@ class User extends AdminBase
         $user_list = $this->user_model->alias('u')->join($join)->where($map)->order('uid DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
         return $this->fetch('index', ['user_list' => $user_list, 'filter' => $filter,'pagesize'=>$pagesize]);
     }
+
+    /**
+     * 明细
+     */
+    public function public_detail($id){
+      if(!$id){
+        return $this->error('Lost id');
+      }
+      $userInfo = $this->user_model->find($id);
+      if($userInfo){
+        $userInfo->avatar = $userInfo->imgpath ? config('app.avatarBasePath').$userInfo->imgpath : config('app.avatarBasePath')."im/default.png";
+      }
+      $companyLists = (new CompanyModel())->getCompanys();
+      $companys = [];
+      foreach($companyLists as $key => $value) {
+        $companys[$value['company_id']] = $value['company_name'];
+      }
+
+      $returnData = [
+        'data'=>$userInfo,
+        'companys'=>$companys,
+      ];
+      return $this->fetch('detail', $returnData);
+
+    }
+
 
     /**
      * 添加用户
@@ -175,7 +202,7 @@ class User extends AdminBase
       $url  = '';
       $msg = '';
       dump(uuid_create());
-      // dump($lists);exit;
+      dump($lists);exit;
       if(count($lists)>0){
         foreach ($lists as $key => $value) {
 

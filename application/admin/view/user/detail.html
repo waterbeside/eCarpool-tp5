@@ -1,0 +1,48 @@
+<div class="amain-body page-good-detail">
+
+    <div style="text-align:center; margin:-38px 0 10px;">
+      <div class="cp-avatar" style="background-image:url('{$data.avatar}')"></div>
+    </div>
+
+    <table class="layui-table">
+      <tbody>
+        <tr>
+          <td class="label" width="100">用户名</td>
+          <td>{$data.loginname}</td>
+        </tr>
+        <tr>
+          <td class="label">手机</td>
+          <td>{$data.phone}</td>
+        </tr>
+        <tr>
+          <td class="label">姓名</td>
+          <td>{$data.name}</td>
+        </tr>
+        <tr>
+          <td class="label">性别</td>
+          <td>
+            {if condition="$data.sex==1"}男{/if}
+            {if condition="$data.sex==2"}女{/if}
+            {if condition="$data.sex==0"}-{/if}
+          </td>
+        </tr>
+        <tr>
+          <td class="label">所属公司</td>
+          <td>{$companys[$data['company_id']] ? $companys[$data['company_id']] : $data['company_id'] }</td>
+        </tr>
+        <tr>
+          <td class="label">部门</td>
+          <td>{$data.Department}</td>
+        </tr>
+      </tbody>
+    </table>
+
+</div>
+
+<script>
+// form.render();
+
+
+
+
+</script>
