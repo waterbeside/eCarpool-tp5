@@ -9,8 +9,8 @@
             <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/User/add')}"  data-title="添加用户"  data-trigger="modal" >
             <i class="fa fa-plus"></i> 添加用户</a>
           </li>
-
       </ul>
+
 
         <div class="layui-tab-content">
                 <form class="layui-form layui-form-pane" action="{:url('admin/User/index')}" method="get">
@@ -33,17 +33,17 @@
 
                 <table lay-filter="listtable" class="layui-table">
                     <thead>
-                    <tr >
-                        <th lay-data="{field:'uid', width:100}" fixed="left">ID</th>
-                        <th lay-data="{field:'loginname'}">用户名</th>
-                        <th lay-data="{field:'phone', width:100}">手机</th>
-                        <th lay-data="{field:'name', width:100}">姓名</th>
-                        <th lay-data="{field:'Department', width:100}">部门</th>
-                        <th lay-data="{field:'company_name', width:100}">公司</th>
-                        <!-- <th lay-data="{field:'score', width:80}">分</th> -->
-                        <th lay-data="{field:'other', width:60}">...</th>
-                        <th lay-data="{field:'options', width:140}">操作</th>
-                    </tr>
+                      <tr>
+                          <th lay-data="{field:'uid', width:100}" fixed="left">ID</th>
+                          <th lay-data="{field:'loginname'}">用户名</th>
+                          <th lay-data="{field:'phone', width:100}">手机</th>
+                          <th lay-data="{field:'name', width:100}">姓名</th>
+                          <th lay-data="{field:'Department', width:100}">部门</th>
+                          <th lay-data="{field:'company_name', width:100}">公司</th>
+                          <!-- <th lay-data="{field:'score', width:80}">分</th> -->
+                          <th lay-data="{field:'other', width:60}">...</th>
+                          <th lay-data="{field:'options', width:140}">操作</th>
+                      </tr>
                     </thead>
                     <tbody>
                     {foreach name="user_list" item="vo"}
