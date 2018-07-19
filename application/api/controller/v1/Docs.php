@@ -7,7 +7,7 @@ use app\common\controller\ApiBase;
 use think\Db;
 
 /**
- * 友情链接
+ * 文档相关
  * Class Link
  * @package app\admin\controller
  */
