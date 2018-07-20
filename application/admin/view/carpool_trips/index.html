@@ -77,7 +77,7 @@
                             <th lay-data="{field:'start_addressname', width:120 }">起点</th>
                             <th lay-data="{field:'end_addressname', width:120 }">终点</th>
                             <th lay-data="{field:'subtime', width:120}">发布时间</th>
-                            <th lay-data="{field:'options', width:100,fixed: 'right'}">操作</th>
+                            <th lay-data="{field:'options', width:140,fixed: 'right'}">操作</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -121,6 +121,7 @@
                             <td>{$vo.subtime}</td>
                             <td>
                               <a onclick="openLayer('{:url('admin/CarpoolTrips/detail',['id'=>$vo['infoid'],'type'=>0])}',{area:['500px','90%'],title:'行程：{$vo.start_addressname} > {$vo.end_addressname}'});" href="javascript:void(0);"  class="layui-btn  layui-btn-xs " >详情</a>
+                              <a onclick="openLayer('http://getazlnx001.chinacloudapp.cn/carpool/shuttle/tripline.html?info_id={$vo.infoid}',{area:['500px','90%'],title:'移动轨迹{$vo.start_addressname} > {$vo.end_addressname}'});" href="javascript:void(0);"  class="layui-btn layui-btn-primary  layui-btn-xs " >移动轨迹</a>
                             </td>
                         </tr>
                         {/foreach}
