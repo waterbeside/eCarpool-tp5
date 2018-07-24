@@ -13,13 +13,15 @@ return [
     // 数据库类型
     'type'            => 'mysql',
     // 服务器地址
+    // 'hostname'        => '10.20.253.21',
     'hostname'        => '127.0.0.1',
     // 数据库名
     'database'        => 'carpool_management',
     // 用户名
-    'username'        => 'root',
+    'username'        => 'carpooladmin',
     // 密码
-    'password'        => '123456',
+    'password'        => 'Ca6rp12#Dler',
+    // 'password'        => '12345678',
     // 端口
     'hostport'        => '',
     // 连接dsn
@@ -29,7 +31,7 @@ return [
     // 数据库编码默认采用utf8
     'charset'         => 'utf8mb4',
     // 数据库表前缀
-    'prefix'          => 'os_',
+    'prefix'          => 't_',
     // 数据库调试模式
     'debug'           => true,
     // 数据库部署方式:0 集中式(单一服务器),1 分布式(主从服务器)
@@ -40,6 +42,8 @@ return [
     'master_num'      => 1,
     // 指定从服务器序号
     'slave_no'        => '',
+    // 自动读取主库数据
+    'read_master'     => false,
     // 是否严格检查字段是否存在
     'fields_strict'   => true,
     // 数据集返回类型
@@ -47,7 +51,8 @@ return [
     // 自动写入时间戳字段
     'auto_timestamp'  => false,
     // 时间字段取出后的默认时间格式
-    'datetime_format' => 'Y-m-d H:i:s',
+    'datetime_format' => false,
+    // 'datetime_format' => 'Y-m-d H:i:s',
     // 是否需要进行SQL性能分析
     'sql_explain'     => false,
     // Builder类
@@ -60,8 +65,11 @@ return [
     'break_match_str' => [],
 
 
-    'database_carpool' => [
 
+    /**
+     * 拼车数据库
+     */
+    'database_carpool' => [
       // 数据库类型
       'type'            => 'mysql',
       // 服务器地址
@@ -92,8 +100,6 @@ return [
       'master_num'      => 1,
       // 指定从服务器序号
       'slave_no'        => '',
-      // 自动读取主库数据
-      'read_master'     => false,
       // 是否严格检查字段是否存在
       'fields_strict'   => true,
       // 数据集返回类型 array 数组 collection Collection对象
@@ -105,5 +111,100 @@ return [
       // 是否需要进行SQL性能分析
       'sql_explain'     => false,
     ],
+
+
+    /**
+     * 内容发布系统
+     */
+    'database_content' => [
+      // 数据库类型
+      'type'            => 'mysql',
+      // 服务器地址
+      'hostname'        => '127.0.0.1',
+      // 数据库名
+      'database'        => 'carpool',
+      // 用户名
+      'username'        => 'root',
+      // 密码
+      'password'        => '12345678',
+      // 端口
+      'hostport'        => '',
+      // 连接dsn
+      'dsn'             => '',
+      // 数据库连接参数
+      'params'          => [],
+      // 数据库编码默认采用utf8
+      'charset'         => 'utf8mb4',
+      // 数据库表前缀
+      'prefix'          => 't_',
+      // 数据库调试模式
+      'debug'           => true,
+      // 数据库部署方式:0 集中式(单一服务器),1 分布式(主从服务器)
+      'deploy'          => 0,
+      // 数据库读写是否分离 主从式有效
+      'rw_separate'     => false,
+      // 读写分离后 主服务器数量
+      'master_num'      => 1,
+      // 指定从服务器序号
+      'slave_no'        => '',
+      // 是否严格检查字段是否存在
+      'fields_strict'   => true,
+      // 数据集返回类型 array 数组 collection Collection对象
+      'resultset_type'  => 'array',
+      // 是否自动写入时间戳字段
+      'auto_timestamp'  => false,
+      // 时间字段取出后的默认时间格式
+      'datetime_format' => false,
+      // 是否需要进行SQL性能分析
+      'sql_explain'     => false,
+    ],
+
+    /**
+     * 积分系统
+     */
+    'database_score' => [
+      // 数据库类型
+      'type'            => 'mysql',
+      // 服务器地址
+      'hostname'        => '127.0.0.1',
+      // 数据库名
+      'database'        => 'carpool_score',
+      // 用户名
+      'username'        => 'root',
+      // 密码
+      'password'        => '12345678',
+      // 端口
+      'hostport'        => '',
+      // 连接dsn
+      'dsn'             => '',
+      // 数据库连接参数
+      'params'          => [],
+      // 数据库编码默认采用utf8
+      'charset'         => 'utf8mb4',
+      // 数据库表前缀
+      'prefix'          => 't_',
+      // 数据库调试模式
+      'debug'           => true,
+      // 数据库部署方式:0 集中式(单一服务器),1 分布式(主从服务器)
+      'deploy'          => 0,
+      // 数据库读写是否分离 主从式有效
+      'rw_separate'     => false,
+      // 读写分离后 主服务器数量
+      'master_num'      => 1,
+      // 指定从服务器序号
+      'slave_no'        => '',
+      // 是否严格检查字段是否存在
+      'fields_strict'   => true,
+      // 数据集返回类型 array 数组 collection Collection对象
+      'resultset_type'  => 'array',
+      // 是否自动写入时间戳字段
+      'auto_timestamp'  => false,
+      // 时间字段取出后的默认时间格式
+      'datetime_format' => false,
+      // 是否需要进行SQL性能分析
+      'sql_explain'     => false,
+    ],
+
+
 
 ];
