@@ -94,16 +94,20 @@ class Menu extends AdminBase
 
           if ($validate_result !== true) {
               $this->jsonReturn(-1,$validate_result);
-          } else {
-
-              if ($this->auth_rule_model->save($data, $id) !== false) {
-                  $this->log('更新菜单成功，id='.$id,0);
-                  $this->jsonReturn(0,'更新成功');
-              } else {
-                  $this->log('更新菜单失败，id='.$id,-1);
-                  $this->jsonReturn(-1,'更新失败');
-              }
           }
+          $children = $this->auth_rule_model->getChildrensId($id);
+          if (in_array($data['pid'], $children)) {
+              $this->jsonReturn(-1,'不能移动到自己的子分类');
+          }
+
+          if ($this->auth_rule_model->save($data, $id) !== false) {
+              $this->log('更新菜单成功，id='.$id,0);
+              $this->jsonReturn(0,'更新成功');
+          } else {
+              $this->log('更新菜单失败，id='.$id,-1);
+              $this->jsonReturn(-1,'更新失败');
+          }
+
       }else{
         $admin_menu_list       = $this->auth_rule_model->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
         $admin_menu_level_list = array2level($admin_menu_list);
