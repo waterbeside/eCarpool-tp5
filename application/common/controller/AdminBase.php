@@ -177,9 +177,11 @@ class AdminBase extends Base
         }
         $menu = !empty($menu) ? array2tree($menu) : [];
         foreach ($menu as $key => $value) {
-          $reChildren = $value['children'];
-          array_multisort(array_column($reChildren,'sort'),SORT_DESC,$reChildren);
-          $menu[$key]['children'] = $reChildren;
+          $reChildren =  isset($value['children']) ? $value['children'] : [];
+          if(!empty($reChildren)){
+            array_multisort(array_column($reChildren,'sort'),SORT_DESC,$reChildren);
+            $menu[$key]['children'] = $reChildren;
+          }
         }
         array_multisort(array_column($menu,'sort'),SORT_DESC,$menu);
         $this->assign('menu', $menu);
