@@ -131,6 +131,38 @@ body {background:#FFF;}
 .text-red { color:rgb(198, 84, 84)}
 .text-green { color:rgb(87, 156, 100)}
 
+
+.toolbar-datagrid-btn-wrap  { padding:0 0 10px }
+.treegrid-menu i { margin: 0 13px 0 -23px}
+.toolbar-datagrid-btn-wrap i { margin: 0 5px 0 0}
+.table-list .panel-body { padding:0}
+.table-list .l-btn .l-btn-text:before { content: "";}
+
+
+/***** jTreegrid jDatagrid ****/
+.table-tree .treeField .fa { color: #666; margin-right: 3px};
+.table-tree .treeField .J-treeBtn { cursor:pointer; }
+.table-tree .treeField  .fa-folder-open,.table-tree .treeField  .fa-folder { color: #cf8d00;  cursor:pointer; font-size: 14px; text-shadow:1px 1px 1px rgba(0,0,0,0.1)}
+.table-tree .treeField  .fa-file-o {color: #aaa; font-size: 12px;text-shadow:1px 1px 1px rgba(0,0,0,0.1)}
+.table-tree .J-treegrid-checkall { font-size: 14px;  }
+.table-tree .J-treegrid-checkall .fa {color:  #337AB7;}
+a.J-btn-checkall .fa {color:  #337AB7;font-size: 14px;}
+span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
+
+.table-datagrid tbody tr.J-datagrid-row-selected,.table-tree tbody tr.J-datagrid-row-selected  { background: #FCEAC9}
+.table-datagrid tbody tr.J-multiple-row-selected,.table-tree tbody tr.J-multiple-row-selected  { background: #E8EAFF}
+
+
+.table-tree tr[data-deep="1"] .treeField { background: url('../images/tree-line-1.png') 20px center no-repeat}
+.table-tree tr[data-deep="2"] .treeField { background: url('../images/tree-line-2.png') 20px center no-repeat}
+.table-tree tr[data-deep="3"] .treeField { background: url('../images/tree-line-3.png') 20px center no-repeat}
+.table-tree tr[data-deep="4"] .treeField { background: url('../images/tree-line-4.png') 20px center no-repeat}
+
+.table-tree[lay-size='sm']  tr .treeField { background-position: 15px center }
+
+
+
+
 /* 模态框相关 */
 .modal-open {overflow: hidden;}
 .modal {   display: none;   overflow: hidden; position: fixed; top: 0; right: 0; bottom: 0; left: 0;z-index: 1050; -webkit-overflow-scrolling: touch;   outline: 0;}
@@ -198,6 +230,8 @@ body {background:#FFF;}
 .affix {   position: fixed; }
 .modal-body .amain-body { margin: 0;background: none}
 
+
+
 .amain-uploadImgBtn { border-radius: 4px;  min-height: 24px; display: inline-block; line-height: 1; position: relative; cursor: pointer; border: 1px solid #DDD; margin-top: 5px; background: #fafafa}
 .amain-uploadImgBtn .text { position: absolute; bottom: 0; left:0;right:0; padding:4px 10px 6px; background:rgba(0,0,0,.8); color: #fff; text-align: center; }
 /*******/
@@ -211,11 +245,21 @@ body {background:#FFF;}
 .amain-tool-bar li.btn-item-add { float:right}
 .amain-tool-bar li.btn-item-right { float:right}
 
+
+
+
 /**卡片列表**/
 .am-card { position: relative; padding: 10px; border:1px solid #ddd; margin-bottom: 10px; /*box-shadow: 0 3px 5px rgba(0,0,0,.1);*/ background: #FFF; border-radius: 3px;}
 .am-card  + .am-card  {}
 .am-card .cover-thumb { margin-right: 10px;width: 120px; height: 90px; float: left;}
 .am-card-title { font-size: 16px; font-weight: 700;}
+
+
+/** 菜单页 **/
+.page-menu .menu-list td[field=name]  {white-space:nowrap}
+.page-menu .menu-list td[field=name] b { font-weight: 500}
+.page-menu .menu-list td[field=name] i {width: 30px; text-align: center;color:rgb(135, 156, 168)}
+.page-menu .menu-list td[field=status] .status_0 { color: #ccc}
 
 /** 商品列表 **/
 .good-list .am-card { box-sizing: border-box; background: #fff; border-color: #c0c0c0 }

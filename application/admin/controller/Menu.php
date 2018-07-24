@@ -4,6 +4,7 @@ namespace app\admin\controller;
 use app\common\model\AuthRule as AuthRuleModel;
 use app\common\controller\AdminBase;
 use think\Db;
+use my\Tree;
 
 /**
  * 后台菜单
@@ -19,18 +20,30 @@ class Menu extends AdminBase
     {
         parent::initialize();
         $this->auth_rule_model = new AuthRuleModel();
-        $admin_menu_list       = $this->auth_rule_model->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
-        $admin_menu_level_list = array2level($admin_menu_list);
-        $this->assign('admin_menu_level_list', $admin_menu_level_list);
+        // $admin_menu_list       = $this->auth_rule_model->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
+        // $admin_menu_level_list = array2level($admin_menu_list);
+        // $this->assign('admin_menu_level_list', $admin_menu_level_list);
+
     }
 
     /**
      * 后台菜单
      * @return mixed
      */
-    public function index()
+    public function index($json=0)
     {
+      if($json){
+        $data  = $this->auth_rule_model->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+        $tree = new Tree();
+        $tree->init($data);
+        $tree->parentid_name = 'pid';
+        $treeData = $tree->get_tree_array(0,'id');
+        $this->jsonReturn(0,$treeData);
+
+      }else{
         return $this->fetch();
+      }
+
     }
 
     /**
@@ -58,6 +71,9 @@ class Menu extends AdminBase
               }
           }
       }else{
+        $admin_menu_list       = $this->auth_rule_model->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
+        $admin_menu_level_list = array2level($admin_menu_list);
+        $this->assign('admin_menu_level_list', $admin_menu_level_list);
         return $this->fetch('add', ['pid' => $pid]);
       }
     }
@@ -89,6 +105,9 @@ class Menu extends AdminBase
               }
           }
       }else{
+        $admin_menu_list       = $this->auth_rule_model->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
+        $admin_menu_level_list = array2level($admin_menu_list);
+        $this->assign('admin_menu_level_list', $admin_menu_level_list);
         $admin_menu = $this->auth_rule_model->find($id);
         return $this->fetch('edit', ['admin_menu' => $admin_menu]);
       }
