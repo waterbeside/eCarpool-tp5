@@ -1,10 +1,11 @@
 <?php
 namespace app\admin\controller;
 
-use app\common\model\Article as ArticleModel;
-use app\common\model\Category as CategoryModel;
+
+use app\content\model\Category as CategoryModel;
 use app\common\controller\AdminBase;
 use think\Db;
+use my\Tree;
 
 /**
  * 栏目管理
@@ -21,19 +22,33 @@ class Category extends AdminBase
     {
         parent::initialize();
         $this->category_model = new CategoryModel();
-        $this->article_model  = new ArticleModel();
-        $category_level_list  = $this->category_model->getLevelList();
 
-        $this->assign('category_level_list', $category_level_list);
     }
 
     /**
      * 栏目管理
      * @return mixed
      */
-    public function index()
+    public function index($json=0,$recycled=0)
     {
+      if($json){
+        $map = [];
+        if(!$recycled){
+          $map[] = ['is_delete','=',0];
+        }
+        $data  = $this->category_model->where($map)->select()->toArray();
+        $tree = new Tree();
+        $tree->init($data);
+        $tree->parentid_name = 'parent_id';
+        $treeData = $tree->get_tree_array(0,'id');
+        $this->jsonReturn(0,$treeData);
+
+      }else{
+        $typeList = config('content.category_type');
+        $this->assign('typeList', $typeList);
+        $this->assign('recycled', $recycled);
         return $this->fetch();
+      }
     }
 
     /**
@@ -45,18 +60,30 @@ class Category extends AdminBase
     {
       if ($this->request->isPost()) {
           $data            = $this->request->param();
-          $validate_result = $this->validate($data, 'Category');
-
+          $validate_result = $this->validate($data, 'app\content\validate\Category');
           if ($validate_result !== true) {
               $this->jsonReturn(-1,$validate_result);
-          } else {
-              if ($this->category_model->allowField(true)->save($data)) {
-                  $this->jsonReturn(0,'保存成功');
-              } else {
-                  $this->jsonReturn(-1,'保存失败');
-              }
           }
+          if(!isset($data['parent_id']) || !is_numeric($data['parent_id'])){
+            $data['parent_id'] = 0 ;
+          }
+          if ($this->category_model->allowField(true)->save($data)) {
+              $this->jsonReturn(0,'保存成功');
+          } else {
+              $this->jsonReturn(-1,'保存失败');
+          }
+
       }else{
+        $category_level_list       = $this->category_model->where('is_delete',0)->select();
+        foreach ($category_level_list as $key => $value) {
+          $category_level_list[$key]['pid'] = $value['parent_id'];
+        }
+        $category_level_list = array2level($category_level_list);
+        $this->assign('category_level_list', $category_level_list);
+
+        $typeList = config('content.category_type');
+        $this->assign('typeList', $typeList);
+
         return $this->fetch('add', ['pid' => $pid]);
       }
     }
@@ -70,27 +97,41 @@ class Category extends AdminBase
      */
     public function edit($id)
     {
+
+
       if ($this->request->isPost()) {
           $data            = $this->request->param();
-          $validate_result = $this->validate($data, 'Category');
+          $validate_result = $this->validate($data, 'app\content\validate\Category');
 
           if ($validate_result !== true) {
               $this->jsonReturn(-1,$validate_result);
+          }
+
+          $children = $this->category_model->getChildrensId($id);
+          if (in_array($data['parent_id'], $children)) {
+              $this->jsonReturn(-1,'不能移动到自己的子分类');
           } else {
-              $children = $this->category_model->where([['path','like', "%,{$id},%"]])->column('id');
-              if (in_array($data['pid'], $children)) {
-                  $this->jsonReturn(-1,'不能移动到自己的子分类');
+              if ($this->category_model->allowField(true)->save($data, $id) !== false) {
+                  $this->jsonReturn(0,'更新成功');
               } else {
-                  if ($this->category_model->allowField(true)->save($data, $id) !== false) {
-                      $this->jsonReturn(0,'更新成功');
-                  } else {
-                      $this->jsonReturn(-1,'更新失败');
-                  }
+                  $this->jsonReturn(-1,'更新失败');
               }
           }
+
       }else{
-        $category = $this->category_model->find($id);
-        return $this->fetch('edit', ['category' => $category]);
+        $category_level_list       = $this->category_model->where('is_delete',0)->select();
+        foreach ($category_level_list as $key => $value) {
+          $category_level_list[$key]['pid'] = $value['parent_id'];
+        }
+        $category_level_list = array2level($category_level_list);
+        $this->assign('category_level_list', $category_level_list);
+
+        $typeList = config('content.category_type');
+        $this->assign('typeList', $typeList);
+        $category_data = $this->category_model->find($id);
+
+
+        return $this->fetch('edit', ['data' => $category_data]);
       }
     }
 
@@ -102,15 +143,12 @@ class Category extends AdminBase
      */
     public function delete($id)
     {
-        $category = $this->category_model->where(['pid' => $id])->find();
-        $article  = $this->article_model->where(['cid' => $id])->find();
+        $category = $this->category_model->where(['parent_id' => $id])->find();
 
         if (!empty($category)) {
             $this->jsonReturn(-1,'此分类下存在子分类，不可删除');
         }
-        if (!empty($article)) {
-            $this->jsonReturn(-1,'此分类下存在文章，不可删除');
-        }
+
         if ($this->category_model->destroy($id)) {
             $this->jsonReturn(0,'删除成功');
         } else {

@@ -3,38 +3,106 @@
 <div class="amain-body">
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
-        <ul class="layui-tab-title">
-            <li class="layui-this">栏目管理</li>
-            <li class=""><a href="{:url('admin/category/add')}">添加栏目</a></li>
+        <ul class="amain-tool-bar">
+          <li class="layui-this"><a href="{:url('admin/Category/index')}"  >栏目管理</a></li>
+          <li class="btn-item btn-item-add">
+            <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/Category/add')}"  data-title="添加公司"  data-trigger="modal" >
+            <i class="fa fa-plus"></i> 添加栏目</a>
+          </li>
         </ul>
         <div class="layui-tab-content">
+
             <div class="layui-tab-item layui-show">
-                <table class="layui-table">
-                    <thead>
-                    <tr>
-                        <th style="width: 30px;">ID</th>
-                        <th style="width: 30px;">排序</th>
-                        <th>栏目名称</th>
-                        <th>操作</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {foreach name="category_level_list" item="vo"}
-                    <tr>
-                        <td>{$vo.id}</td>
-                        <td>{$vo.sort}</td>
-                        <td>{neq name="vo.level" value="1"}|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----';}{/php}{/neq} {$vo.name}</td>
-                        <td>
-                            <a href="{:url('admin/category/add',['pid'=>$vo['id']])}" class="layui-btn layui-btn-mini">添加子栏目</a>
-                            <a href="{:url('admin/category/edit',['id'=>$vo['id']])}" class="layui-btn layui-btn-normal layui-btn-mini">编辑</a>
-                            <a href="{:url('admin/category/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-danger layui-btn-mini ajax-delete">删除</a>
-                        </td>
-                    </tr>
-                    {/foreach}
-                    </tbody>
-                </table>
+                <table id="ContentCateTree" class="layui-table table-tree"></table>
             </div>
         </div>
     </div>
 </div>
+
+{/block}
+{block name="script"}
+<script>
+PAGE_EXEC = {
+  data : {
+    treeList: [],
+    typeList:<?php echo json_encode($typeList);?>
+  },
+  treetable : $('#ContentCateTree'),
+  getData : function(){
+    var _this = this;
+    $.get("{:URL('admin/Category/index',['json'=>1])}").then(function(res){
+      if(res.code === 0){
+
+         _this.data.treeList = res.data
+        _this.setTreegrid();
+
+      }else{
+        layer.msg('数据加载失败');
+
+      }
+      _this
+    })
+  },
+
+  setTreegrid : function(){
+    var _this = this;
+    var $treetable = _this.treetable;
+    var treeOffsetTop = $treetable.offset().top;
+    var treegridHeight = document.documentElement.clientHeight-treeOffsetTop-20
+    $treetable.kanTreegrid({
+
+      idField:'id',
+      pidField:'parent_id',
+      method:'get',
+      treeField: 'name_zh',
+      height:treegridHeight,
+      datas: _this.data.treeList,
+
+      columns:[[
+            {field:'id',title:'#',width:60},
+            {field:'name_zh',title:'名称',width:290},
+            {field:'name_en',title:'名称（EN）',width:100},
+            {field:'name_vi',title:'名称（VI）',width:100},
+            {field:'type',title:'类型',width:100,formatter:formatType},
+            {field:'option',title:'操作',width:100,formatter:formatOption},
+          ]],
+
+      onClickRow:function(row){
+
+      },
+      onLoadSuccess:function(node, data){
+
+      }
+    })
+
+
+
+    function formatOption(value,row){
+      var s = '<a href="{:url('admin/category/add')}?pid='+row.id+'" class="layui-btn layui-btn-success layui-btn-xs " data-title="添加子分类"  data-trigger="modal" title="添加子分类"><i class="layui-icon">&#xe654;</i> </a>'
+      s += '<a href="{:url('admin/category/edit')}?id='+row.id+'"  data-trigger="modal" data-title="编辑 #'+row.id+'" class="layui-btn   layui-btn-xs "   title="编辑"> <i class="fa fa-pencil"></i> </a>';
+       s += '<a href="{:url('admin/category/delete')}?id='+row.id+'" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete">删</a>';
+      return s;
+     }
+
+
+    function formatType(value){
+      var s =  value;
+      if(typeof(_this.data.typeList[value])!="undefined"){
+        return _this.data.typeList[value];
+      }else{
+        return s;
+      }
+
+    }
+
+  },
+
+
+
+}
+
+
+PAGE_EXEC.getData();
+
+</script>
 {/block}
