@@ -43,10 +43,7 @@ class CarpoolTrips extends AdminBase
       $time_e_o = date("Y-m-d",strtotime($time_e)- 24*60*60);
       $filter['time'] = $time_s." ~ ".$time_e_o;
     }
-    //筛选用户信息
-    if (isset($filter['keyword']) && $filter['keyword'] ){
-      $map[] = ['d.loginname|d.phone|d.name|p.loginname|p.phone|p.name','like', "%{$filter['keyword']}%"];
-    }
+
     //筛选部门
     if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
       $map[] = ['d.Department|d.companyname|p.Department|p.companyname','like', "%{$filter['keyword_dept']}%"];
@@ -70,6 +67,10 @@ class CarpoolTrips extends AdminBase
 
     //从info表取得行程
     if($type === 0 ){
+      //筛选用户信息
+      if (isset($filter['keyword']) && $filter['keyword'] ){
+        $map[] = ['d.loginname|d.phone|d.name|p.loginname|p.phone|p.name','like', "%{$filter['keyword']}%"];
+      }
       $fields .= ',t.infoid, t.love_wall_ID , t.subtime , t.carownid as driver_id , t.passengerid as passenger_id ';
       $fields .= ',d.loginname as driver_loginname , d.name as driver_name, d.phone as driver_phone, d.Department as driver_department, d.sex as driver_sex ,d.company_id as driver_company_id, d.companyname as driver_companyname, d.carnumber';
       $fields .= ',p.loginname as passenger_loginname , p.name as passenger_name, p.phone as passenger_phone, p.Department as passenger_department, p.sex as passenger_sex ,p.company_id as passenger_company_id, p.companyname as passenger_companyname';
@@ -104,6 +105,10 @@ class CarpoolTrips extends AdminBase
     }
 
     if($type ==1 ){
+      //筛选用户信息
+      if (isset($filter['keyword']) && $filter['keyword'] ){
+        $map[] = ['d.loginname|d.phone|d.name','like', "%{$filter['keyword']}%"];
+      }
       $subQuery = InfoModel::field('count(love_wall_ID) as count , love_wall_ID')->group('love_wall_ID')->where('status <> 2')->fetchSql(true)->buildSql();
       $fields .= ', t.love_wall_ID, t.subtime , t.carownid as driver_id , t.seat_count';
       // $fields .=' , (select count(*) from info as i where i.love_wall_ID = t.love_wall_ID and i.status <> 2 ) AS took_count'
