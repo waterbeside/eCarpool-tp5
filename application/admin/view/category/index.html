@@ -7,7 +7,7 @@
           <li <?php if(!$recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/Category/index')}"  >栏目管理</a></li>
           <li <?php if($recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/Category/index',['recycled'=>1])}"  >回收站</a></li>
           <li class="btn-item btn-item-add">
-            <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/Category/add')}"  data-title="添加公司"  data-trigger="modal" >
+            <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/Category/add')}"  data-title="添加栏目"  data-trigger="modal" >
             <i class="fa fa-plus"></i> 添加栏目</a>
           </li>
         </ul>
