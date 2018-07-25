@@ -261,6 +261,8 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 .page-menu .menu-list td[field=name] i {width: 30px; text-align: center;color:rgb(135, 156, 168)}
 .page-menu .menu-list td[field=status] .status_0 { color: #ccc}
 
+.page-category tr.un_recycled { color: #ccc}
+
 /** 商品列表 **/
 .good-list .am-card { box-sizing: border-box; background: #fff; border-color: #c0c0c0 }
 .good-list .am-card-title { max-width: 500px;}

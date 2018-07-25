@@ -35,7 +35,6 @@ PAGE_EXEC = {
   getData : function(){
     var _this = this;
     $.get("{:url('admin/menu/index',['json'=>1])}").then(function(res){
-      console.log(res)
       if(res.code === 0){
          _this.data.treeList = res.data
         _this.setTreegrid();
@@ -107,7 +106,6 @@ PAGE_EXEC = {
     var _this = this;
     var $treetable = _this.treetable;
     $treetable.kanTreegrid('expandAll');
-
   }
 
 

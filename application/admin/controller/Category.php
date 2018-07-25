@@ -16,13 +16,11 @@ class Category extends AdminBase
 {
 
     protected $category_model;
-    protected $article_model;
 
     protected function initialize()
     {
         parent::initialize();
         $this->category_model = new CategoryModel();
-
     }
 
     /**
@@ -32,11 +30,16 @@ class Category extends AdminBase
     public function index($json=0,$recycled=0)
     {
       if($json){
-        $map = [];
+
         if(!$recycled){
-          $map[] = ['is_delete','=',0];
+          $data = $this->category_model->getList();
+        }else{
+          $data  = $this->category_model->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
         }
-        $data  = $this->category_model->where($map)->select()->toArray();
+
+
+
+
         $tree = new Tree();
         $tree->init($data);
         $tree->parentid_name = 'parent_id';
@@ -68,13 +71,16 @@ class Category extends AdminBase
             $data['parent_id'] = 0 ;
           }
           if ($this->category_model->allowField(true)->save($data)) {
-              $this->jsonReturn(0,'保存成功');
+            $this->category_model->deleteListCache();
+            $this->log('添加分类成功',0);
+            $this->jsonReturn(0,'保存成功');
           } else {
-              $this->jsonReturn(-1,'保存失败');
+            $this->log('添加分类失败',-1);
+            $this->jsonReturn(-1,'保存失败');
           }
 
       }else{
-        $category_level_list       = $this->category_model->where('is_delete',0)->select();
+        $category_level_list       = $this->category_model->where('is_delete',0)->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
         foreach ($category_level_list as $key => $value) {
           $category_level_list[$key]['pid'] = $value['parent_id'];
         }
@@ -112,14 +118,17 @@ class Category extends AdminBase
               $this->jsonReturn(-1,'不能移动到自己的子分类');
           } else {
               if ($this->category_model->allowField(true)->save($data, $id) !== false) {
+                $this->category_model->deleteListCache();
+                $this->log('更新分类成功',0);
                   $this->jsonReturn(0,'更新成功');
               } else {
+                $this->log('更新分类失败',-1);
                   $this->jsonReturn(-1,'更新失败');
               }
           }
 
       }else{
-        $category_level_list       = $this->category_model->where('is_delete',0)->select();
+        $category_level_list       = $this->category_model->where('is_delete',0)->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
         foreach ($category_level_list as $key => $value) {
           $category_level_list[$key]['pid'] = $value['parent_id'];
         }
@@ -143,16 +152,50 @@ class Category extends AdminBase
      */
     public function delete($id)
     {
-        $category = $this->category_model->where(['parent_id' => $id])->find();
 
-        if (!empty($category)) {
-            $this->jsonReturn(-1,'此分类下存在子分类，不可删除');
+        if($this->category_model->where('id', $id)->update(['is_delete' => 1])){
+          $this->category_model->deleteListCache();
+          $this->log('删除分类成功',0);
+          $this->jsonReturn(0,'删除成功');
+        }else{
+          $this->log('删除分类失败',-1);
+          $this->jsonReturn(-1,'删除失败');
         }
-
-        if ($this->category_model->destroy($id)) {
+        /*  $category = $this->category_model->where(['parent_id' => $id])->find();
+          if (!empty($category)) {
+              $this->jsonReturn(-1,'此分类下存在子分类，不可删除');
+          }*/
+        /*if ($this->category_model->destroy($id)) {
             $this->jsonReturn(0,'删除成功');
         } else {
             $this->jsonReturn(-1,'删除失败');
-        }
+        }*/
     }
+
+
+    /**
+     * 还原栏目
+     * @param $id
+     */
+    public function recycle($id)
+    {
+        if($this->category_model->where('id', $id)->update(['is_delete' => 0])){
+          $this->category_model->deleteListCache();
+          $this->log('还原分类成功',0);
+          $this->jsonReturn(0,'还原成功');
+        }else{
+          $this->log('还原分类失败',-1);
+          $this->jsonReturn(-1,'还原失败');
+        }
+
+    }
+
+
+
+
+
+
+
+
+
 }
