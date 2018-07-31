@@ -4,10 +4,10 @@
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
         <ul class="amain-tool-bar">
-          <li <?php if(!$recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/Category/index')}"  >栏目管理</a></li>
-          <li <?php if($recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/Category/index',['recycled'=>1])}"  >回收站</a></li>
+          <li <?php if(!$recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/ContentCategory/index')}"  >栏目管理</a></li>
+          <li <?php if($recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/ContentCategory/index',['recycled'=>1])}"  >回收站</a></li>
           <li class="btn-item btn-item-add">
-            <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/Category/add')}"  data-title="添加栏目"  data-trigger="modal" >
+            <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ContentCategory/add')}"  data-title="添加栏目"  data-trigger="modal" >
             <i class="fa fa-plus"></i> 添加栏目</a>
           </li>
         </ul>
@@ -40,7 +40,7 @@ PAGE_EXEC = {
   treetable : $('#ContentCateTree'),
   getData : function(){
     var _this = this;
-    $.get("{:URL('admin/Category/index',['json'=>1,'recycled'=>$recycled])}").then(function(res){
+    $.get("{:URL('admin/ContentCategory/index',['json'=>1,'recycled'=>$recycled])}").then(function(res){
       if(res.code === 0){
 
          _this.data.treeList = res.data
@@ -143,7 +143,7 @@ PAGE_EXEC = {
     var id = $btn.data('id');
     ajaxSubmit({
       type:'get',
-      url:"{:url('admin/category/recycle')}",
+      url:"{:url('admin/ContentCategory/recycle')}",
       data:{id:id},
       success:function(res){
         console.log(res);

@@ -12,7 +12,7 @@ use my\Tree;
  * Class Category
  * @package app\admin\controller
  */
-class Category extends AdminBase
+class ContentCategory extends AdminBase
 {
 
     protected $category_model;
