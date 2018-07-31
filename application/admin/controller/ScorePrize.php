@@ -176,7 +176,7 @@ class ScorePrize extends AdminBase
         'amount' => $data['amount'],
         'level' => $data['level'] ,
         'update_time' => date('Y-m-d H:i:s'),
-        'is_shelves' =>isset($data['un_shelves']) && $data['un_shelves'] == 1 ? 1 : 0,
+        'is_shelves' =>isset($data['un_shelves']) && $data['un_shelves'] == 1 ? 0 : 1,
 
       ];
 
