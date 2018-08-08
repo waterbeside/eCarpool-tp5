@@ -9,7 +9,7 @@ use think\Db;
 
 /**
  * 抽奖管理
- * Class ScoreGoods
+ * Class ScorePrize
  * @package app\admin\controller
  */
 class ScorePrize extends AdminBase
