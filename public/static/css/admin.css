@@ -382,3 +382,24 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 .page-trip-detail .member-item.passenger .type { background:rgb(56, 157, 90); }
 .page-trip-detail .info-table { margin-top: 0}
 .page-trip-detail .info-table .department { color: #aaa}
+
+
+/** 转盘抽奖项设置 **/
+.page-scoreConfigs-awards .lists { margin-top: 10px }
+.page-scoreConfigs-awards  .f-box .inner { padding: 4px; line-height: 40px}
+.page-scoreConfigs-awards  .f-box input {  }
+
+.page-scoreConfigs-awards  .f-index { width: 30px; color:#ccc}
+.page-scoreConfigs-awards  .f-grade { width: 80px}
+.page-scoreConfigs-awards  .f-rate { width: 120px}
+.page-scoreConfigs-awards  .f-desc {width: 180px}
+.page-scoreConfigs-awards  .f-cost {width: 80px}
+.page-scoreConfigs-awards  .f-extend { width:80px}
+.page-scoreConfigs-awards  .f-- {}
+.page-scoreConfigs-awards  .f-rate input {  float: left; width: 80px}
+.page-scoreConfigs-awards  .f-- .layui-form-switch  { margin-top: 0;}
+
+.page-scoreConfigs-awards .lists-header { display: flex; padding-bottom: 10px;border-bottom:1px solid #DDD;}
+.page-scoreConfigs-awards .lists-header .inner { line-height: 20px;}
+.page-scoreConfigs-awards .lists .item { display: flex; border-bottom:1px solid #DDD; position: relative}
+.page-scoreConfigs-awards .lists .item.error { background: rgb(252, 234, 234)}
