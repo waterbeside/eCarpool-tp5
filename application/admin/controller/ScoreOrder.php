@@ -172,8 +172,8 @@ class ScoreOrder extends AdminBase
         ->setCellValue('C'.$rowNum,$value['phone'])
         ->setCellValue('D'.$rowNum,$value['loginname'])
         ->setCellValue('E'.$rowNum,isset($companys[$value['company_id']]) ? $companys[$value['company_id']] :  $value['company_id'] )
-        ->setCellValue('F'.$rowNum,$value['companyname'])
-        ->setCellValue('G'.$rowNum,$value['Department'])
+        ->setCellValue('F'.$rowNum,$value['Department'])
+        ->setCellValue('G'.$rowNum,$value['companyname'])
         ->setCellValue('H'.$rowNum,$value['creation_time'])
         ->setCellValue('I'.$rowNum,$goodStr)
         ->setCellValue('J'.$rowNum,$value['status']);
