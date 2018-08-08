@@ -109,8 +109,8 @@ var goodSum = {
   num:0
 }
 $('.goods-table-list .good-item').each(function(index, el) {
-  var num =  parseInt($(this).find('.num').text());
-  var amount =  parseInt($(this).find('.amount').text());
+  var num =  parseFloat($(this).find('.num').text());
+  var amount =  parseFloat($(this).find('.amount').text());
   goodSum['num'] += num;
   goodSum['price'] += num * amount;
 });
