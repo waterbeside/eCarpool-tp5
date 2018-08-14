@@ -106,9 +106,9 @@ class Score extends AdminBase
       //查找是否已开通拼车帐号，拼整理data
       $accountDetial = null ;
       if( ($type=='0' || $type=="score")  &&  $account_id ){ //直接从积分帐号取
-        $accountDetial = ScoreAccountModel::where(['id'=>$account_id,['is_delete','<>', 1]])->lock(true)->find();
+        $accountDetial = ScoreAccountModel::where([['id','=',$account_id],['is_delete','<>', 1]])->lock(true)->find();
       }elseif($accountField){
-        $accountDetial = ScoreAccountModel::where([$accountField=>$account,['is_delete','<>', 1]])->lock(true)->find();
+        $accountDetial = ScoreAccountModel::where([[$accountField,'=',$account],['is_delete','<>', 1]])->lock(true)->find();
       }
       if($accountDetial && $accountDetial['id']){
         $data['account_id'] = $accountDetial['id'];
