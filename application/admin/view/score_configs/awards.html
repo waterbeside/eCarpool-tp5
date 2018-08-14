@@ -37,7 +37,7 @@
             <div class="blank20"></div>
 
             <div class="layui-btn-container layui-row" style="text-align: right">
-                <button class="layui-btn layui-btn-lg" onclick="return PAGE_EXEC.submitData();">提交</button>
+                <button class="layui-btn layui-btn-lg" onclick="return PAGE_EXEC.submitData();"><i class="fa fa-save"></i> 保存</button>
             </div>
 
           </form>
@@ -55,13 +55,14 @@
       <div class="f-box f-grade"><div class="inner"> <input type="number" name="grade" value="{{ d.item.grade }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/> </div></div>
       <div class="f-box f-rate"><div class="inner"><input type="float" name="rate" value="{{ d.item.rate }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
       <div class="f-box f-cost"><div class="inner"><input type="number" name="cost" value="{{ d.item.cost }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
-      <div class="f-box f-desc"><div class="inner"><input type="text" name="desc" value="{{ d.item.desc }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
+      <!-- <div class="f-box f-desc"><div class="inner"><input type="text" name="desc" value="{{ d.item.desc }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div> -->
+      <div class="f-box f-desc"><div class="inner"><textarea  name="desc"   placeholder="" class="layui-textarea" style="min-height:60px" onkeyup="PAGE_EXEC.changeData(this)">{{ d.item.desc }}</textarea></div></div>
       <!-- <div class="f-box f-extend"><div class="inner"></div></div> -->
       <div class="f-box f--"><div class="inner">
         <button class="layui-btn layui-btn-xs layui-btn-primary " title="按奖例积分自动填充" onclick="return PAGE_EXEC.autoFill(this); ">Fill</button>
         <!-- <button class="layui-btn layui-btn-xs layui-btn-primary " title="随机生成奖项" onclick="return PAGE_EXEC.randomFill(this); ">Random</button> -->
         &nbsp;<input type="checkbox" name="is_show" value="1" lay-skin="switch" lay-filter="is_show_{{ d.index }}" lay-text="* 使用|不使用" {{# if(!d.item.is_disused){ }} checked="checked"{{#  } }}>&nbsp;
-        <button class="layui-btn layui-btn-xs layui-btn-primary " title="随机生成奖项" onclick="return PAGE_EXEC.delete(this); "><i class="fa fa-trash"></i></button>
+        <button class="layui-btn layui-btn-xs layui-btn-primary " title="删除" onclick="return PAGE_EXEC.delete(this); "><i class="fa fa-trash"></i></button>
       </div></div>
 </script>
 <script>
@@ -166,8 +167,8 @@ PAGE_EXEC = {
         content: '确定删除？',
         btn: ['确定', '取消'],
         yes: function (index) {
-          if(_this.data.lists.length < 7){
-            layer.msg("删除失败，至少有6项");
+          if(_this.data.lists.length < 8){
+            layer.msg("删除失败，至少有8项");
           }else{
             _this.data.lists.splice(index, 1);
             _this.renderItem();
@@ -219,7 +220,7 @@ PAGE_EXEC = {
     var index = $item.data('index');
     var itemData = this.getRowData(index);
     var $inputGrade = $item.find("input[name='grade']");
-    var $inputDesc = $item.find("input[name='desc']");
+    var $inputDesc = $item.find("[name='desc']");
     var $inputCost = $item.find("input[name='cost']");
 
     var grade = parseInt($inputGrade.val());
@@ -265,11 +266,12 @@ PAGE_EXEC = {
         }else{
           used_grades.push(el.grade);
         }
-        total_rate += el.rate;
+        total_rate += parseFloat(el.rate);
+
       }
     })
-    if(used_grades.length != 6){
-      layer.msg("必须开启使用6项");
+    if(used_grades.length != 8){
+      layer.msg("必需开启使用8项");
       return false;
     }
     if(error_index>-1){
@@ -277,6 +279,7 @@ PAGE_EXEC = {
       return false;
     }
     if(total_rate > 1){
+      console.log(total_rate);
       layer.msg("总概率不得大于1，请重新计算");
       return false;
 
