@@ -32,6 +32,8 @@ class ScoreConfigs extends AdminBase
       $data_used_keys = [];
       $total_rate = 0;
       foreach ($value_array as $key => $v) {
+        $v['rate'] = strval($v['rate']);
+        $value_array[$key]['rate'] = strval($v['rate']);
         if($v['is_disused'] === 0 ){
           if(!in_array($v['grade'],$data_used_keys)){
             $data_used[strval($v['grade'])] = $v;
@@ -60,18 +62,18 @@ class ScoreConfigs extends AdminBase
         }
 
       }
+
       $value = json_encode($value_array);
       $value_public = json_encode($data_used_kv);
+      // dump($value);
 
-      dump($value);
-      dump($data_used_kv);
 
       // $value = json_encode();
       $res = ScoreConfigsModel::where('name','awards')->setField('value', $value);
       if($res!==false){
         $redis = new RedisData();
         $redis->delete("score:configs:awards");
-        $redis->set("score:configs:awards",$value_public);
+        // $redis->set("score:configs:awards",$value_public); 不由后台生成
         $this->log('更新转盘抽奖奖项成功',0);
         $this->success("更新成功");
       }else{
