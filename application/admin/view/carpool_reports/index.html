@@ -1,0 +1,310 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body page-carpool-reports">
+
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <ul class="amain-tool-bar layui-tab-title" >
+          <li class="layui-this"> 拼车期报 </li>
+          <li > 走势图表 </li>
+        </ul>
+
+        <div class="amain-content layui-tab-content">
+          <!-- **************  s : 拼车期报 ************** -->
+          <div class="layui-tab-item layui-show">
+            <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/CarpoolReports/index')}" method="get">
+                <!-- <div class="blank10">  </div> -->
+                <div class="layui-inline">
+                  <label class="layui-form-label" style="width:160px">时间范围选择</label>
+
+                    <div class="layui-input-inline">
+                      <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                  <input type="hidden" name="export" value="0">
+                    <!-- <button class="layui-btn"><i class="fa fa-search"></i></button> -->
+                </div>
+            </form>
+
+            <hr>
+
+            <div class="total-content">
+              <div class="total-item  total-item-dp">
+                <h3>拼车人次</h3>
+                <div class="total-value"> </div>
+              </div>
+              <div class="total-item  total-item-carbon">
+                <h3>减少碳排放量（KG）</h3>
+                <div class="total-value"> </div>
+              </div>
+              <div class="total-item  total-item-users">
+                <h3>参与人数</h3>
+                <div class="total-value"> </div>
+              </div>
+           </div>
+
+
+           <div class="layui-tab" lay-filter="ranking-tab">
+             <ul class="layui-tab-title">
+               <li class="layui-this">司机排名</li>
+               <li>乘客排名</li>
+             </ul>
+             <div class="layui-tab-content">
+               <div class="layui-tab-item layui-show">
+                 <div class="ranking-lists ranking-lists-driver">
+                   <table id="ranking-driver-table"></table>
+                 </div>
+               </div>
+               <div class="layui-tab-item ">
+                 <div class="ranking-lists ranking-lists-passenger">
+                   <table id="ranking-passenger-table"></table>
+                 </div>
+               </div>
+             </div>
+            </div>
+          </div>
+          <!-- **************  e / 拼车期报 ************** -->
+
+
+          <!-- **************  s : 走势图表 ************** -->
+          <div class="layui-tab-item ">
+            <div class="time-options">
+              <a class="time-item">年</a>
+              <a class="time-item current">月</a>
+              <a class="time-item">周</a>
+              <a class="time-item">日</a>
+            </div>
+
+
+          </div>
+          <!-- **************  e / 走势图表 ************** -->
+
+
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+
+PAGE_EXEC = {
+  data : {
+    timeStr : '{$filter.time}',
+    totals : {},
+    ranking : {
+      driver:[],
+      passenger:[]
+    },
+    tableObj:[]
+  },
+  /**
+   * 取得数据
+   */
+  getData : function(){
+    var _this = this;
+    return {
+      /**
+       * 计算总数
+       * @param String type driver|passenger|user : 司机人次|乘客人次|参与人数
+       */
+      totalCount : function(type){
+        var url = "";
+        switch (type) {
+          case 'driver':
+            url = '{:url("public_driver_count")}';
+            break;
+          case 'passenger':
+            url = '{:url("public_passenger_count")}';
+            break;
+          case 'user':
+            url = '{:url("public_user_count")}';
+            break;
+          default:
+
+        }
+        var dtd = $.Deferred();
+        $.getJSON(url,{timeStr:_this.data.timeStr}).then(function(res, textStatus) {
+            if(res.code===0){
+              dtd.resolve(res.data.total);
+            }else{
+              dtd.reject(typeof(res.desc)!="undefined" ? res.desc : '');
+            }
+        }).catch(function(error){
+            dtd.reject(error);
+        });
+        return dtd.promise();
+      },
+      /**
+       * 取得排名
+       * @param  String type   driver|passenger
+       * @param  Int reload  当1时，无论之前是否拉取过，都重新拉取。
+       */
+      ranking: function(type,reload){
+        var url = "{:url("public_ranking")}";
+        var dtd = $.Deferred();
+        reload = reload || 0;
+        if(_this.data.ranking[type].length > 0 && !reload){
+          dtd.resolve(_this.data.ranking[type]);
+        }else{
+          var loading = layer.load(2,{ shade: [0.2,'#fff']});
+
+          $.getJSON(url,{timeStr:_this.data.timeStr,type:type}).then(function(res, textStatus) {
+              layer.close(loading);
+              if(res.code===0){
+                $(res.data.lists).each(function(index, el) {
+                  res.data.lists[index]['rank'] = index + 1;
+                  res.data.lists[index]['sexStr'] = el.sex == 1 ? '男' : (el.sex == 2 ? '女' : '-' );
+                });
+                _this.data.ranking[type] = res.data.lists
+                dtd.resolve(res.data);
+              }else{
+                dtd.reject(typeof(res.desc)!="undefined" ? res.desc : '');
+              }
+          }).catch(function(error){
+              dtd.reject(error);
+          });
+        }
+
+        return dtd.promise();
+      },
+
+    }
+
+  },
+  /**
+   * 渲染排列表格
+   * @param  String type driver | passenger
+   */
+  renderTableList: function(type){
+    var _this = this;
+    var nameTitle = '姓名'
+    var cTitle = '人次'
+    var elem = ''
+    var data = []
+    switch (type) {
+      case 'driver':
+         nameTitle = '司机'
+         cTitle = '载客人次'
+         elem = '#ranking-driver-table'
+         data = _this.data.ranking.driver
+        break;
+      case 'passenger':
+        nameTitle = '作客次数'
+        cTitle = '坐车次数'
+        elem = '#ranking-passenger-table'
+        data = _this.data.ranking.passenger
+        break;
+
+
+    }
+    _this.data.tableObj['type'] = layui.table.render({
+       elem: elem
+       ,height:  'full-340'
+       ,data: data
+       // ,page: true //开启分页
+       ,limit:10000
+       ,cols: [[ //表头
+         {field: 'rank', title: '排名', width:80, sort: true, fixed: 'left'}
+         ,{field: 'name', title: nameTitle }
+         ,{field: 'loginname', title: '用户名', width:120}
+         ,{field: 'sexStr', title: '性别', width:80}
+         ,{field: 'phone', title: '电话', width:100}
+         ,{field: 'company_name', title: '公司', width:120}
+         ,{field: 'Department', title: '部门', width: 177}
+         ,{field: 'c', title: cTitle, width: 100, sort: true, fixed: 'right'}
+
+       ]]
+     })
+
+  },
+
+
+
+  /**
+   * 执行取得所有【期报表相关数据】，并渲染内容
+   */
+  getAllData_0: function(){
+    // var loading = layer.load(2,{ shade: [0.2,'#fff']});
+
+    var _this = this;
+    // $.when( _this.getData.totalCount("driver"),this.getData.totalCount("passenger")).done(function(data1,data2){
+    //   _this.data.totals.driver  = data1
+    //   _this.data.totals.passenger  = data2
+    //   $(".total-item-dp .total-value").html(_this.data.totals.passenger);
+    // })
+    var loadingText = "<small style='font-size:40px;'>加载中..</small>"
+    $(".total-item-dp .total-value").html(loadingText);
+    $(".total-item-carbon .total-value").html(loadingText);
+    $(".total-item-users .total-value").html(loadingText);
+    this.getData().totalCount("passenger").done(function(data){
+      _this.data.totals.passenger  = data
+      var carbon = (data * 7.6*2.3/10).toFixed(2) ;
+      setTimeout(function(){
+        $(".total-item-dp .total-value").html(_this.data.totals.passenger);
+        $(".total-item-carbon .total-value").html(carbon);
+      },800)
+    })
+
+    this.getData().totalCount("user").done(function(data){
+      _this.data.totals.users  = data
+      setTimeout(function(){
+        $(".total-item-users .total-value").html(_this.data.totals.users);
+      },800)
+    }).fail(function(res){
+      console.log(res)
+    })
+
+    element.on('tab(ranking-tab)', function(data){
+      if(data.index == 1){
+        _this.getData().ranking('passenger').done(function(data){
+          _this.renderTableList('passenger')
+        }).fail(function(res){
+          console.log(res)
+        })
+      }
+    });
+    this.getData().ranking('driver').done(function(data){
+      _this.renderTableList('driver')
+    }).fail(function(res){
+      console.log(res)
+    })
+
+  },
+
+
+  /**
+   * 执行初始化
+   */
+
+  init: function(){
+    var _this = this;
+    _this.getAllData_0();
+
+    laydate.render({
+      elem: '#filter_time'
+      ,range: '~' //或 range: '~' 来自定义分割字符
+      ,calendar: true
+      ,done: function(value, date, endDate){
+        console.log(value)
+        _this.data.timeStr = value;
+        _this.getAllData_0();
+        // layer.load(1);
+        // $("#filter-form").submit();
+     }
+    });
+
+  }
+}
+
+
+
+
+PAGE_EXEC.init()
+
+</script>
+{/block}

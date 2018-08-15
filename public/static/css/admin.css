@@ -383,6 +383,16 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 .page-trip-detail .info-table { margin-top: 0}
 .page-trip-detail .info-table .department { color: #aaa}
 
+/** 拼车报表统计 **/
+.page-carpool-reports .total-content { display: flex}
+.page-carpool-reports .total-item { padding: 10px 20px;  width: 100%; background: rgb(234, 246, 241); color:#10503b}
+.page-carpool-reports .total-item h3 { font-size: 20px; color:#2e8669; font-weight: 300; }
+.page-carpool-reports .total-item +.total-item { margin-left: 5px; border-left: 1px solid #FFF}
+.page-carpool-reports .total-value {padding: 10px 0 ;text-align: center; font-size: 50px; transition: all 2s ease-in-out}
+.page-carpool-reports .total-value small { font-size: 30px}
+.page-carpool-reports .time-options {padding: 10px}
+.page-carpool-reports .time-item { margin-right: 12px;padding: 4px 8px; background: rgb(216, 228, 242); color:rgb(77, 118, 143); border:1px solid rgb(177, 200, 226) }
+.page-carpool-reports .time-item.current { background: rgb(102, 63, 133); color:#fff }
 
 /** 转盘抽奖项设置 **/
 .page-scoreConfigs-awards .lists { margin-top: 10px }
