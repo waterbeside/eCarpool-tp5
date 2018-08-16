@@ -3,9 +3,10 @@ namespace app\admin\controller;
 
 use app\carpool\model\Company as CompanyModel;
 use app\common\controller\AdminBase;
-use think\Config;
+use think\facade\Validate;
+use think\facade\Config;
 use think\Db;
-
+use think\facade\Cache;
 /**
  * 公司管理
  * Class Department
@@ -15,9 +16,9 @@ class Company extends AdminBase
 {
     protected $company_model;
 
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
         $this->company_model = new CompanyModel();
     }
 
@@ -31,9 +32,9 @@ class Company extends AdminBase
     {
         $map = [];
         if ($keyword) {
-            $map['company_name|short_name'] = ['like', "%{$keyword}%"];
+            $map[] = ['company_name|short_name','like', "%{$keyword}%"];
         }
-        $lists = $this->company_model->where($map)->order('company_id ASC , company_name ')->paginate(50, false, ['page' => $page]);
+        $lists = $this->company_model->where($map)->order('company_id ASC , company_name ')->paginate(50, false,['query'=>['keyword'=>$keyword]]);
 
         return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword]);
     }
@@ -41,7 +42,8 @@ class Company extends AdminBase
 
 
     public function public_lists(){
-      $lists = $this->company_model->order('company_id ASC , company_name ')->select();
+
+      $lists = $this->company_model->getCompanys();
       $returnLists = [];
       foreach($lists as $key => $value) {
         $returnLists[] = [
@@ -50,7 +52,7 @@ class Company extends AdminBase
           'status'=>$value['status'],
         ];
       }
-      return json(['data'=>['lists'=>$returnLists],'code'=>0,'desc'=>'success']);
+      $this->jsonReturn(0,['lists'=>$returnLists],'success');
     }
 
     /**
@@ -61,15 +63,19 @@ class Company extends AdminBase
     {
       if ($this->request->isPost()) {
           $data            = $this->request->param();
-          $validate_result = $this->validate($data, 'Company');
+          $validate_result = $this->validate($data, 'app\carpool\validate\Company');
 
           if ($validate_result !== true) {
-              $this->error($validate_result);
+              $this->jsonReturn(-1,$validate_result);
           } else {
               if ($this->company_model->allowField(true)->save($data)) {
-                  $this->success('保存成功');
+                  Cache::tag('public')->rm('companys');
+                  $pk = $this->company_model->company_id; //插入成功后取得id
+                  $this->log('添加公司成功，id='.$pk,0);
+                  $this->jsonReturn(0,'保存成功');
               } else {
-                  $this->error('保存失败');
+                  $this->log('添加公司失败',-1);
+                  $this->jsonReturn(-1,'保存失败');
               }
           }
       }else{
@@ -86,19 +92,27 @@ class Company extends AdminBase
     {
       if ($this->request->isPost()) {
           $data            = $this->request->param();
-
-          $validate_result = $this->validate($data, 'Company');
-
+          $validate_result = $this->validate($data, 'app\carpool\validate\Company.edit');
           if ($validate_result !== true) {
-              $this->error($validate_result);
-          } else {
-
-              if ($this->company_model->allowField(true)->save($data, ['company_id'=>$id]) !== false) {
-                  $this->success('更新成功');
-              } else {
-                  $this->error('更新失败');
-              }
+              $this->jsonReturn(-1,$validate_result);
           }
+
+          $validate   = Validate::make(['company_name'  => 'unique:carpool/Company,company_name,'.$id],['company_name.unique' => '公司名已存在']);
+          $validate_result = $validate->check($data);
+          if ($validate_result !== true) {
+              $this->jsonReturn(-1,$validate->getError());
+          }
+
+
+          if ($this->company_model->allowField(true)->save($data, ['company_id'=>$id]) !== false) {
+              Cache::tag('public')->rm('companys');
+              $this->log('更新公司成功，id='.$id,0);
+              $this->jsonReturn(0,'更新成功');
+          } else {
+              $this->log('更新公司失败，id='.$id,-1);
+              $this->jsonReturn(-1,'更新失败');
+          }
+
        }else{
          $datas = $this->company_model->find($id);
          return $this->fetch('edit', ['datas' => $datas]);
@@ -114,9 +128,12 @@ class Company extends AdminBase
     public function delete($id)
     {
         if ($this->company_model->destroy($id)) {
-            $this->success('删除成功');
+            Cache::tag('public')->rm('companys');
+            $this->log('删除公司成功，id='.$id,0);
+            $this->jsonReturn(0,'删除成功');
         } else {
-            $this->error('删除失败');
+            $this->log('删除公司失败，id='.$id,-1);
+            $this->jsonReturn(-1,'删除失败');
         }
     }
 }

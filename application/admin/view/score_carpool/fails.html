@@ -1,0 +1,153 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body" id="Page-fails">
+
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <ul class="layui-tab-title amain-tool-bar">
+            <li class="layui-this"><a href="{:url('admin/ScoreCarpool/fails')}"  >拼车得分失败处理</a></li>
+        </ul>
+
+        <div class="layui-tab-content">
+
+
+                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreCarpool/fails')}" method="get">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">检索</label>
+                        <div class="layui-input-inline">
+                          <select name="status" lay-verify="required" >
+                            <option value="" >是否已处理 - 不限</option>
+                            <option value="0" {php}echo $status === "0" ? 'selected' : ''; {/php}>未处理</option>
+                            <option value="1" {php}echo $status === "1" ? 'selected' : ''; {/php}>处理为加分</option>
+                            <option value="-1" {php}echo $status === "-1" ? 'selected' : ''; {/php}>处理为不加分</option>
+                          </select>
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="keyword" value="{$keyword}" placeholder="请输入关键词" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn"><i class="fa fa-search"></i></button>
+                    </div>
+                </form>
+                <hr>
+
+                <table lay-filter="listtable" class="layui-table">
+                    <thead>
+                    <tr >
+                      <th lay-data="{field:'wpid', width:80,fixed: 'left' }" >#</th>
+                      <th lay-data="{field:'infoid', width:80,fixed: 'left' }" >行程ID</th>
+                      <th lay-data="{field:'status',width:80}">已处理</th>
+                      <th lay-data="{field:'d_name',minWidth:150}">司机</th>
+                      <th lay-data="{field:'c_name',minWidth:150 }">乘客</th>
+                      <th lay-data="{field:'s_addressnam',width:120 }">起点</th>
+                      <th lay-data="{field:'e_addressnam',width:120}">终点</th>
+                      <th lay-data="{field:'info_time',width:120}">出发时间</th>
+                      <th lay-data="{field:'info_status',width:100}">行程状态</th>
+                      <th lay-data="{field:'options', width:100,fixed: 'right'}">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {foreach name="lists" item="vo"}
+                    <tr {php}echo $vo['status']==1 || $vo['status']==-1 ? '' : 'class="list-item-weak"';{/php}>
+                      <td>{$vo.wpid}</td>
+                      <td>{$vo.infoid}</td>
+                      <td>{php}
+                          switch($vo['status']){
+                            case 0:
+                              echo '<span class="text-red">未处理</span>';
+                              break;
+                            case 1:
+                              echo '<i class="fa fa-smile-o"></i><span class="layui-hide">1</span>';
+                              break;
+                            case -1:
+                              echo '<i class="fa fa-thumbs-down"></i><span class="layui-hide">-1</span>';
+                              break;
+                          }
+                        {/php}</td>
+                      <td>
+                        {$vo.d_name}
+                        <small class="layui-word-aux"><i class="fa fa-phone"></i>{$vo.d_phone ? $vo.d_phone : '-'}</small>
+                      </td>
+                      <td>
+                        {$vo.p_name}
+                        <small class="layui-word-aux"><i class="fa fa-phone"></i>{$vo.p_phone ? $vo.p_phone : '-'}</small>
+                      </td>
+
+                      <td>{$vo.s_addressname}</td>
+                      <td>{$vo.e_addressname}</td>
+                      <td>{$vo.info_time}</td>
+                      <td>
+                        {php}
+                          switch($vo['info_status']){
+                            case 0:
+                              echo '-';
+                              break;
+                            case 1:
+                              echo '搭车成功';
+                              break;
+                            case 2:
+                              echo '行程已取消';
+                              break;
+                            case 3:
+                              echo '行程结束';
+                              break;
+                          }
+                        {/php}
+
+                      </td>
+
+                      <td>
+                        {php}
+                        if($vo['status']===0){
+                          $op_url = url('admin/ScoreCarpool/fail_operate',['id'=>$vo['wpid']]);
+                          echo '<a href="'.$op_url.'"  class="layui-btn   layui-btn-xs " data-title="处理"  data-trigger="modal" title="处理"><i class="layui-icon">&#xe642;</i></a>';
+                        }else{
+                          echo '-';
+                        }
+                        {/php}
+                        <!-- <a href="{:url('admin/ScoreCarpool/fail_delete',['id'=>$vo['wpid']])}"  class="layui-btn   layui-btn-primary layui-btn-xs ajax-delete" title="删除" ><i class="layui-icon">&#xe640;</i></a> -->
+                      </td>
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+                <!--分页-->
+                {$lists|raw}
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<style>
+/* .layui-table-cell { height: 60px;} */
+</style>
+<script>
+initLayuiTable({
+  limit: {$pagesize},
+  done:function(res, curr, count){
+    $("#Page-fails .layui-table-main tbody tr").each(function(index,item){
+      var isDeal = $(item).find('.laytable-cell-1-status').text() == "未处理" ? 0 : 1;
+      if(isDeal){
+        $(item).addClass('list-item-weak');
+      }
+    })
+  }
+ })
+
+ function  failOperate(status,id){
+   var _this = this;
+   ajaxSubmit({
+     url:"<?php echo url('admin/ScoreCarpool/fail_operate');?>",
+     data:{status:status,id:id}
+   })
+   return false;
+ }
+
+
+
+</script>
+{/block}

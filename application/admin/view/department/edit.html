@@ -1,0 +1,100 @@
+<div class="layui-tab-content">
+    <div class="layui-tab-item layui-show">
+        <form class="layui-form form-container" action="{:url('admin/department/edit')}" method="post">
+
+            <div class="layui-form-item">
+              <label class="layui-form-label">部门名</label>
+              <div class="layui-input-block">
+                  <input type="text" name="department_name" value="{$datas.department_name}" required  lay-verify="required" placeholder="请输入公司名称" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">所属公司</label>
+              <div class="layui-input-block">
+                <select name="company_id" lay-verify="required" lay-filter="company_id">
+                   <option value="0">请选择公司</option>
+                 </select>
+              </div>
+            </div>
+
+            <div class="layui-form-item">
+              <label class="layui-form-label">所属分厂</label>
+              <div class="layui-input-block">
+                <select name="sub_company_id" lay-verify="required" lay-search>
+                   <option value="0">请选择分厂</option>
+                 </select>
+              </div>
+            </div>
+
+            <div class="layui-form-item">
+              <label class="layui-form-label">状态</label>
+              <div class="layui-input-block">
+                  <input type="radio" name="is_active" value="1" title="显示" {if condition="$datas.is_active==1"} checked="checked"{/if}>
+                  <input type="radio" name="is_active" value="0" title="隐藏" {if condition="$datas.is_active==0"} checked="checked"{/if}>
+              </div>
+            </div>
+
+
+
+            <div class="layui-form-item">
+              <div class="layui-input-block">
+                  <input type="hidden" name="id" value="{$datas.departmentid}">
+                  <button class="layui-btn" lay-submit lay-filter="*">更新</button>
+                  <!-- <button type="reset" class="layui-btn layui-btn-primary">重置</button> -->
+              </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+  function getCompanys(success){
+    $.get("{:url('admin/company/public_lists')}",function(res){
+      var selectedid = "{$datas.company_id}";
+      if(res.code === 0){
+        var options = '<option value="0">请选择公司</option>';
+        $(res.data.lists).each(function(index, el) {
+          var selected = selectedid == el.id ? "selected" : "";
+          options += '<option value="'+el.id+'" '+selected+'>'+el.name+'</option>';
+        });
+        $("select[name='company_id']").html(options);
+        if(typeof(success)=="function"){
+          success(res);
+        }
+        form.render();
+      }
+    })
+  }
+
+  function getSubCompanys(success){
+    var cid = $("select[name='company_id']").val();
+    $.get("{:url('admin/company_sub/public_lists')}",{cid:cid},function(res){
+      var selectedid = "{$datas.sub_company_id}";
+      if(res.code === 0){
+        var options = '<option value="0">请选择分厂</option>';
+        $(res.data.lists).each(function(index, el) {
+          var selected = selectedid == el.id ? "selected" : "";
+          options += '<option value="'+el.id+'" '+selected+'>'+el.name+'</option>';
+        });
+        $("select[name='sub_company_id']").html(options)
+        if(typeof(success)=="function"){
+          success(res);
+        }
+        form.render();
+      }
+    })
+  }
+
+  form.on('select(company_id)', function (data) {
+      getSubCompanys();
+  });
+
+
+
+  getCompanys(function(res){
+    getSubCompanys()
+  });
+
+
+  form.render();
+
+</script>

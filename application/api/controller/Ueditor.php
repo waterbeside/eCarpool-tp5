@@ -1,9 +1,10 @@
 <?php
 namespace app\api\controller;
 
+use think\facade\Env;
 use think\Controller;
 use org\UeditorUpload;
-use think\Session;
+use think\facade\Session;
 
 /**
  * Ueditor编辑器统一上传接口
@@ -15,9 +16,9 @@ class Ueditor extends Controller
     protected $config;
     protected $action;
 
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
 
         if(!Session::get('admin_id')){
             $result = [
@@ -27,13 +28,13 @@ class Ueditor extends Controller
             return json($result);
         }
 
-        $this->config = json_decode(preg_replace("/\/\*[\s\S]+?\*\//", "", file_get_contents(ROOT_PATH . 'public/static/js/ueditor/config.json')), true);
+        $this->config = json_decode(preg_replace("/\/\*[\s\S]+?\*\//", "", file_get_contents(Env::get('root_path') . 'public/static/js/ueditor/config.json')), true);
         $this->action = $this->request->get('action');
     }
 
     /**
      * Ueditor编辑器统一上传接口
-     * @return string|\think\response\Json
+     * @return string|\think\facade\Response\Json
      */
     public function index()
     {

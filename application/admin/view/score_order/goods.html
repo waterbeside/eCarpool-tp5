@@ -1,0 +1,121 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body page-orderGoods-list">
+
+    <!--tab标签-->
+    <div class="layui-tab ">
+
+        <ul class="  amain-tool-bar" >
+            <li ><a href="{:url('admin/ScoreOrder/index')}" showloading >订单查询</a></li>
+            <li class="layui-this"><a href="{:url('admin/ScoreOrder/goods')}" showloading >商品下单数查询</a></li>
+        </ul>
+
+        <div class="amain-content">
+
+
+          <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreOrder/goods')}" method="get" >
+              <div class="layui-inline">
+                  <label class="layui-form-label">检索</label>
+                  <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
+              </div>
+              <input type="hidden" name="filter[status]" value="{$filter.status}">
+          </form>
+          <hr>
+
+          <div class="layui-tab amain-content-tab">
+            <div class="tab-title-wrapper">
+              <ul class="layui-tab-title">
+                <li <?php echo $filter['status']==="" || $filter['status']==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeStatus('all')" href="javascript:void(0);" >全部</a></li>
+                <li <?php echo $filter['status']==="all_01" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeStatus('all_01')" href="javascript:void(0);" >未兑和已兑</a></li>
+                {foreach name="statusList" key="key" item="vo"}
+                <li <?php echo  is_numeric($filter['status']) && intval($filter['status']) === intval($key) ? 'class="layui-this"' : '' ; ?> >
+                  <a onclick="changeStatus('<?php echo $key;?>')" href="javascript:void(0);">{$vo}</a>
+                </li>
+                {/foreach}
+              </ul>
+            </div>
+            <div class="layui-tab-content" style="margin:0 -10px">
+              <div class="layui-tab-item layui-show">
+                <?php if($lists && count($lists)>0){ ?>
+                <table class="layui-table">
+                  <thead>
+                  <tr >
+                      <th width="40">编号</th>
+                      <th>商品</th>
+                      <th width="40">库存</th>
+                      <th width="50">兑换价</th>
+                      <th width="50">采购价</th>
+                      <th width="100" >兑换数量</th>
+                      <th width="100" >总价</th>
+                  </tr>
+                  </thead>
+                  <tbody class="goods-table-list">
+                  <?php foreach($lists as $key => $good){ ?>
+                    <tr class="good-item">
+                      <td >{$good.id}</td>
+                      <td>
+                        <div  class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
+                        <span class="layui-elip">
+                          <a onclick="openLayer('{:url('admin/ScoreOrder/good_owners',['gid'=>$good['id'],'time'=>$filter['time'],'status'=>$filter['status']])}',{area: ['800px', '90%'], title:'{$good.name}'});" href="javascript:void(0);"    >{$good.name}</a>
+                        </span>
+                      </td>
+                      <td>{$good.inventory == -1 ? '不限' : $good.inventory }</td>
+                      <td><b class="price">{$good.price}</b></td>
+                      <td><b class="amount">{$good.amount}</b></td>
+                      <td>&times; <b class="num">{$good.num}</b></td>
+                      <td > <b class="total">{$good.num * $good.amount}</b></td>
+                    </tr>
+                    <?php } ?>
+
+
+                  </tbody>
+                </table>
+                <blockquote class="layui-elem-quote layui-quote-nm" style="background:#FFF; text-align:right">
+                  总采购价:<b class="sumPrice"></b> &nbsp;&nbsp; <b  class="sumNum"></b>
+                </blockquote>
+              <?php }else{
+                echo isset($filter['time']) && $filter['time'] ? "暂无数据" : "请选择时间段";
+              } ?>
+              </div>
+
+            </div>
+         </div>
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+function changeStatus(status){
+  var form = $("#filter-form");
+  form.find("input[name='filter[status]']").val(status);
+  form.submit();
+}
+laydate.render({
+  elem: '#filter_time'
+  ,range: '~' //或 range: '~' 来自定义分割字符
+  ,done: function(value, date, endDate){
+    layer.load(2);
+    setTimeout(function(){
+      $("#filter_time").closest("form").submit();
+    },400)
+ }
+});
+
+var goodSum = {
+  price:0,
+  num:0
+}
+$('.goods-table-list .good-item').each(function(index, el) {
+  var num =  parseFloat($(this).find('.num').text());
+  var amount =  parseFloat($(this).find('.amount').text());
+  goodSum['num'] += num;
+  goodSum['price'] += num * amount;
+});
+$('.sumPrice').text(goodSum.price);
+// $('.sumNum').text(goodSum.num);
+console.log(goodSum);
+</script>
+{/block}

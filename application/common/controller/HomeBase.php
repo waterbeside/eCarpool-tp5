@@ -1,19 +1,18 @@
 <?php
 namespace app\common\controller;
 
-use think\Cache;
+use think\facade\Cache;
 use think\Controller;
 use think\Db;
 
 class HomeBase extends Controller
 {
 
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
         $this->getSystem();
         $this->getNav();
-        $this->getSlide();
     }
 
     /**

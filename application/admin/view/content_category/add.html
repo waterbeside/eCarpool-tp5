@@ -1,0 +1,62 @@
+<div class="layui-tab-content">
+    <div class="layui-tab-item layui-show">
+        <form class="layui-form form-container" action="{:url('admin/ContentCategory/add')}" method="post">
+            <div class="layui-form-item">
+                <label class="layui-form-label">上级分类</label>
+                <div class="layui-input-block">
+                    <select name="parent_id" lay-verify="required">
+                        <option value="0">一级分类</option>
+                        {foreach name="category_level_list" item="vo"}
+                        <option value="{$vo.id}" {if condition="$pid==$vo.id"} selected="selected"{/if}>{neq name="vo.level" value="1"}|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----';}{/php}{/neq} {$vo.name_zh}</option>
+                        {/foreach}
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">模型类别</label>
+                <div class="layui-input-block">
+                    <select name="type" lay-verify="required">
+                        <option value="0">未定义</option>
+                        {foreach name="typeList" key="key" item="vo"}
+                        <option value="{$key}" >{$vo}</option>
+                        {/foreach}
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">分类名称 ZH</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name_zh" value="" required  lay-verify="required" placeholder="请输入中文分类名" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">分类名称 EN</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name_en" value=""   placeholder="请输入英文分类名" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">分类名称 VI</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name_vi" value="" placeholder="请输入越南文分类名" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">排序</label>
+                <div class="layui-input-block">
+                    <input type="number" name="sort" value="0" placeholder="排序，越大越前" class="layui-input">
+                    <div class="layui-form-mid layui-word-aux"> 数字越大，排序越前</div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="*">保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+  form.render();
+</script>

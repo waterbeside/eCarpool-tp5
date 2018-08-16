@@ -1,0 +1,59 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <ul class="amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/company_sub/index')}"  >分公司管理</a></li>
+            <li class="btn-item btn-item-add">
+              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/company_sub/add')}"  data-title="添加部门"  data-trigger="modal" >
+              <i class="fa fa-plus"></i> 添加分公司</a>
+            </li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+              <form class="layui-form layui-form-pane" action="{:url('admin/company_sub/index')}" method="get">
+                  <div class="layui-inline">
+                      <label class="layui-form-label">检索</label>
+                      <div class="layui-input-inline">
+                          <input type="text" name="keyword" value="{$keyword}" placeholder="请输入关键词" class="layui-input">
+                      </div>
+                  </div>
+                  <div class="layui-inline">
+                      <button class="layui-btn"><i class="fa fa-search"></i></button>
+                  </div>
+              </form>
+              <hr>
+                <table class="layui-table">
+                    <thead>
+                    <tr>
+                        <th style="width: 30px;">ID</th>
+
+                        <th>分厂名</th>
+                        <th>所属</th>
+                        <th width="50">状态</th>
+                        <th width="100">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {foreach name="lists" item="vo"}
+                    <tr>
+                      <td>{$vo.sub_company_id}</td>
+                      <td>{$vo.sub_company_name}</td>
+                      <td>{$vo.company_name}</td>
+                      <td>{php}echo $vo['status']==1 ? '<i class="fa fa-check"></i>' : '<i class="fa fa-times"></i>';{/php}</td>
+                      <td>
+                          <a href="{:url('admin/company_sub/edit',['id'=>$vo['sub_company_id']])}" class="layui-btn  layui-btn-sm " data-title="編輯"  data-trigger="modal" title="编辑" ><i class="layui-icon">&#xe642;</i></a>
+                          <a href="{:url('admin/company_sub/delete',['id'=>$vo['sub_company_id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete"  title="删除"><i class="layui-icon">&#xe640;</i></a>
+                      </td>
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+                {$lists|raw}
+
+            </div>
+        </div>
+    </div>
+</div>
+{/block}

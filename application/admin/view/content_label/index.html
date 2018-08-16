@@ -1,0 +1,110 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body page-category">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <ul class="amain-tool-bar">
+          <li <?php if(!$recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/ContentLabel/index')}"  >标签管理</a></li>
+          <li <?php if($recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/ContentLabel/index',['recycled'=>1])}"  >回收站</a></li>
+          <li class="btn-item btn-item-add">
+            <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ContentLabel/add')}"  data-title="添加标签"  data-trigger="modal" >
+            <i class="fa fa-plus"></i> 添加标签</a>
+          </li>
+        </ul>
+        <div class="layui-tab-content">
+          <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ContentLabel/index')}" method="get" onsubmit="submitForm()">
+              <div class="layui-inline">
+                  <label class="layui-form-label">检索</label>
+                  <div class="layui-input-inline">
+                      <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="标签名" class="layui-input">
+                  </div>
+
+                  <div class="layui-input-inline">
+                    <select name="filter[type]" lay-verify="required">
+                        <option value="all">全部</option>
+                        {foreach name="typeList" key="key" item="vo"}
+                        <option value="{$key}" {php} echo isset($filter['type']) && is_numeric($filter['type']) && $filter['type']==$key ? "selected" : '' {/php}>{$vo}</option>
+                        {/foreach}
+                    </select>
+                  </div>
+              </div>
+              <div class="layui-inline">
+                  <input type="hidden" name="recycled"  value="{$recycled}"/>
+                  <button class="layui-btn"><i class="fa fa-search"></i></button>
+              </div>
+          </form>
+          <hr>
+          <?php if($recycled){ ?>
+          <blockquote class="layui-elem-quote">
+            回收站共有 <b id="recycled-data-count"> {$lists->total()} </b> 条数据可被还原。
+          </blockquote>
+          <?php } ?>
+          <div class="layui-tab-item layui-show">
+            <table class="layui-table">
+                <thead>
+                <tr>
+                    <th lay-data="{field:'id', width:100}">#</th>
+                    <th lay-data="{field:'sort'}">排序</th>
+                    <th lay-data="{field:'name_zh'}">标签名</th>
+                    <th lay-data="{field:'name_en'}">标签名(en)</th>
+                    <th lay-data="{field:'name_vi'}">标签名(vi)</th>
+                    <th lay-data="{field:'type'}">类型</th>
+
+                    <th lay-data="{field:'options', width:120}">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {foreach name="lists" item="vo"}
+                <tr>
+                    <td>{$vo.id}</td>
+                    <td>{$vo.sort}</td>
+                    <td>{$vo.name_zh}</td>
+                    <td>{$vo.name_en}</td>
+                    <td>{$vo.name_vi}</td>
+                    <td>{php}echo isset($typeList[$vo['type']]) ? $typeList[$vo['type']] : $vo['type'] ;{/php}</td>
+                    <td>
+                      <?php if($recycled){ ?>
+                        <a href="javascript:void(0);"  data-id="{$vo.id}" class="layui-btn layui-btn layui-btn-xs " onclick="PAGE_EXEC.recycle(this)" >还原</a>
+                      <?php }else{ ?>
+                        <a href="{:url('admin/ContentLabel/edit',['id'=>$vo['id']])}" class="layui-btn layui-btn-xs " data-title="編輯"  data-trigger="modal"     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
+                        <a href="{:url('admin/ContentLabel/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
+                      <?php } ?>
+
+                    </td>
+                </tr>
+                {/foreach}
+                </tbody>
+            </table>
+            <!--分页-->
+            {$lists|raw}
+          </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+PAGE_EXEC = {
+
+  recycle: function(btn){
+    var $btn = $(btn);
+    var id = $btn.data('id');
+    ajaxSubmit({
+      type:'get',
+      url:"{:url('admin/ContentLabel/recycle')}",
+      data:{id:id},
+      success:function(res){
+        console.log(res);
+      }
+
+    })
+  }
+
+}
+
+
+PAGE_EXEC.getData();
+
+</script>
+{/block}

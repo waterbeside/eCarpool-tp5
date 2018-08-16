@@ -1,0 +1,41 @@
+<form class="layui-form form-container" action="{:url('admin/DocsCategory/add')}" method="post" id="editForm">
+
+    <div class="layui-form-item">
+      <label class="layui-form-label">标识</label>
+      <div class="layui-input-block">
+          <input type="text" name="name" value="" required  lay-verify="required" placeholder="标识" class="layui-input">
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">标题</label>
+      <div class="layui-input-block">
+          <input type="text" name="title" value="" required  lay-verify="required" placeholder="标题" class="layui-input">
+      </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">描述</label>
+        <div class="layui-input-block">
+          <textarea name="description"  class="layui-textarea"   ></textarea>
+
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">排序</label>
+        <div class="layui-input-block">
+          <input type="number" name="listorder" value="" placeholder="排序，越大越前" class="layui-input">
+        </div>
+    </div>
+
+  <div class="blank20"></div>
+  <div class="layui-btn-container layui-row">
+      <button class="layui-btn layui-btn-lg layui-col-xs12"  type="submit" lay-submit lay-filter="*">提交</button>
+  </div>
+
+</form>
+
+
+<script>
+form.render();
+</script>

@@ -1,0 +1,160 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <ul class="amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/scoreAccount/index',['type'=>2])}"  showloading>Carpool帐号</a></li>
+            <li class=""><a href="{:url('admin/scoreAccount/index',['type'=>0])}" showloading >积分帐号</a></li>
+            <li class="btn-item btn-item-right">
+              <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="exportExcel()"  ><i class="fa fa-file-excel-o"></i> 导出报表</a>
+            </li>
+        </ul>
+
+        <div class="layui-tab-content">
+
+                <form class="layui-form layui-form-pane"  id="filter-form" action="{:url('admin/scoreAccount/index',['type'=>2])}" method="get">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">检索</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input"  >
+                        </div>
+
+                    </div>
+                    <div class="layui-inline">
+                        &nbsp;&nbsp;&nbsp;&nbsp;分数范围:
+                        <div class="layui-input-inline">
+                          <input type="number" name="filter[floor]" value="{$filter['floor'] ? $filter['floor'] :'0'}" placeholder="" class="layui-input"  style="width:60px" >
+                        </div>
+                        〜
+                        <div class="layui-input-inline">
+                          <input type="number" name="filter[ceiling]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="不限" class="layui-input"  style="width:60px" >
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <input type="hidden" name="export" value="0">
+                        <button class="layui-btn"><i class="fa fa-search"></i></button>
+                    </div>
+                </form>
+                <hr>
+
+                <table lay-filter="listtable" class="layui-table list-table">
+                    <thead>
+                    <tr >
+                        <th lay-data="{field:'uid', width:80,fixed: 'left' }" >#</th>
+                        <th lay-data="{field:'loginname', width:120, fixed: 'left'}">用户名</th>
+                        <th lay-data="{field:'name' }">姓名</th>
+                        <th lay-data="{field:'score', width:100}">积分余额</th>
+                        <th lay-data="{field:'phone', width:120}">手机</th>
+                        <th lay-data="{field:'Department', width:120}">部门</th>
+                        <th lay-data="{field:'company_name', width:140}">公司</th>
+                        <th lay-data="{field:'other', width:60}">...</th>
+                        <th lay-data="{field:'options', width:150,fixed: 'right'}">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {foreach name="lists" item="vo"}
+                    <tr class="account-list-item" data-id="{$vo.uid}" data-account="{$vo.loginname}">
+                        <td>{$vo.uid}</td>
+                        <td>
+                          <a onclick="openLayer('{:url('admin/ScoreAccount/detail',['type'=>2,'account'=>$vo['loginname']])}','用户详情');" href="javascript:void(0);" >
+                          {$vo.loginname}
+                          </a>
+                        </td>
+                        <td>
+                          <a onclick="openLayer('{:url('admin/ScoreAccount/detail',['type'=>2,'account'=>$vo['loginname']])}','用户详情');" href="javascript:void(0);" >
+                          {$vo.name}{php}echo $vo['account_id'] ? ' <i class="text-red fa fa-id-card"></i>' : '';{/php}
+                          </a>
+                        </td>
+                        <td class="field-score"><span>{$vo['balance']}</span></td>
+                        <td>{$vo.phone}</td>
+                        <td>{$vo.Department}</td>
+                        <td>{php}echo $vo['companyname'] ? $vo['companyname'].' / ' : '';{/php}{$vo.company_name}</td>
+
+                        <!-- <td><a  class="layui-btn layui-btn-normal layui-btn-xs " data-title="分数管理"  data-trigger="modal" href="">0</a></td> -->
+                        <td>
+                          {php}echo $vo['is_active']==1 ? '' : '<i class="fa fa-times"></i>';{/php}
+                          {php}echo $vo['sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+                        </td>
+                        <td>
+                          {php}$openAccountUrlParam =  $vo['account_id'] ? ['type'=>'0','account_id'=>$vo['account_id']] : ['type'=>'carpool','account'=>$vo['loginname']];{/php}
+                          <a href="{:url('admin/Score/change',$openAccountUrlParam)}"   data-trigger="modal" data-title="加减分 {$vo.loginname}" class="layui-btn   layui-btn-xs "   >加减分</a>
+                          <a onclick="openLayer('{:url('admin/ScoreHistory/lists',$openAccountUrlParam)}','积分历史:{$vo.loginname}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary layui-btn-xs "   >积分历史</a>
+                        </td>
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+                <!--分页-->
+                {$lists|raw}
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+var RESOLVE_INIT = {
+  data : {
+    pagesize:{$pagesize},
+    tableHeight: "auto"
+  },
+  init:function(){
+    var _this = this;
+    var win_height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    this.tableHeight = win_height - 190 > 400 ? win_height-190 : "auto";
+
+    this.renderTable();
+
+
+  },
+
+  renderTable: function(){
+    initLayuiTable({
+       limit: this.data.pagesize,
+       cellMinWidth:200,
+       height:this.tableHeight,
+
+     });
+  },
+
+  loadScoreAccount: function(account,done,fail){
+    $.ajax({
+      url: '{:url("admin/score_account/public_get_balance")}',
+      type: 'get',
+      dataType: 'json',
+      data: {type: 2, account:account}
+    })
+    .done(function(res) {
+      if(typeof(done)=="function"){
+        done(res);
+      }
+    })
+    .fail(function() {
+      if(typeof(fail)=="function"){
+        done();
+      }
+    })
+    .always(function() {
+    });
+
+  }
+}
+
+RESOLVE_INIT.init();
+function exportExcel(){
+  var form = $("#filter-form");
+  form.find("input[name='export']").val(1);
+  form.attr('target','_blank') ;
+  form.submit();
+  form.find("input[name='export']").val(0);
+  form.attr('target','_self') ;
+}
+</script>
+{/block}

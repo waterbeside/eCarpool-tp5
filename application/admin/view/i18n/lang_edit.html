@@ -1,0 +1,54 @@
+<form class="layui-form form-container" action="{:url('admin/i18n/lang_edit')}" method="post" id="editForm">
+
+
+    <div class="layui-form-item">
+      <label class="layui-form-label">语言码</label>
+      <div class="layui-input-block">
+          <input type="text" name="code" value="{$data.code}" required  lay-verify="required" placeholder="语言码" class="layui-input">
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">语言名称</label>
+      <div class="layui-input-block">
+          <input type="text" name="name" value="{$data.name}" required  lay-verify="required" placeholder="语言名称" class="layui-input">
+      </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">状态</label>
+        <div class="layui-input-block">
+            <input type="checkbox" name="status" value="1" lay-skin="switch" lay-text="启用|禁用" {if condition="$data.status==1"} checked="checked"{/if}>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">默认显示</label>
+        <div class="layui-input-block">
+            <input type="checkbox" name="is_default" value="1" lay-skin="switch" lay-text="是|否" {if condition="$data.is_default==1"} checked="checked"{/if}>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">排序</label>
+        <div class="layui-input-block">
+          <input type="number" name="sort" value="{$data.sort}" placeholder="排序，越小越前" class="layui-input">
+        </div>
+    </div>
+
+
+
+
+
+  <div class="blank20"></div>
+  <div class="layui-btn-container layui-row">
+      <input type="hidden" name="id" value="{$data.id}">
+      <button class="layui-btn layui-btn-lg layui-col-xs12"  type="submit" lay-submit lay-filter="*">提交</button>
+  </div>
+
+</form>
+
+
+
+<script>
+form.render();
+
+
+</script>

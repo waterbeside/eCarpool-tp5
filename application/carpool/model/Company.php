@@ -1,6 +1,7 @@
 <?php
 namespace app\carpool\model;
 
+use think\facade\Cache;
 use think\Model;
 
 class Company extends Model
@@ -20,6 +21,19 @@ class Company extends Model
     protected function setCreateDateAttr()
     {
         return date('Y-m-d');
+    }
+
+    public function getCompanys(){
+      $lists_cache = Cache::tag('public')->get('companys');
+      if($lists_cache){
+        $lists = $lists_cache;
+      }else{
+        $lists = $this->order('company_id ASC , company_name ')->select();
+        if($lists){
+          Cache::tag('public')->set('companys',$lists,3600*24);
+        }
+      }
+      return $lists;
     }
 
 }

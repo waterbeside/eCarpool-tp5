@@ -11,9 +11,9 @@ use think\Db;
  */
 class SlideCategory extends AdminBase
 {
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
 
     }
 
@@ -38,9 +38,9 @@ class SlideCategory extends AdminBase
           $data = $this->request->post();
 
           if (Db::name('slide_category')->insert($data)) {
-              $this->success('保存成功');
+            $this->jsonReturn(0,'保存成功');
           } else {
-              $this->error('保存失败');
+            $this->jsonReturn(-1,'保存失败');
           }
       }else{
         return $this->fetch();
@@ -60,9 +60,9 @@ class SlideCategory extends AdminBase
           $data = $this->request->post();
 
           if (Db::name('slide_category')->update($data) !== false) {
-              $this->success('更新成功');
+              $this->jsonReturn(0,'更新成功');
           } else {
-              $this->error('更新失败');
+              $this->jsonReturn(-1,'更新失败');
           }
       }else{
         $slide_category = Db::name('slide_category')->find($id);
@@ -80,9 +80,9 @@ class SlideCategory extends AdminBase
     public function delete($id)
     {
         if (Db::name('slide_category')->delete($id) !== false) {
-            $this->success('删除成功');
+          $this->jsonReturn(0,'删除成功');
         } else {
-            $this->error('删除失败');
+          $this->jsonReturn(-1,'删除失败');
         }
     }
 }

@@ -1,8 +1,9 @@
 <?php
 namespace app\api\controller;
 
+use think\facade\Env;
 use think\Controller;
-use think\Session;
+use think\facade\Session;
 
 /**
  * 通用上传接口
@@ -11,9 +12,9 @@ use think\Session;
  */
 class Upload extends Controller
 {
-    protected function _initialize()
+    protected function initialize()
     {
-        parent::_initialize();
+        parent::initialize();
         if (!Session::has('admin_id')) {
             $result = [
                 'error'   => 1,
@@ -26,7 +27,7 @@ class Upload extends Controller
 
     /**
      * 通用图片上传接口
-     * @return \think\response\Json
+     * @return \think\facade\Response\Json
      */
     public function upload()
     {
@@ -37,7 +38,7 @@ class Upload extends Controller
 
         $file = $this->request->file('file');
 
-        $upload_path = str_replace('\\', '/', ROOT_PATH . 'public/uploads');
+        $upload_path = str_replace('\\', '/', Env::get('root_path') . 'public/uploads');
         $save_path   = '/uploads/';
         $info        = $file->validate($config)->move($upload_path);
 

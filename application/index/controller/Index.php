@@ -8,6 +8,7 @@ class Index extends HomeBase
 {
     public function index()
     {
+      exit;
         return $this->fetch();
     }
 }

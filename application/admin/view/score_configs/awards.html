@@ -1,0 +1,348 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body page-scoreConfigs-awards">
+
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <ul class="amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/ScoreConfigs/awards')}"  >转盘抽奖奖项配置</a></li>
+            <li class="btn-item btn-item-add">
+              <a class="layui-btn layui-btn-sm layui-btn-success " onclick="return PAGE_EXEC.add()" >
+              <i class="fa fa-plus"></i> 添加奖项</a>
+            </li>
+        </ul>
+
+        <div class="layui-tab-content">
+
+          <div class="blank20"></div>
+
+          <form class="layui-form " onsubmit="return false;" method="post">
+            <div class="lists-header">
+              <div class="f-box f-index"><div class="inner">#</div></div>
+              <div class="f-box f-grade"><div class="inner">奖励</div></div>
+              <div class="f-box f-rate"><div class="inner">概率</div></div>
+              <div class="f-box f-cost"><div class="inner">价值</div></div>
+              <div class="f-box f-desc"><div class="inner">描述</div></div>
+              <!-- <div class="f-box f-extend"><div class="inner">EX</div></div> -->
+              <div class="f-box f--">-</div>
+            </div>
+            <div id="list-wrapper">
+              <ul class="lists" id="awards-list">
+
+              </ul>
+            </div>
+
+
+            <div class="blank20"></div>
+
+            <div class="layui-btn-container layui-row" style="text-align: right">
+                <button class="layui-btn layui-btn-lg" onclick="return PAGE_EXEC.submitData();"><i class="fa fa-save"></i> 保存</button>
+            </div>
+
+          </form>
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+
+<script id="item-template" type="text/html">
+    <li  class="item" data-index="{{ d.index }}">
+      <div class="f-box f-index"><div class="inner">{{ d.index + 1 }}</div></div>
+      <div class="f-box f-grade"><div class="inner"> <input type="number" name="grade" value="{{ d.item.grade }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/> </div></div>
+      <div class="f-box f-rate"><div class="inner"><input type="float" name="rate" value="{{ d.item.rate }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
+      <div class="f-box f-cost"><div class="inner"><input type="number" name="cost" value="{{ d.item.cost }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
+      <!-- <div class="f-box f-desc"><div class="inner"><input type="text" name="desc" value="{{ d.item.desc }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div> -->
+      <div class="f-box f-desc"><div class="inner"><textarea  name="desc"   placeholder="" class="layui-textarea" style="min-height:60px" onkeyup="PAGE_EXEC.changeData(this)">{{ d.item.desc }}</textarea></div></div>
+      <!-- <div class="f-box f-extend"><div class="inner"></div></div> -->
+      <div class="f-box f--"><div class="inner">
+        <button class="layui-btn layui-btn-xs layui-btn-primary " title="按奖例积分自动填充" onclick="return PAGE_EXEC.autoFill(this); ">Fill</button>
+        <!-- <button class="layui-btn layui-btn-xs layui-btn-primary " title="随机生成奖项" onclick="return PAGE_EXEC.randomFill(this); ">Random</button> -->
+        &nbsp;<input type="checkbox" name="is_show" value="1" lay-skin="switch" lay-filter="is_show_{{ d.index }}" lay-text="* 使用|不使用" {{# if(!d.item.is_disused){ }} checked="checked"{{#  } }}>&nbsp;
+        <button class="layui-btn layui-btn-xs layui-btn-primary " title="删除" onclick="return PAGE_EXEC.delete(this); "><i class="fa fa-trash"></i></button>
+      </div></div>
+</script>
+<script>
+var laytpl = layui.laytpl;
+PAGE_EXEC = {
+  data : {
+    lists: <?php echo json_encode($lists);?>,
+    itemDefault: {grade:0,rate:0,cost:0,desc:"",is_disused:1,extend:{}},
+  },
+
+  /**
+   * 渲染数据到html列表
+   */
+  renderItem : function(){
+    var _this = this;
+    var listWrapper = document.getElementById('list-wrapper');
+    var dataLength = _this.data.lists.length;
+    if(dataLength < 6){
+      for(var i=0;i < 6-dataLength; i++){
+        _this.data.lists.push($.extend({},_this.data.itemDefault))
+      }
+    }
+    var itemTemplate = $("#item-template").html();
+
+    var itemHtml = "";
+    $(_this.data.lists).each(function(index, el) {
+      itemHtml += laytpl(itemTemplate).render({index:index,item:el});
+      console.log({index:index,item:el});
+    });
+    $("#awards-list").html(itemHtml);
+
+
+    $(_this.data.lists).each(function(index, el) {
+      form.on('switch(is_show_'+index+')',function(data){
+        var $btn = $(data.othis);
+        var is_disused  = $btn.hasClass('layui-form-onswitch') ? 0 : 1;
+        _this.data.lists[index].is_disused = is_disused;
+      });
+    });
+
+    form.render();
+
+
+    //拖动排序
+    Sortable.create($("#awards-list")[0],{
+      // handle: ".f-box",
+      onUpdate: function (evt/**Event*/){
+         var item = evt.item; // the current dragged HTMLElement
+         var oldIndex = evt.oldIndex;
+         var newIndex = evt.newIndex;
+         var oldData = _this.data.lists;
+         var row = oldData[oldIndex];
+
+         var newData = [];
+         $(oldData).each(function(index, el) {
+           if(index === oldIndex){
+              return true;
+           }else{
+             if(newIndex > oldIndex){
+               newData.push(el);
+             }
+             if(index === newIndex){
+               newData.push(row);
+             }
+             if(newIndex < oldIndex){
+               newData.push(el);
+             }
+           }
+         });
+
+         _this.data.lists = newData;
+         _this.renderItem()
+         // console.log(newData);
+         // _this.reSort();
+      }
+    }); // That's all.
+
+  },
+
+  /**
+   * 添加
+   */
+  add : function(){
+    var _this = this;
+    var listWrapper = document.getElementById('list-wrapper');
+    var itemTemplate = $("#item-template").html();
+    var dataLength =  _this.data.lists.length
+    _this.data.lists.push($.extend({},_this.data.itemDefault));
+    _this.renderItem();
+  },
+
+  /**
+   *删除
+   */
+  delete: function(btn){
+    var _this = this;
+    var $btn = $(btn);
+    var $item = $btn.closest('.item');
+    var index = $item.data('index');
+    layer.open({
+        shade: false,
+        content: '确定删除？',
+        btn: ['确定', '取消'],
+        yes: function (index) {
+          if(_this.data.lists.length < 8){
+            layer.msg("删除失败，至少有8项");
+          }else{
+            _this.data.lists.splice(index, 1);
+            _this.renderItem();
+            layer.close(index);
+          }
+
+        }
+    });
+    return false;
+
+  },
+
+  getRowData : function(index){
+    return this.data.lists[index];
+  },
+
+  /**
+   * 更新数据
+   */
+  changeData : function(input){
+
+    var _this = this;
+    var $input = $(input);
+    var $item = $input.closest('.item');
+    var rowIndex = $input.closest('.item').data('index');
+    var fieldName = $input.attr('name');
+    var type = $input.attr('type');
+    var value = $input.val();
+    switch (type) {
+      case "number":
+        value = parseInt(value);
+        break;
+      case "float":
+        value = parseFloat(value);
+        break;
+      default:
+
+    }
+    this.data.lists[rowIndex][fieldName] = value;
+    if($item.hasClass('error')){
+      $item.removeClass('error')
+    }
+  },
+
+  autoFill : function(btn){
+    var _this = this;
+    var $btn = $(btn);
+    var $item = $btn.closest('.item');
+    var index = $item.data('index');
+    var itemData = this.getRowData(index);
+    var $inputGrade = $item.find("input[name='grade']");
+    var $inputDesc = $item.find("[name='desc']");
+    var $inputCost = $item.find("input[name='cost']");
+
+    var grade = parseInt($inputGrade.val());
+    var desc = ""+grade+"积分"
+    var cost = grade ;
+    switch (grade) {
+      case 0:
+        desc = "谢谢参与";
+        break;
+      case 99:
+        desc = "特别大奖";
+        break;
+      default:
+    }
+    if(grade>99){
+      desc = "——";
+    }
+    $inputDesc.val(desc);
+    $inputCost.val(cost);
+    this.changeData($inputDesc[0]);
+    this.changeData($inputCost[0]);
+    $item = $item
+
+  },
+
+  randomFill: function(btn){
+    var _this = this;
+    var $btn = $(btn);
+  },
+
+  checkData: function(){
+    var data = this.data.lists;
+    var $listWrapper = $("#awards-list");
+    var used_grades = [];
+    var error_index = -1;
+    var total_rate  =  0;
+    $(data).each(function(index,el){
+      if(el.is_disused === 0 ){
+        if(used_grades.indexOf(el.grade)>-1){
+          layer.msg("不要同时使用两个相同的积分值(KEY值)");
+          error_index = index;
+          return false;
+        }else{
+          used_grades.push(el.grade);
+        }
+        total_rate += parseFloat(el.rate);
+
+      }
+    })
+    if(used_grades.length != 8){
+      layer.msg("必需开启使用8项");
+      return false;
+    }
+    if(error_index>-1){
+      $listWrapper.find(".item").eq(error_index).addClass('error');
+      return false;
+    }
+    if(total_rate > 1){
+      console.log(total_rate);
+      layer.msg("总概率不得大于1，请重新计算");
+      return false;
+
+    }
+
+    return true;
+
+
+  },
+
+  submitData: function(){
+    var _this =  this;
+    var data = {value:JSON.stringify(_this.data.lists)};
+    console.log(this.data.lists);
+    if(!_this.checkData()){
+      return false;
+    }
+    layer.open({
+        shade: false,
+        title: '是否提交？',
+        content: '请检查好中奖概率是否合理后再提交',
+        btn: ['确定', '取消'],
+        yes: function (index) {
+
+          return $.ajax({
+            type:"post",
+            dataType:'json',
+            url:"{:url('admin/ScoreConfigs/awards')}",
+            data:data,
+          }).then(function(res){
+            console.log(res);
+            if (res.code === 0) {
+                setTimeout(function () {
+                    reload();
+                }, 400);
+
+            }
+            layer.msg(res.desc);
+          }).catch(function(jqXHR, textStatus, errorThrown){
+            layer.msg('网络出错，请稍候再试');
+            if(typeof(opt.error)=="function"){
+              opt.error(jqXHR, textStatus, errorThrown);
+            }
+          })
+          return false;
+        },
+
+    });
+    return false
+
+
+  }
+
+
+
+
+}
+
+PAGE_EXEC.renderItem()
+
+
+
+
+
+</script>
+{/block}

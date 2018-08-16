@@ -12,5 +12,6 @@ class Department extends Model
 
     // 直接使用配置参数名
    protected $connection = 'database_carpool';
+   protected $pk = 'departmentid';
 
 }

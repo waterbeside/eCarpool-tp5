@@ -1,0 +1,65 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <ul class="amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/i18n/lang_list')}"  >语言管理</a></li>
+            <li class="btn-item btn-item-add">
+              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/i18n/lang_add')}"  data-title="添加语言"  data-trigger="modal" >
+              <i class="fa fa-plus"></i> 添加语言</a>
+            </li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+
+                <form class="layui-form layui-form-pane" action="{:url('admin/i18n/lang_list')}" method="get" id="searchForm">
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="text" name="keyword" value="{$keyword}" placeholder="请输入关键词" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn"><i class="fa fa-search"></i></button>
+                    </div>
+                </form>
+                <hr>
+
+                <table class="layui-table">
+                    <thead>
+                    <tr>
+                        <th  >#</th>
+                        <th  >语言码</th>
+                        <th  >语言</th>
+                        <th  >状态</th>
+                        <th width="110">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {foreach name="lists" item="vo"}
+                    <tr {php}echo $vo['status']==1 ? '' : 'class="list_status_0"';{/php}>
+                        <td>{$vo.id}</td>
+                        <td>{$vo.code}</td>
+                        <td>{$vo.name}</td>
+                        <td>{php}echo $vo['status']==1 ? '<i class="fa fa-check"></i>' : '<i class="fa fa-times"></i>';{/php}</td>
+                        <td>
+                          <a  href="{:url('admin/i18n/lang_edit',['id'=>$vo['id']])}" class="layui-btn layui-btn-sm " data-title="編輯"  data-trigger="modal"     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
+                          <a href="{:url('admin/i18n/lang_delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
+                        </td>
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+                <!--分页-->
+                {$lists|raw}
+
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+
+</script>
+{/block}

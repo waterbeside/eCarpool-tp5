@@ -1,0 +1,242 @@
+<div class="amain-form-wrapper">
+    <form class="layui-form form-container" action="{:url('admin/User/add')}" method="post">
+        <div style="text-align:center; margin:-40px 0 14px;">
+          <div class="cp-avatar" style="background-image:url('{$avatar}')"></div>
+        </div>
+
+        <fieldset class="amain-fieldset layui-elem-field" >
+          <legend>基本信息</legend>
+          <div class="layui-form-item">
+              <label class="layui-form-label">用户名(工号)</label>
+              <div class="layui-input-block">
+                  <input type="text" name="loginname" value="" required  lay-verify="required" placeholder="请输入用户名" class="layui-input">
+                  <div class="layui-form-mid layui-word-aux">修改帐号名有可能形响im_id，如非必要，请勿修改</div>
+              </div>
+          </div>
+          <div class="layui-form-item">
+              <label class="layui-form-label">手机</label>
+              <div class="layui-input-block">
+                  <input type="text" name="phone" value="" placeholder="（选填）请输入手机" class="layui-input">
+              </div>
+          </div>
+          <div class="layui-form-item">
+              <label class="layui-form-label">姓名</label>
+              <div class="layui-input-block">
+                  <input type="text" name="name" value="" placeholder="姓名" lay-verify="required" class="layui-input">
+              </div>
+          </div>
+          <div class="layui-form-item">
+              <label class="layui-form-label">性别</label>
+              <div class="layui-input-block">
+                  <input type="radio" name="sex" value="1" title="男" >
+                  <input type="radio" name="sex" value="2" title="女" >
+                  <input type="radio" name="sex" value="0" title="未知" checked>
+              </div>
+          </div>
+          <div class="layui-form-item">
+              <label class="layui-form-label">密码</label>
+              <div class="layui-input-block">
+                  <input type="password" name="password" value="" placeholder="密码" class="layui-input">
+              </div>
+          </div>
+          <div class="layui-form-item">
+              <label class="layui-form-label">重复密码</label>
+              <div class="layui-input-block">
+                  <input type="password" name="confirm_password" value="" placeholder="请再次输入" class="layui-input">
+              </div>
+          </div>
+          <div class="layui-form-item">
+              <label class="layui-form-label">状态</label>
+              <div class="layui-input-block">
+                  <input type="checkbox" name="is_active" value="1" lay-skin="switch" lay-text="启用|禁用" checked>
+              </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="amain-fieldset layui-elem-field" >
+          <legend>公司信息</legend>
+          <div class="layui-form-item">
+            <label class="layui-form-label">所属公司</label>
+            <div class="layui-input-block">
+              <select name="company_id" lay-verify="required" lay-filter="company_id">
+                 <option value="0">请选择公司</option>
+               </select>
+            </div>
+          </div>
+
+          <div class="layui-form-item" style="display:none">
+            <label class="layui-form-label">所属分厂</label>
+            <div class="layui-input-block">
+              <select name="sub_company_id" lay-filter="sub_company_id" lay-search>
+                 <option value="0">请选择分厂</option>
+               </select>
+            </div>
+          </div>
+
+          <div class="layui-form-item" style="display:none">
+            <label class="layui-form-label">部门</label>
+            <div class="layui-input-block">
+              <select name="departmentid"   lay-search>
+                 <option value="0">请选择部门</option>
+               </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="layui-collapse" >
+          <div class="layui-colla-item">
+            <h2 class="layui-colla-title">车辆信息</h2>
+            <div class="layui-colla-content">
+              <div class="layui-form-item">
+                  <label class="layui-form-label">车牌号</label>
+                  <div class="layui-input-block">
+                      <input type="text" name="carnumber" value="" placeholder="车牌号" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">车颜色</label>
+                  <div class="layui-input-block">
+                    <input type="text" name="carcolor" value="" placeholder="车颜色" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">车品牌</label>
+                  <div class="layui-input-block">
+                    <input type="text" name="carbrand" value="" placeholder="车品牌" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">车型号</label>
+                  <div class="layui-input-block">
+                    <input type="text" name="cartype" value="" placeholder="车型号" class="layui-input">
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="blank12"></div>
+
+        <div class="layui-collapse" >
+          <div class="layui-colla-item">
+            <h2 class="layui-colla-title">其它（补充项，非必要）</h2>
+            <div class="layui-colla-content">
+              <div class="layui-form-item">
+                  <label class="layui-form-label">deptid</label>
+                  <div class="layui-input-block">
+                    <input type="text" name="deptid" value="" placeholder="deptid" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">home address id</label>
+                  <div class="layui-input-block">
+                    <input type="number" name="home_address_id" value="0" placeholder="home_address_id" class="layui-input" lay-verify="number">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">company address id</label>
+                  <div class="layui-input-block">
+                    <input type="number" name="company_address_id" value="0" placeholder="company_address_id" class="layui-input" lay-verify="number">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">nativename</label>
+                  <div class="layui-input-block">
+                    <input type="text" name="nativename" value="" placeholder="nativename" class="layui-input">
+                  </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="blank20"></div>
+
+        <div class="layui-btn-container layui-row">
+            <button class="layui-btn layui-btn-lg layui-col-xs12" lay-submit lay-filter="*">提交</button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+  function getCompanys(success){
+    $.get("{:url('admin/company/public_lists')}",function(res){
+      if(res.code === 0){
+        var options = '<option value="0" selected>请选择公司</option>';
+        $(res.data.lists).each(function(index, el) {
+          options += '<option value="'+el.id+'">'+el.name+'</option>';
+        });
+        $("select[name='company_id']").html(options);
+        if(typeof(success)=="function"){
+          success(res);
+        }
+        form.render();
+      }
+    })
+  }
+
+  function getSubCompanys(success){
+    var cid = $("select[name='company_id']").val();
+    $.get("{:url('admin/company_sub/public_lists')}",{cid:cid},function(res){
+      if(res.code === 0){
+        var options = '<option value="0" selected>请选择分厂</option>';
+        $(res.data.lists).each(function(index, el) {
+          options += '<option value="'+el.id+'">'+el.name+'</option>';
+        });
+        $("select[name='sub_company_id']").html(options)
+        if(typeof(success)=="function"){
+          success(res);
+        }
+        form.render();
+      }
+    })
+  }
+
+  function getDepartments(success){
+    var cid = $("select[name='sub_company_id']").val();
+    $.get("{:url('admin/department/public_lists')}",{scid:cid},function(res){
+      if(res.code === 0){
+        var options = '<option value="0">请选择分厂</option>';
+        $(res.data.lists).each(function(index, el) {
+          options += '<option value="'+el.id+'">'+el.name+'</option>';
+        });
+        $("select[name='departmentid']").html(options)
+        if(typeof(success)=="function"){
+          success(res);
+        }
+        form.render();
+      }
+    })
+  }
+
+
+  form.on('select(company_id)', function (data) {
+    if(data.value>0){
+      $("select[name='sub_company_id']").closest('.layui-form-item').show()
+      getSubCompanys();
+    }else{
+      $("select[name='sub_company_id']").closest('.layui-form-item').hide()
+      $("select[name='departmentid']").closest('.layui-form-item').hide()
+    }
+  });
+
+  form.on('select(sub_company_id)', function (data) {
+    if(data.value>0){
+      $("select[name='departmentid']").closest('.layui-form-item').show()
+      getDepartments();
+    }else{
+      $("select[name='departmentid']").closest('.layui-form-item').hide()
+    }
+  });
+
+
+
+
+  getCompanys();
+
+
+
+  form.render();
+  element.init();
+</script>

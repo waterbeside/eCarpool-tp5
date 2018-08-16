@@ -2,9 +2,9 @@
 namespace app\admin\controller;
 
 use app\common\controller\AdminBase;
-use think\Config;
+use think\facade\Config;
 use think\Db;
-use think\Session;
+use think\facade\Session;
 
 /**
  * 修改密码
@@ -28,26 +28,36 @@ class ChangePassword extends AdminBase
     public function updatePassword()
     {
         if ($this->request->isPost()) {
-            $admin_id    = Session::get('admin_id');
+            $admin_id    = $this->userBaseInfo['uid'];
+            // $admin_id    = Session::get('admin_id');
             $data   = $this->request->param();
+
+            if (!$data['password'] == $data['confirm_password']) {
+              $this->jsonReturn(-1,'两次密码输入不一致');
+            }
+
             $result = Db::name('admin_user')->find($admin_id);
 
-            if ($result['password'] == md5($data['old_password'] . Config::get('salt'))) {
-                if ($data['password'] == $data['confirm_password']) {
-                    $new_password = md5($data['password'] . Config::get('salt'));
-                    $res          = Db::name('admin_user')->where(['id' => $admin_id])->setField('password', $new_password);
+            $hash = $result['password'];
 
-                    if ($res !== false) {
-                        $this->success('修改成功');
-                    } else {
-                        $this->error('修改失败');
-                    }
-                } else {
-                    $this->error('两次密码输入不一致');
-                }
-            } else {
-                $this->error('原密码不正确');
+            if(!password_verify($data['old_password'], $hash)){
+              $this->jsonReturn(-1,'密码错误');
             }
+
+
+            // $new_password = md5($data['password'] . Config::get('salt'));
+            $new_password  = password_hash($data['password'], PASSWORD_DEFAULT);
+            $res          = Db::name('admin_user')->where(['id' => $admin_id])->setField('password', $new_password);
+
+            if ($res !== false) {
+                $this->log('修改密码成功，id='.$admin_id,0);
+                $this->success('修改成功');
+            } else {
+                $this->log('修改密码失败，id='.$admin_id,-1);
+                $this->jsonReturn(-1,'修改失败');
+            }
+
+
         }
     }
 }

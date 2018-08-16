@@ -1,25 +1,16 @@
 {
-    "name": "topthink/think",
-    "description": "the new thinkphp framework",
     "type": "project",
     "keywords": [
-        "framework",
+        "溢起拼車",
         "thinkphp",
-        "ORM"
-    ],
-    "homepage": "http://thinkphp.cn/",
-    "license": "Apache-2.0",
-    "authors": [
-        {
-            "name": "liu21st",
-            "email": "liu21st@gmail.com"
-        }
+        "後臺管理"
     ],
     "require": {
-        "php": ">=5.4.0",
-        "topthink/framework": "^5.0",
-        "topthink/think-captcha": "^1.0",
-        "firebase/php-jwt": "^5.0"
+        "php": ">=5.6.0",
+        "topthink/framework": "^5.1",
+        "topthink/think-captcha": "^2.0",
+        "firebase/php-jwt": "^5.0",
+        "phpoffice/phpspreadsheet": "^1.3"
     },
     "extra": {
         "think-path": "thinkphp"

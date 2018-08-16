@@ -1,0 +1,133 @@
+<div class="layui-tab-content goods-item-edit">
+    <div class="layui-tab-item layui-show">
+        <form class="layui-form form-container" action="{:url('admin/ScoreGoods/add')}" method="post">
+
+              <div class="layui-form-item">
+                  <label class="layui-form-label">商品名</label>
+                  <div class="layui-input-block">
+                      <input type="text" name="name" value="" required  lay-verify="required" placeholder="请输入商品名" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">描述</label>
+                  <div class="layui-input-block">
+                     <textarea name="desc" placeholder="请输入描述" class="layui-textarea"></textarea>
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">缩略图</label>
+                  <div class="layui-input-block">
+                    <input type="text" name="thumb" value="" class="layui-input">
+                    <a   class="amain-uploadImgBtn" id="upload-btn">
+                       <img class="layui-upload-img" id="item-thumb" src="" >
+                       <div class="text">
+                         <i class="fa fa-upload"></i>上传图片
+                       </div>
+                    </a>
+                    <p id="uploadText"></p>
+
+                  </div>
+              </div>
+
+              <div class="layui-form-item">
+                  <label class="layui-form-label">兑换价</label>
+                  <div class="layui-input-block">
+                      <input type="text" name="price" value=""  required  lay-verify="required" placeholder="请输入商品兑换价" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">采购价</label>
+                  <div class="layui-input-block">
+                      <input type="text" name="amount" value=""  required  lay-verify="required" placeholder="请输入商品采购价" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">库存</label>
+                  <div class="layui-input-block">
+                      <input type="number" name="inventory" min="-1" value=""  required  lay-verify="required" placeholder="请输入商品库存" class="layui-input">
+                      <div class="layui-form-mid layui-word-aux"> 库存为-1时，即不限库存</div>
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">状态</label>
+                  <div class="layui-input-block">
+                    <select name="status"  >
+                      {foreach name="goods_status" item="vo" key="key"}
+                      <option value="{$key}" {php}echo $key === 0 ? 'selected' : ''; {/php}>{$vo}</option>
+                      {/foreach}
+                     </select>
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">是否显示</label>
+                  <div class="layui-input-block">
+                      <input type="checkbox" name="is_show" value="1" lay-skin="switch" lay-text="显示|不显示"  checked>
+                  </div>
+              </div>
+
+
+
+
+            <div class="blank20"></div>
+
+            <div class="layui-btn-container layui-row">
+                <button class="layui-btn layui-btn-lg layui-col-xs12" lay-submit lay-filter="*">提交</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+<script>
+
+RESOLVE_INIT = {
+
+  upload : layui.upload,
+  init: function(){
+    var $thumbInput = $('.goods-item-edit').find("input[name=thumb]");
+    //普通图片上传
+     var uploadInst = this.upload.render({
+       elem: '#upload-btn'
+       ,url: "{:url('admin/Uploader/images')}"
+       ,before: function(obj){
+         //预读本地文件示例，不支持ie8
+         obj.preview(function(index, file, result){
+           // $('#item-thumb').attr('src', result); //图片链接（base64）
+         });
+       }
+       ,done: function(res){
+         console.log(res);
+         //如果上传失败
+         if(res.code > 0){
+           return layer.msg('上传失败');
+         }
+         if(res.code===0){
+           layer.msg('上传成功');
+           $('#item-thumb').attr('src', res.data.img_url); //图片链接（base64）
+           $thumbInput.val(res.data.img_url);
+         }
+         //上传成功
+       }
+       ,error: function(){
+         //演示失败状态，并实现重传
+         var $uploadText = $('#uploadText');
+         var html = '<span style="color: #FF5722;">上传失败,请稍候再试</span>';
+         // html += '<a class="layui-btn layui-btn-xs reUpload">重试</a>';
+         $uploadText.html(html);
+         /*$uploadText.find('.reUpload').on('click', function(){
+           uploadInst.upload();
+         });*/
+       }
+     });
+     $thumbInput.keyup(function(event) {
+       /* Act on the event */
+       var thumbPath = $thumbInput.val();
+       $('#item-thumb').attr('src', thumbPath);
+     });
+     form.render();
+  },
+}
+
+
+RESOLVE_INIT.init();
+
+</script>

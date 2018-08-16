@@ -21,4 +21,21 @@ class User extends Model
 
    protected $pk = 'uid';
 
+   public function getDetail($account="",$uid=0){
+     if(!$account && !$uid){
+       return false;
+     }
+     $carpoolUser_jion =  [
+       ['company c','u.company_id = c.company_id','left'],
+     ];
+     return  $this->alias('u')->join($carpoolUser_jion)->where(['loginname'=>$account])->find();
+
+   }
+
+
+   public function hashPassword($password){
+ 		  return md5($password);
+ 	 }
+
+
 }

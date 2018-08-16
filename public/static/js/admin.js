@@ -2,6 +2,56 @@
  * 后台JS主入口
  */
   // layui.use('element', function(){
+if(typeof(GV)=="undefined"){
+  var GV = {};
+}
+
+GV['config'] = {
+  url : {
+    amapScript : 'http://webapi.amap.com/maps?v=1.4.6&key=a9c78e8c6c702cc8ab4e17f5085ffd2a'
+
+  }
+}
+
+/**
+ * 动态加载JS
+ * @param  {String}   url      URL
+ * @param  {Function} callback 回调函数
+ */
+function cLoadScript(url, callback) {
+  var script = document.createElement("script");
+  script.type = "text/javascript";
+  if(typeof(callback) != "undefined"){
+    if (script.readyState) {
+      script.onreadystatechange = function () {
+        if (script.readyState == "loaded" || script.readyState == "complete") {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else {
+      script.onload = function () {
+        callback();
+      };
+    }
+  }
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+function redirect(url,win) {
+    var lct = typeof(win)!="undefined"  && win ? win.location : location;
+    //console.log(lct);
+    lct.href = url;
+}
+
+function reload(win) {
+    var lct = typeof(win)!="undefined" && win ? win.location : location;
+    //console.log(lct);
+    lct.reload();
+}
+
+GV.lockForm = false;
 
   var layer = layui.layer,
       // element = layui.element(),
@@ -26,13 +76,129 @@
 
 function initLayuiTable(options){
   var defaults = {
-    limit: 50
+    limit: 50,
+    tabFilter:'listtable'
   }
   var opt = $.extend({}, defaults, options);
-
-  layui.table.init('listtable', opt);
+  layui.table.init(opt.tabFilter, opt);
   $(window).resize(function(event) {
-    layui.table.init('listtable', opt);
+    layui.table.init(opt.tabFilter, opt);
+  });
+}
+
+
+/**
+ * 通过layer的iframe打开
+ */
+function openLayer(url,opt){
+  var defaults = {
+    type: 2,
+    area: ['700px', '90%'],
+    fixed: true,
+    maxmin: true,
+  }
+  var opt_s = {};
+  if(typeof(opt)=="string"){
+    defaults.title = opt;
+  }else{
+    opt_s = opt;
+  }
+  if(typeof(url)=="object"){
+    opt_s = url;
+  }else if(typeof(url)=="string"){
+    defaults.content = url;
+  }
+  var options = $.extend(true, defaults, opt_s);
+  layer.open(options);
+}
+
+
+/**
+ * 通过layer的iframe打开
+ */
+function openParentLayer(url,opt){
+  var defaults = {
+    type: 2,
+    area: ['700px', '90%'],
+    fixed: true,
+    maxmin: true,
+  }
+  var opt_s = {};
+  if(typeof(opt)=="string"){
+    defaults.title = opt;
+  }else{
+    opt_s = opt;
+  }
+  if(typeof(url)=="object"){
+    opt_s = url;
+  }else if(typeof(url)=="string"){
+    defaults.content = url;
+  }
+  var options = $.extend(true, defaults, opt_s);
+  if(parent){
+    parent.layer.open(options);
+  }else{
+    layer.open(options);
+  }
+}
+
+
+function ajaxSubmit(setting){
+  if(GV.lockForm){
+    layer.msg('有表单正在提交，请稍候再试');
+    return false;
+  }
+  GV.lockForm = true;
+  var loading = layer.load(2,{ shade: [0.2,'#fff']});
+  var defaults = {
+    dataType:"json",
+    type:"post",
+    jump:"",
+    unrefresh:false,
+    jumpWin:null,
+  }
+  var opt = $.extend({}, defaults, setting);
+  $.ajax({
+      url: opt.url,
+      dataType:opt.dataType,
+      type: opt.type,
+      data: opt.data,
+      success: function (res) {
+        if (res.code === 0) {
+          if(opt.unrefresh!=1 || opt.jump!=""){
+            setTimeout(function () {
+              if(opt.jump!=""){
+                redirect(opt.jump,opt.jumpWin);
+              }else if(res.url){
+                redirect(res.url,opt.jumpWin);
+              }else if(res.extra.url){
+                redirect(res.extra.url,opt.jumpWin);
+              }else{
+                reload(opt.jumpWin);
+              }
+            }, 400);
+          }
+        }
+        layer.msg(res.desc);
+        if(typeof(opt.success)=="function"){
+          opt.success(res);
+        }
+      },
+      error:function(jqXHR, textStatus, errorThrown){
+        layer.msg('网络出错，请稍候再试');
+        if(typeof(opt.error)=="function"){
+          opt.error(jqXHR, textStatus, errorThrown);
+        }
+      },
+      complete:function(){
+        layer.close(loading);
+        setTimeout(function(){
+          GV.lockForm = false;
+        },1000)
+        if(typeof(opt.complete)=="function"){
+          opt.complete();
+        }
+      }
   });
 }
 
@@ -40,7 +206,6 @@ function admin_init(){
   /**
    * 通用单图上传
    */
-
 
   /*layui.upload({
       url: "/index.php/api/upload/upload",
@@ -56,14 +221,14 @@ function admin_init(){
   });*/
   var layUpload = layui.upload;
   var uploadInst = layUpload.render({
-    elem: '#test1' //绑定元素
+    elem: '#upload-input' //绑定元素
     ,url: '/index.php/api/upload/upload' //上传接口
     ,done: function(res){
       //上传完毕回调
       if (res.error === 0) {
           document.getElementById('thumb').value = res.url;
       } else {
-          layer.msg(res.message);
+          layer.msg(res.desc);
       }
     }
     ,error: function(){
@@ -87,25 +252,28 @@ function admin_init(){
       })*/
   });
 
+  $(".pagination li a ").click(function(){
+    layer.load(2);
+  })
+
+  $("a[showloading]").click(function(){
+    layer.load(2);
+  })
+
   /**
    * 通用表单提交(AJAX方式)
    */
   form.on('submit(*)', function (data) {
-      $.ajax({
-          url: data.form.action,
-          type: data.form.method,
-          data: $(data.form).serialize(),
-          success: function (info) {
-              if (info.code === 1) {
-                  setTimeout(function () {
-                      location.href = info.url;
-                  }, 1000);
-              }
-              layer.msg(info.msg);
-          }
-      });
-
-      return false;
+    ajaxSubmit({
+      url: data.form.action,
+      dataType:'json',
+      type: data.form.method,
+      data: $(data.form).serialize(),
+      unrefresh: $(data.form).data('unrefresh') ? $(data.form).data('unrefresh') : false,
+      jump : $(data.form).data('jump') ? $(data.form).data('jump') : "" ,
+      jumpWin: $(data.form).data('jump-target') == "parent" ? parent : null
+    });
+    return false;
   });
 
   /**
@@ -121,14 +289,19 @@ function admin_init(){
           yes: function (index) {
               $.ajax({
                   url: _action,
+                  dataType:'json',
                   data: $('.ajax-form').serialize(),
-                  success: function (info) {
-                      if (info.code === 1) {
-                          setTimeout(function () {
-                              location.href = info.url;
-                          }, 1000);
+                  success: function (res) {
+                      if (res.code === 0) {
+                        setTimeout(function () {
+                          if(res.url){
+                            location.href = res.url;
+                          }else{
+                            location.reload();
+                          }
+                        }, 1000);
                       }
-                      layer.msg(info.msg);
+                      layer.msg(res.desc);
                   }
               });
               layer.close(index);
@@ -159,14 +332,19 @@ function admin_init(){
           yes: function (index) {
               $.ajax({
                   url: _href,
+                  dataType:'json',
                   type: "get",
-                  success: function (info) {
-                      if (info.code === 1) {
-                          setTimeout(function () {
-                              location.href = info.url;
-                          }, 1000);
+                  success: function (res) {
+                      if (res.code === 0) {
+                        setTimeout(function () {
+                          if(res.url){
+                            location.href = res.url;
+                          }else{
+                            location.reload();
+                          }
+                        }, 1000);
                       }
-                      layer.msg(info.msg);
+                      layer.msg(res.desc);
                   }
               });
               layer.close(index);
@@ -185,13 +363,18 @@ function admin_init(){
       if (_url !== 'undefined') {
           $.ajax({
               url: _url,
-              success: function (data) {
-                  if (data.code === 1) {
-                      setTimeout(function () {
-                          location.href = location.pathname;
-                      }, 1000);
+              dataType:'json',
+              success: function (res) {
+                  if (res.code === 0) {
+                    setTimeout(function () {
+                      if(res.url){
+                        location.href = res.url;
+                      }else{
+                        location.reload();
+                      }
+                    }, 1000);
                   }
-                  layer.msg(data.msg);
+                  layer.msg(res.desc);
               }
           });
       }

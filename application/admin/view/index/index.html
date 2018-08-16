@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Carpool 管理后台</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="__JS__/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="__CSS__/font-awesome.min.css">
+    <style>
+    body{ width:100%; height:100%; overflow: hidden; }
+
+    </style>
+    <!--CSS引用-->
+    {block name="css"}{/block}
+    <link rel="stylesheet" href="__CSS__/admin.css">
+    <!--[if lt IE 9]>
+    <script src="__CSS__/html5shiv.min.js"></script>
+    <script src="__CSS__/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+<div class="layui-layout layui-layout-admin">
+    <!--头部-->
+    <div class="layui-header header">
+        <a href=""><img class="logo" src="__STATIC__/images/admin_logo.png" alt=""></a>
+        <ul class="layui-nav" style="position: absolute;top: 0;right: 20px;background: none;">
+            <!-- <li class="layui-nav-item"><a href="{:url('/')}" target="_blank">前台首页</a></li> -->
+            <li class="layui-nav-item"><a href="" data-url="{:url('admin/system/clear')}" id="clear-cache">清除缓存</a></li>
+            <li class="layui-nav-item">
+                <a href="javascript:;">{$admin_user['username']}</a>
+                <dl class="layui-nav-child"> <!-- 二级菜单 -->
+                    <dd><a href="{:url('admin/change_password/index')}"  data-title="修改密码"  data-trigger="modal">修改密码</a></dd>
+                    <dd><a href="{:url('admin/login/logout')}">退出登录</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+
+    <div class="aframe-box">
+      <!--侧边栏-->
+      <div class="aframe-sidebox">
+        <div class="layui-side layui-bg-black">
+            <div class="layui-side-scroll">
+                <ul class="layui-nav layui-nav-tree" lay-filter="aside">
+                    <li class="layui-nav-title" data-target="showFull"  ><span class="aframe-icon"><i class="fa fa-list"></i></span>菜单</li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:;" data-href="{:url('admin/index/main')}" data-id="000"><span class="aframe-icon"><i class="fa fa-home"></i></span>站点信息</a>
+                    </li>
+                    {foreach name="menu" item="vo"}
+                    {if condition="isset($vo['children'])"}
+                    <li class="layui-nav-item">
+                        <a href="javascript:;"><span class="aframe-icon"><i class="{$vo.icon}"></i></span>{$vo.title}</a>
+                        <dl class="layui-nav-child">
+                            {foreach name="vo['children']" item="v"}
+                            <dd><a  href="javascript:;" data-href="{:url($v.name)}" data-id={$v.id}>
+                              <span class="aframe-icon">{php} echo $v['icon'] ? '<i class="'.$v['icon'].'"></i>': '<i class="fa fa-caret-right"></i>' ; {/php}</span>
+                              {$v.title}</a>
+                            </dd>
+                            {/foreach}
+                        </dl>
+                    </li>
+                    {else /}
+                    <li class="layui-nav-item">
+                        <a href="javascript:;" data-href="{:url($vo.name)}" data-id={$vo.id}><span class="aframe-icon"><i class="{$vo.icon}"></i></span>{$vo.title}</a>
+                    </li>
+                    {/if}
+                    {/foreach}
+
+                    <li class="layui-nav-item" style="height: 30px; text-align: center"></li>
+                </ul>
+            </div>
+        </div>
+      </div>
+      <!--主体-->
+
+      <div class="layui-body aframe-con" id="container">
+        <div class="layui-tab" lay-allowClose="true" lay-filter="tab">
+          <ul class="layui-tab-title">
+              <li class="layui-this" lay-id="000">
+                  站点信息
+              </li>
+          </ul>
+          <div class="aframe-tab-tool">操作&nbsp;<i class="fa fa-caret-down"></i></div>
+          <div class="aframe-tab-tool-options layui-anim layui-anim-upbit"  >
+            <ul  >
+              <li   data-target="refreshCurrent">刷新当前选项卡</li>
+              <li  data-target="closeCurrent">关闭当前选项卡</li>
+              <li   data-target="closeOther">关闭其他选项卡</li>
+              <!-- <li   data-target="closeAll">关闭所有选项卡</li> -->
+            </ul>
+          </div>
+          <div class="layui-tab-content">
+              <div class="layui-tab-item layui-show">
+                  <iframe src="{:url('admin/index/main')}" name="站点信息" index="0"></iframe>
+              </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+
+</div>
+
+<script>
+    // 定义全局JS变量
+    var GV = {
+        current_controller: "admin/{$controller|default=''}/",
+        base_url: "__STATIC__"
+    };
+</script>
+<!--JS引用-->
+<script src="__JS__/jquery.min.js"></script>
+
+<script src="__JS__/layui/layui.all.js"></script>
+<script src="__JS__/admin_frame.js"></script>
+<script src="__JS__/jquery.kanModal.min.js"></script>
+
+
+{block name="js"}{/block}
+<!--页面JS脚本-->
+{block name="script"}{/block}
+</body>
+</html>

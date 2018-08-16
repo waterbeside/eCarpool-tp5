@@ -1,0 +1,141 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <ul class="  amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/ScorePrize/index')}"  >抽奖管理</a></li>
+            <li class="btn-item btn-item-add">
+              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ScorePrize/add')}"  data-title="添加商品"  data-trigger="modal" >
+              <i class="fa fa-plus"></i> 添加抽奖</a>
+            </li>
+
+        </ul>
+        <div class="amain-content">
+          <form id="filter-form"  class="layui-form layui-form-pane" action="{:url('admin/ScorePrize/index')}" method="get">
+              <div class="layui-inline">
+                  <label class="layui-form-label">检索</label>
+                  <div class="layui-input-inline">
+                      <input type="text" name="keyword" value="{$keyword}" placeholder="请输入关键词" class="layui-input">
+                  </div>
+                  <div class="layui-input-inline">
+                    <select name="filter[is_hidden]" lay-verify="required" >
+                      <option value="" >是否显示 - 不限</option>
+                      <option value="1" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "1" ? 'selected' : ''; {/php}>不显示</option>
+                      <option value="0" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "0" ? 'selected' : ''; {/php}>显示</option>
+                    </select>
+                  </div>
+              </div>
+              <div class="layui-inline">
+                <input type="hidden" name="filter[status]" value="{$filter.status}">
+                <button class="layui-btn"><i class="fa fa-search"></i></button>
+              </div>
+
+          </form>
+          <hr>
+
+          <div class="layui-tab amain-content-tab">
+            <div class="tab-title-wrapper">
+              <ul class="layui-tab-title">
+                <li <?php echo !isset($filter['status']) || $filter['status']==="" || $filter['status']==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeStatus('all')" href="javascript:void(0);" >全部</a></li>
+                <li <?php echo  is_numeric($filter['status']) && intval($filter['status']) === -2 ? 'class="layui-this"' : '' ; ?> >
+                  <a onclick="changeStatus('-2')" href="javascript:void(0);">下架</a>
+                </li>
+                <li <?php echo  is_numeric($filter['status']) && intval($filter['status']) === -1 ? 'class="layui-this"' : '' ; ?> >
+                  <a onclick="changeStatus('-1')" href="javascript:void(0);">准备中</a>
+                </li>
+                <li <?php echo  $filter['status'] == '0,1,2' ? 'class="layui-this"' : '' ; ?> >
+                  <a onclick="changeStatus('0,1,2')" href="javascript:void(0);">进行中</a>
+                </li>
+                <li <?php echo  is_numeric($filter['status']) && intval($filter['status']) === -3 ? 'class="layui-this"' : '' ; ?> >
+                  <a onclick="changeStatus('-3')" href="javascript:void(0);">开奖中</a>
+                </li>
+                <li <?php echo  is_numeric($filter['status']) && intval($filter['status']) === -4 ? 'class="layui-this"' : '' ; ?> >
+                  <a onclick="changeStatus('-4')" href="javascript:void(0);">已开奖</a>
+                </li>
+                <!--{foreach name="statusList" key="key" item="vo"}
+                <li <?php echo  is_numeric($filter['status']) && intval($filter['status']) === intval($key) ? 'a class="layui-this"' : 'b' ; ?> >
+                  <a onclick="changeStatus('<?php echo $key;?>')" href="javascript:void(0);">{$vo}</a>
+                </li>
+                {/foreach}-->
+              </ul>
+            </div>
+          </div>
+
+          <div class="layui-tab-content dark-grey-wrapper ">
+
+              <div class="good-list prize-list">
+                <form class="layui-form">
+                  {if !count($lists)>0}无数据{/if}
+                  {foreach name="lists" item="vo"}
+                  <div class="am-card  <?php echo $vo['is_delete'] ? 'unshow' : '' ;?>">
+                    <div class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>" title="{$vo.identity}">  </div>
+                    <div class="am-card-body">
+                      <h5 class="am-card-title layui-elip" >
+                        <a href="{:url('admin/ScorePrize/edit',['id'=>$vo['id']])}"   data-title="編輯商品 #{$vo.id}"  data-trigger="modal" title="編輯商品 #{$vo.id}">
+                          {$vo.name}
+                          <small class="periods">【第{$vo.publication_number}期】</small>
+                        </a>
+                      </h5>
+
+                      <span class="id">
+                        {php} if($vo['is_shelves'] === 0){
+                          echo '<i class="fa fa-rocket" title="自动续期"></i>';
+                        }
+                        {/php}
+                        #{$vo.id}
+                      </span>
+                      <p class="am-card-text">{$vo.desc|iconv_substr=0,80}...</p>
+                      <div class="progress layui-progress" lay-showPercent="true">
+                        <div class="layui-progress-bar" lay-percent="{$vo.real_count} /{$vo.total_count}"></div>
+                      </div>
+
+                      <div class="info">
+                        <span class="info-item price"> 消耗积分：<b >{$vo.price}</b></span>
+                        <span class="info-item amount"> 采购价：<b >{$vo.amount}</b></span>
+                        <span class="info-item "> 奖品级数：<b>{$vo.level}</b></span>
+                        <span class="info-item status"> 状态：<b><span class="layui-badge prize-status_b prize-status_{$vo.status}"><?php echo $statusList[$vo['status']] ;?></span> / <small><?php echo $vo['is_delete'] ? "不显示" : "显示" ;?></small></b></span>
+                      </div>
+                      <div class="btns-wrapper">
+
+                        <?php  if($auth['admin/ScorePrize/add']   ){ ?>
+                        <a href="{:url('admin/ScorePrize/add',['id'=>$vo['id']])}"  data-title="复制添加抽奖 "  data-trigger="modal" title="复制添加抽奖" class="ibtn layui-btn  layui-btn-success layui-btn-radius   "><i class="fa fa-copy"></i> 新建下期</a>
+                        <?php  } ?>
+                        <a href="{:url('admin/ScorePrize/edit',['id'=>$vo['id']])}"  data-title="編輯抽奖 #{$vo.id}"  data-trigger="modal" title="編輯抽奖 #{$vo.id}" class="ibtn layui-btn  layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a>
+                      </div>
+
+                    </div>
+
+                  </div>
+                  {/foreach}
+                </form>
+              </div>
+
+              <!--分页-->
+              {$lists|raw}
+
+          </div>
+
+        </div>
+
+
+
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+// initLayuiTable({ limit: {$pagesize} })
+function changeStatus(status){
+  var form = $("#filter-form");
+  form.find("input[name='filter[status]']").val(status);
+  form.submit();
+}
+
+
+
+</script>
+{/block}

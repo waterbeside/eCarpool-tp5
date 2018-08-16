@@ -1,0 +1,116 @@
+
+<div class="amain-body">
+
+    <div class="blank12"></div>
+
+    {if !isset($accountInfo['id'])}
+    <blockquote class="layui-elem-quote">该账号未开通积分账号</blockquote>
+    {/if}
+    <table class="layui-table">
+      <tbody>
+        {if isset($accountInfo['id'])}
+        <tr>
+          <td class="td-label" width="100">积分账号名</td>
+          <td>{$accountInfo.account&& trim($accountInfo.account)!=''?$accountInfo.account:'-'}</td>
+        </tr>
+        <tr>
+          <td class="td-label">积分</td>
+          <td><b class="text-red">{$accountInfo.balance}</b></td>
+        </tr>
+        {/if}
+        {if $accountInfo['carpool']}
+        <tr>
+          <td class="td-label" width="100">拼车帐号</td>
+          <td>{$accountInfo.carpool.loginname}</td>
+        </tr>
+        <tr>
+          <td class="td-label">手机</td>
+          <td>{$accountInfo.carpool.phone}</td>
+        </tr>
+        <tr>
+          <td class="td-label">姓名</td>
+          <td>{$accountInfo.carpool.name}</td>
+        </tr>
+        <tr>
+          <td class="td-label">所属公司</td>
+          <td>{$accountInfo.carpool.company_name}</td>
+        </tr>
+        <tr>
+          <td class="td-label">部门</td>
+          <td>{$accountInfo.carpool.Department}</td>
+        </tr>
+        {/if}
+      </tbody>
+    </table>
+
+
+    <form class="layui-form form-container" action="{:url('admin/Score/change')}" method="post">
+        <fieldset class="amain-fieldset layui-elem-field"  >
+          <legend>操作分数</legend>
+            <div class="layui-input-inline"  style="width:60px">
+              <select name="isadd"   lay-filter="isadd" >
+                 <option value="0" selected>减</option>
+                 <option value="1" >加</option>
+               </select>
+            </div>
+            <div class="layui-input-inline">
+              <input type="number" name="operand" class="layui-input"   placeholder="操作分数" value=""  style="width:100px;text-align:right">
+            </div>
+            <div class="layui-inline">
+                <div class="layui-input-inline">
+                  <select name="reason" lay-verify="required" lay-search class="j-reason-select">
+                   </select>
+                </div>
+            </div>
+            <div class="layui-inline" style="float:right">
+              <button class="layui-btn  " lay-submit lay-filter="*" style="width:160px;">提交</button>
+            </div>
+            <input type="hidden" name="account"  value="{$account}"  >
+            <input type="hidden" name="account_id"  value="{$account_id}"  >
+            <input type="hidden" name="type"  value="{$type}" >
+
+        </fieldset>
+
+
+
+        <div class="blank12"></div>
+
+
+    </form>
+
+</div>
+
+<script>
+RESOLVE_INIT = {
+
+  data:{
+    reasons:<?php echo json_encode($reasonsArray); ?>
+  },
+  init: function(){
+    var _this = this;
+    this.renderReasons(-1);
+    form.on('select(isadd)', function(data){
+      if(data.value==1){
+        _this.renderReasons(1);
+      }else{
+        _this.renderReasons(-1);
+      }
+    })
+  },
+  renderReasons:function(type){
+    var _this = this;
+    var html = "<option value=''>原因</option>"
+    $.each(_this.data.reasons,function(index, el) {
+       if(type>0 && el.code > 0){
+          html+="<option value='"+el.code+"'>+ "+el.title+"</option>"
+       }
+       if(type<0 && el.code < 0){
+          html+="<option value='"+el.code+"'>- "+el.title+"</option>"
+       }
+    });
+    $('.j-reason-select').html(html);
+    form.render();
+  }
+}
+RESOLVE_INIT.init();
+</script>
