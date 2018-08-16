@@ -182,39 +182,151 @@ class CarpoolReports extends AdminBase
    * @param  String $timeStr 时间范围
    * @param  String $type    [description]
    */
-  public function public_cycle_datas($timeStr=0, $type = false){
-    $period = $this->get_period($timeStr);
-    if(!isset($type) || !in_array($type,['year','month','week','day'])){
+  public function public_cycle_datas($timeStr=0, $period = false, $type = false){
+    // $period = $this->get_period($timeStr);
+    if(!isset($period) || !in_array($period,['year','month','week','day'])){
       $this->jsonReturn(-1,'error param');
     }
-    switch ($type) {
+    $now = date('YmdHi',time());
+    switch ($period) {
       case 'year':
         $time = "DATE_FORMAT(concat(`time`,'00'),'%Y')";
+        $whereTime = " AND time < ".$now;
+        // $cache_key = ""
         break;
       case 'month':
         $time = "DATE_FORMAT(concat(`time`,'00'),'%Y-%m')";
+        $whereTime = " AND time < ".$now;
         break;
       case 'week':
         $time = "DATE_FORMAT(concat(`time`,'00'),'%Y#%U')";
+        $whereTime = " AND time >= ".date("YmdHi",time() - 24*60*60*365*2)." AND time < ".$now;
         break;
       case 'day':
         $time = "DATE_FORMAT(concat(`time`,'00'),'%Y-%m-%d')";
+        $whereTime = " AND time >= ".date("YmdHi",time() - 24*60*60*365)." AND time < ".$now;
         break;
       default:
         $time  = "YEAR(concat(`time`,'00'))";
+        $whereTime = " AND time < ".$now;
         break;
     }
-    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid <> '' AND time >=  ".$period[0]." AND time < ".$period[1]." ";
-    $from = "SELECT distinct startpid,endpid,time,carownid,passengerid FROM info as i  where  $where_base ";
-    $sql = "SELECT
-      count(*) as c , $time as t
-      FROM ($from) as f
-      GROUP BY t
-    ";
-    // dump($sql);exit;
-    $lists =  Db::connect('database_carpool')->query($sql);
-    $this->jsonReturn(0,['lists'=>$lists]);
 
+
+    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid <> ''  $whereTime ";
+    $from = "SELECT distinct startpid,endpid,time,carownid,passengerid FROM info as i  where  $where_base ";
+
+    if($type == 'trips'){
+      $from_2 = "SELECT
+        count(*) as c , $time as t
+        FROM ($from) as f
+        GROUP BY t
+        ORDER BY t DESC
+        -- LIMIT 200;
+      ";
+      $sql = "SELECT *
+          FROM ({$from_2}) as f2
+          HAVING t IS NOT NULL
+          ORDER BY t ASC
+      ";
+
+      // dump($sql);exit;
+      $lists =  Db::connect('database_carpool')->query($sql);
+      // dump($lists);
+
+    }elseif($type=='users'){
+      //查司机数
+      $sql_driver = "SELECT
+        $time as t, carownid
+        FROM ($from) as f
+        GROUP BY t , carownid
+        HAVING t IS NOT NULL
+        ORDER BY t ASC
+      ";
+      //查乘客数
+      $sql_passenger = "SELECT
+        $time as t, passengerid
+        FROM ($from) as f
+        GROUP BY t , passengerid
+        HAVING t IS NOT NULL
+        -- AND passengerid NOT IN(SELECT carownid from info as i where $time = t AND $where_base)
+        ORDER BY t ASC
+      ";
+
+
+
+
+      $list_driver =  Db::connect('database_carpool')->cache(true,60*60)->query($sql_driver);
+      $list_passenger =  Db::connect('database_carpool')->cache(true,60*60)->query($sql_passenger);
+
+      $array_date_userid = [];
+      foreach ($list_driver as $key => $value) {
+        if(!isset($array_date_userid[$value['t']]) || !is_array($array_date_userid[$value['t']])){
+          $array_date_userid[$value['t']] = [];
+        }
+        if(!in_array($value['carownid'],$array_date_userid[$value['t']])){
+          array_push($array_date_userid[$value['t']],$value['carownid']);
+        }
+
+      }
+
+      foreach ($list_passenger as $key => $value) {
+        if(!isset($array_date_userid[$value['t']]) || !is_array($array_date_userid[$value['t']])){
+          $array_date_userid[$value['t']] = [];
+        }
+        if(!in_array($value['passengerid'],$array_date_userid[$value['t']])){
+          array_push($array_date_userid[$value['t']],$value['passengerid']);
+        }
+
+      }
+      $lists = [];
+      foreach ($array_date_userid as $key => $value) {
+        $arr = ["c"=>count($value),"t"=>$key];
+        $lists[] = $arr;
+      }
+
+    }elseif($type=="d&p"){
+      //查司机数
+      $sql_driver = "SELECT $time as t, carownid
+        FROM ($from) as f
+        GROUP BY t , carownid
+        HAVING t IS NOT NULL
+        ORDER BY t ASC
+      ";
+      //查乘客数
+      $sql_passenger = "SELECT $time as t, passengerid
+        FROM ($from) as f
+        GROUP BY t , passengerid
+        HAVING t IS NOT NULL
+        ORDER BY t ASC
+      ";
+      $sql_count_driver = "SELECT t , count(carownid) as c
+        FROM ($sql_driver) as f2
+        GROUP BY t
+      ";
+      $sql_count_passenger = "SELECT t , count(passengerid) as c
+        FROM ($sql_passenger) as f2
+        GROUP BY t
+      ";
+      $list_driver =  Db::connect('database_carpool')->query($sql_count_driver);
+      $list_passenger =  Db::connect('database_carpool')->query($sql_count_passenger);
+      $lists = [];
+      $drivers_kv = [];
+      foreach ($list_driver as $key => $value) {
+        $drivers_kv[$value['t']] = $value['c'];
+      }
+      foreach ($list_passenger as $key => $value) {
+        $driver_count = isset($drivers_kv[$value['t']]) ? $drivers_kv[$value['t']] : 0 ;
+        $arr = ['t'=>$value['t'],'p'=>$value['c'],'d'=>$driver_count];
+        $lists[] = $arr;
+      }
+
+    }else{
+      $lists = [];
+    }
+
+
+    $this->jsonReturn(0,['lists'=>$lists]);
   }
 
 

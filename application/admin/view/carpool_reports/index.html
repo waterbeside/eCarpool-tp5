@@ -3,7 +3,7 @@
 <div class="amain-body page-carpool-reports">
 
     <!--tab标签-->
-    <div class="layui-tab layui-tab-brief">
+    <div class="layui-tab layui-tab-brief " lay-filter="main-tab">
 
         <ul class="amain-tool-bar layui-tab-title" >
           <li class="layui-this"> 拼车期报 </li>
@@ -72,10 +72,13 @@
           <!-- **************  s : 走势图表 ************** -->
           <div class="layui-tab-item ">
             <div class="time-options">
-              <a class="time-item">年</a>
-              <a class="time-item current">月</a>
-              <a class="time-item">周</a>
-              <a class="time-item">日</a>
+              <a class="time-item" href="javascript:void(0)"  onclick="return PAGE_EXEC.drawChart('year');">年</a>
+              <a class="time-item current" href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('month');">月</a>
+              <a class="time-item" href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('week');">周</a>
+              <a class="time-item" href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('day');">日</a>
+            </div>
+            <div class="chart-wapper">
+              <div id="chart"  class="cp-chart-content" style="height:600px;"></div>
             </div>
 
 
@@ -89,6 +92,11 @@
 </div>
 
 {/block}
+{block name="js"}
+<script src="__JS__/echarts.common.min-3.js"></script>
+
+{/block}
+
 {block name="script"}
 <script>
 
@@ -99,6 +107,12 @@ PAGE_EXEC = {
     ranking : {
       driver:[],
       passenger:[]
+    },
+    cycle : {
+      year:[],
+      month:[],
+      week:[],
+      day:[],
     },
     tableObj:[]
   },
@@ -161,7 +175,7 @@ PAGE_EXEC = {
                   res.data.lists[index]['sexStr'] = el.sex == 1 ? '男' : (el.sex == 2 ? '女' : '-' );
                 });
                 _this.data.ranking[type] = res.data.lists
-                dtd.resolve(res.data);
+                dtd.resolve(res.data.lists);
               }else{
                 dtd.reject(typeof(res.desc)!="undefined" ? res.desc : '');
               }
@@ -172,6 +186,58 @@ PAGE_EXEC = {
 
         return dtd.promise();
       },
+
+      /**
+       * 取得周期拼车数列表
+       * @type {[type]}
+       */
+      cycleList: function(period,type,reload){
+        var url = "{:url("public_cycle_datas")}";
+        var dtd = $.Deferred();
+        // var loading = layer.load(2,{ shade: [0.2,'#fff']});
+        var loadingMsg = "加载中";
+        switch (type) {
+          case 'trips':
+            loadingMsg = "加载行程数、减少碳排放量等数据";
+            break;
+          case 'users':
+            loadingMsg = "加载用户数量数据";
+            break;
+          case 'd&p':
+            loadingMsg = "加载司机、乘客数量数据";
+            break;
+          default:
+        }
+        var loading = layer.msg(loadingMsg, {
+          icon: 16
+          ,shade: 0.01
+          ,time:0
+        });
+        reload = reload || 0;
+        if(typeof(_this.data.cycle[period][type])!="undefined" && _this.data.cycle[period][type].length > 0 && !reload){
+          setTimeout(function(){
+            layer.close(loading)
+          },300);
+          dtd.resolve(_this.data.cycle[period][type]);
+        }else{
+          $.getJSON(url,{timeStr:0,period:period,type:type}).then(function(res, textStatus) {
+              setTimeout(function(){
+                layer.close(loading)
+              },300);
+              if(res.code===0){
+                _this.data.cycle[period][type] = res.data.lists;
+                dtd.resolve(res.data.lists);
+              }else{
+                dtd.reject(typeof(res.desc)!="undefined" ? res.desc : '');
+              }
+          }).catch(function(error){
+              dtd.reject(error);
+          });
+        }
+
+        return dtd.promise();
+
+      }
 
     }
 
@@ -259,15 +325,7 @@ PAGE_EXEC = {
       console.log(res)
     })
 
-    element.on('tab(ranking-tab)', function(data){
-      if(data.index == 1){
-        _this.getData().ranking('passenger').done(function(data){
-          _this.renderTableList('passenger')
-        }).fail(function(res){
-          console.log(res)
-        })
-      }
-    });
+
     this.getData().ranking('driver').done(function(data){
       _this.renderTableList('driver')
     }).fail(function(res){
@@ -277,6 +335,201 @@ PAGE_EXEC = {
   },
 
 
+
+  /**
+     * 绘制图表
+     */
+    drawChart: function(period){
+      var _this = this;
+      var $target = $(event.target)
+      $target.addClass('current').siblings('.time-item').removeClass('current');
+
+
+      var myChart = echarts.init(document.getElementById('chart'));
+      var chartOption = {
+        title: {
+            // text: '拼车统计',
+            padding: [8,4,4,8],
+            textStyle:{color:"#74697e"}
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'line',
+                label: {
+                    backgroundColor: '#692290'
+                },
+            }
+        },
+        toolbox: {
+            feature: {
+                restore: {},
+                saveAsImage: {}
+            }
+        },
+        axisPointer: {
+            link: {xAxisIndex: 'all'}
+        },
+
+
+        dataZoom: [
+            {
+                show: true,
+                realtime: true,
+                start: 60,
+                end: 100,
+                xAxisIndex: [0, 1]
+            },
+            {
+                type: 'inside',
+                realtime: true,
+                start: 0,
+                end: 100,
+                xAxisIndex: [0, 1]
+            }
+        ],
+        legend: {
+          top:8,
+          right:100,
+        },
+
+       grid: [{
+          left: 50,
+          right: 50,
+          height: '35%'
+        }, {
+            left: 50,
+            right: 50,
+            top: '55%',
+            height: '35%'
+        }],
+
+
+         xAxis : [
+            {
+                type : 'category',
+                boundaryGap : true,
+                axisLine: {onZero: true},
+                data: ['2018', '2017']
+            },
+            {
+                gridIndex: 1,
+                type : 'category',
+                boundaryGap : true,
+                axisLine: {onZero: true},
+                data: ['2018', '2017'],
+                position: 'top'
+            }
+        ],
+         yAxis : [
+            {
+                name : '数量',
+                type : 'value',
+            },
+            {
+                gridIndex: 1,
+                name : '减少碳排放(KG)',
+                type : 'value',
+                inverse: true
+            }
+        ],
+         series: [
+             {
+                 type: 'line',
+                 name: '行程数',
+                 label: {
+                    normal: { show: true, position: 'top', color:"#815ea7" }
+                 },
+                 itemStyle: {    color: '#815ea7' },
+                  smooth: true,
+                 data: [0,0]
+             },
+             {
+                 type: 'bar',
+                 name: '司机数',
+                 label: {
+                    normal: {   show: true, position: 'top',  color:"#cd4747" }
+                 },
+                 itemStyle: {    color: '#cd4747' },
+                  smooth: true,
+                 data: [0,0],
+                 barGap: 0,
+             },
+             {
+                 type: 'bar',
+                 name: '乘客数',
+                 label: {
+                    normal: {   show: true, position: 'top',  color:"#5477d2" }
+                 },
+                 itemStyle: {    color: '#5477d2' },
+                  smooth: true,
+                 data: [0,0],
+                 barGap: 0,
+             },
+             {
+                 type: 'line',
+                 name: '减少碳排放',
+                 xAxisIndex: 1,
+                 yAxisIndex: 1,
+                 label: {
+                    normal: {   show: true, position: 'top',  color:"#347932" }
+                 },
+                 itemStyle: {    color: '#347932' },
+                  smooth: true,
+                  data: [0,0],
+             },
+         ]
+      }
+
+      _this.getData().cycleList(period,'trips').then(function(data1){
+        var data_x = [];
+        var data_y = [];
+        var data_y_carbon = [];
+        var data_y_users = [];
+        var data_y_d = [];
+        var data_y_p = [];
+        var data_dp_kv = {};
+        $(data1).each(function(index, el) {
+          data_x.push(el.t)
+          data_y.push(el.c)
+          var carbon = (el.c * 7.6*2.3/10).toFixed(2) ;
+          data_y_carbon.push(carbon)
+        });
+        chartOption.xAxis[0].data = data_x;
+        chartOption.xAxis[1].data = data_x;
+        // console.log(chartOption)
+        chartOption.series[0].data = data_y;
+        chartOption.series[3].data = data_y_carbon;
+        myChart.setOption(chartOption);
+        _this.getData().cycleList(period,'d&p').done(function(data2){
+          $(data2).each(function(index, el) {
+            data_dp_kv[el.t] = [el.d,el.p];
+          });
+          $(data1).each(function(index, el) {
+            if(typeof(data_dp_kv[el.t])!="undefined"){
+              data_y_d.push(data_dp_kv[el.t][0]);
+              data_y_p.push(data_dp_kv[el.t][1]);
+            }else{
+              data_y_d.push(0);
+              data_y_p.push(0);
+            }
+          })
+          chartOption.series[1].data = data_y_d;
+          chartOption.series[2].data = data_y_p;
+          console.log(chartOption)
+          myChart.setOption(chartOption);
+        })
+
+
+
+      })
+
+
+
+
+    },
+
+
   /**
    * 执行初始化
    */
@@ -284,6 +537,20 @@ PAGE_EXEC = {
   init: function(){
     var _this = this;
     _this.getAllData_0();
+    element.on('tab(ranking-tab)', function(data){
+      if(data.index == 1){
+        _this.getData().ranking('passenger').done(function(data){
+          _this.renderTableList('passenger')
+        }).fail(function(res){
+          console.log(res)
+        })
+      }
+    });
+    element.on('tab(main-tab)', function(data){
+      if(data.index == 1){
+        _this.init_2()
+      }
+    });
 
     laydate.render({
       elem: '#filter_time'
@@ -293,10 +560,16 @@ PAGE_EXEC = {
         console.log(value)
         _this.data.timeStr = value;
         _this.getAllData_0();
+
         // layer.load(1);
         // $("#filter-form").submit();
      }
     });
+  },
+
+  init_2: function(){
+    this.drawChart('month')
+    console.log('init_2')
 
   }
 }
