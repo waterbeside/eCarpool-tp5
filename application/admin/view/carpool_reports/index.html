@@ -343,6 +343,19 @@ PAGE_EXEC = {
       var _this = this;
       var $target = $(event.target)
       $target.addClass('current').siblings('.time-item').removeClass('current');
+      var dataZoomStart  = 50;
+      switch (period) {
+        case 'year':
+          dataZoomStart  = 0;
+          break;
+        case 'week':
+          dataZoomStart  = 90;
+          break;
+        case 'day':
+          dataZoomStart  = 90;
+          break;
+
+      }
 
 
       var myChart = echarts.init(document.getElementById('chart'));
@@ -374,7 +387,7 @@ PAGE_EXEC = {
             {
                 show: true,
                 realtime: true,
-                start: 60,
+                start: dataZoomStart,
                 end: 100,
                 xAxisIndex: [0, 1]
             },
