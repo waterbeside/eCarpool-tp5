@@ -370,8 +370,6 @@ PAGE_EXEC = {
         axisPointer: {
             link: {xAxisIndex: 'all'}
         },
-
-
         dataZoom: [
             {
                 show: true,
@@ -392,7 +390,6 @@ PAGE_EXEC = {
           top:8,
           right:100,
         },
-
        grid: [{
           left: 50,
           right: 50,
@@ -519,14 +516,7 @@ PAGE_EXEC = {
           console.log(chartOption)
           myChart.setOption(chartOption);
         })
-
-
-
       })
-
-
-
-
     },
 
 
@@ -557,10 +547,8 @@ PAGE_EXEC = {
       ,range: '~' //或 range: '~' 来自定义分割字符
       ,calendar: true
       ,done: function(value, date, endDate){
-        console.log(value)
         _this.data.timeStr = value;
         _this.getAllData_0();
-
         // layer.load(1);
         // $("#filter-form").submit();
      }
@@ -568,8 +556,9 @@ PAGE_EXEC = {
   },
 
   init_2: function(){
-    this.drawChart('month')
-    console.log('init_2')
+    if(!this.data.cycle.month['trips'] ){
+      this.drawChart('month')
+    }
 
   }
 }
