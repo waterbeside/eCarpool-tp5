@@ -23,7 +23,7 @@ class ApiBase extends Base
     /**
      * 验证jwt
      */
-    public function checkPassport(){
+    public function checkPassport($returnType=0){
         $Authorization = request()->header('Authorization');
         $temp_array    = explode('Bearer ',$Authorization);
 		    $Authorization = count($temp_array)>1 ? $temp_array[1] : '';
@@ -32,7 +32,7 @@ class ApiBase extends Base
 
         if(!$Authorization){
           $this->passportError = [10004,'您尚未登入'];
-          return false;
+          return $returnType ? $this->jsonReturn(10004,$this->passportError[1]) : false;
         }else{
           try{
             $jwtDecode = JWT::decode($Authorization, config('front_setting')['jwt_key'], array('HS256'));
@@ -50,13 +50,13 @@ class ApiBase extends Base
   	    	}
           if(isset($msg)){
             $this->passportError = [10004,$msg];
-            return false;
+            return $returnType ? $this->jsonReturn(10004,$this->passportError[1]) : false;
           }
           if(isset($jwtDecode->uid) && isset($jwtDecode->loginname) ){
             $now = time();
             if( $now  > $jwtDecode->exp){
                 $this->passportError = [10004,'登入超时，请重新登入'];
-                return false;
+                return $returnType ? $this->jsonReturn(10004,$this->passportError[1]) : false;
             }
             $this->userBaseInfo  = array(
               'loginname' => $jwtDecode->loginname,
@@ -65,14 +65,12 @@ class ApiBase extends Base
             return true;
           }else{
             $this->passportError = [10004,'您尚未登入'];
-            return false;
+            return $returnType ? $this->jsonReturn(10004,$this->passportError[1]) : false;
           }
-
 
         }
 
     }
-
 
 
 
