@@ -393,6 +393,7 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 .page-carpool-reports .time-options {padding: 10px}
 .page-carpool-reports .time-item { margin-right: 12px;padding: 4px 8px; background: rgb(216, 228, 242); color:rgb(77, 118, 143); border:1px solid rgb(177, 200, 226) }
 .page-carpool-reports .time-item.current { background: rgb(102, 63, 133); color:#fff }
+.page-carpool-reports-area { background: #FFF}
 
 /** 转盘抽奖项设置 **/
 .page-scoreConfigs-awards .lists { margin-top: 10px }

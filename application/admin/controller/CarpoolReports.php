@@ -174,6 +174,51 @@ class CarpoolReports extends AdminBase
   }
 
 
+  /**
+   * 区域占比
+   */
+  public function area($filter=[]){
+    $timeStr = isset($filter['time'])?$filter['time']:0;
+    // dump($timeStr);exit;
+    $period = $this->get_period(isset($filter['time'])?$filter['time']:0);
+    $filter['time'] = date('Y-m-d',strtotime($period[0]))." ~ ".date('Y-m-d',strtotime($period[1])- 24*60*60);
+    return $this->fetch('area',['filter'=>$filter]);
+  }
+
+  /**
+   * 区域占比
+   */
+  public function public_areas($timeStr = 0,$type){
+    if($type=="start"){
+      $fieldname = 'startpid';
+    }else if($type=="end"){
+      $fieldname = 'endpid';
+    }else{
+      return $this->jsonReturn(-1,'type error');
+    }
+    $period = $this->get_period($timeStr);
+    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid <> '' AND time >=  ".$period[0]." AND time < ".$period[1]." ";
+    $from_01 = "SELECT distinct startpid,endpid,time,carownid,passengerid FROM info as i where  $where_base   ";
+
+    $sql  = "SELECT  {$fieldname} , count({$fieldname}) as c , a.addressname, a.latitude, a.longtitude, a.city
+      FROM
+       (".$from_01." ) as i
+      LEFT JOIN address as a ON a.addressid = {$fieldname}
+      GROUP BY
+        {$fieldname}
+      ORDER BY
+        c DESC
+    ";
+
+    $res =  Db::connect('database_carpool')->query($sql);
+    foreach ($res as $key => $value) {
+      $res[$key]['latitude'] = floatval($value['latitude']);
+      $res[$key]['longtitude'] = floatval($value['longtitude']);
+    }
+    $this->jsonReturn(0,['lists'=>$res]);
+  }
+
+
 
 
 
@@ -187,12 +232,14 @@ class CarpoolReports extends AdminBase
     if(!isset($period) || !in_array($period,['year','month','week','day'])){
       $this->jsonReturn(-1,'error param');
     }
+    if(!$type){
+      $this->jsonReturn(-1,'error param');
+    }
     $now = date('YmdHi',time());
     switch ($period) {
       case 'year':
         $time = "DATE_FORMAT(concat(`time`,'00'),'%Y')";
         $whereTime = " AND time < ".$now;
-        // $cache_key = ""
         break;
       case 'month':
         $time = "DATE_FORMAT(concat(`time`,'00'),'%Y-%m')";
@@ -210,6 +257,11 @@ class CarpoolReports extends AdminBase
         $time  = "YEAR(concat(`time`,'00'))";
         $whereTime = " AND time < ".$now;
         break;
+    }
+    $cache_key = "carpool_reports_cycle_".$period."_".str_replace("&","and",$type);
+    if(cache($cache_key)){
+      $lists = cache($cache_key);
+      $this->jsonReturn(0,['lists'=>$lists]);
     }
 
 
@@ -285,6 +337,8 @@ class CarpoolReports extends AdminBase
         $lists[] = $arr;
       }
 
+
+
     }elseif($type=="d&p"){
       //查司机数
       $sql_driver = "SELECT $time as t, carownid
@@ -321,11 +375,14 @@ class CarpoolReports extends AdminBase
         $lists[] = $arr;
       }
 
+
+
     }else{
       $lists = [];
     }
-
-
+    if(count($lists)>0){
+      cache($cache_key,$lists,60*60*12);
+    }
     $this->jsonReturn(0,['lists'=>$lists]);
   }
 

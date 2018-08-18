@@ -1,0 +1,390 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body page-carpool-reports-area">
+
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief " lay-filter="main-tab">
+
+        <ul class="amain-tool-bar layui-tab-title" >
+          <li class="layui-this"> 站点热度 </li>
+          <li > 占比 </li>
+
+        </ul>
+        <form class="layui-form layui-form-pane" id="filter-form" action="{:url('area')}" method="get" style="position:absolute; right:12px; top:17px;">
+            <!-- <div class="blank10">  </div> -->
+            <div class="layui-inline" style="border-radius:4px; box-shadow:0 -5px 14px rgba(0,0,0,.2)">
+              <label class="layui-form-label" style="width:100px; ">时间范围</label>
+                <div class="layui-input-inline">
+                  <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:190px" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="layui-inline">
+              <input type="hidden" name="export" value="0">
+                <!-- <button class="layui-btn"><i class="fa fa-search"></i></button> -->
+            </div>
+        </form>
+
+        <div class="amain-content layui-tab-content">
+          <!-- **************  s : 热力图 ************** -->
+          <div class="layui-tab-item layui-show">
+
+            <div id="container" class="container"></div>
+
+          </div>
+          <!-- **************  e / 热力图 ************** -->
+
+
+          <!-- **************  s : 占比图 ************** -->
+          <div class="layui-tab-item " style="overflow-y:scroll">
+            <div class="chart-wapper">
+              <div id="chart"  class="cp-chart-content" style="height:500px; border-bottom:1px solid #CCC; margin-bottom:50px"></div>
+              <div id="chart2"  class="cp-chart-content" style="height:500px;"></div>
+            </div>
+
+
+          </div>
+          <!-- **************  e / 走势图表 ************** -->
+
+
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="js"}
+<!-- <script type="text/javascript" src='http://webapi.amap.com/maps?v=1.4.7&key=a9c78e8c6c702cc8ab4e17f5085ffd2a'></script> -->
+<script type="text/javascript" src='http://webapi.amap.com/loca?key=a9c78e8c6c702cc8ab4e17f5085ffd2a'></script>
+<script src="__JS__/echarts.common.min-3.js"></script>
+<script src="__JS__/underscore-min.js"></script>
+
+{/block}
+
+{block name="script"}
+<script>
+
+PAGE_EXEC = {
+  data : {
+    mapObj : null,
+    mapLayer: null,
+    timeStr : '{$filter.time}',
+    areas : {
+      start:[],
+      end:[]
+    },
+
+
+  },
+  /**
+   * 取得数据
+   */
+  getData : function(){
+    var _this = this;
+    return {
+      /**
+       * 取得排名
+       * @param  String type   driver|passenger
+       * @param  Int reload  当1时，无论之前是否拉取过，都重新拉取。
+       */
+      areas: function(type,reload){
+        var url = "{:url("public_areas")}";
+        var dtd = $.Deferred();
+        reload = reload || 0;
+        if(_this.data.areas[type].length > 0 && !reload){
+          dtd.resolve(_this.data.areas[type]);
+        }else{
+          var loading = layer.load(2,{ shade: [0.2,'#fff']});
+
+          $.getJSON(url,{timeStr:_this.data.timeStr,type:type}).then(function(res, textStatus) {
+              layer.close(loading);
+              if(res.code===0){
+                _this.data.areas[type] = res.data.lists
+                dtd.resolve(res.data.lists);
+              }else{
+                dtd.reject(typeof(res.desc)!="undefined" ? res.desc : '');
+              }
+          }).catch(function(error){
+              dtd.reject(error);
+          });
+        }
+
+        return dtd.promise();
+      },
+    }
+
+  },
+
+
+
+  setMap : function(){
+    $("#container").height($('body').height()-100);
+    var dtd = $.Deferred();
+
+    var map = Loca.create('container', {
+      // mapStyle: 'amap://styles/midnight',
+      // mapStyle: 'amap://styles/whitesmoke',
+        mapStyle: 'amap://styles/grey',
+        // features: ['bg', 'road'],
+        // center: [107.4976, 32.1697],
+        viewMode: '3D',
+        pitch: 40,
+        zoom: 10
+    });
+    this.data.mapObj = map;
+    map.on('mapload', function() {
+        map.getMap().plugin(['AMap.ControlBar'], function () {
+            var controlBar = new AMap.ControlBar();
+            map.getMap().addControl(controlBar);
+            dtd.resolve(map);
+        });
+    });
+    return dtd.promise();
+  },
+
+  setLayer : function(type){
+    var _this = this;
+    // console.log(_this.data.mapObj)
+
+    /*var layer = Loca.visualLayer({
+        container: _this.data.mapObj,
+        type: 'heatmap',
+        shape: 'normal'
+    });*/
+    var layer = new Loca.visualLayer({
+        container: _this.data.mapObj,
+        type: 'heatmap',
+        shape: 'hexagon'  // 蜂窝六边形
+    });
+
+
+
+
+    var list = [];
+    var listDatas = _this.data.areas[type];
+    var i = -1, length = listDatas.length;
+    while (++i < length) {
+        var item = listDatas[i];
+        list.push({
+            coordinate: [item.longtitude,item.latitude],
+            count: item.c
+        })
+    }
+    layer.setData(list, {
+        lnglat: 'coordinate',
+        value: 'count'
+    });
+
+    layer.setOptions({
+           gradient: ['#ecda9a', '#efc47e', '#f3ad6a', '#f7945d', '#f97b57', '#f66356', '#ee4d5a','#df1424'],
+           // unit: 'meter',
+           style: {
+               radius: 10,
+               opacity: 0.9,
+               gap: 2,
+               height: [0, 3000]
+           }
+       });
+
+    /*
+    layer.setOptions({
+        style: {
+            radius: 25,
+            opacity: [0.1, 0.9],
+        },
+        gradient: {
+            0.5: '#82b31d',
+            0.65: '#4e810f',
+            0.7: '#ffe36a',
+            0.8: '#fad623',
+            0.9: '#d04040',
+            1.0: '#b92123'
+        }
+    });*/
+
+    layer.render();
+    _this.data.mapLayer = layer ;
+
+  },
+
+
+  //格式化图表数据
+  formatChartData: function(type){
+    var _this = this;
+    var datas = this.data.areas[type]
+    var nameList = [];
+    var legendData = [];
+    var seriesData = [];
+    var selected = {};
+    var data_groupByName = _.groupBy(datas,'addressname')
+    for(var name in data_groupByName){
+      var item = data_groupByName[name];
+      legendData.push(name);
+      var c = 0 ;
+
+      $(item).each(function(index, el) {
+          c += el.c;
+      });
+      seriesData.push({
+          name: name,
+          value: c
+      });
+    }
+    $(seriesData).each(function(index, el) {
+      selected[el.name] = index < 30;
+    });
+   return {
+       legendData: legendData,
+       seriesData: seriesData,
+       selected: selected
+   };
+
+  },
+
+  //格式化图表数据
+  formatChartData2: function(type){
+    var _this = this;
+    var datas = this.data.areas[type]
+    var nameList = [];
+    var legendData = [];
+    var seriesData = [];
+    var selected = {};
+    var data_groupByName = _.groupBy(datas,'city')
+    for(var city in data_groupByName){
+      var item = data_groupByName[city];
+      legendData.push(city);
+      var c = 0 ;
+
+      $(item).each(function(index, el) {
+          c += el.c;
+      });
+      seriesData.push({
+          name: city,
+          value: c
+      });
+    }
+    $(seriesData).each(function(index, el) {
+      selected[el.name] = index < 30;
+    });
+   return {
+       legendData: legendData,
+       seriesData: seriesData,
+       selected: selected
+   };
+
+  },
+
+  //设置图表
+  setChart: function(data,chartID,title){
+    var myChart = echarts.init(document.getElementById(chartID));
+
+    var  option = {
+            title : {
+                text: title,
+                subtext: '',
+                x:'center'
+            },
+            tooltip : {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            legend: {
+                type: 'scroll',
+                orient: 'vertical',
+                right: 10,
+                top: 20,
+                bottom: 20,
+                data: data.legendData,
+                selected: data.selected
+            },
+            series : [
+                {
+                    name: '站点',
+                    type: 'pie',
+                    radius : '55%',
+                    center: ['40%', '50%'],
+                    data: data.seriesData,
+                    itemStyle: {
+                        emphasis: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+
+
+        myChart.setOption(option);
+
+  },
+
+
+
+  /**
+   * 执行取得所有【期报表相关数据】，并渲染内容
+   */
+  getAllData_0: function(){
+    var _this= this;
+    if(_this.data.mapLayer){
+      _this.data.mapLayer.remove();
+      _this.data.mapLayer.destroy();
+    }
+    if(_this.data.mapObj){
+      // _this.data.mapObj.destroy();
+    }
+
+    _this.setMap().then(function(map){
+      _this.getData().areas('start').done(function(data){
+        _this.setLayer('start');
+      })
+    });
+
+  },
+
+
+  /**
+   * 执行初始化
+   */
+
+  init: function(){
+    var _this = this;
+
+      _this.getAllData_0();
+
+    element.on('tab(main-tab)', function(data){
+      if(data.index == 1){
+        _this.init_2()
+      }
+    });
+
+    laydate.render({
+      elem: '#filter_time'
+      ,range: '~' //或 range: '~' 来自定义分割字符
+      ,calendar: true
+      ,done: function(value, date, endDate){
+        _this.data.timeStr = value;
+        $("#filter_time").val(value);
+        // _this.getAllData_0();
+        layer.load(1);
+        $("#filter-form").submit();
+     }
+    });
+  },
+
+  init_2: function(){
+    var _this = this;
+    _this.setChart(_this.formatChartData('start'),'chart','拼车站点占比')
+    _this.setChart(_this.formatChartData2('start'),'chart2','拼车城市占比')
+
+  }
+}
+
+
+
+
+PAGE_EXEC.init()
+
+</script>
+{/block}
