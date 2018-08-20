@@ -38,7 +38,7 @@
           <!-- **************  s : 占比图 ************** -->
           <div class="layui-tab-item " style="overflow-y:scroll">
             <div class="chart-wapper">
-              <div id="chart"  class="cp-chart-content" style="height:500px; border-bottom:1px solid #CCC; margin-bottom:50px"></div>
+              <div id="chart"  class="cp-chart-content" style="height:600px; border-bottom:1px solid #CCC; margin-bottom:50px"></div>
               <div id="chart2"  class="cp-chart-content" style="height:500px;"></div>
             </div>
 
@@ -129,7 +129,7 @@ PAGE_EXEC = {
         // center: [107.4976, 32.1697],
         viewMode: '3D',
         pitch: 40,
-        zoom: 10
+        zoom: 4
     });
     this.data.mapObj = map;
     map.on('mapload', function() {
@@ -231,7 +231,7 @@ PAGE_EXEC = {
       });
     }
     $(seriesData).each(function(index, el) {
-      selected[el.name] = index < 30;
+      selected[el.name] = index < 50;
     });
    return {
        legendData: legendData,
