@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 use app\common\model\SlideCategory as SlideCategoryModel;
 use app\common\model\Slide as SlideModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 
 /**

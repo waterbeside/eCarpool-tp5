@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 
 use app\content\model\Category as CategoryModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 use my\Tree;
 

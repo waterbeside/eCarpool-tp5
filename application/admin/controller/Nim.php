@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 use app\carpool\model\User as UserModel;
 
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\facade\Config;
 use think\facade\Validate;
 use think\Db;

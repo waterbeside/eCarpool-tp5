@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 use app\carpool\model\Department as DepartmentModel;
 use app\carpool\model\CompanySub as CompanySubModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\facade\Config;
 use think\Db;
 use think\facade\Cache;

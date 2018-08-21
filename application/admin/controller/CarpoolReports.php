@@ -5,7 +5,7 @@ use app\carpool\model\User as CarpoolUserModel;
 use app\carpool\model\Company as CompanyModel;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 
 // 1、上周总拼车人数（用户数量）

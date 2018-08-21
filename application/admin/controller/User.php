@@ -5,7 +5,7 @@ use app\carpool\model\User as UserModel;
 use app\carpool\model\CompanySub as CompanySubModel;
 use app\carpool\model\Department as DepartmentModel;
 use app\carpool\model\Company as CompanyModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\facade\Config;
 use think\facade\Validate;
 use think\Db;

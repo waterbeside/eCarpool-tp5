@@ -1,7 +1,7 @@
 <?php
 namespace app\admin\controller;
 use think\facade\Config;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 
 /**

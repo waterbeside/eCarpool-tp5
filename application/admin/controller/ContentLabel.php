@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 
 use app\content\model\Label as LabelModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 use my\Tree;
 

@@ -2,7 +2,7 @@
 namespace app\admin\controller;
 
 use think\facade\Env;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\facade\Cache;
 use think\Db;
 

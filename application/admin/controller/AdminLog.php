@@ -2,7 +2,7 @@
 namespace app\admin\controller;
 
 use app\common\model\AdminLog as AdminLogModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\facade\Validate;
 use think\facade\Config;
 use think\Db;

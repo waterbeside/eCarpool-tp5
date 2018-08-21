@@ -4,7 +4,7 @@ use app\common\model\I18n as I18nModel;
 use app\common\model\I18nData as I18nDataModel;
 use app\common\model\I18nLang as I18nLangModel;
 use think\facade\Config;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 use think\facade\Cache;
 use think\facade\Validate;

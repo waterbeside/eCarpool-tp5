@@ -8,7 +8,7 @@ use app\common\model\Docs as DocsModel;
 use app\common\model\DocsCategory as DocsCategoryModel;
 use my\RedisData;
 
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 
 /**

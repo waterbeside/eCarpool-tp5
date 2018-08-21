@@ -2,7 +2,7 @@
 namespace app\admin\controller;
 
 use app\common\model\Link as LinkModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 
 /**

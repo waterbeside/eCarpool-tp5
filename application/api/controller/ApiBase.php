@@ -1,6 +1,8 @@
 <?php
-namespace app\common\controller;
+namespace app\api\controller;
 
+use app\common\controller\Base;
+use app\carpool\model\User as UserModel;
 use think\facade\Cache;
 use think\Controller;
 use think\Db;
@@ -69,6 +71,19 @@ class ApiBase extends Base
           }
 
         }
+
+    }
+
+
+    public function getUserData($returnType=0){
+      $uid = $this->userBaseInfo['uid'];
+      if($uid){
+        $userInfo = UserModel::find($uid);
+      }
+      if(!$uid || !$userInfo){
+        return $returnType ? $this->jsonReturn(10004,'您尚未登入') : false;
+      }
+      return $userInfo;
 
     }
 

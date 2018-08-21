@@ -4,7 +4,7 @@ namespace app\admin\controller;
 use app\common\model\AdminUser as AdminUserModel;
 use app\common\model\AuthGroup as AuthGroupModel;
 use app\common\model\AuthGroupAccess as AuthGroupAccessModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\facade\Config;
 use think\Db;
 

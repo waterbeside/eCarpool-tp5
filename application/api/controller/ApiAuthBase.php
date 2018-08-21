@@ -1,9 +1,9 @@
 <?php
-namespace app\common\controller;
+namespace app\api\controller;
 
+use app\api\controller\ApiBase;
 use think\facade\Cache;
 use think\Controller;
-use app\common\controller\ApiBase;
 use think\Db;
 
 class ApiAuthBase extends ApiBase

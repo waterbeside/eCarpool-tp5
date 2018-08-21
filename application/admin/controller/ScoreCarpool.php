@@ -5,7 +5,7 @@ use app\score\model\Account as ScoreAccountModel;
 use app\carpool\model\User as CarpoolUserModel;
 use app\carpool\model\WaitingProcess;
 use app\carpool\model\Info as InfoModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 
 /**

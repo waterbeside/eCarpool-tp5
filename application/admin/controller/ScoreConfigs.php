@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 
 use app\score\model\Configs as ScoreConfigsModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use app\common\model\Configs as ConfigsModel;
 use my\RedisData;
 use think\Db;

@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 use app\common\model\Docs as DocsModel;
 use app\common\model\DocsCategory as DocsCategoryModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 
 /**
  * 文档管理

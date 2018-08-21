@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 use think\facade\Env;
 use app\common\model\Attachment;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 
 /**

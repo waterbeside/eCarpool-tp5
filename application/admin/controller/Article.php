@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 use app\common\model\Article as ArticleModel;
 use app\common\model\Category as CategoryModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 
 /**
  * 文章管理

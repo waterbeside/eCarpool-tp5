@@ -1,8 +1,8 @@
 <?php
 namespace app\api\controller\v1;
 
+use app\api\controller\ApiBase;
 use app\carpool\model\User as UserModel;
-use app\common\controller\ApiBase;
 use Firebase\JWT\JWT;
 use think\Db;
 
@@ -50,7 +50,7 @@ class Passport extends ApiBase
            $userInfo['Department'] = $userInfo_ex['Department'];
          }
          $userInfo['avatar'] = $userInfo_ex['imgpath'];
-         
+
        }
 
 

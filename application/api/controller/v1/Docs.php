@@ -1,8 +1,8 @@
 <?php
 namespace app\api\controller\v1;
 
+use app\api\controller\ApiBase;
 use app\common\model\Docs as DocsModel;
-use app\common\controller\ApiBase;
 
 use think\Db;
 

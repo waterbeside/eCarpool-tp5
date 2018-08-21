@@ -4,7 +4,7 @@ namespace app\admin\controller;
 use app\score\model\Account as ScoreAccountModel;
 use app\score\model\AccountMix as AccountMixModel;
 use app\carpool\model\User as CarpoolUserModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;

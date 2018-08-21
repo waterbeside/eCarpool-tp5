@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 
 use think\facade\Env;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use app\common\model\Configs;
 use app\carpool\model\User as CarpoolUserModel;
 use app\carpool\model\Company as CompanyModel;

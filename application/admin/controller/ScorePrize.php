@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 
 use app\score\model\Prize as PrizeModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use app\common\model\Configs;
 use think\Db;
 
