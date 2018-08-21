@@ -402,15 +402,17 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 
 .page-scoreConfigs-awards  .f-index { width: 30px; color:#ccc}
 .page-scoreConfigs-awards  .f-grade { width: 80px}
-.page-scoreConfigs-awards  .f-rate { width: 120px}
+.page-scoreConfigs-awards  .f-rate { width: 150px}
 .page-scoreConfigs-awards  .f-desc {width: 180px}
 .page-scoreConfigs-awards  .f-cost {width: 80px}
 .page-scoreConfigs-awards  .f-extend { width:80px}
 .page-scoreConfigs-awards  .f-- {}
-.page-scoreConfigs-awards  .f-rate input {  float: left; width: 80px}
+.page-scoreConfigs-awards  .f-rate input {  float: left; width: 120px}
 .page-scoreConfigs-awards  .f-- .layui-form-switch  { margin-top: 0;}
 
 .page-scoreConfigs-awards .lists-header { display: flex; padding-bottom: 10px;border-bottom:1px solid #DDD;}
 .page-scoreConfigs-awards .lists-header .inner { line-height: 20px;}
 .page-scoreConfigs-awards .lists .item { display: flex; border-bottom:1px solid #DDD; position: relative}
 .page-scoreConfigs-awards .lists .item.error { background: rgb(252, 234, 234)}
+.page-scoreConfigs-awards .win-rate { color:#aaa}
+.page-scoreConfigs-awards .win-rate b { font-size: 20px; color:rgb(251, 165, 18)}
