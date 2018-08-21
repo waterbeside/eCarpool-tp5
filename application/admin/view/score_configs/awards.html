@@ -28,6 +28,7 @@
               <div class="f-box f--">-</div>
             </div>
             <div id="list-wrapper">
+              <button style="display:none" onclick="return false;"></button>
               <ul class="lists" id="awards-list">
 
               </ul>
@@ -35,6 +36,7 @@
 
 
             <div class="blank20"></div>
+            <div class="win-rate">胜率：<b></b></div>
 
             <div class="layui-btn-container layui-row" style="text-align: right">
                 <button class="layui-btn layui-btn-lg" onclick="return PAGE_EXEC.submitData();"><i class="fa fa-save"></i> 保存</button>
@@ -139,6 +141,27 @@ PAGE_EXEC = {
          // _this.reSort();
       }
     }); // That's all.
+    _this.computeWinRate();
+
+  },
+
+  /**
+   * 计算胜率
+   */
+  computeWinRate : function(){
+    var _this = this;
+    var listWrapper = document.getElementById('list-wrapper');
+    var dataLength = _this.data.lists.length;
+    var data = _this.data.lists;
+    var winRate = 0;
+    $(data).each(function(index, el) {
+      if(el.is_disused === 0 ){
+        winRate += el.rate*el.cost;
+      }
+      // console.log(winRate);
+    });
+
+    $('.win-rate b').text(winRate);
 
   },
 
@@ -174,11 +197,9 @@ PAGE_EXEC = {
             _this.renderItem();
             layer.close(index);
           }
-
         }
     });
     return false;
-
   },
 
   getRowData : function(index){
@@ -207,6 +228,8 @@ PAGE_EXEC = {
       default:
 
     }
+  
+    _this.computeWinRate();
     this.data.lists[rowIndex][fieldName] = value;
     if($item.hasClass('error')){
       $item.removeClass('error')
@@ -297,6 +320,7 @@ PAGE_EXEC = {
     if(!_this.checkData()){
       return false;
     }
+    _this.computeWinRate();
     layer.open({
         shade: false,
         title: '是否提交？',
