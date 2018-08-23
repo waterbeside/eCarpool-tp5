@@ -101,7 +101,7 @@ class Score extends AdminBase
       // $this->jsonReturn(-1,'参数错误');
       return false;
     }
-
+    Db::connect('database_score')->startTrans();
     try{
       //查找是否已开通拼车帐号，拼整理data
       $accountDetial = null ;
@@ -140,10 +140,10 @@ class Score extends AdminBase
         throw new \Exception("更新分数失败");
       }
       // 提交事务
-      Db::commit();
+      Db::connect('database_score')->commit();
     } catch (\Exception $e) {
         // 回滚事务
-        Db::rollback();
+        Db::connect('database_score')->rollback();
         $logMsg = '改分失败，请稍候再试'.json_encode($this->request->post());
         $this->log($logMsg,-1);
         return false;
