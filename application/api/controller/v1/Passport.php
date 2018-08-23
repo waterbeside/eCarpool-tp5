@@ -24,22 +24,13 @@ class Passport extends ApiBase
      */
     public function index()
     {
-       if(!$this->checkPassport()){
-         $errorReturn = $this->passportError;
-         $code = isset($errorReturn[0]) ? $errorReturn[0] : 10004 ;
-         $msg = isset($errorReturn[1]) ? $errorReturn[1] : '您尚未登入' ;
-         return $this->jsonReturn($code,$msg);
-       }
+       $this->checkPassport(true);
        $more = request()->param('more');
        $type = $more == 1 ? 1 : request()->param('type');
        $userInfo = $this->userBaseInfo;
-
        if(in_array($type,[1,2])){
          $uid = $userInfo['uid'];
-         $userInfo_ex = UserModel::find($uid);
-         if(!$userInfo_ex){
-           return $this->jsonReturn(10004,'您尚未登入');
-         }
+         $userInfo_ex = $this->getUserData(true);
          if($type==2){
            $userInfo = $userInfo_ex;
            unset($userInfo['passwd']);
@@ -73,6 +64,7 @@ class Passport extends ApiBase
         if(empty($data['password'])){
           $this->jsonReturn(-10002,'请输入密码');
         }
+        $data['client'] = isset($data['client']) ? strtolower($data['client']) : '';
         if(!in_array($data['client'],array('ios','android','h5','web','third'))){
           $this->jsonReturn(-1,'client error');
   			};
@@ -88,7 +80,7 @@ class Passport extends ApiBase
     			}
     		}
         if(!$userData['is_active']){
-          $this->jsonReturn(10001,'该用户被封禁');
+          $this->jsonReturn(10003,'该用户被封禁');
         }
 
     		if(strtolower($userData['md5password']) != strtolower($userModel->hashPassword($data['password']))){
@@ -102,20 +94,8 @@ class Passport extends ApiBase
 
         }
 
-          $exp = in_array($data['client'],['ios','android']) ? (time() + 36* 30 * 86400) : (time() + 30 * 86400);
-      		$jwtData  = array(
-      			'exp'=> $exp, //过期时间
-      			'iat'=> time(), //发行时间
-      			'iss'=> 'carpool', //发行者，值为固定carpool
-      			'uid'=> $userData['uid'],
-      			'loginname' => $userData['loginname'],
-      			'client' => $data['client'], //客户端
-      		);
-          $key = config('front_setting')['jwt_key'];
-          $jwt = JWT::encode($jwtData, $key);
-
-
-          $returnData = array(
+        $jwt = $this->createPassportJwt(['uid'=>$userData['uid'],'loginname'=>$userData['loginname'],'client' => $data['client']]);
+        $returnData = array(
     				'user' => array(
     					'uid'=> $userData['uid'],
     					'loginname' => $userData['loginname'],
@@ -125,7 +105,6 @@ class Passport extends ApiBase
     				),
     				'token'	=> $jwt
     			);
-
           $isAllUserData = in_array($data['client'],['ios','android']) ? 1 : 0;
     			if($isAllUserData){
     				$returnData['user'] = $userData;
