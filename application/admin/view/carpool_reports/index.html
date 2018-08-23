@@ -561,6 +561,8 @@ PAGE_EXEC = {
       ,calendar: true
       ,done: function(value, date, endDate){
         _this.data.timeStr = value;
+        _this.data.ranking['driver'] = [];
+        _this.data.ranking['passenger'] = [];
         _this.getAllData_0();
         // layer.load(1);
         // $("#filter-form").submit();
