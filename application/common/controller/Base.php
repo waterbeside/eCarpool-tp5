@@ -92,6 +92,45 @@ class Base extends Controller
   		// exit;
   	}
 
+    /**
+	   * 数组去重
+	   */
+	  public function arrayUniq($arr){
+	    $arr = array_unique($arr);
+	    $arr = array_values($arr);
+	    return $arr;
+	  }
+
+		 /**
+	   * 二维数组去重
+	   */
+		 public function arrayUniqByKey($arr,$key){
+         //建立一个目标数组
+         $res = array();
+         foreach ($arr as $value) {
+            //查看有没有重复项
+            if(isset($res[$value[$key]])){
+                  //有：销毁
+                  unset($value[$key]);
+            }
+            else{
+                 $res[$value[$key]] = $value;
+            }
+         }
+         return $res;
+     }
+
+		/**
+	   * 清除数组内每个元素的两头空格
+	   * @return array||string
+	   */
+		public function trimArray($arr){
+	    if (!is_array($arr)){
+				  return trim($arr);
+			}
+    	return array_map("self::trimArray", $arr);
+		}
+
 
     public function jump($isSuccess=1 , $msg = '', $url = null, $data = '', $wait = 3, array $header = []){
       if (is_null($url)) {
