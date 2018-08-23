@@ -31,7 +31,6 @@ class ApiBase extends Base
 		    $Authorization = count($temp_array)>1 ? $temp_array[1] : '';
         $Authorization = $Authorization ? $Authorization : cookie('admin_token');
         $Authorization = $Authorization ? $Authorization : input('request.admin_token');
-
         if(!$Authorization){
           $this->passportError = [10004,'您尚未登入'];
           return $returnType ? $this->jsonReturn(10004,$this->passportError[1]) : false;
@@ -69,24 +68,67 @@ class ApiBase extends Base
             $this->passportError = [10004,'您尚未登入'];
             return $returnType ? $this->jsonReturn(10004,$this->passportError[1]) : false;
           }
-
         }
+    }
 
+    /**
+     * 生成jwt
+     * @param  Array $data [uid,loginname,client]
+     * @return [type]       [description]
+     */
+    public function createPassportJwt($data){
+      $exp = in_array($data['client'],['ios','android']) ? (time() + 36* 30 * 86400) : (time() + 30 * 86400);
+      $jwtData  = array(
+        'exp'=> $exp, //过期时间
+        'iat'=> time(), //发行时间
+        'iss'=> 'carpool', //发行者，值为固定carpool
+        'uid'=> $data['uid'],
+        'loginname' => $data['loginname'],
+        'client' => $data['client'], //客户端
+      );
+      $key = config('front_setting')['jwt_key'];
+      $jwt = JWT::encode($jwtData, $key);
+      return $jwt;
     }
 
 
+    /**
+     * 取得登录用户的信息
+     */
     public function getUserData($returnType=0){
       $uid = $this->userBaseInfo['uid'];
-      if($uid){
-        $userInfo = UserModel::find($uid);
+      if(!$uid){
+        $this->checkPassport($returnType);
+        $uid = $this->userBaseInfo['uid'];
       }
-      if(!$uid || !$userInfo){
+      if($uid){
+        $userData = UserModel::find($uid);
+      }
+      if(!$uid || !$userData){
         return $returnType ? $this->jsonReturn(10004,'您尚未登入') : false;
       }
-      return $userInfo;
+      if(!$userData['is_active']){
+        return $returnType ? $this->jsonReturn(10003,'该用户被封禁') : false;
+      }
+      return $userData;
 
     }
 
+
+
+    public function log($desc='',$status=2){
+      $request = request();
+      $data['uid'] = $this->userBaseInfo['uid'];
+      $data['ip'] = $request->ip();
+      $isAjaxShow =  $request->isAjax() ? " (Ajax)" : "";
+      $data['type'] = $request->method()."$isAjaxShow";
+      $data['route']= $request->module().'/'.$request->controller().'/'.$request->action();
+      $data['query_string'] = $request->query();
+      $data['description'] = $desc;
+      $data['status'] = $status;
+      $data['time'] = time();
+      Db::name('log')->insert($data);
+    }
 
 
 }
