@@ -76,7 +76,6 @@ class Sms extends ApiBase
 
     /**
      * 合并积分
-
      */
     protected function mergeScore($tAccount,$oAccount,$nowTime){
       Db::connect('database_score')->startTrans();
@@ -98,6 +97,7 @@ class Sms extends ApiBase
         ];
         Db::connect('database_score')->table('t_history')->insert($historyData); //插入因合并
         Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$tAccount]])->setField('balance',$score_new); //员工账号加到手号账的积分
+        throw new \Exception("合并积分失败");
 
         $historyData_o = [
           "account_id" => $scoreAccount_o['id'],
@@ -113,7 +113,7 @@ class Sms extends ApiBase
           // 提交事务
         Db::connect('database_score')->commit();
       } catch (\Exception $e) {
-        echo($e);
+        // echo($e);
         Db::connect('database_score')->rollback();
         throw new \Exception("合并积分失败");
       }
@@ -206,7 +206,7 @@ class Sms extends ApiBase
               $this->jsonReturn(10100,[],'已绑定,请输入新的手机号');
             }
             $phoneUserData2 = UserModel::where([['loginname','=',$phone]])->find();
-            if($phoneUserData2 && $phoneUserData2['phone'] == $phone){
+            if($phoneUserData2){
               $this->jsonReturn(10006,[],'该手机号已注新账号，是否合并');
             }
           /*  if($phoneUserData && $phoneUserData['phone'] == $phones[0]){
@@ -286,7 +286,7 @@ class Sms extends ApiBase
     public function verify($usage = 0, $code = NULL,$phone = NULL,$step = 0)
     {
       if(!$this->checkSMSCode($phone,$code,$usage)){
-        $this->jsonReturn(-1,[],'fail (code error)');
+        $this->jsonReturn(10101,[],'fail (code error)');
         exit;
       }
 
@@ -399,7 +399,7 @@ class Sms extends ApiBase
               // 提交事务
               Db::connect('database_carpool')->commit();
           } catch (\Exception $e) {
-              echo($e);
+              // echo($e);
               // 回滚事务
               Db::connect('database_carpool')->rollback();
               $logMsg = "合并账号失败:".json_encode($this->request->post());
@@ -482,11 +482,12 @@ class Sms extends ApiBase
     $NIM = new NimServer($this->appKey,$this->appSecret,'fsockopen');
 
 
-    $userInfo = $this->getUser();
+    $userData = $this->getUserData(1);
+
 
     switch ($usage) {
       case 300:
-        $params = [$userInfo->name];
+        $params = [$userData['name']];
         break;
       case 302:
         $param  = input('param.param');
@@ -494,7 +495,7 @@ class Sms extends ApiBase
         if(!$param){
           $this->jsonReturn(-10001,[],'param empty');
         }
-        $params = [$userInfo->name,$link_code];
+        $params = [$userData['name'],$link_code];
         break;
 
       default:
