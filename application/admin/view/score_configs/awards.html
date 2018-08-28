@@ -36,7 +36,8 @@
 
 
             <div class="blank20"></div>
-            <div class="win-rate">胜率：<b></b></div>
+            <div class="win-rate">胜率：<b id="win-rate"></b></div>
+            <div class="win-rate">总概率：<b id="win-rate-total"></b></div>
 
             <div class="layui-btn-container layui-row" style="text-align: right">
                 <button class="layui-btn layui-btn-lg" onclick="return PAGE_EXEC.submitData();"><i class="fa fa-save"></i> 保存</button>
@@ -154,14 +155,17 @@ PAGE_EXEC = {
     var dataLength = _this.data.lists.length;
     var data = _this.data.lists;
     var winRate = 0;
+    var winRateTotal = 0;
     $(data).each(function(index, el) {
       if(el.is_disused === 0 ){
-        winRate += el.rate*el.cost;
+        winRate += parseFloat(el.rate)*parseFloat(el.cost);
+        winRateTotal += parseFloat(el.rate);
       }
       // console.log(winRate);
     });
 
-    $('.win-rate b').text(winRate);
+    $('#win-rate').text(winRate);
+    $('#win-rate-total').text(winRateTotal);
 
   },
 
@@ -228,7 +232,7 @@ PAGE_EXEC = {
       default:
 
     }
-  
+
     _this.computeWinRate();
     this.data.lists[rowIndex][fieldName] = value;
     if($item.hasClass('error')){
