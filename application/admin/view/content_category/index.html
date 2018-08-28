@@ -105,9 +105,9 @@ PAGE_EXEC = {
       <?php if($recycled){ ?>
         var s = row.is_delete ? '<a href="javascript:void(0);" data-id="'+row.id+'" class="layui-btn layui-btn layui-btn-xs " onclick="PAGE_EXEC.recycle(this)">还原</a>' : '';
       <?php }else{ ?>
-        var s  = '<a href="{:url('admin/category/add')}?pid='+row.id+'" class="layui-btn layui-btn-success layui-btn-xs " data-title="添加子分类"  data-trigger="modal" title="添加子分类"><i class="layui-icon">&#xe654;</i> </a>'
-            s += '<a href="{:url('admin/category/edit')}?id='+row.id+'"  data-trigger="modal" data-title="编辑 #'+row.id+'" class="layui-btn   layui-btn-xs "   title="编辑"> <i class="fa fa-pencil"></i> </a>';
-            s += '<a href="{:url('admin/category/delete')}?id='+row.id+'" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete">删</a>';
+        var s  = '<a href="{:url('admin/ContentCategory/add')}?pid='+row.id+'" class="layui-btn layui-btn-success layui-btn-xs " data-title="添加子分类"  data-trigger="modal" title="添加子分类"><i class="layui-icon">&#xe654;</i> </a>'
+            s += '<a href="{:url('admin/ContentCategory/edit')}?id='+row.id+'"  data-trigger="modal" data-title="编辑 #'+row.id+'" class="layui-btn   layui-btn-xs "   title="编辑"> <i class="fa fa-pencil"></i> </a>';
+            s += '<a href="{:url('admin/ContentCategory/delete')}?id='+row.id+'" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete">删</a>';
       <?php } ?>
       return s;
 
