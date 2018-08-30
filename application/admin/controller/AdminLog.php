@@ -8,8 +8,8 @@ use think\facade\Config;
 use think\Db;
 
 /**
- * 公司管理
- * Class Department
+ * 后台日志
+ * Class AdminLog
  * @package app\admin\controller
  */
 class AdminLog extends AdminBase
