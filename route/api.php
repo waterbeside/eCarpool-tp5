@@ -3,6 +3,7 @@
 $allowHeader = 'Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-Requested-With,Accept-Lag,Accept-Language';
 
 Route::group([], function () {
+  Route::rule('api/:version/index','api/:version.index');
   //文案声明相关
   Route::resource('api/:version/docs','api/:version.docs');
   //通行证相关
@@ -11,6 +12,9 @@ Route::group([], function () {
   //附件相关
   Route::resource('api/:version/attachment','api/:version.attachment');
   Route::rule('api/:version/attachment/:type','api/:version.attachment/save','POST');
+  Route::rule('api/:version/attachment/:id','api/:version.attachment/delete','DELETE')->pattern(['id' => '\S+']);
+  Route::rule('api/:version/attachment','api/:version.attachment/delete','DELETE');
+
   //发送短信相关
   Route::rule('api/:version/sms/send','api/:version.sms/send');
   Route::rule('api/:version/sms/verify','api/:version.sms/verify');
