@@ -20,7 +20,13 @@ class Attachment extends ApiBase
         parent::initialize();
     }
 
+    public function index($type=false){
+      $this->jsonReturn(0);
+    }
 
+    /**
+     * 上传图片
+     */
     public function save($type=false){
         $this->checkPassport(1);
 
@@ -28,6 +34,7 @@ class Attachment extends ApiBase
         $returnData = [];
         $uid = $this->userBaseInfo['uid'];
         $module = input('param.module','content');
+        $title = input('param.title');
         $file = $this->request->file('file');
         if(!$file){
           $this->jsonReturn(-1,'请上传附件');
@@ -72,13 +79,15 @@ class Attachment extends ApiBase
             'hash'=>[$md5,$sha1],
             'filesize'=>$fileInfo['filesize'],
             'upload'=>0,
+            'last_time' => time(),
           ];
 
 
           AttachmentModel::where(['md5_code'=>$md5,'sha1_code'=>$sha1])->update([
-            'status'	      => 1,
+            'status'	    => 1,
             'times'	      => Db::raw('times+1'),
             'last_userid'	=> $uid,
+            'last_time'   => $returnData['last_time'],
           ]);
           return $this->jsonReturn(0,$returnData,'上传成功');
         }
@@ -93,7 +102,7 @@ class Attachment extends ApiBase
             'filesize'=> $upInfo['size'],
             'filepath'=> $path,
             'filename'=> $info->getFilename(),
-            'fileext'=> $info->getExtension(),
+            'fileext'=> mb_strtolower($info->getExtension()),
             'is_image' => $is_image,
             'is_admin' => 0 ,
             'create_time' => time(),
@@ -101,9 +110,10 @@ class Attachment extends ApiBase
             'status' => 1 ,
             'md5_code' => $md5 ,
             'sha1_code' => $sha1 ,
-            'title'=> $upInfo['name'],
+            'title'=> empty($title) ? $upInfo['name'] : $title,
             'ip' =>$request->ip(),
             'times' => 1,
+            'last_time' => time(),
         ];
         if($img_id=AttachmentModel::insertGetId($data)){
             $returnData = [
@@ -143,7 +153,8 @@ class Attachment extends ApiBase
         'filepath'=>$fileInfo['filepath'],
         'hash'=>[$fileInfo['md5_code'],$fileInfo['sha1_code']],
         'filesize'=>$fileInfo['filesize'],
-        'create_time'=>$fileInfo['create_time']
+        'create_time'=>$fileInfo['create_time'],
+        'last_time' => $fileInfo['last_time'],
       ];
 
       if( intval($mode) === 0 || $mode=='json'){
@@ -159,26 +170,55 @@ class Attachment extends ApiBase
 
     /**
      * 删除文件
-     * @param  [type]  $id   id
-     * @param  integer $mode 模式 0:返回对应错误码，1：永远返0；
+     * @param  [type]  $id   id or id|id|id...
+     * @param  integer $mode 模式 0:返回对应错误码，1：永远返0； 当批量时，mode设置不起作用
      */
-    public function delete($id,$mode = 0){
+      public function delete($id=0,$mode = 0){
+
       $this->checkPassport(1);
       $uid = $this->userBaseInfo['uid'];
 
-      if(!$id ){
-        $this->jsonReturn($mode ? 0 : 992,'empty id');
+      if(strpos($id,',')>0){
+        $ids = explode(',',$id);
+
+        $tempData = [];
+        foreach ($ids as $iid) {
+          $fileInfo = AttachmentModel::where('id',$iid)->find();
+          $tempData[$iid] = [];
+          if(!$fileInfo){
+            $tempData[$iid]['code'] = 20002;
+            $tempData[$iid]['desc'] = '找不到文件';
+            continue;
+          }
+          if($fileInfo['userid']!=$uid && $fileInfo['times'] > 1 ){
+            $tempData[$iid]['code'] = 30002;
+            $tempData[$iid]['desc'] = '该附件不可以删除';
+            continue;
+          }
+          AttachmentModel::where('id',$iid)->delete();
+          unlink( Env::get('root_path') .'public' . $fileInfo['filepath']);
+          $tempData[$iid]['code'] = 0;
+          $tempData[$iid]['desc'] = 'success';
+        }
+        $this->jsonReturn(0,$tempData,"success");
+
+      }else{
+        if(!$id ){
+          $this->jsonReturn($mode ? 0 : 992,'empty id');
+        }
+        $fileInfo = AttachmentModel::where('id',$id)->find();
+        if(!$fileInfo){
+          $this->jsonReturn($mode ? 0 : 20002,'找不到文件');
+        }
+        if($fileInfo['userid']!=$uid && $fileInfo['times'] > 1  ){
+          $this->jsonReturn($mode ? 0 : 30002,'该附件不可以删除');
+        }
+        AttachmentModel::where('id',$id)->delete();
+        unlink( Env::get('root_path') .'public' . $fileInfo['filepath']);
       }
-      $fileInfo = AttachmentModel::where('id',$id)->find();
-      if(!$fileInfo){
-        $this->jsonReturn($mode ? 0 : 20002,'找不到文件');
-      }
-      if($fileInfo['userid']!=$uid && $fileInfo['times'] > 2  ){
-        $this->jsonReturn($mode ? 0 : 30002,'该附件不可以删除');
-      }
-      AttachmentModel::where('id',$id)->delete();
-      unlink( Env::get('root_path') .'public' . $fileInfo['filepath']);
       $this->jsonReturn(0,"success");
     }
+
+
 
 }
