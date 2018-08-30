@@ -328,7 +328,7 @@ class ScoreOrder extends AdminBase
         $this->error("订单不存在");
       }
 
-      if($data['status']!==0){
+      if(intval($data['status'])!==0){
         $statusMsg = isset($statusList[$data['status']]) ? $statusList[$data['status']] : $data['status'];
         $this->error("该订单状态为【".$statusMsg."】，不可操作。");
       }
