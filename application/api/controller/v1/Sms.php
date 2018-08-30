@@ -97,8 +97,6 @@ class Sms extends ApiBase
         ];
         Db::connect('database_score')->table('t_history')->insert($historyData); //插入因合并
         Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$tAccount]])->setField('balance',$score_new); //员工账号加到手号账的积分
-        throw new \Exception("合并积分失败");
-
         $historyData_o = [
           "account_id" => $scoreAccount_o['id'],
           "operand" => abs($score_o),
@@ -115,7 +113,7 @@ class Sms extends ApiBase
       } catch (\Exception $e) {
         // echo($e);
         Db::connect('database_score')->rollback();
-        throw new \Exception("合并积分失败");
+        throw new \Exception($e->getMessage());
       }
 
 
@@ -365,7 +363,7 @@ class Sms extends ApiBase
               Db::rollback();
               $logMsg = '绑定手机号失败'.json_encode($this->request->post());
               $this->log($logMsg,-1);
-              $this->jsonReturn(-1,'绑定手机号失败');
+              $this->jsonReturn(-1,[],'绑定手机号失败');
           }
           break;
 
@@ -399,12 +397,12 @@ class Sms extends ApiBase
               // 提交事务
               Db::connect('database_carpool')->commit();
           } catch (\Exception $e) {
-              // echo($e);
+              echo($e);
               // 回滚事务
               Db::connect('database_carpool')->rollback();
               $logMsg = "合并账号失败:".json_encode($this->request->post());
               $this->log($logMsg,-1);
-              $this->jsonReturn(-1,'合并账号失败');
+              $this->jsonReturn(-1,[],'合并账号失败',['debug'=>$e->getMessage()]);
           }
           $this->log('合并账号成功',0);
 
