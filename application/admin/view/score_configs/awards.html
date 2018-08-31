@@ -14,6 +14,8 @@
         </ul>
 
         <div class="layui-tab-content">
+          <blockquote class="layui-elem-quote">注意，当奖励设为小于-100时，则为抽取实物，请填写实物价绍和对应的价值</blockquote>
+
 
           <div class="blank20"></div>
 
@@ -23,7 +25,8 @@
               <div class="f-box f-grade"><div class="inner">奖励</div></div>
               <div class="f-box f-rate"><div class="inner">概率</div></div>
               <div class="f-box f-cost"><div class="inner">价值</div></div>
-              <div class="f-box f-desc"><div class="inner">描述</div></div>
+              <div class="f-box f-desc"><div class="inner">标题</div></div>
+              <div class="f-box f-full_desc"><div class="inner">描述</div></div>
               <!-- <div class="f-box f-extend"><div class="inner">EX</div></div> -->
               <div class="f-box f--">-</div>
             </div>
@@ -60,6 +63,7 @@
       <div class="f-box f-cost"><div class="inner"><input type="number" name="cost" value="{{ d.item.cost }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
       <!-- <div class="f-box f-desc"><div class="inner"><input type="text" name="desc" value="{{ d.item.desc }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div> -->
       <div class="f-box f-desc"><div class="inner"><textarea  name="desc"   placeholder="" class="layui-textarea" style="min-height:60px" onkeyup="PAGE_EXEC.changeData(this)">{{ d.item.desc }}</textarea></div></div>
+      <div class="f-box f-full_desc"><div class="inner"><textarea  name="full_desc"   placeholder="" class="layui-textarea" style="min-height:60px" onkeyup="PAGE_EXEC.changeData(this)">{{ d.item.full_desc }}</textarea></div></div>
       <!-- <div class="f-box f-extend"><div class="inner"></div></div> -->
       <div class="f-box f--"><div class="inner">
         <button class="layui-btn layui-btn-xs layui-btn-primary " title="按奖例积分自动填充" onclick="return PAGE_EXEC.autoFill(this); ">Fill</button>
@@ -73,7 +77,7 @@ var laytpl = layui.laytpl;
 PAGE_EXEC = {
   data : {
     lists: <?php echo json_encode($lists);?>,
-    itemDefault: {grade:0,rate:0,cost:0,desc:"",is_disused:1,extend:{}},
+    itemDefault: {grade:0,rate:0,cost:0,desc:"",description:"",is_disused:1,extend:{}},
   },
 
   /**
@@ -83,8 +87,8 @@ PAGE_EXEC = {
     var _this = this;
     var listWrapper = document.getElementById('list-wrapper');
     var dataLength = _this.data.lists.length;
-    if(dataLength < 6){
-      for(var i=0;i < 6-dataLength; i++){
+    if(dataLength < 8){
+      for(var i=0;i < 8-dataLength; i++){
         _this.data.lists.push($.extend({},_this.data.itemDefault))
       }
     }
@@ -214,7 +218,6 @@ PAGE_EXEC = {
    * 更新数据
    */
   changeData : function(input){
-
     var _this = this;
     var $input = $(input);
     var $item = $input.closest('.item');
@@ -248,6 +251,7 @@ PAGE_EXEC = {
     var itemData = this.getRowData(index);
     var $inputGrade = $item.find("input[name='grade']");
     var $inputDesc = $item.find("[name='desc']");
+    var $inputFullDesc = $item.find("[name='full_desc']");
     var $inputCost = $item.find("input[name='cost']");
 
     var grade = parseInt($inputGrade.val());
@@ -266,8 +270,10 @@ PAGE_EXEC = {
       desc = "——";
     }
     $inputDesc.val(desc);
+    $inputFullDesc.val(desc);
     $inputCost.val(cost);
     this.changeData($inputDesc[0]);
+    this.changeData($inputFullDesc[0]);
     this.changeData($inputCost[0]);
     $item = $item
 

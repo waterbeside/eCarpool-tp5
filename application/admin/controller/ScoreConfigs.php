@@ -31,6 +31,7 @@ class ScoreConfigs extends AdminBase
       $data_used_count = 0;
       $data_used_keys = [];
       $total_rate = 0;
+
       foreach ($value_array as $key => $v) {
         $v['rate'] = strval($v['rate']);
         $value_array[$key]['rate'] = strval($v['rate']);
@@ -57,12 +58,11 @@ class ScoreConfigs extends AdminBase
         $data_used_kv[$v['grade']] = $v;
       }
       foreach ($value_array as $key => $v) {
+        $value_array[$key]['full_desc'] = !isset($v['full_desc']) || empty(trim($v['full_desc'])) ? $v['desc'] : trim($v['full_desc']);
         if($v['is_disused'] === 0 && isset($data_used_kv[$v['grade']])){
           $value_array[$key]['level'] = $data_used_kv[$v['grade']]['level'];
         }
-
       }
-
       $value = json_encode($value_array);
       $value_public = json_encode($data_used_kv);
       // dump($value);
