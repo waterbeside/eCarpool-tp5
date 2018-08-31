@@ -2,6 +2,8 @@
 html,body, body > .layui-layout , .amain-body {height: 100%;}
 body {background:#FFF;}
 
+.layui-layer-loading { text-align: center;}
+.layui-layer-loading .layui-layer-content {margin:0 auto}
 .blank10 {height: 10px; overflow: hidden; line-height: 1;display: block; clear: both;}
 .blank12 {height: 12px; overflow: hidden; line-height: 1;display: block;clear: both;}
 .blank20 {height: 20px; overflow: hidden; line-height: 1;display: block;clear: both;}
@@ -125,7 +127,7 @@ body {background:#FFF;}
 
 
 .cp-avatar { display: inline-block;width: 50px; height: 50px; background-size: cover; border-radius: 50%;}
-
+.cover-pic-wrapper { background-size: cover; background-position: center}
 
 /*文字色*/
 .text-red { color:rgb(198, 84, 84)}
@@ -383,17 +385,6 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 .page-trip-detail .info-table { margin-top: 0}
 .page-trip-detail .info-table .department { color: #aaa}
 
-/** 拼车报表统计 **/
-.page-carpool-reports .total-content { display: flex}
-.page-carpool-reports .total-item { padding: 10px 20px;  width: 100%; background: rgb(234, 246, 241); color:#10503b}
-.page-carpool-reports .total-item h3 { font-size: 20px; color:#2e8669; font-weight: 300; }
-.page-carpool-reports .total-item +.total-item { margin-left: 5px; border-left: 1px solid #FFF}
-.page-carpool-reports .total-value {padding: 10px 0 ;text-align: center; font-size: 50px; transition: all 2s ease-in-out}
-.page-carpool-reports .total-value small { font-size: 30px}
-.page-carpool-reports .time-options {padding: 10px}
-.page-carpool-reports .time-item { margin-right: 12px;padding: 4px 8px; background: rgb(216, 228, 242); color:rgb(77, 118, 143); border:1px solid rgb(177, 200, 226) }
-.page-carpool-reports .time-item.current { background: rgb(102, 63, 133); color:#fff }
-.page-carpool-reports-area { background: #FFF}
 
 /** 转盘抽奖项设置 **/
 .page-scoreConfigs-awards .lists { margin-top: 10px }
@@ -416,3 +407,37 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 .page-scoreConfigs-awards .lists .item.error { background: rgb(252, 234, 234)}
 .page-scoreConfigs-awards .win-rate { color:#aaa}
 .page-scoreConfigs-awards .win-rate b { font-size: 20px; color:rgb(251, 165, 18)}
+
+
+/** 拼车报表统计 **/
+.page-carpool-reports .total-content { display: flex}
+.page-carpool-reports .total-item { padding: 10px 20px;  width: 100%; background: rgb(234, 246, 241); color:#10503b}
+.page-carpool-reports .total-item h3 { font-size: 20px; color:#2e8669; font-weight: 300; }
+.page-carpool-reports .total-item +.total-item { margin-left: 5px; border-left: 1px solid #FFF}
+.page-carpool-reports .total-value {padding: 10px 0 ;text-align: center; font-size: 50px; transition: all 2s ease-in-out}
+.page-carpool-reports .total-value small { font-size: 30px}
+.page-carpool-reports .time-options {padding: 10px}
+.page-carpool-reports .time-item { margin-right: 12px;padding: 4px 8px; background: rgb(216, 228, 242); color:rgb(77, 118, 143); border:1px solid rgb(177, 200, 226) }
+.page-carpool-reports .time-item.current { background: rgb(102, 63, 133); color:#fff }
+.page-carpool-reports-area { background: #FFF}
+
+/** 积分报表统计 **/
+.page-score-reports .total-content { display: flex}
+.page-score-reports .total-item { padding: 10px 20px;  width: 100%; background: rgb(234, 246, 241); color:#10503b}
+.page-score-reports .total-item h3 { font-size: 20px; color:#2e8669; font-weight: 700;  text-align: center}
+.page-score-reports .total-item +.total-item { margin-left: 5px; border-left: 1px solid #FFF}
+
+.page-score-reports  .value-wrapper   { border-top:1px dotted rgba(5, 0, 8, 0.20); margin: 12px 0 8px; padding: 12px 0 0 }
+.page-score-reports  .value-wrapper dt { font-size: 16px; }
+.page-score-reports  .value-wrapper dd { text-align: center; font-size: 30px; transition: all 2s ease-in-out}
+.page-score-reports  .value-wrapper-total dd {font-size: 50px}
+.page-score-reports .total-item-minus { background: rgb(252, 240, 239); color:#cc5956}
+.page-score-reports .total-item-minus h3 {   color:#cc5956}
+.page-score-reports .total-item-diff { background: rgb(255, 249, 226); color:#ff9900}
+.page-score-reports .total-item-diff h3 {   color:#ed9c13}
+
+
+.page-score-reports .time-options {padding: 10px}
+.page-score-reports .time-item { margin-right: 12px;padding: 4px 8px; background: rgb(216, 228, 242); color:rgb(77, 118, 143); border:1px solid rgb(177, 200, 226) }
+.page-score-reports .time-item.current { background: rgb(102, 63, 133); color:#fff }
+.page-score-reports-area { background: #FFF}

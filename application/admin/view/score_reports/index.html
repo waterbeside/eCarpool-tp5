@@ -1,0 +1,307 @@
+``{extend name="base" /}
+{block name="body"}
+<div class="amain-body page-score-reports">
+
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief " lay-filter="main-tab">
+
+        <ul class="amain-tool-bar layui-tab-title" >
+          <li class="layui-this"> 积分期报 </li>
+          <!-- <li > 走势图表 </li> -->
+        </ul>
+
+        <div class="amain-content layui-tab-content">
+          <!-- **************  s : 积分期报 ************** -->
+          <div class="layui-tab-item layui-show">
+            <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreReports/index')}" method="get">
+                <!-- <div class="blank10">  </div> -->
+                <div class="layui-inline">
+                  <label class="layui-form-label" style="width:160px">时间范围选择</label>
+
+                    <div class="layui-input-inline">
+                      <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                  <input type="hidden" name="export" value="0">
+                    <!-- <button class="layui-btn"><i class="fa fa-search"></i></button> -->
+                </div>
+            </form>
+
+            <hr>
+
+            <div class="total-content">
+              <div class="total-item  total-item-add">
+                <h3>新增积分</h3>
+                <dl class="value-wrapper value-wrapper-carpool">
+                  <dt>拼车</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-turnplate">
+                  <dt>转盘抽奖</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-lottery">
+                  <dt>实物抽奖</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-goods">
+                  <dt>奖品兑换</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-others">
+                  <dt>其它</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-total">
+                  <dt>合计</dt>
+                  <dd>0</dd>
+                </dl>
+
+              </div>
+              <div class="total-item  total-item-minus">
+                <h3>消耗积分</h3>
+                <dl class="value-wrapper value-wrapper-carpool">
+                  <dt>拼车</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-turnplate">
+                  <dt>转盘抽奖</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-lottery">
+                  <dt>实物抽奖</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-goods">
+                  <dt>奖品兑换</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-others">
+                  <dt>其它</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-total">
+                  <dt>合计</dt>
+                  <dd>0</dd>
+                </dl>
+              </div>
+
+              <div class="total-item  total-item-diff">
+                <h3>收支差</h3>
+                <dl class="value-wrapper value-wrapper-carpool">
+                  <dt>拼车</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-turnplate">
+                  <dt>转盘抽奖</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-lottery">
+                  <dt>实物抽奖</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-goods">
+                  <dt>奖品兑换</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-others">
+                  <dt>其它</dt>
+                  <dd>0</dd>
+                </dl>
+                <dl class="value-wrapper value-wrapper-total">
+                  <dt>合计</dt>
+                  <dd>0</dd>
+                </dl>
+              </div>
+           </div>
+
+
+
+
+          </div>
+          <!-- **************  e / 积分期报 ************** -->
+
+
+          <!-- **************  s : 走势图表 ************** -->
+          <div class="layui-tab-item ">
+            <div class="time-options">
+              <a class="time-item" href="javascript:void(0)"  onclick="return PAGE_EXEC.drawChart('year');">年</a>
+              <a class="time-item current" href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('month');">月</a>
+              <a class="time-item" href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('week');">周</a>
+              <a class="time-item" href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('day');">日</a>
+            </div>
+            <div class="chart-wapper">
+              <div id="chart"  class="cp-chart-content" style="height:600px;"></div>
+            </div>
+
+
+          </div>
+          <!-- **************  e / 走势图表 ************** -->
+
+
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="js"}
+<script src="__JS__/echarts.common.min-3.js"></script>
+
+{/block}
+
+{block name="script"}
+<script>
+
+PAGE_EXEC = {
+  data : {
+    timeStr : '{$filter.time}',
+    totals : {
+      total:{
+        add:0,minus:0
+      },
+      carpool:{
+        add:0,minus:0
+      },
+      turnplate:{
+        add:0,minus:0
+      },
+      lottery:{
+        add:0,minus:0
+      },
+      goods:{
+        add:0,minus:0
+      },
+      others:{
+        add:0,minus:0
+      },
+
+    },
+
+    tableObj:[]
+  },
+  /**
+   * 取得数据
+   */
+  getData : function(){
+    var _this = this;
+    return {
+      /**
+       * 计算总数
+       * @param String type driver|passenger|user : 司机人次|乘客人次|参与人数
+       */
+      sumNum : function(type,is_minus){
+        var url = "{:url('admin/ScoreReports/public_count')}";
+        var dtd = $.Deferred();
+        $.getJSON(url,{timeStr:_this.data.timeStr,type:type,is_minus:is_minus}).then(function(res, textStatus) {
+            if(res.code===0){
+              var total = res.data.total;
+
+              dtd.resolve(res.data.total);
+            }else{
+              dtd.reject(typeof(res.desc)!="undefined" ? res.desc : '');
+            }
+        }).catch(function(error){
+            dtd.reject(error);
+        });
+        return dtd.promise();
+      },
+
+      typeSumNum : function(type){
+        var getData = _this.getData().sumNum;
+        var dtd = $.Deferred();
+        $.when(getData(type,0),getData(type,1)).done(function(res,res2){
+          _this.data.totals[type]['add'] = res;
+          _this.data.totals[type]['minus'] = res2;
+          _this.renderSumNum(type,'add');
+          _this.renderSumNum(type,'minus');
+          _this.renderSumNum(type,'diff');
+          dtd.resolve({add:res,minus:res2});
+
+        }).catch(function(error){
+            dtd.reject(error);
+        });
+        return dtd.promise();
+      },
+
+      //执行所有要取得数据的请求，并渲染内容到页面
+      all: function(){
+        var getData = _this.getData().typeSumNum;
+        var loading = layer.load(2,{ shade: [0.5,'#fff']});
+        $.when(
+          getData('total'),
+          getData('carpool'),
+          getData('turnplate'),
+          getData('lottery'),
+          getData('goods')
+        ).done(function(resTotal,resCarpool,resTurnplate,resLottery,resGoods){
+          layer.close(loading);
+          _this.data.totals.others.add = resTotal.add - resCarpool.add - resTurnplate.add - resLottery.add - resGoods.add
+          _this.data.totals.others.minus = resTotal.minus - resCarpool.minus - resTurnplate.minus - resLottery.minus - resGoods.minus
+          _this.renderSumNum('others','add');
+          _this.renderSumNum('others','minus');
+          _this.renderSumNum('others','diff');
+        });
+      }
+
+    }
+
+  },
+
+  /**
+   * 渲染统计数据
+   */
+  renderSumNum: function(type,pmType){
+    var _this = this;
+
+    var $totalItem = pmType == 'diff' ? $('.total-item-diff') : $('.total-item-'+pmType);
+    var $valueWrapper = $totalItem.find('.value-wrapper-'+type);
+    var $valueBox = $valueWrapper.find('dd');
+    var sumNum =  pmType == 'diff' ?  this.data.totals[type]['add'] - this.data.totals[type]['minus'] :  this.data.totals[type][pmType] ;
+    $valueBox.text(sumNum);
+  },
+
+
+
+
+
+  /**
+   * 执行初始化
+   */
+
+  init: function(){
+    var _this = this;
+    _this.getData().all();
+
+
+    laydate.render({
+      elem: '#filter_time'
+      ,range: '~' //或 range: '~' 来自定义分割字符
+      ,calendar: true
+      ,done: function(value, date, endDate){
+        _this.data.timeStr = value;
+        _this.getData().all();
+        // layer.load(1);
+        // $("#filter-form").submit();
+     }
+    });
+
+  },
+
+  init_2: function(){
+    if(!this.data.cycle.month['trips'] ){
+      this.drawChart('month')
+    }
+
+  }
+}
+
+
+
+
+PAGE_EXEC.init()
+
+</script>
+{/block}
