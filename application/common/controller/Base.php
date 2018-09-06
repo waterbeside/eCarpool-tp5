@@ -21,20 +21,20 @@ class Base extends Controller
     public $language_l = [];
     protected function initialize()
     {
-        // header('Access-Control-Allow-Origin: *');
-    		// header('Access-Control-Allow-Headers:*');
-    		// if($_SERVER['REQUEST_METHOD']=='OPTIONS'){
-    		// 	exit;
-    		// }
-        $lang_s = request()->header('Accept-Lag');
-        $lang_s = $lang_s ? $lang_s : request()->header('Accept-Language');
-        $lang_l = $this->formatAcceptLang($lang_s);
-        $this->language_l = $lang_l;
-        $this->language = $lang_l[0] ? ( $lang_l[0] == 'zh' ? 'zh-cn' : $lang_l[0]  )   : 'zh-cn' ;
 
+        $this->getLang();
         $this->systemConfig = $this->getSystemConfigs();
         parent::initialize();
 
+    }
+
+    public function getLang(){
+      $lang_s =  input('request.lang');
+      $lang_s = $lang_s ? $lang_s : request()->header('Accept-Lang');
+      $lang_s = $lang_s ? $lang_s : request()->header('Accept-Language');
+      $lang_l = $this->formatAcceptLang($lang_s);
+      $this->language_l = $lang_l;
+      $this->language = $lang_l[0] ? ( $lang_l[0] == 'zh' ? 'zh-cn' : $lang_l[0]  )   : 'zh-cn' ;
     }
 
 
@@ -49,12 +49,14 @@ class Base extends Controller
       $lang_l = explode(',',$language);
       $lang_format_list = [];
       $q_array = [];
+
       foreach ($lang_l as $key => $value) {
         $temp_arr = explode(';',$value);
         $q = isset($temp_arr[1]) ? $temp_arr[1] : 1;
         $q_array[]  = $q;
         $lang_format_list[$key] = ['lang'=>$temp_arr[0],'q'=>$q];
       }
+
       array_multisort($q_array, SORT_DESC,  $lang_format_list);
       $lang = [];
       foreach ($lang_format_list as $key => $value) {
