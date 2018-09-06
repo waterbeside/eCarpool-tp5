@@ -9,4 +9,8 @@ return [
       '300' => '活动',
     ],
 
+    "common_notice_type" => [
+      '1' => 'APP启动弹窗通知',
+    ],
+
 ];

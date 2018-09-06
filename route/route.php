@@ -14,8 +14,6 @@ Route::get('think', function () {
 });
 
 
-Route::get('hello/:name', 'index/hello');
-
 return [
     '__pattern__' => [
         'name' => '\w+',
