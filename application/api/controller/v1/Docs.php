@@ -9,7 +9,7 @@ use think\Db;
 /**
  * 文档相关
  * Class Link
- * @package app\admin\controller
+ * @package app\api\controller
  */
 class Docs extends ApiBase
 {
@@ -67,11 +67,10 @@ class Docs extends ApiBase
       $join = [
         ['docs_category c','t.cid = c.id', 'left'],
       ];
-      $data  = DocsModel::field($field)->alias('t')->join($join)->where($map)->where($whereLang)->find();
       if(!$data  && $lang !='zh-cn'){
         $whereLang = is_numeric($id) ? [] :['lang'=>'zh-cn'] ;
-        $data  = DocsModel::field($field)->alias('t')->join($join)->where($map)->where($whereLang)->find();
       }
+      $data  = DocsModel::field($field)->alias('t')->join($join)->where($map)->where($whereLang)->find();
 
       return $this->jsonReturn(0,$data);
     }
