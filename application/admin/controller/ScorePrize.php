@@ -190,12 +190,16 @@ class ScorePrize extends AdminBase
         $upData['total_count'] = $data['total_count'];
 
       }
+      if(in_array($prize_data['status'],[-1,-2])){
+        $upData['is_delete'] = isset($data['is_show']) && $data['is_show'] == 1 ? 0 : 1;
+      }
       if(isset($upData['total_count']) && $upData['total_count'] < 1){
           $this->error('触发开奖票数值不能少于1');
       }
       if(isset($upData['price']) && !is_float($upData['price']) && !is_numeric($upData['price']) ){
           $this->error('抽奖所需分数必须为数字');
       }
+
 
       if($data['thumb'] && trim($data['thumb'])){
         $upData['images'][0] =  $data['thumb'];

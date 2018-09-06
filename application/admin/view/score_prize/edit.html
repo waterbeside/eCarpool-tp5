@@ -99,6 +99,14 @@
                   </div>
               </div>
               <?php } ?>
+              <?php if( in_array($data['status'],[-1,-2])){ ?>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">是否显示</label>
+                  <div class="layui-input-block">
+                      <input type="checkbox" name="is_show" value="1" lay-skin="switch" lay-text="是|否" {if condition="$data.is_delete === 0 "} checked="checked"{/if}>
+                  </div>
+              </div>
+              <?php } ?>
 
 
 
