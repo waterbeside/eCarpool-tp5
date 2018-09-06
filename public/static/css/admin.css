@@ -12,6 +12,9 @@ body {background:#FFF;}
 /* .layui-layout-admin .layui-header.header {background: rgb(119, 13, 13)} */
 .dark-grey-wrapper {background: #f0f0f0}
 
+.text-red {color:rgb(185, 56, 28)}
+.text-gray {color:#ccc}
+
 .aframe-sidebox .layui-nav-title  { margin: 0; padding:8px 0; color:#AAA; background: #4A5064; cursor: pointer;}
 .aframe-sidebox .layui-nav-title .aframe-icon { margin-left: 0; padding-left: 12px}
 .aframe-sidebox  a { display: block;}
@@ -21,6 +24,7 @@ body {background:#FFF;}
 
 .aframe-sidebox .layui-nav-child { padding: 4px 0}
 .aframe-sidebox .layui-nav-child dd a {font-size: 13px; height: 38px; line-height: 38px;}
+.aframe-sidebox .layui-nav-child dd.layui-this a { background:#7663af url('../images/bg_sidebtn.png') center; background-size: cover; }
 .aframe-sidebox .layui-nav-child .aframe-icon { margin:0 8px 0 -8px; font-size: 12px;}
 
 .aframe-sidebox.fold a { padding-left: 0; padding-right: 0;width: 46px; overflow: hidden; text-overflow:inherit;}
