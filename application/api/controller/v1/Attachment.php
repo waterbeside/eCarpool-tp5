@@ -9,8 +9,8 @@ use think\Db;
 
 /**
  * 附件相关
- * Class Link
- * @package app\admin\controller
+ * Class Attachment
+ * @package app\api\controller
  */
 class Attachment extends ApiBase
 {

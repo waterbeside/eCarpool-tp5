@@ -10,9 +10,9 @@ use com\Nim as NimServer;
 use think\Db;
 
 /**
- * 发放通行证jwt
- * Class Link
- * @package app\admin\controller
+ * 发送短信
+ * Class Sms
+ * @package app\api\controller
  */
 class Sms extends ApiBase
 {

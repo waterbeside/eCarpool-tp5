@@ -8,8 +8,8 @@ use think\Db;
 
 /**
  * 发放通行证jwt
- * Class Link
- * @package app\admin\controller
+ * Class Passport
+ * @package app\api\controller
  */
 class Passport extends ApiBase
 {

@@ -8,7 +8,7 @@ use think\Db;
 
 /**
  * 文档相关
- * Class Link
+ * Class Docs
  * @package app\api\controller
  */
 class Docs extends ApiBase
