@@ -270,25 +270,8 @@ class I18n extends AdminBase
      * 用于选择列表
      */
     public function public_langs(){
-      $lists_cache = Cache::tag('public')->get('langs');
-      if($lists_cache){
-        $lists = $lists_cache;
-      }else{
-        $lists = I18nLangModel::where('status',1)->order('sort desc , code ASC, id ASC ')->select();
-        if($lists){
-          Cache::tag('public')->set('langs',$lists,3600);
-        }
-      }
-      $returnLists = [];
-      foreach($lists as $key => $value) {
-          $returnLists[] = [
-            'id'=>$value['id'],
-            'code'=>$value['code'],
-            'name'=>$value['name'],
-            'is_default'=>$value['is_default'],
-          ];
-      }
-      // return json(['data'=>['lists'=>$returnLists],'code'=>0,'desc'=>'success']);
+      $I18nLangModel = new I18nLangModel();
+      $returnLists = $I18nLangModel->getPublicList();
       $this->jsonReturn(0,['lists'=>$returnLists],'success');
 
     }
