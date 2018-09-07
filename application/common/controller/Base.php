@@ -22,7 +22,7 @@ class Base extends Controller
     protected function initialize()
     {
 
-        $this->getLang();
+        $this->language = $this->getLang();
         $this->systemConfig = $this->getSystemConfigs();
         parent::initialize();
 
@@ -34,16 +34,30 @@ class Base extends Controller
       $lang_s = $lang_s ? $lang_s : request()->header('Accept-Language');
       $lang_l = $this->formatAcceptLang($lang_s);
       $this->language_l = $lang_l;
-      $this->language = $lang_l[0] ? ( $lang_l[0] == 'zh' ? 'zh-cn' : $lang_l[0]  )   : 'zh-cn' ;
+      return $lang_l[0] == 'zh' ? ( isset($lang_l[1]) ? $this->formatZhLang($lang_l[1],'zh-cn') : 'zh-cn') : $this->formatZhLang($lang_l[0]);
     }
 
 
+    public function formatZhLang($language,$default = null) {
+      if($language == 'zh-hant-hk'){
+        return 'zh-hk';
+      }
+      if($language == 'zh-hant-tw'){
+        return 'zh-tw';
+      }
+      if($language == 'zh-hans'){
+        return 'zh-cn';
+      }
+      if(strpos($language,'zh-hant') !== false  ){
+        return 'zh-hk';
+      }
+      if(strpos($language,'zh-hans') !== false  ){
+        return 'zh-cn';
+      }
+      return $default ? $default : $language  ;
+    }
+
     /**
-     * 返回json数据
-     * @param  integer $code    [状态码]
-     * @param  array $data    [主要数据]
-     * @param  string $message [描述]
-     * @param  array  $extra   [其它]
      */
   	public function formatAcceptLang($language) {
       $lang_l = explode(',',$language);

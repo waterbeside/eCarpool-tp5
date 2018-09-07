@@ -42,7 +42,7 @@ class I18nLang extends Model
     }
     if(strpos($lang,'-') >0 ){
       $langArr = explode('-',$lang);
-      return $langArr[0]== "zh" ? "zh-cn" : "";
+      return $langArr[0]== "zh" ? "zh-cn" : $langArr[0];
     }
   }
 
