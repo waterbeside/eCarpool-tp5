@@ -17,6 +17,7 @@ class Docs extends ApiBase
     protected function initialize()
     {
         parent::initialize();
+        // $this->checkPassport(1);
     }
 
     /**
@@ -67,10 +68,11 @@ class Docs extends ApiBase
       $join = [
         ['docs_category c','t.cid = c.id', 'left'],
       ];
+      $data  = DocsModel::field($field)->alias('t')->join($join)->where($map)->where($whereLang)->find();
       if(!$data  && $lang !='zh-cn'){
         $whereLang = is_numeric($id) ? [] :['lang'=>'zh-cn'] ;
+        $data  = DocsModel::field($field)->alias('t')->join($join)->where($map)->where($whereLang)->find();
       }
-      $data  = DocsModel::field($field)->alias('t')->join($join)->where($map)->where($whereLang)->find();
 
       return $this->jsonReturn(0,$data);
     }
