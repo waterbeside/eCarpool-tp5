@@ -17,6 +17,7 @@ class Notice extends ApiBase
     protected function initialize()
     {
         parent::initialize();
+        // $this->checkPassport(1);
     }
 
     /**
