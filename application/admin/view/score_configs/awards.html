@@ -27,6 +27,7 @@
               <div class="f-box f-cost"><div class="inner">价值</div></div>
               <div class="f-box f-desc"><div class="inner">标题</div></div>
               <div class="f-box f-full_desc"><div class="inner">描述</div></div>
+              <div class="f-box f-bulletin_count"><div class="inner">公示条数</div></div>
               <!-- <div class="f-box f-extend"><div class="inner">EX</div></div> -->
               <div class="f-box f--">-</div>
             </div>
@@ -62,14 +63,17 @@
       <div class="f-box f-rate"><div class="inner"><input type="float" name="rate" value="{{ d.item.rate }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
       <div class="f-box f-cost"><div class="inner"><input type="number" name="cost" value="{{ d.item.cost }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
       <!-- <div class="f-box f-desc"><div class="inner"><input type="text" name="desc" value="{{ d.item.desc }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div> -->
-      <div class="f-box f-desc"><div class="inner"><textarea  name="desc"   placeholder="" class="layui-textarea" style="min-height:60px" onkeyup="PAGE_EXEC.changeData(this)">{{ d.item.desc }}</textarea></div></div>
+      <div class="f-box f-desc"><div class="inner"><textarea  name="desc"   placeholder="" class="layui-textarea" style="min-height:60px; " onkeyup="PAGE_EXEC.changeData(this)">{{ d.item.desc }}</textarea></div></div>
       <div class="f-box f-full_desc"><div class="inner"><textarea  name="full_desc"   placeholder="" class="layui-textarea" style="min-height:60px" onkeyup="PAGE_EXEC.changeData(this)">{{ d.item.full_desc }}</textarea></div></div>
+      <div class="f-box f-bulletin_count"><div class="inner"><input type="number" name="bulletin_count" value="{{ d.item.bulletin_count }}" placeholder="" class="layui-input"   onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
       <!-- <div class="f-box f-extend"><div class="inner"></div></div> -->
       <div class="f-box f--"><div class="inner">
         <button class="layui-btn layui-btn-xs layui-btn-primary " title="按奖例积分自动填充" onclick="return PAGE_EXEC.autoFill(this); ">Fill</button>
         <!-- <button class="layui-btn layui-btn-xs layui-btn-primary " title="随机生成奖项" onclick="return PAGE_EXEC.randomFill(this); ">Random</button> -->
         &nbsp;<input type="checkbox" name="is_show" value="1" lay-skin="switch" lay-filter="is_show_{{ d.index }}" lay-text="* 使用|不使用" {{# if(!d.item.is_disused){ }} checked="checked"{{#  } }}>&nbsp;
+        &nbsp;<input type="checkbox" name="is_bulletin" value="1" lay-skin="switch" lay-filter="is_bulletin_{{ d.index }}" lay-text="* 公示|不公示" {{# if(d.item.is_bulletin){ }} checked="checked"{{#  } }}>&nbsp;
         <button class="layui-btn layui-btn-xs layui-btn-primary " title="删除" onclick="return PAGE_EXEC.delete(this); "><i class="fa fa-trash"></i></button>
+
       </div></div>
 </script>
 <script>
@@ -77,7 +81,7 @@ var laytpl = layui.laytpl;
 PAGE_EXEC = {
   data : {
     lists: <?php echo json_encode($lists);?>,
-    itemDefault: {grade:0,rate:0,cost:0,desc:"",description:"",is_disused:1,extend:{}},
+    itemDefault: {grade:0,rate:0,cost:0,desc:"",description:"",is_disused:1,is_bulletin:0,mextend:{}},
   },
 
   /**
@@ -97,7 +101,7 @@ PAGE_EXEC = {
     var itemHtml = "";
     $(_this.data.lists).each(function(index, el) {
       itemHtml += laytpl(itemTemplate).render({index:index,item:el});
-      console.log({index:index,item:el});
+      // console.log({index:index,item:el});
     });
     $("#awards-list").html(itemHtml);
 
@@ -107,6 +111,11 @@ PAGE_EXEC = {
         var $btn = $(data.othis);
         var is_disused  = $btn.hasClass('layui-form-onswitch') ? 0 : 1;
         _this.data.lists[index].is_disused = is_disused;
+      });
+      form.on('switch(is_bulletin_'+index+')',function(data){
+        var $btn = $(data.othis);
+        var is_bulletin  = $btn.hasClass('layui-form-onswitch') ? 1 : 0;
+        _this.data.lists[index].is_bulletin = is_bulletin;
       });
     });
 
@@ -193,6 +202,7 @@ PAGE_EXEC = {
     var $btn = $(btn);
     var $item = $btn.closest('.item');
     var index = $item.data('index');
+    console.log(index);
     layer.open({
         shade: false,
         content: '确定删除？',

@@ -62,6 +62,8 @@ class ScoreConfigs extends AdminBase
         if($v['is_disused'] === 0 && isset($data_used_kv[$v['grade']])){
           $value_array[$key]['level'] = $data_used_kv[$v['grade']]['level'];
         }
+        $value_array[$key]['bulletin_count'] = isset($v['bulletin_count']) && $v['bulletin_count'] > 0 ? $v['bulletin_count'] : 0;
+        $value_array[$key]['is_bulletin'] = isset($v['is_bulletin'])  && $v['is_bulletin'] ? $v['is_bulletin'] : 0;
       }
       $value = json_encode($value_array);
       $value_public = json_encode($data_used_kv);
