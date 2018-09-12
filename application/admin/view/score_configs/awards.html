@@ -70,7 +70,7 @@
       <div class="f-box f--"><div class="inner">
         <button class="layui-btn layui-btn-xs layui-btn-primary " title="按奖例积分自动填充" onclick="return PAGE_EXEC.autoFill(this); ">Fill</button>
         <!-- <button class="layui-btn layui-btn-xs layui-btn-primary " title="随机生成奖项" onclick="return PAGE_EXEC.randomFill(this); ">Random</button> -->
-        &nbsp;<input type="checkbox" name="is_show" value="1" lay-skin="switch" lay-filter="is_show_{{ d.index }}" lay-text="* 使用|不使用" {{# if(!d.item.is_disused){ }} checked="checked"{{#  } }}>&nbsp;
+        &nbsp;<input type="checkbox" name="is_show" value="1" lay-skin="switch" lay-filter="is_show_{{ d.index }}" lay-text="* 使用|不使用" {{# if(d.item.status){ }} checked="checked"{{#  } }}>&nbsp;
         &nbsp;<input type="checkbox" name="is_bulletin" value="1" lay-skin="switch" lay-filter="is_bulletin_{{ d.index }}" lay-text="* 公示|不公示" {{# if(d.item.is_bulletin){ }} checked="checked"{{#  } }}>&nbsp;
         <button class="layui-btn layui-btn-xs layui-btn-primary " title="删除" onclick="return PAGE_EXEC.delete(this); "><i class="fa fa-trash"></i></button>
 
@@ -81,7 +81,7 @@ var laytpl = layui.laytpl;
 PAGE_EXEC = {
   data : {
     lists: <?php echo json_encode($lists);?>,
-    itemDefault: {grade:0,rate:0,cost:0,desc:"",description:"",is_disused:1,is_bulletin:0,mextend:{}},
+    itemDefault: {grade:0,rate:0,cost:0,desc:"",description:"",status:0,is_bulletin:0,mextend:{}},
   },
 
   /**
@@ -96,6 +96,8 @@ PAGE_EXEC = {
         _this.data.lists.push($.extend({},_this.data.itemDefault))
       }
     }
+    console.log(_this.data.lists);
+
     var itemTemplate = $("#item-template").html();
 
     var itemHtml = "";
@@ -109,8 +111,9 @@ PAGE_EXEC = {
     $(_this.data.lists).each(function(index, el) {
       form.on('switch(is_show_'+index+')',function(data){
         var $btn = $(data.othis);
-        var is_disused  = $btn.hasClass('layui-form-onswitch') ? 0 : 1;
-        _this.data.lists[index].is_disused = is_disused;
+        var status  = $btn.hasClass('layui-form-onswitch') ? 1 : 0;
+        _this.data.lists[index]['status'] = status;
+        _this.data.lists[index]['is_disused'] = status ? 0 : 1;
       });
       form.on('switch(is_bulletin_'+index+')',function(data){
         var $btn = $(data.othis);
@@ -170,7 +173,7 @@ PAGE_EXEC = {
     var winRate = 0;
     var winRateTotal = 0;
     $(data).each(function(index, el) {
-      if(el.is_disused === 0 ){
+      if(el.status){
         winRate += parseFloat(el.rate)*parseFloat(el.cost);
         winRateTotal += parseFloat(el.rate);
       }
@@ -202,18 +205,18 @@ PAGE_EXEC = {
     var $btn = $(btn);
     var $item = $btn.closest('.item');
     var index = $item.data('index');
-    console.log(index);
+    // console.log(arr);return false;
     layer.open({
         shade: false,
         content: '确定删除？',
         btn: ['确定', '取消'],
-        yes: function (index) {
+        yes: function (layerIndex) {
           if(_this.data.lists.length < 8){
             layer.msg("删除失败，至少有8项");
           }else{
             _this.data.lists.splice(index, 1);
             _this.renderItem();
-            layer.close(index);
+            layer.close(layerIndex);
           }
         }
     });
@@ -301,7 +304,7 @@ PAGE_EXEC = {
     var error_index = -1;
     var total_rate  =  0;
     $(data).each(function(index,el){
-      if(el.is_disused === 0 ){
+      if(el.status){
         if(used_grades.indexOf(el.grade)>-1){
           layer.msg("不要同时使用两个相同的积分值(KEY值)");
           error_index = index;
@@ -336,7 +339,7 @@ PAGE_EXEC = {
   submitData: function(){
     var _this =  this;
     var data = {value:JSON.stringify(_this.data.lists)};
-    console.log(this.data.lists);
+
     if(!_this.checkData()){
       return false;
     }
@@ -354,7 +357,6 @@ PAGE_EXEC = {
             url:"{:url('admin/ScoreConfigs/awards')}",
             data:data,
           }).then(function(res){
-            console.log(res);
             if (res.code === 0) {
                 setTimeout(function () {
                     reload();
