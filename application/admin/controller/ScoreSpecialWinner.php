@@ -8,7 +8,7 @@ use app\common\model\Configs;
 use app\carpool\model\User as CarpoolUserModel;
 use app\carpool\model\Company as CompanyModel;
 use app\score\model\Account as ScoreAccountModel;
-use app\score\model\Winners as WinnersModel;
+use app\score\model\IntegralSpecialWinner as SpecialWinnerModel;
 use app\score\model\Prize as PrizeModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -19,7 +19,7 @@ use think\Db;
  * Class ScoreGoods
  * @package app\admin\controller
  */
-class ScoreWinners extends AdminBase
+class ScoreSpecialWinner extends AdminBase
 {
 
 
@@ -34,7 +34,7 @@ class ScoreWinners extends AdminBase
     $map[] = ['t.is_delete','<>', 1];
     //筛选奖品信息
     if (isset($filter['keyword_prize']) && $filter['keyword_prize'] ){
-      $map[] = ['pr.name','like', "%{$filter['keyword_prize']}%"];
+      $map[] = ['lo.result_str','like', "%{$filter['keyword_prize']}%"];
     }
     //筛选用户信息
     if (isset($filter['keyword_user']) && $filter['keyword_user'] ){
@@ -52,7 +52,7 @@ class ScoreWinners extends AdminBase
     if (isset($filter['is_exchange']) && $filter['is_exchange'] === '0' ){
       $map[] = ['t.exchange_time', "NULL",""];
     }
-    
+
     //筛选时间
     if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
       $time_s = date("Y-m-01");
@@ -66,33 +66,26 @@ class ScoreWinners extends AdminBase
     $map[] = ['buy_time', 'between time', [$time_s, $time_e]];
     //构建sql
     $fields = 't.*
-      ,pr.amount , pr.name as prize_name ,  pr.price , pr.level, pr.images, pr.total_count , pr.real_count
-      ,lo.uuid as lottery_uuid
+      ,lo.uuid as lottery_uuid, lo.buy_time , lo.result_str
       ,ac.id as account_id , ac.carpool_account, ac.balance
       ,u.name as user_name , u.phone as user_phone , u.company_id ,u.loginname, u.Department, u.sex , u.companyname
     ';
     $join = [
-      ['prize pr', 'pr.identity = t.prize_identity and pr.publication_number = t.publication_number','left'],
       ['lottery lo', 'lo.id = t.lottery_id','left'],
       ['account ac','ac.id = lo.account_id','left'],
       ['carpool.user u','u.loginname = ac.carpool_account','left'],
     ];
     // $lists = WinnersModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC')->paginate($pagesize, false,  ['query'=>request()->param()]);
 
-    $lists = WinnersModel::alias('t')->field($fields)
+    $lists = SpecialWinnerModel::alias('t')->field($fields)
             ->join($join)
-            // ->view('lottery as lo', 'account_id,buy_time,total,platform,type,uuid ','lo.id = t.lottery_id','left')
-            // ->view('account as ac','carpool_account','ac.id = lo.account_id','left')
-            // ->view('carpool.user as u','name as user_name , phone as user_phone , company_id ,loginname, Department, sex , companyname','u.loginname = ac.carpool_account','left')
-            ->json(['images'])
             ->where($map)
-            ->order('end_time DESC')
+            ->order('buy_time DESC')
             // ->fetchSql()->select();
             ->paginate($pagesize, false,  ['query'=>request()->param()]);
 
-    foreach ($lists as $key => $value) {
-      $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
-    }
+
+
     $companyLists = (new CompanyModel())->getCompanys();
     $companys = [];
     foreach($companyLists as $key => $value) {
@@ -116,26 +109,22 @@ class ScoreWinners extends AdminBase
 
     //构建sql
     $fields = 't.*
-      ,pr.amount , pr.name as prize_name ,  pr.price , pr.level, pr.images, pr.total_count , pr.real_count
-      ,lo.uuid as lottery_uuid, lo.publish_number, lo.buy_time, lo.platform
+      ,lo.uuid as lottery_uuid, lo.publish_number, lo.buy_time, lo.platform, lo.result_str
       ,ac.id as account_id , ac.carpool_account, ac.balance
     ';
     $join = [
-      ['prize pr', 'pr.identity = t.prize_identity and pr.publication_number = t.publication_number','left'],
       ['lottery lo', 'lo.id = t.lottery_id','left'],
       ['account ac','ac.id = lo.account_id','left'],
     ];
 
-    $data = WinnersModel::alias('t')->field($fields)
+    $data = SpecialWinnerModel::alias('t')->field($fields)
             ->join($join)
-            ->json(['images'])
             // ->fetchSql()->select();
             ->find($id);
 
     if(!$data){
       $this->error("数据不存在");
     }else{
-      $data['thumb'] = is_array($data["images"]) ? $data["images"][0] : "" ;
 
       $data['userInfo'] = CarpoolUserModel::where(['loginname'=>$data['carpool_account']])->find();
       if($data['userInfo']){
@@ -174,7 +163,7 @@ class ScoreWinners extends AdminBase
           $this->error("Params error");
         }*/
 
-        $data = WinnersModel::alias('t')->find($id);
+        $data = SpecialWinnerModel::alias('t')->find($id);
         if(!$data){
           $this->error("数据不存在");
         }
@@ -182,7 +171,7 @@ class ScoreWinners extends AdminBase
         if($data['exchange_time']){
           $this->error("已兑换，不可操作。");
         }
-        $result = WinnersModel::where('id',$id)->update(["exchange_time"=>date('Y-m-d H:i:s')]);
+        $result = SpecialWinnerModel::where('id',$id)->update(["exchange_time"=>date('Y-m-d H:i:s')]);
         if($result){
           $this->log('完成兑奖成功'.json_encode($this->request->post()),0);
           $this->success('完成兑奖成功');

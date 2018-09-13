@@ -6,13 +6,14 @@
     <div class="layui-tab ">
 
         <ul class="  amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/ScoreWinners/index')}"  showloading >实物抽奖</a></li>
-            <li ><a href="{:url('admin/ScoreSpecialWinner/index')}"  showloading >转盘抽实物</a></li>
+            <li ><a href="{:url('admin/ScoreWinners/index')}"  showloading >实物抽奖</a></li>
+            <li class="layui-this"><a href="{:url('admin/ScoreSpecialWinner/index')}"  showloading >转盘抽实物</a></li>
 
         </ul>
 
         <div class="amain-content">
-          <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreWinners/index')}" method="get" onsubmit="submitForm()">
+
+          <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreSpecialWinner/index')}" method="get" onsubmit="submitForm()">
               <div class="layui-inline">
                   <div class="layui-input-inline">
                       <input type="text" name="filter[keyword_prize]" value="{$filter['keyword_prize'] ? $filter['keyword_prize'] :''}" placeholder="奖品名" class="layui-input">
@@ -24,7 +25,7 @@
                       <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
                   </div>
                   <div class="layui-input-inline is_exchange-wrapper" >
-                    <select name="filter[is_exchange]" lay-verify="required" >
+                    <select name="filter[is_exchange]" lay-verify="required">
                       <option value="" >是否已兑 - 不限</option>
                       <option value="0" {php}echo isset($filter['is_exchange']) && $filter['is_exchange'] === "0" ? 'selected' : ''; {/php}>未兑</option>
                       <option value="1" {php}echo isset($filter['is_exchange']) && $filter['is_exchange'] === "1" ? 'selected' : ''; {/php}>已兑</option>
@@ -49,9 +50,7 @@
 
 
           <div class="layui-tab amain-content-tab" >
-
-
-
+            <blockquote class="layui-elem-quote">共检得 <b>{$lists->total()}</b> 条数据</blockquote>
             <div class="layui-tab-content" style="margin:0 -10px">
               <div class="layui-tab-item layui-show">
                 <div class="order-list">
@@ -61,13 +60,12 @@
                       <thead>
                       <tr >
                           <th lay-data="{field:'uid', width:40, fixed:'left'}"  >#</th>
-                          <th lay-data="{field:'prize_name',  minWidth:260, fixed:'left'}" >奖品</th>
-                          <th lay-data="{field:'participants_number', width:80}" >参与数</th>
-                          <th lay-data="{field:'amount', width:80}" >采购价</th>
+                          <th lay-data="{field:'result_str',  minWidth:260, fixed:'left'}" >奖品</th>
                           <th lay-data="{field:'user_name', width:120}"  >中奖人</th>
                           <th lay-data="{field:'user_phone', width:120}"  >电话</th>
                           <th lay-data="{field:'Department', width:120}" >部门</th>
                           <th lay-data="{field:'company', width:90}" >公司</th>
+                          <th lay-data="{field:'buy_time', width:180}" >抽奖时间</th>
                           <th lay-data="{field:'exchange_time', width:100}"  width="60">已兑</th>
                           <th lay-data="{field:'options', width:70, fixed:'right'}"  width="60">操作</th>
                       </tr>
@@ -76,20 +74,17 @@
                         {foreach name="lists" item="vo"}
                         <tr class="lottery-item">
                           <td  >{$vo.id}</td>
-                          <td >
-                            <div  class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>"> </div>
-                            <span class="layui-elip">【第{$vo.publication_number}期】 {$vo.prize_name|iconv_substr=0,14} </span>
+                          <td class="layui-elip">
+                            <span class="layui-elip">  {$vo.result_str|iconv_substr=0,14} </span>
                           </td>
-                          <td>{$vo.participants_number}</td>
-                          <td>{$vo.amount ? $vo.amount : '-' }</td>
                           <td>{$vo.user_name}</td>
                           <td>{$vo.user_phone}</td>
                           <td>{$vo.Department}</td>
                           <td><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></td>
-
+                          <td>{$vo.buy_time}</td>
                           <td >{$vo.exchange_time ? $vo.exchange_time : '--' }</td>
                           <td >
-                            <a href="{:url('admin/ScoreWinners/detail',['id'=>$vo['id']])}"  data-title="中奖详情 #{$vo.id}"  data-trigger="modal" title="中奖详情 #{$vo.id}" class="ibtn layui-btn layui-btn-xs  {php}if($vo['exchange_time']){ echo
+                            <a href="{:url('admin/ScoreSpecialWinner/detail',['id'=>$vo['id']])}"  data-title="中奖详情 #{$vo.id}"  data-trigger="modal" title="中奖详情 #{$vo.id}" class="ibtn layui-btn layui-btn-xs  {php}if($vo['exchange_time']){ echo
                               'layui-btn-success';}{/php}  ">  详情</a>
                           </td>
 

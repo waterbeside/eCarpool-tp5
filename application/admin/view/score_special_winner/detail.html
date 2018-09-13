@@ -1,0 +1,111 @@
+<div class="amain-body page-good-detail">
+
+    <div style="text-align:center; margin:-40px 0 0;">
+      <div class="cp-avatar" style="background-image:url('{$data.userInfo.avatar}')"></div>
+    </div>
+
+    <h3>中奖信息</h3>
+    <table class="layui-table">
+      <tbody>
+        <tr>
+          <td class="label" width="100">奖品名称</td>
+          <td>
+            <span class="layui-elip">  {$data.result_str|iconv_substr=0,14} </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="label">抽奖时间</td>
+          <td>
+            {$data.buy_time}
+            <span style=" color: #ccc; margin-left:5px">
+              <?php echo  $data['platform']===2 ? '<i class="fa fa-android"></i>' : ($data['platform']===1 ? '<i class="fa fa-apple"></i>':''); ?>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="label">是否已兑</td>
+          <td>{$data.exchange_time ? "是，兑换时间：".$data.exchange_time : "否" }</td>
+        </tr>
+      
+
+      </tbody>
+    </table>
+    <div class="blank10"></div>
+
+
+    <h3>用户信息</h3>
+    <table class="layui-table">
+      <tbody>
+        <tr>
+          <td class="label" width="100">用户名</td>
+          <td>{$data.userInfo.loginname}</td>
+        </tr>
+        <tr>
+          <td class="label">手机</td>
+          <td>{$data.userInfo.phone}</td>
+        </tr>
+        <tr>
+          <td class="label">姓名</td>
+          <td>{$data.userInfo.name}</td>
+        </tr>
+
+        <tr>
+          <td class="label">所属公司</td>
+          <td><?php echo isset($companys[$data['userInfo']['company_id']]) ? $companys[$data['userInfo']['company_id']] : ''; ?></td>
+        </tr>
+        <tr>
+          <td class="label">部门</td>
+          <td>{$data.userInfo.Department}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="blank10"></div>
+
+
+
+
+    <div class="blank10"></div>
+    <?php if(!$data['exchange_time']){ ?>
+    <div style="text-align:right">
+        <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="RESOLVE_INIT.finish({$data.id})">确认兑奖</a>
+    </div>
+    <div class="blank10"></div>
+    <?php  } ?>
+
+
+</div>
+
+
+<script>
+var RESOLVE_INIT = {
+
+  data : {
+
+  },
+  finish : function(id){
+    // var order_no = $("input[name=order_no]").val();
+    // console.log(order_no)
+    layer.confirm('您确定要完结本次兑换？',
+      {
+        closeBtn: 1,
+        btn: ['确定','取消'] //按钮
+      }, function(){
+        ajaxSubmit({
+          url:"<?php echo url('admin/ScoreSpecialWinner/finish');?>",
+          data:{id:id},
+          success:function(res){
+            console.log(res);
+          }
+        })
+      }
+    );
+
+  }
+
+
+}
+
+
+</script>

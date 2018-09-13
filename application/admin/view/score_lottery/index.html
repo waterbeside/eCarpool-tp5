@@ -93,7 +93,7 @@
                             <div  class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>"> </div>
                             <span class="layui-elip">【第{$vo.publication_number}期】 {$vo.prize_name|iconv_substr=0,14} </span>
                             <?php }else{ ?>
-                              转盘抽奖
+                              【转盘】 {$vo.result_str|iconv_substr=0,14}
                             <?php } ?>
 
                           </td>

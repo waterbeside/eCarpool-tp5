@@ -9,6 +9,7 @@ use app\carpool\model\User as CarpoolUserModel;
 use app\carpool\model\Company as CompanyModel;
 use app\score\model\Account as ScoreAccountModel;
 use app\score\model\Winners as WinnersModel;
+use app\score\model\IntegralSpecialWinner as SpecialWinnerModel;
 use app\score\model\Lottery as LotteryModel;
 use app\score\model\Prize as PrizeModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -66,7 +67,12 @@ class ScoreLottery extends AdminBase
 
     //筛选奖品信息
     if (isset($filter['keyword_prize']) && $filter['keyword_prize'] ){
-      $map[] = ['pr.name','like', "%{$filter['keyword_prize']}%"];
+
+      if (isset($type) && is_numeric($type) && $type == 1 ){
+        $map[] = ['pr.name','like', "%{$filter['keyword_prize']}%"];
+      }else{
+        $map[] = ['pr.name|t.result_str','like', "%{$filter['keyword_prize']}%"];
+      }
     }
 
 
@@ -160,6 +166,9 @@ class ScoreLottery extends AdminBase
       $data['userInfo'] = CarpoolUserModel::where(['loginname'=>$data['carpool_account']])->find();
       if($data['result'] > 0 && $data['type'] ==1){
         $data['winnersInfo'] = WinnersModel::alias('t')->where('lottery_id',$data['id'])->find();
+      }
+      if($data['result'] < 0 && $data['type'] === 0){
+        $data['winnersInfo'] = SpecialWinnerModel::alias('t')->where('lottery_id',$data['id'])->find();
       }
       if($data['userInfo']){
         $data['userInfo']['avatar'] = $data['userInfo']['imgpath'] ? config('app.avatarBasePath').$data['userInfo']['imgpath'] : config('app.avatarBasePath')."im/default.png";
