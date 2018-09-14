@@ -29,7 +29,7 @@ class Base extends Controller
     }
 
     public function getLang(){
-      $lang_s =  input('request.lang');
+      $lang_s =  input('request._language');
       $lang_s = $lang_s ? $lang_s : request()->header('Accept-Lang');
       $lang_s = $lang_s ? $lang_s : request()->header('Accept-Language');
       $lang_l = $this->formatAcceptLang($lang_s);
