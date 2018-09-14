@@ -398,8 +398,11 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 .page-scoreConfigs-awards  .f-index { width: 30px; color:#ccc}
 .page-scoreConfigs-awards  .f-grade { width: 80px}
 .page-scoreConfigs-awards  .f-rate { width: 150px}
-.page-scoreConfigs-awards  .f-desc {width: 180px}
+.page-scoreConfigs-awards  .f-desc {width: 100px}
+.page-scoreConfigs-awards  .f-full_desc {width: 150px}
+
 .page-scoreConfigs-awards  .f-cost {width: 80px}
+.page-scoreConfigs-awards  .f-bulletin_count {width: 60px}
 .page-scoreConfigs-awards  .f-extend { width:80px}
 .page-scoreConfigs-awards  .f-- {}
 .page-scoreConfigs-awards  .f-rate input {  float: left; width: 120px}
@@ -445,3 +448,14 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 .page-score-reports .time-item { margin-right: 12px;padding: 4px 8px; background: rgb(216, 228, 242); color:rgb(77, 118, 143); border:1px solid rgb(177, 200, 226) }
 .page-score-reports .time-item.current { background: rgb(102, 63, 133); color:#fff }
 .page-score-reports-area { background: #FFF}
+
+
+.page-winners-list .is_exchange-wrapper .layui-form-select { width:140px}
+
+/** page-upApp **/
+.page-upApp .list-inner {padding: 12px 16px; min-height: 500px}
+.page-upApp h2 { padding: 12px 0 20px}
+.page-upApp h3 { padding: 4px 0 0; color:#666; font-weight: 300}
+.page-upApp .list-wrapper { border-right:1px solid #fff; }
+.page-upApp .list-wrapper +.list-wrapper { border-left: 1px solid #ccc; border-right: none}
+.page-upApp .list-wrapper b { font-size: 18px; color: rgb(103, 44, 139)}

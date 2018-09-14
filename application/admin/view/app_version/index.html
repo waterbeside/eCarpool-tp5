@@ -1,0 +1,187 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body page-upApp">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+      <ul class="amain-tool-bar">
+          <li class="layui-this"><a href="{:url('admin/AppVersion/index')}"  >App版本升级管理</a></li>
+
+      </ul>
+
+
+        <div class="layui-tab-content">
+          <form class="layui-form layui-form-pane" action="{:url('admin/AppVersion/index')}" method="get">
+              <div class="layui-inline">
+                  <div class="layui-input-inline">
+                      <select name="app_id">
+                          {foreach name="$app_id_list" key='key' item="vo"}
+                          <option value="{$key}" {if condition="$app_id==$key"} selected="selected"{/if}> {$vo}</option>
+                          {/foreach}
+                      </select>
+                  </div>
+              </div>
+
+              <div class="layui-inline">
+                  <button class="layui-btn">确定</button>
+              </div>
+          </form>
+          <hr>
+
+            <div class="layui-row" >
+              <div class="layui-col-sm6 list-wrapper">
+                <div class="list-inner">
+                  <h2 ><i class="fa fa-apple"></i> iOS</h2>
+                  <h3>最新版本</h3>
+                  <table class="layui-table">
+                      <thead>
+                      <tr>
+                        <th>版本</th>
+                        <th>该范围段内提示升级</th>
+                        <th>最后操作时间</th>
+                        <th>操作</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                        <?php  if($current_ios){ ?>
+                        <tr>
+                          <td>
+                            <b>{$current_ios.latest_version}</b><br />
+                            <small>{$current_ios.current_versioncode}</small>
+                          </td>
+                          <td>
+                            {$current_ios.min_versioncode} ~ {$current_ios.max_versioncode}
+                          </td>
+                          <td>{$current_ios.update_time}</td>
+                          <td>
+                            <a href="{:url('admin/AppVersion/publish',['id'=>$current_ios['update_version_id']])}" class="layui-btn   layui-btn-xs " data-title="編輯"  data-trigger="modal" >编辑</a>
+                          </td>
+                        </tr>
+                        <?php }else{ ?>
+                        <tr>
+                          <td>
+                            <b>0.0.0</b><br />
+                            <small>0000</small>
+                          </td>
+                          <td>
+                            0000 ~ 0000
+                          </td>
+                          <td>-</td>
+                          <td>-</td>
+                        </tr>
+                        <?php } ?>
+                      </tbody>
+                  </table>
+                  <div class="blank10"></div>
+                  <hr />
+                  <h3>
+                    改进项通知管理
+                      <a href="{:url('admin/AppVersionDetail/add',['app_id'=>$app_id,'platform'=>'iOS'])}" class="layui-btn layui-btn-success   layui-btn-xs " data-title="添加"  data-trigger="modal" style=" float:right"><i class="fa fa-plus"></i> 添加</a>
+                  </h3>
+
+                  <table class="layui-table">
+                      <thead>
+                      <tr>
+                        <th>版本</th>
+                        <th>时间</th>
+                        <th>操作</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      {foreach name="list_ios" item="vo"}
+                      <tr>
+                          <!-- <td>{$vo.platform}</td> -->
+                          <td><b>{$vo.version_code}</b></td>
+                          <td>{$vo.time}</td>
+                          <td>
+                              <a onclick="openLayer('{:url('admin/AppVersionDetail/index',['platform'=>$vo['platform'],'version_code'=>$vo['version_code'],'app_id'=>$vo['app_id']])}',{area: ['80%', '90%'], title:'编辑'});" href="javascript:void(0);"  class="layui-btn layui-btn-primary layui-btn-xs">编辑</a>
+                          </td>
+                      </tr>
+                      {/foreach}
+                      </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="layui-col-sm6 list-wrapper">
+                <div class="list-inner">
+                  <h2 ><i class="fa fa-android"></i> Android</h2>
+                  <h3>最新版本</h3>
+                  <table class="layui-table">
+                      <thead>
+                      <tr>
+                        <th>版本</th>
+                        <th>该范围段内提示升级</th>
+                        <th>最后操作时间</th>
+                        <th>操作</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                        <?php  if($current_ios){ ?>
+                        <tr>
+                          <td>
+                            <b>{$current_android.latest_version}</b><br />
+                            <small>{$current_android.current_versioncode}</small>
+                          </td>
+                          <td>
+                            {$current_android.min_versioncode} ~ {$current_android.max_versioncode}
+                          </td>
+                          <td>{$current_android.update_time}</td>
+                          <td>
+                            <a href="{:url('admin/AppVersion/publish',['id'=>$current_android['update_version_id']])}" class="layui-btn   layui-btn-xs " data-title="編輯"  data-trigger="modal" >编辑</a>
+                          </td>
+                        </tr>
+                        <?php }else{ ?>
+                        <tr>
+                          <td>
+                            <b>0.0.0</b><br />
+                            <small>0000</small>
+                          </td>
+                          <td>
+                            0000 ~ 0000
+                          </td>
+                          <td>-</td>
+                          <td>-</td>
+                        </tr>
+                        <?php } ?>
+                      </tbody>
+                  </table>
+                  <div class="blank10"></div>
+                  <hr />
+                  <h3>
+                    改进项通知管理
+                      <a href="{:url('admin/AppVersionDetail/add',['app_id'=>$app_id,'platform'=>'Android'])}" class="layui-btn layui-btn-success   layui-btn-xs " data-title="添加"  data-trigger="modal" style=" float:right"><i class="fa fa-plus"></i> 添加</a>
+                  </h3>
+                  <table class="layui-table">
+                      <thead>
+                      <tr>
+                        <th>版本</th>
+                        <th>时间</th>
+                        <th>操作</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      {foreach name="list_android" item="vo"}
+                      <tr>
+                          <!-- <td>{$vo.platform}</td> -->
+                          <td><b>{$vo.version_code}</b></td>
+                          <td>{$vo.time}</td>
+                          <td>
+                              <a onclick="openLayer('{:url('admin/AppVersionDetail/index',['platform'=>$vo['platform'],'version_code'=>$vo['version_code'],'app_id'=>$vo['app_id']])}',{area: ['80%', '90%'], title:'编辑'});" href="javascript:void(0);"  class="layui-btn layui-btn-primary layui-btn-xs">编辑</a>
+                          </td>
+                      </tr>
+                      {/foreach}
+                      </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+         </div>
+
+
+
+
+
+        </div>
+    </div>
+</div>
+{/block}

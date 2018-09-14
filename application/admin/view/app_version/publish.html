@@ -1,0 +1,64 @@
+<div class="layui-tab-content">
+    <div class="layui-tab-item layui-show">
+        <form class="layui-form form-container" action="{:url('admin/AppVersion/publish')}" method="post">
+          <div class="layui-form-item">
+              <label class="layui-form-label">版本</label>
+              <div class="layui-input-block">
+                <div class="layui-form-mid">
+                  <?php if($data['platform'] == 'iOS'){ ?>
+                    <i class="fa fa-apple"></i> iOS
+                  <?php }else{ ?>
+                    <i class="fa fa-android"></i> android
+                  <?php } ?>
+                </div>
+              </div>
+          </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">版本</label>
+                <div class="layui-input-block">
+                    <input type="text" name="latest_version" value="{$data.latest_version}" placeholder="" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">版本号</label>
+                <div class="layui-input-block">
+                    <input type="text" name="current_versioncode" value="{$data.current_versioncode}" required  lay-verify="required" placeholder="" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">提示范围</label>
+                <div class="layui-input-block">
+                  <div class="layui-input-inline">
+                    <input type="text" name="min_versioncode" value="{$data.min_versioncode}" placeholder="" class="layui-input">
+                  </div>
+                  <div class="layui-form-mid">-</div>
+                  <div class="layui-input-inline">
+                    <input type="text" name="max_versioncode" value="{$data.max_versioncode}" placeholder="" class="layui-input">
+                  </div>
+                  <div class="layui-form-mid layui-word-aux">在此范围内，不提示升级</div>
+              </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">is_new</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="is_new" value="1" title="是" {if condition="$data.is_new==1"}checked="checked"{/if}>
+                    <input type="radio" name="is_new" value="0" title="否" {if condition="$data.is_new==0"}checked="checked"{/if}>
+                </div>
+            </div>
+
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <input type="hidden" name="id" value="{$id}">
+                    <button class="layui-btn" lay-submit lay-filter="*">更新</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+  form.render();
+</script>
