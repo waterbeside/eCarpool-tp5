@@ -240,6 +240,7 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 
 .amain-uploadImgBtn { border-radius: 4px;  min-height: 24px; display: inline-block; line-height: 1; position: relative; cursor: pointer; border: 1px solid #DDD; margin-top: 5px; background: #fafafa}
 .amain-uploadImgBtn .text { position: absolute; bottom: 0; left:0;right:0; padding:4px 10px 6px; background:rgba(0,0,0,.8); color: #fff; text-align: center; }
+.amain-uploadImgBtn .layui-upload-img { min-width: 120px; max-width: 200px;}
 /*******/
 .amain-tool-bar { padding: 4px 10px 0 ; border-bottom:1px solid #dedede;     position: relative; height:40px; white-space: nowrap; transition:all .2s}
 .amain-tool-bar li { position: relative; display: inline-block; font-size: 14px; line-height: 40px; min-width: 65px; padding: 0 15px;
