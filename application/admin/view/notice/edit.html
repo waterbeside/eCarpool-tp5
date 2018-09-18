@@ -25,6 +25,24 @@
                                   <textarea name="content" lay-verify="content" placeholder=""   id="content" class="layui-textarea" style="height:400px">{$data.content}</textarea>
                               </div>
                           </div>
+                          <div class="layui-form-item">
+                              <label class="layui-form-label">所属APP</label>
+                              <div class="layui-input-block">
+                                {foreach name="$app_id_list" key='key' item="vo"}
+                                <input type="checkbox" name="app_id[{$key}]"  title="{$vo}" <?php echo in_array($key,$data['app_id_list']) ? "checked" : ""; ?> >
+                                {/foreach}
+                              </div>
+                          </div>
+                          <div class="layui-form-item">
+                              <label class="layui-form-label">所属平台</label>
+                              <div class="layui-input-block">
+                                {foreach name="$platform_list" key='key' item="vo"}
+                                <?php if($key > 0){ ?>
+                                  <input type="checkbox" name="platform[{$key}]" title="{$vo}" <?php echo in_array($key,$data['platform_list']) ? "checked" : ""; ?> >
+                                <?php } ?>
+                                {/foreach}
+                              </div>
+                          </div>
                         </div>
                       </div>
                       <!-- /layui-col-md9  -->
@@ -77,9 +95,10 @@
                           <div class="layui-form-item">
                               <label class="layui-form-label">结束日</label>
                               <div class="layui-input-block">
-                                  <input type="text" name="end_time"  value="{$data.start_time}"  class="layui-input " id="end_time" >
+                                  <input type="text" name="end_time"  value="{$data.end_time}"  class="layui-input " id="end_time" >
                               </div>
                           </div>
+
                           <div class="layui-form-item">
                               <label class="layui-form-label">强行显示</label>
                               <div class="layui-input-block">

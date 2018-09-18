@@ -20,25 +20,41 @@ class Notice extends AdminBase
      * 通知管理
      * @return mixed
      */
-    public function index($filter = ['keyword'=>''], $page = 1, $pagesize = 20 )
+    public function index($filter = ['keyword'=>'','app_id'=>0,'platform'=>''], $page = 1, $pagesize = 20 )
     {
-
 
         $map  = [];
         if (isset($filter['keyword']) && $filter['keyword'] ){
           $map[] = ['title','like', "%{$filter['keyword']}%"];
         }
-        if (isset($filter['type']) && is_numeric($filter['type'])){
+        if (isset($filter['type']) && is_numeric($filter['type']) && $filter['type'] > 0){
           $map[] = ['type','=', $filter['type']];
         }
-        $data  = NoticeModel::where($map)->order(['sort' => 'DESC','create_time'=>'DESC', 'id' => 'DESC'])->paginate(20, false, ['page' => $page]);
+        $whereExp = '';
+        if (isset($filter['app_id']) && $filter['app_id'] ){
+          $whereExp .= $filter['app_id'] ." in(app_ids)";
+        }
+        if (isset($filter['platform']) && $filter['platform'] ){
+          $whereExp .= $filter['platform'] ." in(platforms)";
+        }
+        $lists  = NoticeModel::where($map)->where($whereExp)->order(['sort' => 'DESC','create_time'=>'DESC', 'id' => 'DESC'])
+        ->paginate(20, false, ['page' => $page]);
+        // ->fetchSql()->select();
+        // dump($lists);exit;
+        foreach ($lists as $key => $value) {
+          $lists[$key]['platform_list'] =  explode(',',$value['platforms']);
+          $lists[$key]['app_id_list'] =  explode(',',$value['app_ids']);
+        }
+        // dump($lists);exit;
         $typeList = config('content.common_notice_type');
         $this->assign('typeList', $typeList);
         $this->assign('filter', $filter);
-        $this->assign('lists', $data);
+        $this->assign('lists', $lists);
         $this->assign('pagesize', $pagesize);
-        return $this->fetch();
+        $this->assign('app_id_list', config('others.app_id_list'));
+        $this->assign('platform_list', config('others.platform_list'));
 
+        return $this->fetch();
     }
 
     /**
@@ -49,6 +65,20 @@ class Notice extends AdminBase
     {
       if ($this->request->isPost()) {
           $data            = $this->request->param();
+          if($data['platform']){
+            $data['platforms'] = '';
+            foreach ($data['platform'] as $key => $value) {
+              $data['platforms'] .=  $data['platforms'] ? "," : "";
+              $data['platforms'] .=  $key;
+            }
+          }
+          if($data['app_id']){
+            $data['app_ids'] = '';
+            foreach ($data['app_id'] as $key => $value) {
+              $data['app_ids'] .=  $data['app_ids'] ? "," : "";
+              $data['app_ids'] .=  $key;
+            }
+          }
 
           $validate_result = $this->validate($data, 'app\content\validate\CommonNotice');
           if ($validate_result !== true) {
@@ -67,6 +97,8 @@ class Notice extends AdminBase
 
       }else{
         $typeList = config('content.common_notice_type');
+        $this->assign('app_id_list', config('others.app_id_list'));
+        $this->assign('platform_list', config('others.platform_list'));
         $this->assign('typeList', $typeList);
         return $this->fetch();
 
@@ -84,6 +116,20 @@ class Notice extends AdminBase
     {
       if ($this->request->isPost()) {
           $data            = $this->request->param();
+          if($data['platform']){
+            $data['platforms'] = '';
+            foreach ($data['platform'] as $key => $value) {
+              $data['platforms'] .=  $data['platforms'] ? "," : "";
+              $data['platforms'] .=  $key;
+            }
+          }
+          if($data['app_id']){
+            $data['app_ids'] = '';
+            foreach ($data['app_id'] as $key => $value) {
+              $data['app_ids'] .=  $data['app_ids'] ? "," : "";
+              $data['app_ids'] .=  $key;
+            }
+          }
           $validate_result = $this->validate($data, 'app\content\validate\CommonNotice');
           if ($validate_result !== true) {
             return $this->jsonReturn(-1,$validate_result);
@@ -105,6 +151,10 @@ class Notice extends AdminBase
       }else{
         $data = NoticeModel::find($id);
         $typeList = config('content.common_notice_type');
+        $data['platform_list'] =  explode(',',$data['platforms']);
+        $data['app_id_list'] =  explode(',',$data['app_ids']);
+        $this->assign('app_id_list', config('others.app_id_list'));
+        $this->assign('platform_list', config('others.platform_list'));
         $this->assign('typeList', $typeList);
         return $this->fetch('edit', ['data' => $data]);
       }

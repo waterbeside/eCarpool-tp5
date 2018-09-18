@@ -20,6 +20,24 @@
                     </div>
                 </div>
                 <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <select name="filter[app_id]">
+                            <option value="0"  > 不限</option>
+                            {foreach name="$app_id_list" key='key' item="vo"}
+                            <option value="{$key}" {if condition="$filter.app_id==$key"} selected="selected"{/if}> {$vo}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <select name="filter[platform]">
+                            <option value=""  > 不限</option>
+                            {foreach name="$platform_list" key='key' item="vo"}
+                            <option value="{$key}" <?php if(is_numeric($filter['platform']) && $filter['platform'] == $key ){echo 'selected="selected"';} ?>> {$vo}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
                     <button class="layui-btn">搜索</button>
                 </div>
             </form>
@@ -36,8 +54,11 @@
                             <th>分类</th>
                             <th>语言</th>
                             <th>状态</th>
+
                             <th>有效时间</th>
                             <th>创建/刷新 时间</th>
+                            <th>有效平台</th>
+                            <th>所属app</th>
                             <th style="width: 100px;">操作</th>
                         </tr>
                         </thead>
@@ -52,8 +73,29 @@
                             <td>{$vo.start_time} ~<br />{$vo.end_time}</td>
                             <td>{$vo.create_time} / <br />{$vo.refresh_time}</td>
                             <td>
-                              <a onclick="openLayer('{:url('admin/Notice/edit',['id'=>$vo['id']])}',{area: ['96%', '90%'], title:'编辑通知 #{$vo.id}'});" href="javascript:void(0);" class="layui-btn layui-btn-sm "     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
-                              <a href="{:url('admin/Notice/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
+                              <?php
+                              $platform_str = '';
+                              foreach($vo['platform_list'] as $v){
+                                $platform_str .= $platform_str ? '<br />' :'';
+                                $platform_str .= isset($platform_list[$v]) ? $platform_list[$v] : $v ;
+                              }
+                              echo $platform_str;
+                              ?>
+                            </td>
+                            <td>
+                              <?php
+                              $app_str = '';
+                              foreach($vo['app_id_list'] as $v){
+                                $app_str .= $app_str ? '<br />' :'';
+                                $app_str .= isset($app_id_list[$v]) ? $app_id_list[$v] : $v ;
+                               }
+                             echo $app_str;
+
+                              ?>
+                            </td>
+                            <td>
+                              <a onclick="openLayer('{:url('admin/Notice/edit',['id'=>$vo['id']])}',{area: ['96%', '90%'], title:'编辑通知 #{$vo.id}'});" href="javascript:void(0);" class="layui-btn layui-btn-xs "     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
+                              <a href="{:url('admin/Notice/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
                             </td>
                         </tr>
                         {/foreach}
