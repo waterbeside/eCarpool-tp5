@@ -1,0 +1,114 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <ul class="amain-tool-bar">
+            <li class="layui-this"><a href="{:url('admin/Ads/index')}"  >广告图管理</a></li>
+            <li class="btn-item btn-item-add">
+
+                <a href="{:url('admin/Ads/add')}"  data-title="添加广告图 "  data-trigger="modal" title="添加广告图 " class="layui-btn layui-btn-sm layui-btn-success   "><i class="fa fa-plus"></i> 添加广告图</a>
+
+            </li>
+        </ul>
+        <div class="layui-tab-content">
+
+            <form class="layui-form layui-form-pane" action="{:url('admin/Ads/index')}" method="get">
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="filter[keyword]" value="{$filter.keyword}" placeholder="请输入关键词" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <select name="filter[app_id]">
+                            <option value="0"  > 不限</option>
+                            {foreach name="$app_id_list" key='key' item="vo"}
+                            <option value="{$key}" {if condition="$filter.app_id==$key"} selected="selected"{/if}> {$vo}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <select name="filter[platform]">
+                            <option value=""  > 不限</option>
+                            {foreach name="$platform_list" key='key' item="vo"}
+                            <option value="{$key}" <?php if(is_numeric($filter['platform']) && $filter['platform'] == $key ){echo 'selected="selected"';} ?>> {$vo}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn">搜索</button>
+                </div>
+            </form>
+            <hr>
+
+            <form action="" method="post" class="ajax-form">
+                <div class="layui-tab-item layui-show">
+                    <table class="layui-table">
+                        <thead>
+                        <tr>
+
+                            <th style="width: 30px;">ID</th>
+                            <th>图</th>
+                            <th>标题</th>
+                            <th>分类</th>
+
+                            <th>状态</th>
+
+                            <th>创建时间</th>
+                            <th>有效平台</th>
+                            <th>所属app</th>
+                            <th style="width: 100px;">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {foreach name="lists" item="vo"}
+                        <tr>
+                            <td>{$vo.id}</td>
+                            <td><div class="cover-pic-wrapper" style=" float: left;width:30px;height:30px;background-image:url('{$vo.thumb}')"></div></td>
+                            <td>
+                              {$vo.title}
+                            </td>
+                            <td>{php}echo $typeList[$vo['type']] ? $typeList[$vo['type']]: $vo['type'] ; {/php}</td>
+
+                            <td>{php}echo $vo['status']==1 ? '<b class="text-red">显示</b>' : '<b class="text-gray">不显示</b>';{/php}</td>
+                            <td>{$vo.create_time}</td>
+                            <td>
+                              <?php
+                              $platform_str = '';
+                              foreach($vo['platform_list'] as $v){
+                                $platform_str .= $platform_str ? '<br />' :'';
+                                $platform_str .= isset($platform_list[$v]) ? $platform_list[$v] : $v ;
+                              }
+                              echo $platform_str;
+                              ?>
+                            </td>
+                            <td>
+                              <?php
+                              $app_str = '';
+                              foreach($vo['app_id_list'] as $v){
+                                $app_str .= $app_str ? '<br />' :'';
+                                $app_str .= isset($app_id_list[$v]) ? $app_id_list[$v] : $v ;
+                              }
+                              echo $app_str;
+                              ?>
+                            </td>
+                            <td>
+                              <a href="{:url('admin/Ads/edit',['id'=>$vo['id']])}"  data-title="編輯 #{$vo.id}"  data-trigger="modal" title="編輯 #{$vo.id}" class=" layui-btn   layui-btn-xs    "><i class="layui-icon">&#xe642;</i> 編輯</a>
+                              <a href="{:url('admin/Ads/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
+
+                            </td>
+                        </tr>
+                        {/foreach}
+                        </tbody>
+                    </table>
+                    <!--分页-->
+                    {$lists|raw}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{/block}
