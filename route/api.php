@@ -22,6 +22,10 @@ Route::group([], function () {
   Route::rule('api/:version/sms/verify','api/:version.sms/verify');
   Route::rule('api/:version/sms/:usage','api/:version.sms/send','GET')->pattern(['usage' => '\d+']);
   Route::rule('api/:version/sms/:usage','api/:version.sms/verify','POST')->pattern(['usage' => '\d+']);
+
+  //app启动调用
+  Route::rule('api/:version/app_initiate','api/:version.app_initiate/index','GET');
+
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
 
 // Route::resource('api/:version/docs','api/:version.docs')->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
