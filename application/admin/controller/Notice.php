@@ -35,7 +35,7 @@ class Notice extends AdminBase
           $whereExp .= $filter['app_id'] ." in(app_ids)";
         }
         if (isset($filter['platform']) && $filter['platform'] ){
-          $whereExp .= $filter['platform'] ." in(platforms)";
+          $whereExp .= $whereExp ? "AND  ".$filter['platform'] ." in(platforms)" : $filter['platform'] ." in(platforms)";
         }
         $lists  = NoticeModel::where($map)->where($whereExp)->order(['sort' => 'DESC','create_time'=>'DESC', 'id' => 'DESC'])
         ->paginate(20, false, ['page' => $page]);
