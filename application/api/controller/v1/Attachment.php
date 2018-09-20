@@ -32,6 +32,7 @@ class Attachment extends ApiBase
 
         $is_image = 0;
         $returnData = [];
+        $extra = [];
         $uid = $this->userBaseInfo['uid'];
         $module = input('param.module','content');
         $title = input('param.title');
@@ -43,6 +44,7 @@ class Attachment extends ApiBase
         $md5 = $file->hash('md5');
         $sha1= $file->hash('sha1');
         $upInfo = $file->getInfo();
+
         $systemConfig = $this->systemConfig;
         $site_domain  = trim($systemConfig['site_upload_domain']) ? trim($systemConfig['site_upload_domain']) : $this->request->root(true) ;
         $upload_path = trim($systemConfig['site_upload_path'])."/$type" ;
@@ -51,9 +53,19 @@ class Attachment extends ApiBase
             if(strpos($upInfo['type'],'image')===false){
               $this->jsonReturn(-1,'请上传图片格式');
             }
+
             if($upInfo['size'] > 819200){
               $this->jsonReturn(-1,'图片不能大于800K');
             }
+            $image = \think\Image::open(request()->file('file'));
+            $extra = [
+              "width" => $image->width(),
+              "height" => $image->height(),
+              "type" => $image->type(),
+              "mime" => $image->mime(),
+            ] ;
+
+
             $upload_path  = trim($systemConfig['site_upload_path'])."/images" ;
             $is_image = 1;
             break;
@@ -80,6 +92,7 @@ class Attachment extends ApiBase
             'filesize'=>$fileInfo['filesize'],
             'upload'=>0,
             'last_time' => time(),
+            'extra_info' => $extra,
           ];
 
 
@@ -102,6 +115,7 @@ class Attachment extends ApiBase
             'filesize'=> $upInfo['size'],
             'filepath'=> $path,
             'filename'=> $info->getFilename(),
+            'filetype'=> $upInfo['type'],
             'fileext'=> mb_strtolower($info->getExtension()),
             'is_image' => $is_image,
             'is_admin' => 0 ,
@@ -114,6 +128,8 @@ class Attachment extends ApiBase
             'ip' =>$request->ip(),
             'times' => 1,
             'last_time' => time(),
+            'extra_info' => json_encode($extra),
+
         ];
         if($img_id=AttachmentModel::insertGetId($data)){
             $returnData = [
@@ -123,6 +139,7 @@ class Attachment extends ApiBase
               'hash'=>[$md5,$sha1],
               'filesize'=>$upInfo['size'],
               'upload'=>1,
+              'extra_info' => $extra,
             ];
             $this->jsonReturn(0,$returnData,'上传成功');
         }else{

@@ -73,7 +73,7 @@ class Attachment extends AdminBase
       if(!$id){
         $this->error('Lost id');
       }
-      $data = AttachmentModel::alias('a')->where('id',$id)->find();
+      $data = AttachmentModel::alias('a')->json(['extra_info'])->where('id',$id)->find();
       if(!$data){
         $this->error('没有此数据');
       }

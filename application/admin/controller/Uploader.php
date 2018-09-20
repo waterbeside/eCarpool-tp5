@@ -29,11 +29,17 @@ class Uploader extends AdminBase
         if($upInfo['size'] > 819200){
           $this->jsonReturn(-1,'图片不能大于800K');
         }
+        $image = \think\Image::open(request()->file('file'));
+        $extra = [
+          "width" => $image->width(),
+          "height" => $image->height(),
+          "type" => $image->type(),
+          "mime" => $image->mime(),
+        ] ;
 
         $systemConfig = $this->systemConfig;
         $site_domain  = trim($systemConfig['site_upload_domain']) ? trim($systemConfig['site_upload_domain']) : $this->request->root(true) ;
         $upload_path  = trim($systemConfig['site_upload_path'])."/images" ;
-
         //判断图片文件是否已经上传
         $img = Attachment::where(['md5_code'=>$md5,'sha1_code'=>$sha1])->find();//我这里是将图片存入数据库，防止重复上传
         if(!empty($img)){
@@ -56,7 +62,8 @@ class Uploader extends AdminBase
                 'filesize'=> $upInfo['size'],
                 'filepath'=> $path,
                 'filename'=> $info->getFilename(),
-                'fileext'=> $info->getExtension(),
+                'filetype'=> $upInfo['type'],
+                'fileext'=> mb_strtolower($info->getExtension()),
                 'is_image' => 1 ,
                 'is_admin' => 1 ,
                 'create_time' => time(),
@@ -66,7 +73,9 @@ class Uploader extends AdminBase
                 'sha1_code' => $sha1 ,
                 'title'=> $upInfo['name'],
                 'ip' =>$request->ip(),
+                'extra_info' => json_encode($extra),
             ];
+
             if($img_id=Attachment::insertGetId($data)){
                 $this->jsonReturn(0,['img_id'=>$img_id,'img_url'=>$site_domain.$path],'上传成功');
             }else{
