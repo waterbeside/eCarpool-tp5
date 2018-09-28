@@ -81,7 +81,7 @@ class Attachment extends AdminBase
 
       $userData       = $data['is_admin'] ? AdminUserModel::where('id',$data['userid'])->find() : UserModel::where('uid',$data['userid'])->find();
       $last_userData  = $data['last_userid'] ? ($data['is_admin'] ? AdminUserModel::where('id',$data['last_userid'])->find() : UserModel::where('uid',$data['last_userid'])->find() ) : [];
-
+      $data['extra_info'] = json_decode(json_encode($data['extra_info']),true);
       $data['uploader'] = [
         "name" =>     $data['is_admin'] ?  $userData['nickname']  : $userData['name'] ,
         "username" => $data['is_admin'] ?  $userData['username']  : $userData['loginname'] ,
