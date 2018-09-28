@@ -28,7 +28,7 @@ class AppInitiate extends ApiBase
      * 启动时调用接口
      * @return mixed
      */
-    public function index($app_id = 0,$platform = 0,$version = 0)
+    public function index($app_id = 0,$platform = 0,$version_code = 0)
     {
         $lang = (new I18nLangModel())->formatLangCode($this->language);
         $platform_list = config('others.platform_list');
@@ -54,10 +54,8 @@ class AppInitiate extends ApiBase
         $notices  = NoticeModel::field($field)->alias('t')->where($map)->where($whereExp)->order('t.sort DESC , t.id DESC')
         // ->fetchSql(true)
         ->select();
+// dump($notices);exit;
 
-        if(empty($notices)){
-          return $this->jsonReturn(20002,$data,'暂无数据');
-        }
         foreach ($notices as $key => $value) {
           $notices[$key]['token'] = md5(strtotime($value['refresh_time']));
         }
@@ -75,13 +73,24 @@ class AppInitiate extends ApiBase
         $whereExp .= "And ".$platform ." in(platforms)";
 
         $adsData  = AdsModel::where($map)->where($whereExp)->json(['images'])->order(['sort' => 'DESC', 'id' => 'DESC'])->select();
+        foreach ($adsData as $key => $value) {
+          $adsData[$key] = [
+            "id" => $value["id"],
+            "title" => $value["title"],
+            "images" => $value["images"],
+            "link_type" => $value["link_type"],
+            "link" => $value["link"],
+            "create_time" => $value["create_time"],
+          ];
+        }
 
 
         /**
          * 检查更新
          */
          $map   = [];
-         $version = intval($version);
+         $version = intval($version_code);
+         // dump($version);exit;
          $platform_str = isset($platform_list[$platform]) ? $platform_list[$platform] : '';
          // dump($platform_str);exit;
 
@@ -89,7 +98,6 @@ class AppInitiate extends ApiBase
          $map[] = ['app_id','=',$app_id];
          $map[] = ['platform','=',$platform_str];
          $versionData  = VersionModel::where($map)->order('update_version_id DESC')->find();
-
 
 
          $returnVersionData = [
@@ -106,33 +114,30 @@ class AppInitiate extends ApiBase
              ['app_id','=',$app_id],
              ['platform','=',$platform_str],
              ['language_code','=',$lang],
+             ['version_code','=',$versionData['latest_version']],
 
            ];
            $versionDescription  = VersionDetailsModel::where($mapDetail)->find();
+           // dump($versionDescription);exit;
 
            $returnVersionData['desc'] = $versionDescription['description'] ? $versionDescription['description'] : "";
 
            if( $versionData['min_versioncode'] < $version   && $version  < $versionData['max_versioncode']  ){
              $returnVersionData['forceUpdate'] = 'F';
-             $returnVersionData['is_update'] = '2';
+             $returnVersionData['is_update'] = 2;
 
            }else if($versionData && $version < $versionData['current_versioncode']){
              $returnVersionData['forceUpdate'] = 'A';
-             $returnVersionData['is_update'] = '1';
+             $returnVersionData['is_update'] = 1;
            }else{
              $returnVersionData['forceUpdate'] = 'N';
-             $returnVersionData['is_update'] = '0';
+             $returnVersionData['is_update'] = 0;
            }
          }
 
         $returnData = [
           'notices' => $notices,
-          'ads' => [
-            "id" => $adsData["id"],
-            "title" => $adsData["title"],
-            "images" => $adsData["images"],
-            "create_time" => $adsData["create_time"],
-            ],
+          'ads' =>  $adsData,
           'version' => $returnVersionData,
         ];
         // dump($lists);
