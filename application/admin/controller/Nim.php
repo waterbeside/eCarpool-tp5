@@ -21,8 +21,8 @@ class Nim extends AdminBase
     protected function initialize()
     {
         parent::initialize();
-        $appKey = config('nim')['appKey'];
-        $appSecret = config('nim')['appSecret'];
+        $appKey     = config('secret.nim.appKey');
+        $appSecret  = config('secret.nim.appSecret');
         $this->NIM = new NimServer($appKey,$appSecret);
     }
 
@@ -41,7 +41,7 @@ class Nim extends AdminBase
     public function create_imid($uid,$isUpdate=1){
       $user = UserModel::get($uid);
       $imid       = $user->im_id ? $user->im_id : $user->loginname  ;
-      $icon       = $user->imgpath ? config('app.avatarBasePath').$user->imgpath : config('app.avatarBasePath')."im/default.png";
+      $icon       = $user->imgpath ? config('secret.avatarBasePath').$user->imgpath : config('secret.avatarBasePath')."im/default.png";
       $rs         = $this->NIM->createUserId($imid,$user->name,'',$icon);
       if($isUpdate && $rs['code']==200){
         $user->im_md5password     = $rs['info']['token'];
@@ -137,7 +137,7 @@ class Nim extends AdminBase
 
 
       if(!isset($nimData) && $isCreateSuccess){
-        $nimData['icon']       = $user->imgpath ? config('app.avatarBasePath').$user->imgpath : config('app.avatarBasePath')."im/default.png";
+        $nimData['icon']       = $user->imgpath ? config('secret.avatarBasePath').$user->imgpath : config('secret.avatarBasePath')."im/default.png";
         $nimData['accid']      = $user->loginname;
         $nimData['name']       = $user->name;
 

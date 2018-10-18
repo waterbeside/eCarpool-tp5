@@ -216,7 +216,7 @@ class ScoreAccount extends AdminBase
         $userInfo = $accountInfo['carpool'];
       }
       if($userInfo){
-        $userInfo->avatar = $userInfo->imgpath ? config('app.avatarBasePath').$userInfo->imgpath : config('app.avatarBasePath')."im/default.png";
+        $userInfo->avatar = $userInfo->imgpath ? config('secret.avatarBasePath').$userInfo->imgpath : config('secret.avatarBasePath')."im/default.png";
       }
       if(!isset($accountInfo['id'])){
         $accountInfo = NULL ;

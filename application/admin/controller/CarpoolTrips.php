@@ -195,7 +195,7 @@ class CarpoolTrips extends AdminBase
       ->find($id);
 
 
-      $data['driver_avatar'] = $data['driver_imgpath'] ? config('app.avatarBasePath').$data['driver_imgpath'] : config('app.avatarBasePath')."im/default.png";
+      $data['driver_avatar'] = $data['driver_imgpath'] ? config('secret.avatarBasePath').$data['driver_imgpath'] : config('secret.avatarBasePath')."im/default.png";
       $data['time'] = date('Y-m-d H:i',strtotime($data['time'].'00'));
       $data['subtime'] = date('Y-m-d H:i',strtotime($data['subtime'].'00'));
       // $data['took_count']       = InfoModel::where([['love_wall_ID','=',$data['love_wall_ID']],['status','<>',2]])->count(); //取已坐数
@@ -207,7 +207,7 @@ class CarpoolTrips extends AdminBase
 
       $data['passengers']       = InfoModel::alias('t')->field($fields2)->join($join2)->where([['love_wall_ID','=',$data['love_wall_ID']],['status','<>',2]])->select(); //取乘客
       foreach ($data['passengers'] as $key => $value) {
-        $data['passengers'][$key]['avatar'] = $value['imgpath'] ? config('app.avatarBasePath').$value['imgpath'] : config('app.avatarBasePath')."im/default.png";
+        $data['passengers'][$key]['avatar'] = $value['imgpath'] ? config('secret.avatarBasePath').$value['imgpath'] : config('secret.avatarBasePath')."im/default.png";
       }
 
 
@@ -224,8 +224,8 @@ class CarpoolTrips extends AdminBase
       $data = InfoModel::alias('t')->field($fields)->join($join)->find($id);
 
 
-      $data['driver_avatar'] = $data['driver_imgpath'] ? config('app.avatarBasePath').$data['driver_imgpath'] : config('app.avatarBasePath')."im/default.png";
-      $data['passenger_avatar'] = $data['passenger_imgpath'] ? config('app.avatarBasePath').$data['passenger_imgpath'] : config('app.avatarBasePath')."im/default.png";
+      $data['driver_avatar'] = $data['driver_imgpath'] ? config('secret.avatarBasePath').$data['driver_imgpath'] : config('secret.avatarBasePath')."im/default.png";
+      $data['passenger_avatar'] = $data['passenger_imgpath'] ? config('secret.avatarBasePath').$data['passenger_imgpath'] : config('secret.avatarBasePath')."im/default.png";
       $data['time'] = date('Y-m-d H:i',strtotime($data['time'].'00'));
       $data['subtime'] = date('Y-m-d H:i',strtotime($data['subtime'].'00'));
 

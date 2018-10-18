@@ -111,9 +111,12 @@ class Attachment extends AdminBase
         if(!$fileInfo){
           $this->jsonReturn(20002,'找不到文件');
         }
-
         AttachmentModel::where('id',$id)->delete();
-        unlink( Env::get('root_path') .'public' . $fileInfo['filepath']);
+        try{
+            unlink( Env::get('root_path') .'public' . $fileInfo['filepath']);
+        } catch (\Exception $e) {
+            // return false;
+        }
         $this->jsonReturn(0 ,'删除成功');
 
 

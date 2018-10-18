@@ -121,6 +121,83 @@ class Passport extends ApiBase
 
     }
 
+    public function update_field($field=""){
+      $fields = array('carnumber','carcolor','cartype','password','sex','company_id','department','name');
+      if(!in_array($field,$fields)){
+        return $this->jsonReturn(-10002,"Error");
+      }
+
+
+        $type = $this->sPost('type');
+        $val =  $this->sPost($type);
+        $uid = $this->userBaseInfo->uid;
+        $type = strtolower($type);
+        $userData = $this->getUser();
+
+        switch ($type) {
+          case 'password':
+            $old_password = trim($val);
+            // $userInfo = $this->getUser();
+            if( $old_password ==''/* ||  md5($old_password) != $userInfo['md5password']*/){
+              $this->ajaxReturn(-10001,[],'旧密码不能为空');
+            }
+            if($userData->md5password != md5($old_password)){
+              $this->ajaxReturn(10001,[],'请输入正确的旧密码');
+            }
+            $pw_new     = $this->sPost('pw_new');
+            $pw_confirm = $this->sPost('pw_confirm');
+            if( $pw_new  != $pw_confirm ){
+              return $this->ajaxReturn(-10002,[],"两次密码不一至");
+              // return $this->error('两次密码不一至');
+            }
+            if(strlen($pw_new) < 6){
+              return $this->ajaxReturn(-10002,[],"密码不能少于6位");
+              // return $this->error('密码不能少于6位');
+            }
+            $hashPassword = md5($pw_new); //加密后的密码
+            $status = CP_User::model()->updateByPk($uid,array('md5password'=>$hashPassword));
+            if($status!==false){
+              return $this->ajaxReturn(0,[],"success");
+              // $this->success('修改成功');
+            }else{
+              return $this->ajaxReturn(-1,[],"fail");
+              // $this->error('修改失败');
+            }
+            break;
+
+          case 'department':
+            $department_id = $this->iPost('departmentid');
+            $departmentData = Department::model()->findByPk($department_id);
+            if(!$departmentData){
+              return $this->ajaxReturn(-1,[],"fail");
+            }
+            $status = CP_User::model()->updateByPk($uid,array('Department'=>$departmentData->department_name));
+            if($status!==false){
+              return $this->ajaxReturn(0,[],"success");
+            }else{
+              return $this->ajaxReturn(-1,[],"fail");
+            }
+            break;
+
+          default:
+            if(!in_array($type,array('carnumber','carcolor'))){
+              if($val==''){
+                return $this->ajaxReturn(-1,[],"不能为空");
+              }
+            }
+
+            $status = CP_User::model()->updateByPk($uid,array($type=>$val));
+            // var_dump($status);
+            if($status!==false){
+              return $this->ajaxReturn(0,[],"success");
+              // $this->success('修改成功');
+            }else{
+              return $this->ajaxReturn(-1,[],"fail");
+              // $this->error('修改失败');
+            }
+            break;
+        }
+    }
 
     /**
      * 登出

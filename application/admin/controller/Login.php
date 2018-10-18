@@ -47,7 +47,7 @@ class Login extends BaseController
                   $token = $res['data']['jwt'];
                   $user  = $res['data']['user'];
                   if($user['status']==1){
-                    $exp = config('admin_setting')['jwt_exp'];
+                    $exp = config('secret.admin_setting')['jwt_exp'];
                     Cookie::set('admin_token',$token,$exp);
                     Session::set('admin_id', $user['id']);
                     Session::set('admin_name', $user['username']);

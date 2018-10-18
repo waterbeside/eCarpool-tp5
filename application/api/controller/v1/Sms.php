@@ -38,8 +38,8 @@ class Sms extends ApiBase
     protected function initialize()
     {
         parent::initialize();
-        $this->appKey     = config('app.nim.appKey');
-        $this->appSecret  = config('app.nim.appSecret');
+        $this->appKey     = config('secret.nim.appKey');
+        $this->appSecret  = config('secret.nim.appSecret');
     }
 
 

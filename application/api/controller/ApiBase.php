@@ -36,7 +36,7 @@ class ApiBase extends Base
           return $returnType ? $this->jsonReturn(10004,$this->passportError[1]) : false;
         }else{
           try{
-            $jwtDecode = JWT::decode($Authorization, config('front_setting')['jwt_key'], array('HS256'));
+            $jwtDecode = JWT::decode($Authorization, config('secret.front_setting')['jwt_key'], array('HS256'));
             $this->jwtInfo = $jwtDecode;
           } catch(\Firebase\JWT\SignatureInvalidException $e) {  //签名不正确
   	    		$msg =  $e->getMessage();
@@ -86,7 +86,7 @@ class ApiBase extends Base
         'loginname' => $data['loginname'],
         'client' => $data['client'], //客户端
       );
-      $key = config('front_setting')['jwt_key'];
+      $key = config('secret.front_setting')['jwt_key'];
       $jwt = JWT::encode($jwtData, $key);
       return $jwt;
     }

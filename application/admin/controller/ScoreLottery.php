@@ -171,7 +171,7 @@ class ScoreLottery extends AdminBase
         $data['winnersInfo'] = SpecialWinnerModel::alias('t')->where('lottery_id',$data['id'])->find();
       }
       if($data['userInfo']){
-        $data['userInfo']['avatar'] = $data['userInfo']['imgpath'] ? config('app.avatarBasePath').$data['userInfo']['imgpath'] : config('app.avatarBasePath')."im/default.png";
+        $data['userInfo']['avatar'] = $data['userInfo']['imgpath'] ? config('secret.avatarBasePath').$data['userInfo']['imgpath'] : config('secret.avatarBasePath')."im/default.png";
       }
 
     }

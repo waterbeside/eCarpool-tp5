@@ -223,7 +223,7 @@ class ScoreOrder extends AdminBase
     }else{
       $data['userInfo'] = CarpoolUserModel::where(['loginname'=>$data['carpool_account']])->find();
       if($data['userInfo']){
-        $data['userInfo']['avatar'] = $data['userInfo']['imgpath'] ? config('app.avatarBasePath').$data['userInfo']['imgpath'] : config('app.avatarBasePath')."im/default.png";
+        $data['userInfo']['avatar'] = $data['userInfo']['imgpath'] ? config('secret.avatarBasePath').$data['userInfo']['imgpath'] : config('secret.avatarBasePath')."im/default.png";
       }
 
       $goods = [];

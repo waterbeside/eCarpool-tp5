@@ -130,7 +130,7 @@ class AdminBase extends Base
         }else{
 
 
-          $jwtDecode = JWT::decode($Authorization, config('admin_setting')['jwt_key'], array('HS256'));
+          $jwtDecode = JWT::decode($Authorization, config('secret.admin_setting')['jwt_key'], array('HS256'));
           $this->jwtInfo = $jwtDecode;
           if(isset($jwtDecode->uid) && isset($jwtDecode->username) ){
 
