@@ -36,7 +36,15 @@ class Attachment extends ApiBase
         $uid = $this->userBaseInfo['uid'];
         $module = input('param.module','content');
         $title = input('param.title');
+        $dev = input('param.dev');
+
         $file = $this->request->file('file');
+
+        if($dev){
+          dump(input());
+          dump(isset($_FILES["file"])?$_FILES["file"]:"" );
+          dump(isset($_REQUEST["file"])?$_REQUEST["file"]:"" );
+        }
         if(!$file){
           $this->jsonReturn(-1,'请上传附件');
         }
@@ -227,11 +235,15 @@ class Attachment extends ApiBase
         if(!$fileInfo){
           $this->jsonReturn($mode ? 0 : 20002,'找不到文件');
         }
-        if($fileInfo['userid']!=$uid && $fileInfo['times'] > 1  ){
+        if($fileInfo['userid']!=$uid || $fileInfo['times'] > 1  ){
           $this->jsonReturn($mode ? 0 : 30002,'该附件不可以删除');
         }
         AttachmentModel::where('id',$id)->delete();
-        unlink( Env::get('root_path') .'public' . $fileInfo['filepath']);
+        try{
+            unlink( Env::get('root_path') .'public' . $fileInfo['filepath']);
+        } catch (\Exception $e) {
+            // return false;
+        }
       }
       $this->jsonReturn(0,"success");
     }
