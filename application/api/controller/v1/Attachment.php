@@ -46,7 +46,7 @@ class Attachment extends ApiBase
           dump(isset($_REQUEST["file"])?$_REQUEST["file"]:"" );
         }
         if(!$file){
-          $this->jsonReturn(-1,'请上传附件');
+          $this->jsonReturn(-1,lang('Please upload attachments'));
         }
         //计算md5和sha1散列值，TODO::作用避免文件重复上传
         $md5 = $file->hash('md5');
@@ -59,11 +59,11 @@ class Attachment extends ApiBase
         switch ($type) {
           case 'image':
             if(strpos($upInfo['type'],'image')===false){
-              $this->jsonReturn(-1,'请上传图片格式');
+              $this->jsonReturn(-1,lang('Not image file format'));
             }
 
             if($upInfo['size'] > 819200){
-              $this->jsonReturn(-1,'图片不能大于800K');
+              $this->jsonReturn(-1,lang('Images cannot be larger than 800K'));
             }
             $image = \think\Image::open(request()->file('file'));
             $extra = [
@@ -79,7 +79,7 @@ class Attachment extends ApiBase
             break;
 
           default:
-            $this->jsonReturn(992,'未开放其它格式的文件上传');
+            $this->jsonReturn(992,lang('Wrong format'));
 
             break;
         }
@@ -110,7 +110,7 @@ class Attachment extends ApiBase
             'last_userid'	=> $uid,
             'last_time'   => $returnData['last_time'],
           ]);
-          return $this->jsonReturn(0,$returnData,'上传成功');
+          return $this->jsonReturn(0,$returnData,lang('upload successful'));
         }
 
         $request = request();
@@ -149,9 +149,9 @@ class Attachment extends ApiBase
               'upload'=>1,
               'extra_info' => $extra,
             ];
-            $this->jsonReturn(0,$returnData,'上传成功');
+            $this->jsonReturn(0,$returnData,lang('upload successful'));
         }else{
-            $this->jsonReturn(-1,'附件入库失败');
+            $this->jsonReturn(-1,lang('Attachment information failed to be written'));
         }
 
     }
@@ -167,7 +167,7 @@ class Attachment extends ApiBase
       }
       $fileInfo = AttachmentModel::where('id',$id)->find();
       if(!$fileInfo ){
-        $this->jsonReturn(20002,'找不到文件');
+        $this->jsonReturn(20002,lang('File not found'));
       }
       $systemConfig = $this->systemConfig;
 
@@ -212,12 +212,12 @@ class Attachment extends ApiBase
           $tempData[$iid] = [];
           if(!$fileInfo){
             $tempData[$iid]['code'] = 20002;
-            $tempData[$iid]['desc'] = '找不到文件';
+            $tempData[$iid]['desc'] = lang('File not found');
             continue;
           }
           if($fileInfo['userid']!=$uid && $fileInfo['times'] > 1 ){
             $tempData[$iid]['code'] = 30002;
-            $tempData[$iid]['desc'] = '该附件不可以删除';
+            $tempData[$iid]['desc'] = lang('This attachment cannot be deleted');
             continue;
           }
           AttachmentModel::where('id',$iid)->delete();
@@ -233,10 +233,10 @@ class Attachment extends ApiBase
         }
         $fileInfo = AttachmentModel::where('id',$id)->find();
         if(!$fileInfo){
-          $this->jsonReturn($mode ? 0 : 20002,'找不到文件');
+          $this->jsonReturn($mode ? 0 : 20002, lang('File not found'));
         }
         if($fileInfo['userid']!=$uid || $fileInfo['times'] > 1  ){
-          $this->jsonReturn($mode ? 0 : 30002,'该附件不可以删除');
+          $this->jsonReturn($mode ? 0 : 30002, lang('This attachment cannot be deleted'));
         }
         AttachmentModel::where('id',$id)->delete();
         try{

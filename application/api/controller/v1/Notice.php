@@ -37,13 +37,14 @@ class Notice extends ApiBase
         $lists  = NoticeModel::field($field)->alias('t')->where($map)->order('t.sort DESC , t.id DESC')->select();
         // dump($lists);exit;
         if(empty($lists)){
-          return $this->jsonReturn(20002,$data,'暂无数据');
+          return $this->jsonReturn(20002,$data,lang('No data'));
         }
         foreach ($lists as $key => $value) {
           $lists[$key]['token'] = md5(strtotime($value['refresh_time']));
         }
         $returnData = [
           'lists' => $lists,
+          'ADURL' => "http://gitsite.net:8082/uploads/images/20181009/c8a51670153d446793fc756d9a9f79f1.jpg"
         ];
         // dump($lists);
         return $this->jsonReturn(0,$returnData,'success');

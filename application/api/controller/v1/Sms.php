@@ -186,26 +186,26 @@ class Sms extends ApiBase
         switch ($usage) {
           case 100: //登入
             if(!$phoneUserData){ //登入验证手机号是否存在。
-              $this->jsonReturn(10002,[],'用户不存在');
+              $this->jsonReturn(10002,[],lang('User does not exist'));
             }
             break;
           case 101: //注册
             if($phoneUserData){ //注册 验证手机号是否存在。
-              $this->jsonReturn(10006,[],'用户已存在');
+              $this->jsonReturn(10006,[],lang('User already exists'));
             }
             break;
           case 102: //重置密码
             if(!$phoneUserData){ //验证手机号是否存在。
-              $this->jsonReturn(10002,[],'用户不存在');
+              $this->jsonReturn(10002,[],lang('User does not exist'));
             }
             break;
           case 103: //重绑定
             if($userData['phone'] == $phone){
-              $this->jsonReturn(10100,[],'已绑定,请输入新的手机号');
+              $this->jsonReturn(10100,[],lang('Already bound, please enter a new phone number'));
             }
             $phoneUserData2 = UserModel::where([['loginname','=',$phone]])->find();
             if($phoneUserData2){
-              $this->jsonReturn(10006,[],'该手机号已注新账号，是否合并');
+              $this->jsonReturn(10006,[],lang('The mobile phone number has been marked with a new account, whether to merge?'));
             }
           /*  if($phoneUserData && $phoneUserData['phone'] == $phones[0]){
               $this->jsonReturn(10006,[],'该手机号已绑定其它帐号');
@@ -213,11 +213,11 @@ class Sms extends ApiBase
             break;
           case 104: //合并账号
             if($userData['phone'] == $phone){
-              $this->jsonReturn(10100,[],'该手机号已绑定本帐号,无须再合并');
+              $this->jsonReturn(10100,[],lang('The phone number has been bound to this account, no need to merge.'));
             }
             $phoneUserData2 = UserModel::where([['loginname','=',$phone]])->find();
             if(!$phoneUserData2){
-              $this->jsonReturn(10006,[],'该手机号已注新账号，是否合并');
+              $this->jsonReturn(10006,[],lang('No need to merge'));
             }
 
             break;
@@ -345,7 +345,7 @@ class Sms extends ApiBase
           }
           $phoneUserData = UserModel::where([['loginname','=',$phone]])->find();
           if($phoneUserData){
-            $this->jsonReturn(10006,[],'该手机号已被注册其它账号');
+            $this->jsonReturn(10006,[],lang('The phone number has been registered for another account'));
           }
           $phoneUserData2 = UserModel::where([['phone','=',$phone]])->find();
           try{
@@ -354,7 +354,7 @@ class Sms extends ApiBase
               }
               $update_count = UserModel::where('uid',$uid)->setField('phone', $phone);//绑定新号码
               if(!$update_count){
-                throw new \Exception("绑定手机号失败");
+                throw new \Exception(lang('Fail'));
               }
               // 提交事务
               Db::commit();
@@ -363,7 +363,7 @@ class Sms extends ApiBase
               Db::rollback();
               $logMsg = '绑定手机号失败'.json_encode($this->request->post());
               $this->log($logMsg,-1);
-              $this->jsonReturn(-1,[],'绑定手机号失败');
+              $this->jsonReturn(-1,[],lang('Fail'));
           }
           break;
 
@@ -374,7 +374,7 @@ class Sms extends ApiBase
           // $phoneUserData = UserModel::where([['phone','=',$phone]])->find(); //取得要合并的手机号信息。
           $phoneUserData = UserModel::where([['loginname','=',$phone]])->find();
           if(!$phoneUserData){
-            $this->jsonReturn(-1,'账号无需合并');
+            $this->jsonReturn(-1,[],lang('No need to merge'));
           }
           Db::connect('database_carpool')->startTrans();
           try{
@@ -402,7 +402,7 @@ class Sms extends ApiBase
               Db::connect('database_carpool')->rollback();
               $logMsg = "合并账号失败:".json_encode($this->request->post());
               $this->log($logMsg,-1);
-              $this->jsonReturn(-1,[],'合并账号失败',['debug'=>$e->getMessage()]);
+              $this->jsonReturn(-1,[],lang('Fail'),['debug'=>$e->getMessage()]);
           }
           $this->log('合并账号成功',0);
 

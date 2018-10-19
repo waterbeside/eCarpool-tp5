@@ -7,6 +7,8 @@ use think\facade\Cache;
 use think\Controller;
 use think\Db;
 use Firebase\JWT\JWT;
+use think\facade\Env;
+use think\facade\Lang;
 
 class ApiBase extends Base
 {
@@ -17,6 +19,8 @@ class ApiBase extends Base
 
     protected function initialize()
     {
+        // config('default_lang', 'zh-cn');
+        $this->loadLanguagePack();
         parent::initialize();
 
     }
@@ -91,6 +95,18 @@ class ApiBase extends Base
       return $jwt;
     }
 
+    /**
+     * 加载语言包
+     * @param  string  $language   语言，当不设时，自动选择
+     * @param  integer $formCommon 语言包路径位置。
+     */
+    public function loadLanguagePack($language = NULL,$formCommon = 0){
+      $path = $formCommon ? Env::get('root_path') .'application/common/lang/' : Env::get('root_path') .'application/api/lang/';
+      $lang = $language ? $language  : $this->getLang();
+      Lang::load( $path.$lang.'.php');
+    }
+
+
 
     /**
      * 取得登录用户的信息
@@ -115,8 +131,12 @@ class ApiBase extends Base
     }
 
 
-
-    public function log($desc='',$status=2){
+    /**
+     * 接口日圮
+     * @param  string  $desc   描述
+     * @param  integer $status 状态 -1失败，1成功
+     */
+    public function log($desc='',$status=0){
       $request = request();
       $data['uid'] = $this->userBaseInfo['uid'];
       $data['ip'] = $request->ip();
