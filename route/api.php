@@ -11,6 +11,8 @@ Route::group([], function () {
   //通行证相关
   Route::resource('api/:version/passport','api/:version.passport');
   Route::rule('api/:version/passport','api/:version.passport/delete','DELETE');
+  Route::rule('api/:version/passport/:field','api/:version.passport/update_field','PATCH');
+
   //附件相关
   Route::resource('api/:version/attachment','api/:version.attachment');
   Route::rule('api/:version/attachment/:type','api/:version.attachment/save','POST');
@@ -25,6 +27,9 @@ Route::group([], function () {
 
   //app启动调用
   Route::rule('api/:version/app_initiate','api/:version.app_initiate/index','GET');
+
+  //同步Hr系统
+  Route::rule('api/:version/sync_hr','api/:version.sync_hr/index','get');
 
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
 
