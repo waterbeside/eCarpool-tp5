@@ -21,15 +21,14 @@ class Base extends Controller
     public $language_l = [];
     protected function initialize()
     {
-
         $this->language = $this->getLang();
         $this->systemConfig = $this->getSystemConfigs();
         parent::initialize();
-
     }
 
     public function getLang(){
       $lang_s =  input('request._language');
+      $lang_s = $lang_s ? $lang_s : input('request.lang');
       $lang_s = $lang_s ? $lang_s : request()->header('Accept-Lang');
       $lang_s = $lang_s ? $lang_s : request()->header('Accept-Language');
       $lang_l = $this->formatAcceptLang($lang_s);
