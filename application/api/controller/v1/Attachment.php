@@ -215,7 +215,7 @@ class Attachment extends ApiBase
             $tempData[$iid]['desc'] = lang('File not found');
             continue;
           }
-          if($fileInfo['userid']!=$uid && $fileInfo['times'] > 1 ){
+          if($fileInfo['userid']!=$uid || $fileInfo['times'] > 1 ){
             $tempData[$iid]['code'] = 30002;
             $tempData[$iid]['desc'] = lang('This attachment cannot be deleted');
             continue;
