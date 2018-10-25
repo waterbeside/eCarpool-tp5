@@ -1,0 +1,220 @@
+``{extend name="base" /}
+{block name="body"}
+<div class="amain-body page-eventLog-reports">
+
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief " lay-filter="main-tab">
+
+        <ul class="amain-tool-bar layui-tab-title" >
+          <li class="layui-this"> 日活 </li>
+          <!-- <li > 走势图表 </li> -->
+        </ul>
+
+        <div class="amain-content layui-tab-content">
+          <!-- **************  s : 积分期报 ************** -->
+          <div class="layui-tab-item layui-show">
+            <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreReports/index')}" method="get">
+                <!-- <div class="blank10">  </div> -->
+                <div class="layui-inline">
+                  <label class="layui-form-label" style="width:160px">时间范围选择</label>
+
+                    <div class="layui-input-inline">
+                      <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                  <input type="hidden" name="export" value="0">
+                    <!-- <button class="layui-btn"><i class="fa fa-search"></i></button> -->
+                </div>
+            </form>
+
+            <hr>
+
+
+            <div class="total-content">
+              <div class="total-item  total-item-carpool">
+                <h3>拼车点击数</h3>
+                <div class="total-value"> </div>
+              </div>
+              <div class="total-item  total-item-idle">
+                <h3>二手市场</h3>
+                <div class="total-value"> </div>
+              </div>
+              <div class="total-item  total-item-tenement">
+                <h3>房屋闲置</h3>
+                <div class="total-value"> </div>
+              </div>
+              <div class="total-item  total-item-activity">
+                <h3>活动</h3>
+                <div class="total-value"> </div>
+              </div>
+              <div class="total-item  total-item-moment">
+                <h3>朋友圈</h3>
+                <div class="total-value"> </div>
+              </div>
+
+           </div>
+
+
+
+
+
+          </div>
+          <!-- **************  e / 积分期报 ************** -->
+
+
+
+
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="js"}
+<script src="__JS__/echarts.common.min-3.js"></script>
+
+{/block}
+
+{block name="script"}
+<script>
+
+PAGE_EXEC = {
+  data : {
+    timeStr : '{$filter.time}',
+    totals : {
+      "carpool":0,
+      "idle":0,
+      "tenement":0,
+      "activity":0,
+      "moment":0,
+    },
+
+    tableObj:[]
+  },
+  /**
+   * 取得数据
+   */
+  getData : function(){
+    var _this = this;
+    return {
+      /**
+       * 计算总数
+       * @param String type driver|passenger|user : 司机人次|乘客人次|参与人数
+       */
+      sumNum : function(type){
+        var url = "{:url('admin/FrontendLogReports/public_active_num')}";
+        var dtd = $.Deferred();
+        $.getJSON(url,{timeStr:_this.data.timeStr,type:type}).then(function(res, textStatus) {
+            if(res.code===0){
+              var total = res.data.a + res.data.i;
+              _this.data.totals[type] = total;
+              console.log(_this.data)
+              dtd.resolve(res.data);
+            }else{
+              dtd.reject(typeof(res.desc)!="undefined" ? res.desc : '');
+            }
+        }).catch(function(error){
+            dtd.reject(error);
+        });
+        return dtd.promise();
+      },
+
+      getCycleData: function(type,cycle){
+        var url = "{:url('admin/FrontendLogReports/public_cycle_datas')}";
+        var dtd = $.Deferred();
+        $.getJSON(url,{timeStr:_this.data.timeStr,type:type,cycle:cycle}).then(function(res, textStatus) {
+            if(res.code===0){
+
+              dtd.resolve(res.data);
+            }else{
+              dtd.reject(typeof(res.desc)!="undefined" ? res.desc : '');
+            }
+        }).catch(function(error){
+            dtd.reject(error);
+        });
+        return dtd.promise();
+
+      },
+
+      //执行所有要取得数据的请求，并渲染内容到页面
+      all: function(){
+        var getData = _this.getData().sumNum;
+        var loading = layer.load(2,{ shade: [0.5,'#fff']});
+        $.when(
+          getData('carpool'),
+          getData('idle'),
+          getData('tenement'),
+          getData('activity'),
+          getData('moment'),
+          // _this.getData().getCycleData('carpool','day'),
+        ).done(function(res_carpool,res_idle,res_tenement,res_activity,res_moment){
+
+          _this.renderSumNum('carpool');
+          _this.renderSumNum('idle');
+          _this.renderSumNum('tenement');
+          _this.renderSumNum('activity');
+          _this.renderSumNum('moment');
+
+
+          layer.close(loading);
+          console.log(res_carpool);
+          console.log(res_idle);
+          console.log(res_tenement);
+          console.log(res_activity);
+          console.log(res_moment);
+        });
+      }
+
+    }
+
+  },
+
+
+  /**
+   * 渲染统计数据
+   */
+  renderSumNum: function(type){
+    var _this = this;
+    var $totalItem =  $('.total-item-'+type);
+    var $valueWrapper = $totalItem.find('.total-value');
+    var sumNum =  this.data.totals[type];
+    $valueWrapper.text(sumNum);
+  },
+
+
+
+  /**
+   * 执行初始化
+   */
+
+  init: function(){
+    var _this = this;
+    _this.getData().all();
+
+
+    laydate.render({
+      elem: '#filter_time'
+      ,range: '~' //或 range: '~' 来自定义分割字符
+      ,calendar: true
+      ,done: function(value, date, endDate){
+        _this.data.timeStr = value;
+        _this.getData().all();
+        // layer.load(1);
+        // $("#filter-form").submit();
+     }
+    });
+
+  },
+
+
+}
+
+
+
+
+PAGE_EXEC.init()
+
+</script>
+{/block}

@@ -429,6 +429,21 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 .page-carpool-reports .time-item.current { background: rgb(102, 63, 133); color:#fff }
 .page-carpool-reports-area { background: #FFF}
 
+
+/** 日活报表统计 **/
+.page-eventLog-reports .total-content { display: flex;flex-wrap:wrap; }
+.page-eventLog-reports .total-item { padding: 10px 20px; min-width: 200px; flex-grow:1;background: rgb(234, 246, 241); color:#10503b; margin: 4px;}
+.page-eventLog-reports .total-item-carpool { min-width: 300px; width: 100%}
+.page-eventLog-reports .total-item h3 { font-size: 20px; color:#2e8669; font-weight: 300; }
+/* .page-eventLog-reports .total-item +.total-item { margin-left: 5px; border-left: 1px solid #FFF} */
+.page-eventLog-reports .total-value {padding: 10px 0 ;text-align: center; font-size: 50px; transition: all 2s ease-in-out}
+.page-eventLog-reports .total-value small { font-size: 30px}
+.page-eventLog-reports .time-options {padding: 10px}
+.page-eventLog-reports .time-item { margin-right: 12px;padding: 4px 8px; background: rgb(216, 228, 242); color:rgb(77, 118, 143); border:1px solid rgb(177, 200, 226) }
+.page-eventLog-reports .time-item.current { background: rgb(102, 63, 133); color:#fff }
+.page-eventLog-reports-area { background: #FFF}
+
+
 /** 积分报表统计 **/
 .page-score-reports .total-content { display: flex}
 .page-score-reports .total-item { padding: 10px 20px;  width: 100%; background: rgb(234, 246, 241); color:#10503b}
