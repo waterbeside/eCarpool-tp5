@@ -8,27 +8,14 @@ use think\facade\Config;
 use think\Db;
 use think\facade\Cache;
 /**
- * 公司管理
+ * 日活报表
  * Class Department
  * @package app\admin\controller
  */
 class FrontendLogReports extends AdminBase
 {
 
-    /**
-     * 部门管理
-     * @param string $keyword
-     * @param int    $page
-     * @return mixed
-     */
-    public function index($filter=[])
-    {
 
-      $timeStr = isset($filter['time'])?$filter['time']:0;
-      $period = $this->get_period(isset($filter['time'])?$filter['time']:0);
-      $filter['time'] = date('Y-m-d',strtotime($period[0]))." ~ ".date('Y-m-d',strtotime($period[1])- 24*60*60);
-      return $this->fetch('index',['filter'=>$filter]);
-    }
 
     protected function get_period($timeStr){
       $returnData = [];
@@ -39,8 +26,8 @@ class FrontendLogReports extends AdminBase
         $time_e_o = date("Y-m-d",strtotime($time_e)- 24*60*60);
         $timeStr = $time_s." ~ ".$time_e_o;
       }
-
-      $time_arr = explode(' ~ ',$timeStr);
+      $sp = strpos($timeStr,'+~+') === false ? ' ~ ' : '+~+';
+      $time_arr = explode($sp,$timeStr);
       $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
       $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
       $returnData = [$time_s,$time_e];
@@ -48,8 +35,24 @@ class FrontendLogReports extends AdminBase
     }
 
     /**
-     * [geActiveNum description]
-     * @return [type] [description]
+     * 主页
+     * @return mixed
+     */
+    public function index($filter=[],$type=NULL)
+    {
+      $timeStr = input('param.time');
+      $timeStr = $timeStr ? $timeStr : (isset($filter['time']) ? $filter['time'] : 0 ) ;
+      $period = $this->get_period(isset($filter['time'])?$filter['time']:0);
+      $filter['time'] = date('Y-m-d',strtotime($period[0]))." ~ ".date('Y-m-d',strtotime($period[1])- 24*60*60);
+      if($type){
+        return $this->fetch('chart',['filter'=>$filter,'type'=>$type]);
+      }else{
+        return $this->fetch('index',['filter'=>$filter]);
+      }
+    }
+
+    /**
+     * 取得日活数据
      */
     public function public_active_num($type="",$timeStr = 0){
       $typeArray = ['carpool','idle','tenement','activity','moment'];
@@ -94,11 +97,11 @@ class FrontendLogReports extends AdminBase
       /**
        * 取得周期数
        * @param  String $timeStr 时间范围
-       * @param  String $type    [description]
+       * @param  String $type    类型
        */
       public function public_cycle_datas($type = false, $timeStr=0, $cycle = false ){
         // $period = $this->get_period($timeStr);
-        if(!isset($cycle) || !in_array($cycle,['year','month','week','day'])){
+        if(!isset($cycle) || !in_array($cycle,['year','month','week','day','hour'])){
           $this->jsonReturn(-1,'error param');
         }
         if(!$type){
@@ -108,56 +111,62 @@ class FrontendLogReports extends AdminBase
         $period = $this->get_period($timeStr);
         $now = date('Y-m-d H:i:s',time());
 
-        $where_base =  " log_time >=  '".$period[0]."' AND log_time < '".$period[1]."' ";
         $where = "";
-        switch ($type) {
-          case 'carpool':
-            $where = $where_base . " AND ( module_name = 'lovewall' OR  module_name = 'takecar' OR module_name = 'Posttrip') ";
-            break;
-          case 'content.idle':
-            $where = $where_base . " AND ( module_name = 'content.idle') ";
-            break;
-          case 'content.tenement':
-            $where = $where_base . " AND ( module_name = 'content.tenement') ";
-            break;
-          case 'content.activity':
-            $where = $where_base . " AND ( module_name = 'content.activity') ";
-            break;
-          case 'content.moment':
-            $where = $where_base . " AND ( module_name = 'content.moment') ";
-            break;
-          default:
-            // code...
-            break;
-        }
+        $where_time =  " log_time >=  '".$period[0]."' AND log_time < '".$period[1]."' ";
 
         switch ($cycle) {
           case 'year':
             $time = "DATE_FORMAT(`log_time`,'%Y')";
-            // $whereTime = " AND log_time < ".$now;
+            $whereTime = "  log_time < '".$now."'";
             break;
           case 'month':
             $time = "DATE_FORMAT(`log_time`,'%Y-%m')";
-            $whereTime = " AND time < ".$now;
+            $startTime = time() - 60*60*24*365;
+            $startTime = $startTime < strtotime($period[0]) ?  date('Y-m-d H:i:s',$startTime) : $period[0];
+            $whereTime = "  log_time >= '".$startTime."' AND log_time < '".$now."'";
             break;
           case 'week':
             $time = "DATE_FORMAT(`log_time`,'%Y#%U')";
-            // $whereTime = " AND time >= ".date("YmdHi",time() - 24*60*60*365*2)." AND time < ".$now;
+            $startTime = time() - 60*60*24*365/2;
+            $startTime = $startTime < strtotime($period[0]) ?  date('Y-m-d H:i:s',$startTime) : $period[0];
+            $whereTime = "  log_time >= '".$startTime."' AND log_time < '".$now."'";
             break;
           case 'day':
             $time = "DATE_FORMAT(log_time,'%Y-%m-%d')";
-            // $whereTime = " AND time >= ".date("YmdHi",time() - 24*60*60*365*3)." AND time < ".$now;
+            $diff =  60*60*24*31;
+            $startTime = strtotime($period[1]) - strtotime($period[0])  < $diff  ?  date('Y-m-d H:i:s',strtotime($period[1]) - $diff) : $period[0];
+            $whereTime = "  log_time >= '".$startTime."' AND log_time < '".$period[1]."'";
+            break;
+          case 'hour':
+            $time = "DATE_FORMAT(log_time,'%Y-%m-%d %H')";
+            $diff =  60*60*24;
+            $startTime = strtotime($period[1]) - strtotime($period[0])  < $diff  ?  date('Y-m-d H:i:s',strtotime($period[1]) - $diff) : $period[0];
+            $whereTime = "  log_time >= '".$startTime."' AND log_time < '".$period[1]."'";
             break;
           default:
             $time  = "YEAR(concat(log_time,'00'))";
-            // $whereTime = " AND time < ".$now;
             break;
         }
-        /*$cache_key = "carpool_reports_cycle_".$period."_".str_replace("&","and",$type);
-        if(cache($cache_key)){
-          $lists = cache($cache_key);
-          $this->jsonReturn(0,['lists'=>$lists]);
-        }*/
+        switch ($type) {
+          case 'carpool':
+            $where = $whereTime . " AND ( module_name = 'lovewall' OR  module_name = 'takecar' OR module_name = 'Posttrip') ";
+            break;
+          case 'idle':
+            $where = $whereTime . " AND ( module_name = 'content.idle') ";
+            break;
+          case 'tenement':
+            $where = $whereTime . " AND ( module_name = 'content.tenement') ";
+            break;
+          case 'activity':
+            $where = $whereTime . " AND ( module_name = 'content.activity') ";
+            break;
+          case 'moment':
+            $where = $whereTime . " AND ( module_name = 'content.moment') ";
+            break;
+          default:
+
+            break;
+        }
 
 
         $from = "SELECT  * FROM event_log as l  where  $where ";

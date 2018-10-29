@@ -33,23 +33,28 @@
 
 
             <div class="total-content">
-              <div class="total-item  total-item-carpool">
+              <div class="total-item  total-item-carpool"
+                   onclick="openLayer('{:url('admin/frontend_log_reports/index',['time'=>$filter['time'],'type'=>'carpool'])}',{area:['90%','90%'],title:'拼车点击数'});">
                 <h3>拼车点击数</h3>
                 <div class="total-value"> </div>
               </div>
-              <div class="total-item  total-item-idle">
+              <div class="total-item  total-item-idle"
+                   onclick="openLayer('{:url('admin/frontend_log_reports/index',['time'=>$filter['time'],'type'=>'idle'])}',{area:['90%','90%'],title:'二手市场'});">
                 <h3>二手市场</h3>
                 <div class="total-value"> </div>
               </div>
-              <div class="total-item  total-item-tenement">
+              <div class="total-item  total-item-tenement"
+                  onclick="openLayer('{:url('admin/frontend_log_reports/index',['time'=>$filter['time'],'type'=>'tenement'])}',{area:['90%','90%'],title:'房屋闲置'});">
                 <h3>房屋闲置</h3>
                 <div class="total-value"> </div>
               </div>
-              <div class="total-item  total-item-activity">
+              <div class="total-item  total-item-activity"
+                  onclick="openLayer('{:url('admin/frontend_log_reports/index',['time'=>$filter['time'],'type'=>'activity'])}',{area:['90%','90%'],title:'活动'});">
                 <h3>活动</h3>
                 <div class="total-value"> </div>
               </div>
-              <div class="total-item  total-item-moment">
+              <div class="total-item  total-item-moment"
+                  onclick="openLayer('{:url('admin/frontend_log_reports/index',['time'=>$filter['time'],'type'=>'moment'])}',{area:['90%','90%'],title:'朋友圈'});">
                 <h3>朋友圈</h3>
                 <div class="total-value"> </div>
               </div>
