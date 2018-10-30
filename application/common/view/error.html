@@ -1,0 +1,118 @@
+<?php
+    if(!function_exists('parse_padding')){
+        function parse_padding($source)
+        {
+            $length  = strlen(strval(count($source['source']) + $source['first']));
+            return 40 + ($length - 1) * 8;
+        }
+    }
+
+    if(!function_exists('parse_class')){
+        function parse_class($name)
+        {
+            $names = explode('\\', $name);
+            return '<abbr title="'.$name.'">'.end($names).'</abbr>';
+        }
+    }
+
+    if(!function_exists('parse_file')){
+        function parse_file($file, $line)
+        {
+            return '<a class="toggle" title="'."{$file} line {$line}".'">'.basename($file)." line {$line}".'</a>';
+        }
+    }
+
+    if(!function_exists('parse_args')){
+        function parse_args($args)
+        {
+            $result = [];
+
+            foreach ($args as $key => $item) {
+                switch (true) {
+                    case is_object($item):
+                        $value = sprintf('<em>object</em>(%s)', parse_class(get_class($item)));
+                        break;
+                    case is_array($item):
+                        if(count($item) > 3){
+                            $value = sprintf('[%s, ...]', parse_args(array_slice($item, 0, 3)));
+                        } else {
+                            $value = sprintf('[%s]', parse_args($item));
+                        }
+                        break;
+                    case is_string($item):
+                        if(strlen($item) > 20){
+                            $value = sprintf(
+                                '\'<a class="toggle" title="%s">%s...</a>\'',
+                                htmlentities($item),
+                                htmlentities(substr($item, 0, 20))
+                            );
+                        } else {
+                            $value = sprintf("'%s'", htmlentities($item));
+                        }
+                        break;
+                    case is_int($item):
+                    case is_float($item):
+                        $value = $item;
+                        break;
+                    case is_null($item):
+                        $value = '<em>null</em>';
+                        break;
+                    case is_bool($item):
+                        $value = '<em>' . ($item ? 'true' : 'false') . '</em>';
+                        break;
+                    case is_resource($item):
+                        $value = '<em>resource</em>';
+                        break;
+                    default:
+                        $value = htmlentities(str_replace("\n", '', var_export(strval($item), true)));
+                        break;
+                }
+
+                $result[] = is_int($key) ? $value : "'{$key}' => {$value}";
+            }
+
+            return implode(', ', $result);
+        }
+    }
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+    <title>ERROR</title>
+    <style type="text/css">
+      html, body , .all { width:100%; height:100%; padding: 0 ; margin: 0; background: url('/static/images/bg_404.jpg') center; background-size: cover}
+      .all { text-align: center; display: flex; justify-content:center; align-items:center; justify-content:center; background: rgba(162, 140, 221, 0.84); }
+      .main {   color:#FFF; opacity: .7; margin-top: -50px;}
+      h1 { font-size: 100px; font-weight: 700;}
+    </style>
+</head>
+<body>
+
+
+    <div class="all">
+
+
+        <div class=" main">
+          <h1>ERROR</h1>
+          <?php echo $echo;?>
+          <?php if(\think\facade\App::isDebug()) { ?>
+           <div class="exception">
+           <div class="message">
+                   <div class="info">
+                           <h2>[<?php echo $code; ?>]&nbsp;<?php echo sprintf('%s in %s', parse_class($name), parse_file($file, $line)); ?></h2>
+                       <div><h4><?php echo nl2br(htmlentities($message)); ?></h4></div>
+                   </div>
+
+           </div>
+          <?php } ?>
+        </div>
+
+
+    </div>
+    <script type="text/javascript">
+
+    </script>
+</body>
+</html>

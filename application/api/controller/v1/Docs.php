@@ -1,15 +1,15 @@
 <?php
 namespace app\api\controller\v1;
 
+use app\api\controller\ApiBase;
 use app\common\model\Docs as DocsModel;
-use app\common\controller\ApiBase;
 
 use think\Db;
 
 /**
  * 文档相关
- * Class Link
- * @package app\admin\controller
+ * Class Docs
+ * @package app\api\controller
  */
 class Docs extends ApiBase
 {
@@ -17,6 +17,7 @@ class Docs extends ApiBase
     protected function initialize()
     {
         parent::initialize();
+        // $this->checkPassport(1);
     }
 
     /**

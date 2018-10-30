@@ -59,7 +59,7 @@
         <tr>
           <td class="label" >抽奖类型</td>
           <td>
-            <span class="layui-elip">积分翻倍 </span>
+            <span class="layui-elip">转盘抽奖 </span>
           </td>
         </tr>
         <tr>
@@ -72,10 +72,14 @@
           </td>
         </tr>
         <tr>
-          <td class="label" >得分</td>
+          <td class="label" >结果</td>
           <td>
-            <span class="layui-elip">{$data.result} </span>
+            <span class="layui-elip">{$data.result_str} </span>
           </td>
+        </tr>
+        <tr>
+          <td class="label">是否已兑</td>
+          <td>{$data.result < -99 && $data.winnersInfo.exchange_time ? "是，兑换时间：".$data.winnersInfo.exchange_time : "否"}</td>
         </tr>
 
       <?php } ?>
@@ -121,7 +125,13 @@
     <div class="blank10"></div>
     <?php if($data['type'] > 0 && $data['result'] > 0 && !$data['winnersInfo']['exchange_time']){ ?>
     <div style="text-align:right">
-        <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="RESOLVE_INIT.finish({$data.winnersInfo.id})">确认兑奖</a>
+        <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="RESOLVE_INIT.finish(1,{$data.winnersInfo.id})">确认兑奖</a>
+    </div>
+    <div class="blank10"></div>
+    <?php  } ?>
+    <?php if($data['type'] === 0 && $data['result'] < -99 && !$data['winnersInfo']['exchange_time']){ ?>
+    <div style="text-align:right">
+        <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="RESOLVE_INIT.finish(0,{$data.winnersInfo.id})">确认兑奖</a>
     </div>
     <div class="blank10"></div>
     <?php  } ?>
@@ -136,7 +146,15 @@ var RESOLVE_INIT = {
   data : {
 
   },
-  finish : function(id){
+  finish : function(type,id){
+    alert(type);
+    alert(id);
+    var url = type === 1 ? "<?php echo url('admin/ScoreWinners/finish');?>" : (type === 0 ? "<?php echo url('admin/ScoreSpecialWinner/finish');?>": '');
+
+    if(url == ''){
+      alert('Error');
+      return false;
+    }
     // var order_no = $("input[name=order_no]").val();
     // console.log(order_no)
     layer.confirm('您确定要完结本次兑换？',
@@ -145,7 +163,7 @@ var RESOLVE_INIT = {
         btn: ['确定','取消'] //按钮
       }, function(){
         ajaxSubmit({
-          url:"<?php echo url('admin/ScoreWinners/finish');?>",
+          url:url,
           data:{id:id},
           success:function(res){
             console.log(res);

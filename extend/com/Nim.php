@@ -1,5 +1,7 @@
 <?php
 namespace com;
+use think\facade\Cache;
+
 /**
  * 网易云信server API 接口 2.0
  * Class ServerAPI
@@ -987,15 +989,18 @@ class Nim {
 
     /**
      * 发送短信验证码
+     * @param  $templateid    [模板编号(由客服配置之后告知开发者)]
      * @param  $mobile       [目标手机号]
      * @param  $deviceId     [目标设备号，可选参数]
-     * @return $result      [返回array数组对象]
+     * @return $codeLen      [验证码长度,范围4～10，默认为4]
      */
-    public function sendSmsCode($mobile,$deviceId=''){
+    public function sendSmsCode($templateid,$mobile,$deviceId='',$codeLen){
         $url = 'https://api.netease.im/sms/sendcode.action';
         $data= array(
+            'templateid' => $templateid,
             'mobile' => $mobile,
-            'deviceId' => $deviceId
+            'deviceId' => $deviceId,
+            'codeLen' => $codeLen
         );
         if($this->RequestType=='curl'){
             $result = $this->postDataCurl($url,$data);
@@ -1004,6 +1009,7 @@ class Nim {
         }
         return $result;
     }
+
 
     /**
      * 校验验证码

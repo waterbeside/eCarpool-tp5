@@ -4,7 +4,7 @@ namespace app\admin\controller;
 use app\score\model\History as HistoryModel;
 use app\score\model\Account as ScoreAccountModel;
 use app\carpool\model\User as CarpoolUserModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 
 /**
@@ -128,6 +128,7 @@ class ScoreHistory extends AdminBase
         'type'=>$type,
         'auth'=>$auth,
         'account'=>$account,
+        'account_id'=>$account_id,
         'reasons'=>$reasons
       ];
       return $this->fetch('lists', $returnData);

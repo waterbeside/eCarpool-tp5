@@ -343,6 +343,19 @@ PAGE_EXEC = {
       var _this = this;
       var $target = $(event.target)
       $target.addClass('current').siblings('.time-item').removeClass('current');
+      var dataZoomStart  = 50;
+      switch (period) {
+        case 'year':
+          dataZoomStart  = 0;
+          break;
+        case 'week':
+          dataZoomStart  = 90;
+          break;
+        case 'day':
+          dataZoomStart  = 90;
+          break;
+
+      }
 
 
       var myChart = echarts.init(document.getElementById('chart'));
@@ -370,13 +383,11 @@ PAGE_EXEC = {
         axisPointer: {
             link: {xAxisIndex: 'all'}
         },
-
-
         dataZoom: [
             {
                 show: true,
                 realtime: true,
-                start: 60,
+                start: dataZoomStart,
                 end: 100,
                 xAxisIndex: [0, 1]
             },
@@ -392,7 +403,6 @@ PAGE_EXEC = {
           top:8,
           right:100,
         },
-
        grid: [{
           left: 50,
           right: 50,
@@ -519,14 +529,7 @@ PAGE_EXEC = {
           console.log(chartOption)
           myChart.setOption(chartOption);
         })
-
-
-
       })
-
-
-
-
     },
 
 
@@ -557,10 +560,10 @@ PAGE_EXEC = {
       ,range: '~' //或 range: '~' 来自定义分割字符
       ,calendar: true
       ,done: function(value, date, endDate){
-        console.log(value)
         _this.data.timeStr = value;
+        _this.data.ranking['driver'] = [];
+        _this.data.ranking['passenger'] = [];
         _this.getAllData_0();
-
         // layer.load(1);
         // $("#filter-form").submit();
      }
@@ -568,8 +571,9 @@ PAGE_EXEC = {
   },
 
   init_2: function(){
-    this.drawChart('month')
-    console.log('init_2')
+    if(!this.data.cycle.month['trips'] ){
+      this.drawChart('month')
+    }
 
   }
 }

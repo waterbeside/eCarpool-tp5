@@ -21,40 +21,55 @@ class Base extends Controller
     public $language_l = [];
     protected function initialize()
     {
-        // header('Access-Control-Allow-Origin: *');
-    		// header('Access-Control-Allow-Headers:*');
-    		// if($_SERVER['REQUEST_METHOD']=='OPTIONS'){
-    		// 	exit;
-    		// }
-        $lang_s = request()->header('Accept-Lag');
-        $lang_s = $lang_s ? $lang_s : request()->header('Accept-Language');
-        $lang_l = $this->formatAcceptLang($lang_s);
-        $this->language_l = $lang_l;
-        $this->language = $lang_l[0] ? ( $lang_l[0] == 'zh' ? 'zh-cn' : $lang_l[0]  )   : 'zh-cn' ;
-
+        $this->language = $this->getLang();
         $this->systemConfig = $this->getSystemConfigs();
         parent::initialize();
+    }
 
+    public function getLang(){
+      $lang_s =  input('request._language');
+      $lang_s = $lang_s ? $lang_s : input('request.lang');
+      $lang_s = $lang_s ? $lang_s : request()->header('Accept-Lang');
+      $lang_s = $lang_s ? $lang_s : request()->header('Accept-Language');
+      $lang_l = $this->formatAcceptLang($lang_s);
+      $this->language_l = $lang_l;
+      return $lang_l[0] == 'zh' ? ( isset($lang_l[1]) ? $this->formatZhLang($lang_l[1],'zh-cn') : 'zh-cn') : $this->formatZhLang($lang_l[0]);
     }
 
 
+    public function formatZhLang($language,$default = null) {
+      if($language == 'zh-hant-hk'){
+        return 'zh-hk';
+      }
+      if($language == 'zh-hant-tw'){
+        return 'zh-tw';
+      }
+      if($language == 'zh-hans'){
+        return 'zh-cn';
+      }
+      if(strpos($language,'zh-hant') !== false  ){
+        return 'zh-hk';
+      }
+      if(strpos($language,'zh-hans') !== false  ){
+        return 'zh-cn';
+      }
+      return $default ? $default : $language  ;
+    }
+
     /**
-     * 返回json数据
-     * @param  integer $code    [状态码]
-     * @param  array $data    [主要数据]
-     * @param  string $message [描述]
-     * @param  array  $extra   [其它]
      */
   	public function formatAcceptLang($language) {
       $lang_l = explode(',',$language);
       $lang_format_list = [];
       $q_array = [];
+
       foreach ($lang_l as $key => $value) {
         $temp_arr = explode(';',$value);
         $q = isset($temp_arr[1]) ? $temp_arr[1] : 1;
         $q_array[]  = $q;
         $lang_format_list[$key] = ['lang'=>$temp_arr[0],'q'=>$q];
       }
+
       array_multisort($q_array, SORT_DESC,  $lang_format_list);
       $lang = [];
       foreach ($lang_format_list as $key => $value) {
@@ -91,6 +106,45 @@ class Base extends Controller
   		// echo json_encode($data);
   		// exit;
   	}
+
+    /**
+	   * 数组去重
+	   */
+	  public function arrayUniq($arr){
+	    $arr = array_unique($arr);
+	    $arr = array_values($arr);
+	    return $arr;
+	  }
+
+		 /**
+	   * 二维数组去重
+	   */
+		 public function arrayUniqByKey($arr,$key){
+         //建立一个目标数组
+         $res = array();
+         foreach ($arr as $value) {
+            //查看有没有重复项
+            if(isset($res[$value[$key]])){
+                  //有：销毁
+                  unset($value[$key]);
+            }
+            else{
+                 $res[$value[$key]] = $value;
+            }
+         }
+         return $res;
+     }
+
+		/**
+	   * 清除数组内每个元素的两头空格
+	   * @return array||string
+	   */
+		public function trimArray($arr){
+	    if (!is_array($arr)){
+				  return trim($arr);
+			}
+    	return array_map("self::trimArray", $arr);
+		}
 
 
     public function jump($isSuccess=1 , $msg = '', $url = null, $data = '', $wait = 3, array $header = []){

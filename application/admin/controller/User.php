@@ -1,11 +1,13 @@
 <?php
 namespace app\admin\controller;
 
-use app\carpool\model\User as UserModel;
+use app\carpool\model\User as UserModel_o;
+use app\user\model\User as UserModel;
+use app\user\model\UserTemp ;
 use app\carpool\model\CompanySub as CompanySubModel;
 use app\carpool\model\Department as DepartmentModel;
 use app\carpool\model\Company as CompanyModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\facade\Config;
 use think\facade\Validate;
 use think\Db;
@@ -22,7 +24,7 @@ class User extends AdminBase
     protected function initialize()
     {
         parent::initialize();
-        $this->user_model = new UserModel();
+        $this->user_model = new UserModel_o();
     }
 
     /**
@@ -58,7 +60,7 @@ class User extends AdminBase
       }
       $userInfo = $this->user_model->find($id);
       if($userInfo){
-        $userInfo->avatar = $userInfo->imgpath ? config('app.avatarBasePath').$userInfo->imgpath : config('app.avatarBasePath')."im/default.png";
+        $userInfo->avatar = $userInfo->imgpath ? config('secret.avatarBasePath').$userInfo->imgpath : config('secret.avatarBasePath')."im/default.png";
       }
       $companyLists = (new CompanyModel())->getCompanys();
       $companys = [];
@@ -107,7 +109,7 @@ class User extends AdminBase
           }
 
       }else{
-        $avatar =  config('app.avatarBasePath')."im/default.png";
+        $avatar =  config('secret.avatarBasePath')."im/default.png";
         return $this->fetch('add', ['avatar' => $avatar]);
       }
 
@@ -172,7 +174,7 @@ class User extends AdminBase
 
       }else{
         $user = $this->user_model->find($id);
-        $user->avatar = $user->imgpath ? config('app.avatarBasePath').$user->imgpath : config('app.avatarBasePath')."im/default.png";
+        $user->avatar = $user->imgpath ? config('secret.avatarBasePath').$user->imgpath : config('secret.avatarBasePath')."im/default.png";
 
         return $this->fetch('edit', ['user' => $user]);
       }
@@ -197,48 +199,68 @@ class User extends AdminBase
     }
 
 
+    /****
+    用户数据库处理相关
+    *****/
+
+
+    /**
+     * 导入旧库
+     * @param  integer $page [description]
+     * @return [type]        [description]
+     */
     public function test_import_user($page=1){
-      $lists = Db::table('temp_user_unicom_20180531')->page($page,1)->select();
+      exit;
+      $tempTableName = "temp_user_20181012";
+      $lists = Db::table($tempTableName)->page($page,5)->select();
       $url  = '';
       $msg = '';
-      dump(uuid_create());
-      dump($lists);exit;
+      // dump(uuid_create());
+      // dump($lists);exit;
       if(count($lists)>0){
         foreach ($lists as $key => $value) {
+          if(!$value['loginname'] ){
+             continue;
+          }
+          $loginnameArr = explode("GLE",$value['loginname']);
+          $passwd = $loginnameArr[1];
 
           $data = [
             'indentifier'=>uuid_create(),
             'name' => $value['name'],
             'nativename' => $value['name'],
-            'phone' => $value['phone'],
-            'loginname' => $value['phone'],
+            'phone' => '',
+            'loginname' => $value['loginname'],
+            'deptid' => $value['loginname'],
             'sex' => $value['sex'],
-            'company_id' => 10,
-            'companyname' => '联通-佛山市分公司',
+            'company_id' => 1,
+            'companyname' => $value['companyname'],
+            'Department' => $value['Department'],
             'is_active' => 1 ,
             'home_address_id' => 0,
             'company_address_id' => 0 ,
-            'md5password' => md5($value['phone']) ,
+            'md5password' => md5($passwd) ,
+            'passwd' =>$passwd,
           ];
           if($value['status']!==0){
-            $msg =  "id:".$value['id'].";"."name:".$data['name'].";"."phone:".$data['phone'].";"."   Has finished";
+            $msg .=  "id:".$value['id'].";"."name:".$data['name'].";"."phone:".$data['phone'].";"."   Has finished"."<br />";
             continue;
           }
           // dump($data);
-          $item = UserModel::whereOr([['phone','=',$value['phone']],['loginname','=',$value['phone']]])->find();
+          // $item = UserModel_o::whereOr([['phone','=',$value['phone']],['loginname','=',$value['phone']]])->find();
+          $item = UserModel_o::where([['loginname','=',$value['loginname']]])->find();
           if($item){
-            $st = Db::table('temp_user_unicom_20180531')->where("id",$value['id'])->update(['status'=>-1]);
-            $msg =  "id:".$value['id'].";"."name:".$data['name'].";"."phone:".$data['phone'].";"."uid:".$item['uid'].";"."  fail";
+            $st = Db::table($tempTableName)->where("id",$value['id'])->update(['status'=>-1]);
+            $msg .=  "id:".$value['id'].";"."name:".$data['name'].";"."phone:".$data['phone'].";"."uid:".$item['uid'].";"."  fail -1:".$item['uid']."<br />";
             continue;
-
           }
-          $is_ok = UserModel::insertGetId($data);
+          $is_ok = UserModel_o::insertGetId($data);
           // dump($is_ok);exit;
           if($is_ok){
-            $st = Db::table('temp_user_unicom_20180531')->where("id",$value['id'])->update(['status'=>1]);
-            $msg =  "id:".$value['id'].";"."name:".$data['name'].";"."phone:".$data['phone'].";"."  OK";
+            $st = Db::table($tempTableName)->where("id",$value['id'])->update(['status'=>1]);
+            $msg .=  "id:".$value['id'].";"."name:".$data['name'].";"."phone:".$data['phone'].";"."  OK"."<br />";
           }else{
-            $msg =  "id:".$value['id'].";"."name:".$data['name'].";"."phone:".$data['phone'].";"."   fail";
+            $msg .=  "id:".$value['id'].";"."name:".$data['name'].";"."phone:".$data['phone'].";"."   fail"."<br />";
           }
         }
 
@@ -246,12 +268,15 @@ class User extends AdminBase
         $url  = url('admin/user/test_import_user',['page'=>$page]);
 
       }else{
-        $msg = "完成全部操作";
+        $msg .= "完成全部操作";
 
       }
-
       return $this->fetch('index/multi_jump',['url'=>$url,'msg'=>$msg]);
-
     }
+
+
+
+
+
 
 }

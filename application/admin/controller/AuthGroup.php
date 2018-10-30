@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 use app\common\model\AuthGroup as AuthGroupModel;
 use app\common\model\AuthRule as AuthRuleModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 
 /**
  * 权限组

@@ -1,19 +1,19 @@
 {extend name="base" /}
 {block name="body"}
-<div class="amain-body page-order-list">
+<div class="amain-body page-winners-list">
 
     <!--tab标签-->
     <div class="layui-tab ">
 
         <ul class="  amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/ScoreWinners/index')}"  showloading >中奖情况</a></li>
+            <li class="layui-this"><a href="{:url('admin/ScoreWinners/index')}"  showloading >实物抽奖</a></li>
+            <li ><a href="{:url('admin/ScoreSpecialWinner/index')}"  showloading >转盘抽实物</a></li>
 
         </ul>
 
         <div class="amain-content">
           <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreWinners/index')}" method="get" onsubmit="submitForm()">
               <div class="layui-inline">
-                  <label class="layui-form-label">检索</label>
                   <div class="layui-input-inline">
                       <input type="text" name="filter[keyword_prize]" value="{$filter['keyword_prize'] ? $filter['keyword_prize'] :''}" placeholder="奖品名" class="layui-input">
                   </div>
@@ -22,6 +22,13 @@
                   </div>
                   <div class="layui-input-inline">
                       <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
+                  </div>
+                  <div class="layui-input-inline is_exchange-wrapper" >
+                    <select name="filter[is_exchange]" lay-verify="required" >
+                      <option value="" >是否已兑 - 不限</option>
+                      <option value="0" {php}echo isset($filter['is_exchange']) && $filter['is_exchange'] === "0" ? 'selected' : ''; {/php}>未兑</option>
+                      <option value="1" {php}echo isset($filter['is_exchange']) && $filter['is_exchange'] === "1" ? 'selected' : ''; {/php}>已兑</option>
+                    </select>
                   </div>
               </div>
               <!-- <div class="blank10">  </div> -->
@@ -69,7 +76,7 @@
                         {foreach name="lists" item="vo"}
                         <tr class="lottery-item">
                           <td  >{$vo.id}</td>
-                          <td class="layui-elip">
+                          <td >
                             <div  class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>"> </div>
                             <span class="layui-elip">【第{$vo.publication_number}期】 {$vo.prize_name|iconv_substr=0,14} </span>
                           </td>

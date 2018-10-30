@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 
 use app\score\model\Configs as ScoreConfigsModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use app\common\model\Configs as ConfigsModel;
 use my\RedisData;
 use think\Db;
@@ -31,10 +31,11 @@ class ScoreConfigs extends AdminBase
       $data_used_count = 0;
       $data_used_keys = [];
       $total_rate = 0;
+
       foreach ($value_array as $key => $v) {
         $v['rate'] = strval($v['rate']);
         $value_array[$key]['rate'] = strval($v['rate']);
-        if($v['is_disused'] === 0 ){
+        if(isset($v['status']) && $v['status'] == 1){
           if(!in_array($v['grade'],$data_used_keys)){
             $data_used[strval($v['grade'])] = $v;
             $data_used_keys[] = $v['grade'];
@@ -57,12 +58,19 @@ class ScoreConfigs extends AdminBase
         $data_used_kv[$v['grade']] = $v;
       }
       foreach ($value_array as $key => $v) {
-        if($v['is_disused'] === 0 && isset($data_used_kv[$v['grade']])){
+        $value_array[$key]['full_desc'] = !isset($v['full_desc']) || empty(trim($v['full_desc'])) ? $v['desc'] : trim($v['full_desc']);
+        if(isset($v['status']) && $v['status'] == 1 && isset($data_used_kv[$v['grade']])){
           $value_array[$key]['level'] = $data_used_kv[$v['grade']]['level'];
+        }else{
+          if(isset($value_array[$key]['level'])){
+            unset($value_array[$key]['level']);
+          }
+          $value_array[$key]['status']  = 0;
         }
-
+        $value_array[$key]['bulletin_count'] = isset($v['bulletin_count']) && $v['bulletin_count'] > 0 ? $v['bulletin_count'] : 0;
+        $value_array[$key]['is_bulletin'] = isset($v['is_bulletin'])  && $v['is_bulletin'] ? $v['is_bulletin'] : 0;
+        $value_array[$key]['is_disused'] = isset($v['status'])  && $v['status'] ? 0 : 1;
       }
-
       $value = json_encode($value_array);
       $value_public = json_encode($data_used_kv);
       // dump($value);
@@ -87,6 +95,11 @@ class ScoreConfigs extends AdminBase
       $lists = [];
       if($res){
         $lists = json_decode($res[0],true);
+      }
+      foreach ($lists as $key => $value) {
+        if(isset($lists[$key]['level'])){
+          unset($lists[$key]['level']);
+        }
       }
 
       $returnData =  [

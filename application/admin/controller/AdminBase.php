@@ -1,5 +1,5 @@
 <?php
-namespace app\common\controller;
+namespace app\admin\controller;
 
 use org\Auth;
 use think\Loader;
@@ -9,6 +9,7 @@ use think\Response;
 use app\common\controller\Base;
 use think\Db;
 use think\facade\Session;
+use my\RedisData;
 use Firebase\JWT\JWT;
 
 
@@ -130,7 +131,7 @@ class AdminBase extends Base
         }else{
 
 
-          $jwtDecode = JWT::decode($Authorization, config('admin_setting')['jwt_key'], array('HS256'));
+          $jwtDecode = JWT::decode($Authorization, config('secret.admin_setting')['jwt_key'], array('HS256'));
           $this->jwtInfo = $jwtDecode;
           if(isset($jwtDecode->uid) && isset($jwtDecode->username) ){
 
@@ -201,6 +202,19 @@ class AdminBase extends Base
       $data['status'] = $status;
       $data['time'] = time();
       Db::name('admin_log')->insert($data);
+    }
+
+    /**
+     * 更新数据版本，用于不经常更新的数据，以减少前端请求
+     * @param  要更新的redis的key；
+     * @return 返回最新版本；
+     */
+    public function updateDataVersion($cacheVersionKey){
+      $redis = new RedisData();
+      $cacheVersion = $redis->get($cacheVersionKey);
+      $newVersion = $cacheVersion ? intval($cacheVersion) + 1 : 1;
+      $redis->set($cacheVersionKey,$newVersion);
+      return $newVersion;
     }
 
 

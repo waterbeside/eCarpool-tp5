@@ -88,6 +88,7 @@ RESOLVE_INIT = {
      var uploadInst = this.upload.render({
        elem: '#upload-btn'
        ,url: "{:url('admin/Uploader/images')}"
+       ,data: {"module":"admin/ScoreGoods"}
        ,before: function(obj){
          //预读本地文件示例，不支持ie8
          obj.preview(function(index, file, result){
@@ -104,6 +105,8 @@ RESOLVE_INIT = {
            layer.msg('上传成功');
            $('#item-thumb').attr('src', res.data.img_url); //图片链接（base64）
            $thumbInput.val(res.data.img_url);
+         }else{
+           layer.msg(res.desc);
          }
          //上传成功
        }

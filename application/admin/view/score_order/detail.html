@@ -91,7 +91,7 @@
       </tbody>
     </table>
     <div class="blank10"></div>
-    <?php if($auth['admin/ScoreOrder/finish'] && $data['status']===0){ ?>
+    <?php if($auth['admin/ScoreOrder/finish'] && intval($data['status'])===0){ ?>
     <div style="text-align:right">
       <!--<div class="layui-input-inline">
           <input type="text" name="order_no" value="" placeholder="请输入订单号确认" class="layui-input">

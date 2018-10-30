@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 
 use think\facade\Env;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use app\common\model\Configs;
 use app\carpool\model\User as CarpoolUserModel;
 use app\carpool\model\Company as CompanyModel;
@@ -45,6 +45,14 @@ class ScoreWinners extends AdminBase
       $map[] = ['u.Department|u.companyname','like', "%{$filter['keyword_dept']}%"];
     }
 
+    if (isset($filter['is_exchange']) && $filter['is_exchange'] === '1' ){
+      $map[] = ['t.exchange_time', "> time","1970-01-01"];
+      $map[] = ['t.exchange_time', "NOT NULL",""];
+    }
+    if (isset($filter['is_exchange']) && $filter['is_exchange'] === '0' ){
+      $map[] = ['t.exchange_time', "NULL",""];
+    }
+    
     //筛选时间
     if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
       $time_s = date("Y-m-01");
@@ -131,7 +139,7 @@ class ScoreWinners extends AdminBase
 
       $data['userInfo'] = CarpoolUserModel::where(['loginname'=>$data['carpool_account']])->find();
       if($data['userInfo']){
-        $data['userInfo']['avatar'] = $data['userInfo']['imgpath'] ? config('app.avatarBasePath').$data['userInfo']['imgpath'] : config('app.avatarBasePath')."im/default.png";
+        $data['userInfo']['avatar'] = $data['userInfo']['imgpath'] ? config('secret.avatarBasePath').$data['userInfo']['imgpath'] : config('secret.avatarBasePath')."im/default.png";
       }
 
     }

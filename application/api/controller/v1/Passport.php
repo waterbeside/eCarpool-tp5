@@ -1,15 +1,17 @@
 <?php
 namespace app\api\controller\v1;
 
-use app\carpool\model\User as UserModel;
-use app\common\controller\ApiBase;
+use app\api\controller\ApiBase;
+use app\carpool\model\User as UserModel_o;
+use app\carpool\model\Department as DepartmentModel_o;
+use app\user\model\User as UserModel;
 use Firebase\JWT\JWT;
 use think\Db;
 
 /**
  * 发放通行证jwt
- * Class Link
- * @package app\admin\controller
+ * Class Passport
+ * @package app\api\controller
  */
 class Passport extends ApiBase
 {
@@ -24,22 +26,13 @@ class Passport extends ApiBase
      */
     public function index()
     {
-       if(!$this->checkPassport()){
-         $errorReturn = $this->passportError;
-         $code = isset($errorReturn[0]) ? $errorReturn[0] : 10004 ;
-         $msg = isset($errorReturn[1]) ? $errorReturn[1] : '您尚未登入' ;
-         return $this->jsonReturn($code,$msg);
-       }
+       $this->checkPassport(true);
        $more = request()->param('more');
        $type = $more == 1 ? 1 : request()->param('type');
        $userInfo = $this->userBaseInfo;
-
        if(in_array($type,[1,2])){
          $uid = $userInfo['uid'];
-         $userInfo_ex = UserModel::find($uid);
-         if(!$userInfo_ex){
-           return $this->jsonReturn(10004,'您尚未登入');
-         }
+         $userInfo_ex = $this->getUserData(true);
          if($type==2){
            $userInfo = $userInfo_ex;
            unset($userInfo['passwd']);
@@ -50,7 +43,7 @@ class Passport extends ApiBase
            $userInfo['Department'] = $userInfo_ex['Department'];
          }
          $userInfo['avatar'] = $userInfo_ex['imgpath'];
-         
+
        }
 
 
@@ -66,56 +59,45 @@ class Passport extends ApiBase
      */
     public function save()
     {
+
         $data = $this->request->post();
+
         if(empty($data['username'])){
-          $this->jsonReturn(-10002,'请输入用户名');
+          $this->jsonReturn(-10002,lang('Please enter user name'));
         }
         if(empty($data['password'])){
-          $this->jsonReturn(-10002,'请输入密码');
+          $this->jsonReturn(-10002,lang('Please enter your password'));
         }
+        $data['client'] = isset($data['client']) ? strtolower($data['client']) : '';
         if(!in_array($data['client'],array('ios','android','h5','web','third'))){
           $this->jsonReturn(-1,'client error');
   			};
 
 
-        $userModel = new UserModel();
-        $userData = $userModel->where('loginname',$data['username'])->find();
+        $userModel_o = new UserModel_o();
+        $userData = $userModel_o->where('loginname',$data['username'])->find();
     		if(!$userData){
-          $userData = $userModel->where('phone',$data['username'])->find();
+          $userData = $userModel_o->where('phone',$data['username'])->find();
     			if(!$userData){
-            $this->jsonReturn(10001,'用户名或密码错误');
+            $this->jsonReturn(10001,lang('User name or password error'));
     				return false;
     			}
     		}
         if(!$userData['is_active']){
-          $this->jsonReturn(10001,'该用户被封禁');
+          $this->jsonReturn(10003,lang('The user is banned'));
         }
 
-    		if(strtolower($userData['md5password']) != strtolower($userModel->hashPassword($data['password']))){
-          $this->jsonReturn(10001,'用户名或密码错误');
-
+    		if(strtolower($userData['md5password']) != strtolower($userModel_o->hashPassword($data['password']))){
+          $this->jsonReturn(10001,lang('User name or password error'));
     		}
 
 
         if(!$userData){
-          $this->jsonReturn(10001,'用户名或密码错误');
-
+          $this->jsonReturn(10001,lang('User name or password error'));
         }
 
-          $exp = in_array($data['client'],['ios','android']) ? (time() + 36* 30 * 86400) : (time() + 30 * 86400);
-      		$jwtData  = array(
-      			'exp'=> $exp, //过期时间
-      			'iat'=> time(), //发行时间
-      			'iss'=> 'carpool', //发行者，值为固定carpool
-      			'uid'=> $userData['uid'],
-      			'loginname' => $userData['loginname'],
-      			'client' => $data['client'], //客户端
-      		);
-          $key = config('front_setting')['jwt_key'];
-          $jwt = JWT::encode($jwtData, $key);
-
-
-          $returnData = array(
+        $jwt = $this->createPassportJwt(['uid'=>$userData['uid'],'loginname'=>$userData['loginname'],'client' => $data['client']]);
+        $returnData = array(
     				'user' => array(
     					'uid'=> $userData['uid'],
     					'loginname' => $userData['loginname'],
@@ -125,7 +107,6 @@ class Passport extends ApiBase
     				),
     				'token'	=> $jwt
     			);
-
           $isAllUserData = in_array($data['client'],['ios','android']) ? 1 : 0;
     			if($isAllUserData){
     				$returnData['user'] = $userData;
@@ -142,6 +123,88 @@ class Passport extends ApiBase
 
     }
 
+
+    /**
+     * 更新用户资料（PATCH）
+     */
+    public function update_field($field=""){
+      //验证字段是否可以被改
+      $field = strtolower($field);
+      $fields = array('carnumber','carcolor','cartype','password','sex','company_id','department','name','mobile');
+      if(!in_array($field,$fields)){
+        return $this->jsonReturn(-10002,"Error");
+      }
+      //验证帐号并取得账号信息
+      $userData = $this->getUserData(true);
+      $uid = $userData['uid'];
+
+
+      $value = $this->request->param($field);
+
+      switch ($field) {
+        case 'password':
+          $old_password = trim($value);
+          if( $old_password ==''){
+            $this->jsonReturn(10001,[],lang('Please enter the correct old password'));
+          }
+          if($userData['md5password'] != md5($old_password)){
+            $this->jsonReturn(10001,[],lang('Please enter the correct old password'));
+          }
+          $pw_new = $this->request->param('pw_new');
+          $pw_confirm = $this->request->param('pw_confirm');
+
+          if( $pw_new  != $pw_confirm ){
+            return $this->jsonReturn(-10002,[],lang('Two passwords are different'));
+            // return $this->error('两次密码不一至');
+          }
+          if(strlen($pw_new) < 6){
+            return $this->jsonReturn(-10002,[],lang('The new password should be no less than 6 characters'));
+            // return $this->error('密码不能少于6位');
+          }
+          $hashPassword = md5($pw_new); //加密后的密码
+          $status = UserModel_o::where("uid",$uid)->update(['md5password'=>$hashPassword]);
+          if($status!==false){
+            return $this->jsonReturn(0,[],"success");
+            // $this->success('修改成功');
+          }else{
+            return $this->jsonReturn(-1,[],"fail");
+            // $this->error('修改失败');
+          }
+          break;
+
+        case 'department':
+          $department_id = $value;
+          $departmentData = DepartmentModel_o::where(['departmentid'=>$department_id])->find();
+
+          if(!$departmentData){
+            return $this->jsonReturn(-1,[],"fail");
+          }
+          $status = UserModel_o::where("uid",$uid)->update(['Department'=>$departmentData['department_name']]);
+          if($status!==false){
+            return $this->jsonReturn(0,[],"success");
+          }else{
+            return $this->jsonReturn(-1,[],"fail");
+          }
+          break;
+
+        default:
+          if(!in_array($field,array('carnumber','carcolor'))){
+            if($value==''){
+              return $this->jsonReturn(-1,[],lang('Can not be empty'));
+            }
+          }
+          $status = UserModel_o::where("uid",$uid)->update([$field=>$value]);
+          // var_dump($status);
+          if($status!==false){
+            return $this->jsonReturn(0,[],"success");
+            // $this->success('修改成功');
+          }else{
+            return $this->jsonReturn(-1,[],"fail");
+            // $this->error('修改失败');
+          }
+          break;
+      }
+    }
 
     /**
      * 登出

@@ -2,6 +2,8 @@
 html,body, body > .layui-layout , .amain-body {height: 100%;}
 body {background:#FFF;}
 
+.layui-layer-loading { text-align: center;}
+.layui-layer-loading .layui-layer-content {margin:0 auto}
 .blank10 {height: 10px; overflow: hidden; line-height: 1;display: block; clear: both;}
 .blank12 {height: 12px; overflow: hidden; line-height: 1;display: block;clear: both;}
 .blank20 {height: 20px; overflow: hidden; line-height: 1;display: block;clear: both;}
@@ -9,6 +11,9 @@ body {background:#FFF;}
 .t-number , .layui-table th.t-number { text-align: right}
 /* .layui-layout-admin .layui-header.header {background: rgb(119, 13, 13)} */
 .dark-grey-wrapper {background: #f0f0f0}
+
+.text-red {color:rgb(185, 56, 28)}
+.text-gray {color:#ccc}
 
 .aframe-sidebox .layui-nav-title  { margin: 0; padding:8px 0; color:#AAA; background: #4A5064; cursor: pointer;}
 .aframe-sidebox .layui-nav-title .aframe-icon { margin-left: 0; padding-left: 12px}
@@ -19,6 +24,7 @@ body {background:#FFF;}
 
 .aframe-sidebox .layui-nav-child { padding: 4px 0}
 .aframe-sidebox .layui-nav-child dd a {font-size: 13px; height: 38px; line-height: 38px;}
+.aframe-sidebox .layui-nav-child dd.layui-this a { background:#7663af url('../images/bg_sidebtn.png') center; background-size: cover; }
 .aframe-sidebox .layui-nav-child .aframe-icon { margin:0 8px 0 -8px; font-size: 12px;}
 
 .aframe-sidebox.fold a { padding-left: 0; padding-right: 0;width: 46px; overflow: hidden; text-overflow:inherit;}
@@ -125,7 +131,7 @@ body {background:#FFF;}
 
 
 .cp-avatar { display: inline-block;width: 50px; height: 50px; background-size: cover; border-radius: 50%;}
-
+.cover-pic-wrapper { background-size: cover; background-position: center}
 
 /*文字色*/
 .text-red { color:rgb(198, 84, 84)}
@@ -234,6 +240,7 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 
 .amain-uploadImgBtn { border-radius: 4px;  min-height: 24px; display: inline-block; line-height: 1; position: relative; cursor: pointer; border: 1px solid #DDD; margin-top: 5px; background: #fafafa}
 .amain-uploadImgBtn .text { position: absolute; bottom: 0; left:0;right:0; padding:4px 10px 6px; background:rgba(0,0,0,.8); color: #fff; text-align: center; }
+.amain-uploadImgBtn .layui-upload-img { min-width: 120px; max-width: 200px;}
 /*******/
 .amain-tool-bar { padding: 4px 10px 0 ; border-bottom:1px solid #dedede;     position: relative; height:40px; white-space: nowrap; transition:all .2s}
 .amain-tool-bar li { position: relative; display: inline-block; font-size: 14px; line-height: 40px; min-width: 65px; padding: 0 15px;
@@ -383,6 +390,33 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 .page-trip-detail .info-table { margin-top: 0}
 .page-trip-detail .info-table .department { color: #aaa}
 
+
+/** 转盘抽奖项设置 **/
+.page-scoreConfigs-awards .lists { margin-top: 10px }
+.page-scoreConfigs-awards  .f-box .inner { padding: 4px; line-height: 40px}
+.page-scoreConfigs-awards  .f-box input {  }
+
+.page-scoreConfigs-awards  .f-index { width: 30px; color:#ccc}
+.page-scoreConfigs-awards  .f-grade { width: 80px}
+.page-scoreConfigs-awards  .f-rate { width: 150px}
+.page-scoreConfigs-awards  .f-desc {width: 100px}
+.page-scoreConfigs-awards  .f-full_desc {width: 150px}
+
+.page-scoreConfigs-awards  .f-cost {width: 80px}
+.page-scoreConfigs-awards  .f-bulletin_count {width: 60px}
+.page-scoreConfigs-awards  .f-extend { width:80px}
+.page-scoreConfigs-awards  .f-- {}
+.page-scoreConfigs-awards  .f-rate input {  float: left; width: 120px}
+.page-scoreConfigs-awards  .f-- .layui-form-switch  { margin-top: 0;}
+
+.page-scoreConfigs-awards .lists-header { display: flex; padding-bottom: 10px;border-bottom:1px solid #DDD;}
+.page-scoreConfigs-awards .lists-header .inner { line-height: 20px;}
+.page-scoreConfigs-awards .lists .item { display: flex; border-bottom:1px solid #DDD; position: relative}
+.page-scoreConfigs-awards .lists .item.error { background: rgb(252, 234, 234)}
+.page-scoreConfigs-awards .win-rate { color:#aaa}
+.page-scoreConfigs-awards .win-rate b { font-size: 20px; color:rgb(251, 165, 18)}
+
+
 /** 拼车报表统计 **/
 .page-carpool-reports .total-content { display: flex}
 .page-carpool-reports .total-item { padding: 10px 20px;  width: 100%; background: rgb(234, 246, 241); color:#10503b}
@@ -393,23 +427,51 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 .page-carpool-reports .time-options {padding: 10px}
 .page-carpool-reports .time-item { margin-right: 12px;padding: 4px 8px; background: rgb(216, 228, 242); color:rgb(77, 118, 143); border:1px solid rgb(177, 200, 226) }
 .page-carpool-reports .time-item.current { background: rgb(102, 63, 133); color:#fff }
+.page-carpool-reports-area { background: #FFF}
 
-/** 转盘抽奖项设置 **/
-.page-scoreConfigs-awards .lists { margin-top: 10px }
-.page-scoreConfigs-awards  .f-box .inner { padding: 4px; line-height: 40px}
-.page-scoreConfigs-awards  .f-box input {  }
 
-.page-scoreConfigs-awards  .f-index { width: 30px; color:#ccc}
-.page-scoreConfigs-awards  .f-grade { width: 80px}
-.page-scoreConfigs-awards  .f-rate { width: 120px}
-.page-scoreConfigs-awards  .f-desc {width: 180px}
-.page-scoreConfigs-awards  .f-cost {width: 80px}
-.page-scoreConfigs-awards  .f-extend { width:80px}
-.page-scoreConfigs-awards  .f-- {}
-.page-scoreConfigs-awards  .f-rate input {  float: left; width: 80px}
-.page-scoreConfigs-awards  .f-- .layui-form-switch  { margin-top: 0;}
+/** 日活报表统计 **/
+.page-eventLog-reports .total-content { display: flex;flex-wrap:wrap; }
+.page-eventLog-reports .total-item { padding: 10px 20px; min-width: 200px; flex-grow:1;background: rgb(234, 246, 241); color:#10503b; margin: 4px;}
+.page-eventLog-reports .total-item-carpool { min-width: 300px; width: 100%}
+.page-eventLog-reports .total-item h3 { font-size: 20px; color:#2e8669; font-weight: 300; }
+/* .page-eventLog-reports .total-item +.total-item { margin-left: 5px; border-left: 1px solid #FFF} */
+.page-eventLog-reports .total-value {padding: 10px 0 ;text-align: center; font-size: 50px; transition: all 2s ease-in-out}
+.page-eventLog-reports .total-value small { font-size: 30px}
+.page-eventLog-reports .time-options {padding: 10px}
+.page-eventLog-reports .time-item { margin-right: 12px;padding: 4px 8px; background: rgb(216, 228, 242); color:rgb(77, 118, 143); border:1px solid rgb(177, 200, 226) }
+.page-eventLog-reports .time-item.current { background: rgb(102, 63, 133); color:#fff }
+.page-eventLog-reports-area { background: #FFF}
 
-.page-scoreConfigs-awards .lists-header { display: flex; padding-bottom: 10px;border-bottom:1px solid #DDD;}
-.page-scoreConfigs-awards .lists-header .inner { line-height: 20px;}
-.page-scoreConfigs-awards .lists .item { display: flex; border-bottom:1px solid #DDD; position: relative}
-.page-scoreConfigs-awards .lists .item.error { background: rgb(252, 234, 234)}
+
+/** 积分报表统计 **/
+.page-score-reports .total-content { display: flex}
+.page-score-reports .total-item { padding: 10px 20px;  width: 100%; background: rgb(234, 246, 241); color:#10503b}
+.page-score-reports .total-item h3 { font-size: 20px; color:#2e8669; font-weight: 700;  text-align: center}
+.page-score-reports .total-item +.total-item { margin-left: 5px; border-left: 1px solid #FFF}
+
+.page-score-reports  .value-wrapper   { border-top:1px dotted rgba(5, 0, 8, 0.20); margin: 12px 0 8px; padding: 12px 0 0 }
+.page-score-reports  .value-wrapper dt { font-size: 16px; }
+.page-score-reports  .value-wrapper dd { text-align: center; font-size: 30px; transition: all 2s ease-in-out}
+.page-score-reports  .value-wrapper-total dd {font-size: 50px}
+.page-score-reports .total-item-minus { background: rgb(252, 240, 239); color:#cc5956}
+.page-score-reports .total-item-minus h3 {   color:#cc5956}
+.page-score-reports .total-item-diff { background: rgb(255, 249, 226); color:#ff9900}
+.page-score-reports .total-item-diff h3 {   color:#ed9c13}
+
+
+.page-score-reports .time-options {padding: 10px}
+.page-score-reports .time-item { margin-right: 12px;padding: 4px 8px; background: rgb(216, 228, 242); color:rgb(77, 118, 143); border:1px solid rgb(177, 200, 226) }
+.page-score-reports .time-item.current { background: rgb(102, 63, 133); color:#fff }
+.page-score-reports-area { background: #FFF}
+
+
+.page-winners-list .is_exchange-wrapper .layui-form-select { width:140px}
+
+/** page-upApp **/
+.page-upApp .list-inner {padding: 12px 16px; min-height: 500px}
+.page-upApp h2 { padding: 12px 0 20px}
+.page-upApp h3 { padding: 4px 0 0; color:#666; font-weight: 300}
+.page-upApp .list-wrapper { border-right:1px solid #fff; }
+.page-upApp .list-wrapper +.list-wrapper { border-left: 1px solid #ccc; border-right: none}
+.page-upApp .list-wrapper b { font-size: 18px; color: rgb(103, 44, 139)}

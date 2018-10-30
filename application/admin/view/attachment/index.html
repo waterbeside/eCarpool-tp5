@@ -1,0 +1,141 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <ul class="layui-tab-title">
+          <li class="layui-this">附件管理</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/Attachment/index')}" method="get" onsubmit="submitForm()">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">检索</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="关键词" class="layui-input" style="width:140px" >
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[ip]" value="{$filter['ip'] ? $filter['ip'] :''}" placeholder="ip" class="layui-input" style="width:100px" >
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                      <select name="filter[fileext]" >
+                        <option value="" >扩展名-不限</option>
+                        <?php foreach($extlist as $v){ ?>
+                          <option value="{$v.fileext}" {php}echo isset($filter['fileext'])  &&  $filter['fileext']==$v['fileext'] ? 'selected' : ''; {/php}>{$v.fileext}</option>
+                        <?php } ?>
+                      </select>
+                    </div>
+                    <!-- <div class="blank10">  </div> -->
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                          <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:180px" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <button class="layui-btn"><i class="fa fa-search"></i></button>
+                    </div>
+                </form>
+                <hr>
+
+                <table lay-filter="listtable" class="layui-table">
+                    <thead>
+                    <tr>
+                      <th  lay-data="{field:'attachment', width:100,fixed:'left'}">附件</th>
+                      <th  lay-data="{field:'title',  minWidth:100,fixed:'left'}">标题</th>
+                      <th  lay-data="{field:'filesize', width:100}" >尺寸 k</th>
+                      <th  lay-data="{field:'fileext', width:90}" >扩展名</th>
+                      <th  lay-data="{field:'module', width:100}">使用模块</th>
+                      <th  lay-data="{field:'last_time', width:140}">最后上传时间</th>
+                      <th  lay-data="{field:'times', width:60}">重复</th>
+                      <th  lay-data="{field:'create_time', width:100}" >初上传时间</th>
+                      <th  lay-data="{field:'last_userid', width:100}">最后上传者</th>
+                      <th  lay-data="{field:'ip', width:100}" >IP</th>
+                      <th  lay-data="{field:'is_admin', width:70}">后台?</th>
+                      <th  lay-data="{field:'options', width:110, fixed:'right'}">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {foreach name="lists" item="vo"}
+                    <tr>
+                        <td>
+                          <?php if($vo['is_image']){ ?>
+                            <div class="cover-pic-wrapper" style=" float: left;width:30px;height:30px;background-image:url('{$vo.filepath}')"></div>
+                          <?php }else{ ?>
+                            -
+                          <?php } ?>
+                        </td>
+                        <td>
+                          <a href="{$vo.filepath}" target="_blank">{$vo.title}</a>
+                        </td>
+                        <td><?php echo round($vo['filesize']/1024*100)/100 ?></td>
+                        <td>
+                          {switch name="vo.fileext"}
+                              {case value="rar|zip|7z"}<i class="fa fa-file-zip-o" style="color:#bf9d54"></i>{/case}
+                              {case value="doc|docx|wps"}<i class="fa fa-file-word-o" style="color:#5281bf"></i>{/case}
+                              {case value="pdf"}<i class="fa fa-file-pdf-o" style="color:#a61e32"></i>{/case}
+                              {case value="xls|xlsx"}<i class="fa fa-file-excel-o" style="color:#137a11"></i>{/case}
+                              {case value="gif|png|jpg|jpeg"}<i class="fa fa-file-image-o" style="color:#bf7050" ></i>{/case}
+                              {case value="txt"}<i class="fa fa-file-text-o" style="color:#787857"></i>{/case}
+                              {case value="ppt|pptx"}<i class="fa fa-file-powerpoint-o" style="color:#ba4506"></i>{/case}
+                              {case value="flv|mp4|3GP|avi|rmvb|wma|rm|mov|wmv"}<i class="fa fa-youtube-play" style="color:#8a1111"></i>{/case}
+                              {default /}
+                           {/switch}
+                          {$vo.fileext}
+                        </td>
+                        <td>{$vo.module}</td>
+                        <td>
+                          {php}
+                            echo $vo['last_time'] ? date('Y-m-d H:i',$vo['last_time'])  : date('Y-m-d H:i',$vo['create_time']) ;
+                          {/php}
+                        </td>
+                        <td>{$vo.times}</td>
+                        <td>{$vo.create_time|date='Y-m-d H:i'}</td>
+                        <td>
+                          <?php
+                            $uploader_id = $vo['last_userid'] ? $vo['last_userid'] : $vo['userid'];
+                            if(!$vo['is_admin']){
+                          ?>
+                          <a href="{:url('admin/User/public_detail',['id'=>$uploader_id])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
+                            {$vo.last_userid ? $vo.last_userid : $vo.userid}
+                          </a>
+                          <?php }else{ ?>
+                            <a href="javascript:void(0);" onclick="alert('后台用户');">
+                            {$vo.last_userid ? $vo.last_userid : $vo.userid}
+                            </a>
+                          <?php } ?>
+                        </td>
+
+                        <td>{$vo.ip}</td>
+                        <td>{$vo.is_admin}</td>
+                        <td>
+                          <a href="{:url('admin/Attachment/read',['id'=>$vo['id']])}" class="layui-btn  layui-btn-primary layui-btn-xs " data-title="查看"  data-trigger="modal" >查看</a>
+                          <a href="{:url('admin/Attachment/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除" ><i class="layui-icon">&#xe640;</i></a>
+                        </td>
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+                <!--分页-->
+                {$lists|raw}
+
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+initLayuiTable({ limit: {$pagesize} })
+
+laydate.render({
+  elem: '#filter_time'
+  ,range: '~' //或 range: '~' 来自定义分割字符
+  ,done: function(value, date, endDate){
+
+ }
+});
+</script>
+{/block}

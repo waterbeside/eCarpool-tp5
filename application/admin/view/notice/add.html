@@ -1,0 +1,195 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body article-item-eidt" >
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <div class="layui-tab-content">
+
+                <form class="layui-form  " action="{:url('admin/Notice/add')}" method="post" style="margin-right:15px;" id="editForm" data-jump-target="parent">
+
+                    <div class="layui-row">
+                      <div class="layui-col-md8">
+                        <div class="col-wrapper">
+                          <div class="layui-form-item">
+                              <label class="layui-form-label">标题</label>
+                              <div class="layui-input-block">
+                                  <input type="text" name="title" value="" required  lay-verify="required" placeholder="请输入标题" class="layui-input">
+                              </div>
+                          </div>
+
+
+                          <div class="layui-form-item">
+                              <label class="layui-form-label">内容</label>
+                              <div class="layui-input-block">
+                                  <textarea name="content" lay-verify="content" placeholder=""   id="content" class="layui-textarea" style="height:400px"></textarea>
+                              </div>
+                          </div>
+
+                          <div class="layui-form-item">
+                              <label class="layui-form-label">所属APP</label>
+                              <div class="layui-input-block">
+                                {foreach name="$app_id_list" key='key' item="vo"}
+                                <input type="checkbox" name="app_id[{$key}]" title="{$vo}">
+                                {/foreach}
+                              </div>
+                          </div>
+                          <div class="layui-form-item">
+                              <label class="layui-form-label">所属平台</label>
+                              <div class="layui-input-block">
+                                {foreach name="$platform_list" key='key' item="vo"}
+                                <?php if($key > 0){ ?>
+                                  <input type="checkbox" name="platform[{$key}]" title="{$vo}">
+                                <?php } ?>
+                                {/foreach}
+                              </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- /layui-col-md9  -->
+
+                      <div class="layui-col-md4">
+                        <div class="col-wrapper">
+                          <div class="layui-form-item">
+                              <label class="layui-form-label">所属类型</label>
+                              <div class="layui-input-block">
+                                <select name="type">
+                                    <!-- <option value="0">选译类型</option> -->
+                                    {foreach name="$typeList" key='key' item="vo"}
+                                    <option value="{$key}" > {$vo}</option>
+                                    {/foreach}
+                                </select>
+                              </div>
+                          </div>
+                          <div class="layui-form-item">
+                              <label class="layui-form-label ">选择语言</label>
+                              <div class="layui-input-block">
+                                <select name="lang" lay-verify="required" lay-search>
+                                   <option value="0">请选择语言</option>
+                                 </select>
+                              </div>
+                          </div>
+
+                          <div class="layui-form-item">
+                              <label class="layui-form-label">状态</label>
+                              <div class="layui-input-block">
+                                  <input type="radio" name="status" value="1" title="显示" checked="checked">
+                                  <input type="radio" name="status" value="0" title="隐藏" >
+                              </div>
+                          </div>
+
+
+
+                          <div class="layui-form-item">
+                              <label class="layui-form-label">排序</label>
+                              <div class="layui-input-block">
+                                  <input type="number" name="sort" value="0"  class="layui-input">
+                                  <div class="layui-form-mid layui-word-aux" >越大越前</div>
+                              </div>
+                          </div>
+                          <div class="layui-form-item">
+                              <label class="layui-form-label">开始日</label>
+                              <div class="layui-input-block">
+                                  <input type="text" name="start_time"  value="<?php echo date('Y-m-d H:i:s'); ?>"  class="layui-input " id="start_time" >
+                              </div>
+                          </div>
+                          <div class="layui-form-item">
+                              <label class="layui-form-label">结束日</label>
+                              <div class="layui-input-block">
+                                  <input type="text" name="end_time"  value="<?php echo date('Y-m-d H:i:s',strtotime('+1 week')); ?>"  class="layui-input " id="end_time" >
+                              </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- /layui-col-md3  -->
+                    </div>
+
+
+
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit lay-filter="*">保存</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+                </form>
+
+        </div>
+    </div>
+</div>
+{/block}
+{block name="js"}
+<script src="__JS__/ueditor/ueditor.config.js"></script>
+<script src="__JS__/ueditor/ueditor.all.min.js"></script>
+{/block}
+{block name="script"}
+<script>
+PAGE_EXEC = {
+
+
+  data: {
+    langs:[],
+  },
+
+  init: function(){
+    var _this = this;
+    this.getLangs();
+    form.render();
+
+    element.init();
+  },
+  getLangs: function(success){
+      var _this = this;
+      $.get("{:url('admin/i18n/public_langs')}",function(res){
+        if(res.code === 0){
+          _this.data.langs = res.data.lists;
+          _this.renderLangs(res.data.lists);
+          if(typeof(success)=="function"){
+            success(res);
+          }
+          form.render();
+        }
+      })
+
+  },
+
+  renderLangs: function(listData){
+    var options = '<option value="0">请选择语言</option>';
+    var lang = this.data.lang;
+
+    $(listData).each(function(index, el) {
+      var selected = el.code == 'zh-cn' ? "selected" : '';
+      options += '<option value="'+el.code+'"  '+selected+'>【'+el.code +"】"+el.name+'</option>';
+    });
+    $("#editForm select[name='lang']").html(options)
+  },
+
+
+}
+
+
+$(function() {
+    laydate.render({
+      elem: '#start_time'
+      ,type: 'datetime'
+    });
+    laydate.render({
+      elem: '#end_time'
+      ,type: 'datetime'
+    });
+    var photoListItem,
+        uploadImage;
+    /*var ue = UE.getEditor('content',{
+      //这里可以选择自己需要的工具按钮名称,此处仅选择如下五个
+      toolbars:[['undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript','|','justifyleft','justifyright','justifycenter','|','blockquote','pasteplain','inserttable','autotypeset','removeformat']],
+      topOffset:0,
+      wordCount:true,
+      maximumWords:8000,
+      //默认的编辑区域高度
+      initialFrameHeight:300,
+    })*/
+    PAGE_EXEC.init();
+
+});
+</script>
+{/block}

@@ -2,7 +2,7 @@
 namespace app\admin\controller;
 
 use app\common\model\Nav as NavModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 
 /**

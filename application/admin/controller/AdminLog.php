@@ -2,14 +2,14 @@
 namespace app\admin\controller;
 
 use app\common\model\AdminLog as AdminLogModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\facade\Validate;
 use think\facade\Config;
 use think\Db;
 
 /**
- * 公司管理
- * Class Department
+ * 后台日志
+ * Class AdminLog
  * @package app\admin\controller
  */
 class AdminLog extends AdminBase

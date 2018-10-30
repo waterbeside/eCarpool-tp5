@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 
 use app\content\model\Label as LabelModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 use my\Tree;
 
@@ -16,6 +16,7 @@ class ContentLabel extends AdminBase
 {
 
     protected $label_model;
+    protected $cacheVersionKey = "carpool:label:version";
 
     protected function initialize()
     {
@@ -71,6 +72,7 @@ class ContentLabel extends AdminBase
           }
           if ($this->label_model->allowField(true)->save($data)) {
             $this->label_model->deleteListCache();
+            $this->updateDataVersion($this->cacheVersionKey);
             $this->log('添加标签成功',0);
             $this->jsonReturn(0,'保存成功');
           } else {
@@ -110,6 +112,7 @@ class ContentLabel extends AdminBase
 
           if ($this->label_model->allowField(true)->save($data, $id) !== false) {
             $this->label_model->deleteListCache();
+            $this->updateDataVersion($this->cacheVersionKey);
             $this->log('更新标签成功',0);
               $this->jsonReturn(0,'更新成功');
           } else {
@@ -141,6 +144,7 @@ class ContentLabel extends AdminBase
 
         if($this->label_model->where('id', $id)->update(['is_delete' => 1])){
           $this->label_model->deleteListCache();
+          $this->updateDataVersion($this->cacheVersionKey);
           $this->log('删除标签成功',0);
           $this->jsonReturn(0,'删除成功');
         }else{
@@ -159,6 +163,7 @@ class ContentLabel extends AdminBase
     {
         if($this->label_model->where('id', $id)->update(['is_delete' => 0])){
           $this->label_model->deleteListCache();
+          $this->updateDataVersion($this->cacheVersionKey);
           $this->log('还原标签成功',0);
           $this->jsonReturn(0,'还原成功');
         }else{

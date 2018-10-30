@@ -4,7 +4,7 @@ namespace app\admin\controller;
 use app\score\model\Account as ScoreAccountModel;
 use app\score\model\AccountMix as AccountMixModel;
 use app\carpool\model\User as CarpoolUserModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
@@ -216,7 +216,7 @@ class ScoreAccount extends AdminBase
         $userInfo = $accountInfo['carpool'];
       }
       if($userInfo){
-        $userInfo->avatar = $userInfo->imgpath ? config('app.avatarBasePath').$userInfo->imgpath : config('app.avatarBasePath')."im/default.png";
+        $userInfo->avatar = $userInfo->imgpath ? config('secret.avatarBasePath').$userInfo->imgpath : config('secret.avatarBasePath')."im/default.png";
       }
       if(!isset($accountInfo['id'])){
         $accountInfo = NULL ;

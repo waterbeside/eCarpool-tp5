@@ -3,7 +3,7 @@ namespace app\admin\controller;
 
 
 use app\content\model\Category as CategoryModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 use my\Tree;
 
@@ -16,6 +16,7 @@ class ContentCategory extends AdminBase
 {
 
     protected $category_model;
+    protected $cacheVersionKey = "carpool:category:version";
 
     protected function initialize()
     {
@@ -36,8 +37,6 @@ class ContentCategory extends AdminBase
         }else{
           $data  = $this->category_model->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
         }
-
-
 
 
         $tree = new Tree();
@@ -72,6 +71,7 @@ class ContentCategory extends AdminBase
           }
           if ($this->category_model->allowField(true)->save($data)) {
             $this->category_model->deleteListCache();
+            $this->updateDataVersion($this->cacheVersionKey);
             $this->log('添加分类成功',0);
             $this->jsonReturn(0,'保存成功');
           } else {
@@ -119,6 +119,7 @@ class ContentCategory extends AdminBase
           } else {
               if ($this->category_model->allowField(true)->save($data, $id) !== false) {
                 $this->category_model->deleteListCache();
+                $this->updateDataVersion($this->cacheVersionKey);
                 $this->log('更新分类成功',0);
                   $this->jsonReturn(0,'更新成功');
               } else {
@@ -155,6 +156,7 @@ class ContentCategory extends AdminBase
 
         if($this->category_model->where('id', $id)->update(['is_delete' => 1])){
           $this->category_model->deleteListCache();
+          $this->updateDataVersion($this->cacheVersionKey);
           $this->log('删除分类成功',0);
           $this->jsonReturn(0,'删除成功');
         }else{
@@ -181,6 +183,7 @@ class ContentCategory extends AdminBase
     {
         if($this->category_model->where('id', $id)->update(['is_delete' => 0])){
           $this->category_model->deleteListCache();
+          $this->updateDataVersion($this->cacheVersionKey);
           $this->log('还原分类成功',0);
           $this->jsonReturn(0,'还原成功');
         }else{

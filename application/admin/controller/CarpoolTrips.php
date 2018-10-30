@@ -5,8 +5,10 @@ use app\carpool\model\User as CarpoolUserModel;
 use app\carpool\model\Company as CompanyModel;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Csv;
 
 /**
  * 拼车行程管理
@@ -25,10 +27,16 @@ class CarpoolTrips extends AdminBase
    * @return mixed
    *
    */
-  public function index($filter=[],$status="all",$type=0,$page = 1,$pagesize = 20)
+  public function index($filter=[],$status="all",$type=0,$page = 1,$pagesize = 20,$export=0)
   {
-    $map = [];
+    if($export){
+      ini_set ('memory_limit', '128M');
+      if( !$filter['time'] && !$filter['keyword'] && !$filter['keyword_dept']){
+        $this->error('数据量过大，请筛选后再导出');
+      }
+    }
 
+    $map = [];
     if(isset($filter['status']) && is_numeric($filter['status'])){
       $map[] = ['status','=', $filter['status']];
     }
@@ -64,7 +72,6 @@ class CarpoolTrips extends AdminBase
     $join = [];
     $join[] = ['address s','s.addressid = t.startpid', 'left'];
     $join[] = ['address e','e.addressid = t.endpid', 'left'];
-
     //从info表取得行程
     if($type === 0 ){
       //筛选用户信息
@@ -94,14 +101,22 @@ class CarpoolTrips extends AdminBase
             break;
         }
       }
-      $lists = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('love_wall_ID DESC , time DESC')
-      ->paginate($pagesize, false,  ['query'=>request()->param()]);
+
+      if($export){
+        $lists = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('love_wall_ID DESC , time DESC')->select();
+      }else{
+        $lists = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('love_wall_ID DESC , time DESC')
+        ->paginate($pagesize, false,  ['query'=>request()->param()]);
+      }
+
       // ->fetchSql()->select();
       // dump($lists);exit;
       foreach ($lists as $key => $value) {
          $lists[$key]['time'] = date('Y-m-d H:i',strtotime($value['time'].'00'));
          $lists[$key]['subtime'] = date('Y-m-d H:i',strtotime($value['subtime'].'00'));
       }
+      // dump($lists);exit;
+
     }
 
     if($type ==1 ){
@@ -137,9 +152,13 @@ class CarpoolTrips extends AdminBase
         }
       }
 
+      if($export){
+        $lists = WallModel::alias('t')->field($fields)->join($join)->where($map)->where($map_stauts)->order('time DESC')->select();
+      }else{
+        $lists = WallModel::alias('t')->field($fields)->join($join)->where($map)->where($map_stauts)->order('time DESC')
+        ->paginate($pagesize, false,  ['query'=>request()->param()]);
+      }
 
-      $lists = WallModel::alias('t')->field($fields)->join($join)->where($map)->where($map_stauts)->order('time DESC')
-      ->paginate($pagesize, false,  ['query'=>request()->param()]);
       // ->fetchSql()->select();dump($lists);exit;
 
       foreach ($lists as $key => $value) {
@@ -161,12 +180,66 @@ class CarpoolTrips extends AdminBase
     foreach($companyLists as $key => $value) {
       $companys[$value['company_id']] = $value['company_name'];
     }
-
-    if($type){
-      return $this->fetch('wall_index', ['lists' => $lists, 'pagesize'=>$pagesize,'type'=>$type,'status'=>$status,'filter'=>$filter,'companys'=>$companys]);
-    }else{
-      return $this->fetch('index', ['lists' => $lists, 'pagesize'=>$pagesize,'type'=>$type,'status'=>$status,'filter'=>$filter,'companys'=>$companys]);
+    // dump($lists);
+    if(!$export){
+      if($type){
+        return $this->fetch('wall_index', ['lists' => $lists, 'pagesize'=>$pagesize,'type'=>$type,'status'=>$status,'filter'=>$filter,'companys'=>$companys]);
+      }else{
+        return $this->fetch('index', ['lists' => $lists, 'pagesize'=>$pagesize,'type'=>$type,'status'=>$status,'filter'=>$filter,'companys'=>$companys]);
+      }
     }
+    //导出表格
+    if($export){
+      $filename = md5(json_encode($filter)).'_'.time().'.csv';
+
+      $spreadsheet = new Spreadsheet();
+      $sheet = $spreadsheet->getActiveSheet();
+
+      /*设置表头*/
+      $sheet->setCellValue('A1', '起点')
+      ->setCellValue('B1','终点')
+      ->setCellValue('C1','出发时间')
+      ->setCellValue('D1','司机')
+      ->setCellValue('E1','司机工号')
+      ->setCellValue('F1','司机部门')
+      ->setCellValue('G1','司机电话')
+      ->setCellValue('H1', $type ? '乘客数' : '乘客')
+      ->setCellValue('I1', $type ? '发布空位数' : '乘客工号')
+      ->setCellValue('J1', $type ? '-' : '乘客电话')
+      ->setCellValue('K1', $type ? '-' : '乘客电话')
+      ;
+
+      foreach ($lists as $key => $value) {
+        $rowNum = $key+2;
+        $sheet->setCellValue('A'.$rowNum, $value['start_addressname'])
+        ->setCellValue('B'.$rowNum,$value['end_addressname'])
+        ->setCellValue('C'.$rowNum,$value['time'])
+        ->setCellValue('D'.$rowNum,$value['driver_name'])
+        ->setCellValue('E'.$rowNum,$value['driver_loginname'] )
+        ->setCellValue('F'.$rowNum, isset($companys[$value['driver_company_id']]) ? $value['driver_department'].'/'.$companys[$value['driver_company_id']] :  $value['driver_department'] )
+        ->setCellValue('G'.$rowNum,$value['driver_phone'])
+        ->setCellValue('H'.$rowNum,$type ? $value['took_count'] :  $value['passenger_name'])
+        ->setCellValue('I'.$rowNum,$type ? $value['seat_count'] :  $value['passenger_loginname'])
+        ->setCellValue('J'.$rowNum,$type ? "-" :  (  isset($companys[$value['passenger_company_id']]) ? $value['passenger_department'].'/'.$companys[$value['passenger_company_id']] : $value['passenger_department']))
+        ->setCellValue('K'.$rowNum,$type ? "-" :  $value['passenger_phone'])
+        ;
+      }
+      /*$value = "Hello World!" . PHP_EOL . "Next Line";
+      $sheet->setCellValue('A1', $value)；
+      $sheet->getStyle('A1')->getAlignment()->setWrapText(true);*/
+
+      $writer = new Csv($spreadsheet);
+      /*$filename = Env::get('root_path') . "public/uploads/temp/hello_world.xlsx";
+      $writer->save($filename);*/
+      header('Content-Disposition: attachment;filename="'.$filename.'"');//告诉浏览器输出浏览器名称
+      header('Cache-Control: max-age=0');//禁止缓存
+      $writer->save('php://output');
+      $spreadsheet->disconnectWorksheets();
+      unset($spreadsheet);
+      // dump($lists);
+      exit;
+    }
+
   }
 
   /**
@@ -195,7 +268,7 @@ class CarpoolTrips extends AdminBase
       ->find($id);
 
 
-      $data['driver_avatar'] = $data['driver_imgpath'] ? config('app.avatarBasePath').$data['driver_imgpath'] : config('app.avatarBasePath')."im/default.png";
+      $data['driver_avatar'] = $data['driver_imgpath'] ? config('secret.avatarBasePath').$data['driver_imgpath'] : config('secret.avatarBasePath')."im/default.png";
       $data['time'] = date('Y-m-d H:i',strtotime($data['time'].'00'));
       $data['subtime'] = date('Y-m-d H:i',strtotime($data['subtime'].'00'));
       // $data['took_count']       = InfoModel::where([['love_wall_ID','=',$data['love_wall_ID']],['status','<>',2]])->count(); //取已坐数
@@ -207,7 +280,7 @@ class CarpoolTrips extends AdminBase
 
       $data['passengers']       = InfoModel::alias('t')->field($fields2)->join($join2)->where([['love_wall_ID','=',$data['love_wall_ID']],['status','<>',2]])->select(); //取乘客
       foreach ($data['passengers'] as $key => $value) {
-        $data['passengers'][$key]['avatar'] = $value['imgpath'] ? config('app.avatarBasePath').$value['imgpath'] : config('app.avatarBasePath')."im/default.png";
+        $data['passengers'][$key]['avatar'] = $value['imgpath'] ? config('secret.avatarBasePath').$value['imgpath'] : config('secret.avatarBasePath')."im/default.png";
       }
 
 
@@ -224,8 +297,8 @@ class CarpoolTrips extends AdminBase
       $data = InfoModel::alias('t')->field($fields)->join($join)->find($id);
 
 
-      $data['driver_avatar'] = $data['driver_imgpath'] ? config('app.avatarBasePath').$data['driver_imgpath'] : config('app.avatarBasePath')."im/default.png";
-      $data['passenger_avatar'] = $data['passenger_imgpath'] ? config('app.avatarBasePath').$data['passenger_imgpath'] : config('app.avatarBasePath')."im/default.png";
+      $data['driver_avatar'] = $data['driver_imgpath'] ? config('secret.avatarBasePath').$data['driver_imgpath'] : config('secret.avatarBasePath')."im/default.png";
+      $data['passenger_avatar'] = $data['passenger_imgpath'] ? config('secret.avatarBasePath').$data['passenger_imgpath'] : config('secret.avatarBasePath')."im/default.png";
       $data['time'] = date('Y-m-d H:i',strtotime($data['time'].'00'));
       $data['subtime'] = date('Y-m-d H:i',strtotime($data['subtime'].'00'));
 

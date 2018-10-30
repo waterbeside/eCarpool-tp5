@@ -1,0 +1,123 @@
+<div class="layui-tab-content">
+    <div class="layui-tab-item layui-show">
+        <form class="layui-form form-container" action="{:url('admin/AppVersionDetail/edit')}" method="post" id="editForm">
+            <div class="layui-form-item">
+                <label class="layui-form-label">版本</label>
+                <div class="layui-input-block">
+                  <div class="layui-form-mid">{$data.version_code}</div>
+                    <!-- <input type="text" name="name" value="{$data.version_code}" disabled  placeholder="请输入版本" class="layui-input layui-disabled"> -->
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">平台</label>
+                <div class="layui-input-block">
+                  <div class="layui-form-mid">
+                    <?php if($data['platform'] == 'iOS'){echo '<i class="fa fa-apple"></i>';} ?>
+                    <?php if($data['platform'] == 'Android'){echo '<i class="fa fa-android"></i>';} ?>
+                     {$data.platform}
+                  </div>
+                  <!-- <select name="platform" class="layui-input layui-disabled">
+                     <option value="iOS" <?php if($data['platform'] == 'iOS'){echo 'select';} ?> >iOS</option>
+                     <option value="Android" <?php if($data['platform'] == 'Android'){echo 'select';} ?>>Android</option>
+                   </select> -->
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label ">选择语言</label>
+                <div class="layui-input-block">
+                  <select name="language_code" lay-filter='language_code_select' lay-verify="required">
+                     <option value="0">请选择语言</option>
+                   </select>
+                   <input type="text" id="language_code" name="language_code_input" value="{$data.language_code}"   placeholder="请输入语言码" class="layui-input">
+                </div>
+
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">内容</label>
+                <div class="layui-input-block">
+                    <textarea name="description" lay-verify="content" placeholder=""   id="description" class="layui-textarea" style="height:300px">{$data.description}</textarea>
+                </div>
+            </div>
+
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <input type="hidden" name="id" value="{$data.version_detail_id}">
+                    <button class="layui-btn" lay-submit lay-filter="*">更新</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+PAGE_EXEC = {
+
+
+  data: {
+    langs:[],
+    lang:'{$data.language_code}'
+  },
+
+  init: function(){
+    var _this = this;
+    this.getLangs();
+    form.render();
+    element.init();
+  },
+  getLangs: function(success){
+      var _this = this;
+      $.get("{:url('admin/i18n/public_langs')}",function(res){
+        console.log(res)
+        if(res.code === 0){
+          _this.data.langs = res.data.lists;
+          _this.renderLangs(res.data.lists);
+          if(typeof(success)=="function"){
+            success(res);
+          }
+          form.render();
+          form.on('select(language_code_select)', function(data){
+            if(data.value == 0 || data.value == -1){
+              $("#language_code").show();
+            }else{
+              $("#language_code").hide();
+            }
+            console.log(data.value); //得到被选中的值
+            console.log(data.othis); //得到美化后的DOM对象
+          });
+        }
+      })
+
+  },
+
+  renderLangs: function(listData){
+    var options_s = '<option value="0">请选择语言</option>';
+    var options = '';
+    var lang = this.data.lang;
+    var hasLang  = 0;
+    $(listData).each(function(index, el) {
+      var selected = el.code == lang ? "selected" : '';
+      hasLang = el.code == lang  ? 1 : hasLang;
+      options += '<option value="'+el.code+'"  '+selected+'>【'+el.code +"】"+el.name+'</option>';
+    });
+    var has_select_1 = ''
+    if(hasLang){
+      $("#language_code").hide();
+    }else{
+      has_select_1 = 'selected';
+      $("#language_code").show();
+    }
+    options_s += '<option value="-1" '+has_select_1+'>自定义</option>';
+    $("#editForm select[name='language_code']").html(options_s+options)
+
+  },
+
+
+}
+
+
+$(function() {
+  PAGE_EXEC.init()
+});
+
+  form.render();
+</script>

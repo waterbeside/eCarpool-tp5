@@ -1,9 +1,11 @@
 <?php
 namespace app\admin\controller;
 
-use app\carpool\model\Department as DepartmentModel;
+use app\carpool\model\Department as DepartmentModel_o;
+use app\user\model\Department as DepartmentModel;
+use app\user\model\UserTemp ;
 use app\carpool\model\CompanySub as CompanySubModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\facade\Config;
 use think\Db;
 use think\facade\Cache;
@@ -20,7 +22,7 @@ class Department extends AdminBase
     protected function initialize()
     {
         parent::initialize();
-        $this->department_model = new DepartmentModel();
+        $this->department_model = new DepartmentModel_o();
     }
 
     /**
@@ -164,4 +166,30 @@ class Department extends AdminBase
             $this->jsonReturn(-1,'删除失败');
         }
     }
+
+
+    /**
+     * /
+     */
+    public function create_all_department(){
+      $lists = UserTemp::field('department')->group('department')->select();
+      // dump($lists);
+      if(!$lists){
+        $this->jsonReturn(20002,"No Data");
+      }
+      $department_model = new DepartmentModel();
+      $success = [];
+      $fail = [];
+      foreach ($lists as $key => $value) {
+        $res = $department_model->create_department_by_str($value['department']);
+        if($res){
+          $success[] = $value['department'];
+        }else{
+          $fail[]    = $value['department'];
+        }
+      }
+      $this->jsonReturn(0,["success"=>$success,"fail"=>$fail],"成功");
+    }
+
+
 }

@@ -2,7 +2,7 @@
 namespace app\admin\controller;
 
 use app\common\model\AuthRule as AuthRuleModel;
-use app\common\controller\AdminBase;
+use app\admin\controller\AdminBase;
 use think\Db;
 use my\Tree;
 

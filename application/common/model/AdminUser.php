@@ -33,8 +33,8 @@ class AdminUser extends Model
           return false;
       }
       //
-      $key = config('admin_setting')['jwt_key'];
-      $exp = config('admin_setting')['jwt_exp'];
+      $key = config('secret.admin_setting')['jwt_key'];
+      $exp = config('secret.admin_setting')['jwt_exp'];
 
 
       $user = $this->getLocalUser($identifier, $password);
