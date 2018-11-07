@@ -438,6 +438,8 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 /* .page-eventLog-reports .total-item +.total-item { margin-left: 5px; border-left: 1px solid #FFF} */
 .page-eventLog-reports .total-value {padding: 10px 0 ;text-align: center; font-size: 50px; transition: all 2s ease-in-out}
 .page-eventLog-reports .total-value small { font-size: 30px}
+.page-eventLog-reports .total-value .small { float: left; display: inline-block; text-align: left;}
+.page-eventLog-reports .total-value .small span { display: block; font-size: 14px;}
 .page-eventLog-reports .time-options {padding: 10px}
 .page-eventLog-reports .time-item { margin-right: 12px;padding: 4px 8px; background: rgb(216, 228, 242); color:rgb(77, 118, 143); border:1px solid rgb(177, 200, 226) }
 .page-eventLog-reports .time-item.current { background: rgb(102, 63, 133); color:#fff }
