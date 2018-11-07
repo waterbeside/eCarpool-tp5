@@ -6,7 +6,7 @@
     <div class="layui-tab layui-tab-brief " lay-filter="main-tab">
 
         <ul class="amain-tool-bar layui-tab-title" >
-          <li class="layui-this"> 日活 </li>
+          <li class="layui-this"><a href="{:url('index')}">日活</a> </li>
           <!-- <li > 走势图表 </li> -->
         </ul>
 
@@ -95,6 +95,20 @@ PAGE_EXEC = {
       "activity":0,
       "moment":0,
     },
+    totals_a : {
+      "carpool":0,
+      "idle":0,
+      "tenement":0,
+      "activity":0,
+      "moment":0,
+    },
+    totals_i : {
+      "carpool":0,
+      "idle":0,
+      "tenement":0,
+      "activity":0,
+      "moment":0,
+    },
 
     tableObj:[]
   },
@@ -115,6 +129,8 @@ PAGE_EXEC = {
             if(res.code===0){
               var total = res.data.a + res.data.i;
               _this.data.totals[type] = total;
+              _this.data.totals_a[type] = res.data.a;
+              _this.data.totals_i[type] = res.data.i;
               console.log(_this.data)
               dtd.resolve(res.data);
             }else{
@@ -185,7 +201,10 @@ PAGE_EXEC = {
     var $totalItem =  $('.total-item-'+type);
     var $valueWrapper = $totalItem.find('.total-value');
     var sumNum =  this.data.totals[type];
-    $valueWrapper.text(sumNum);
+    var html  =  '<div class="small"><span class="ios"><i class="fa fa-apple"></i> '+this.data.totals_i[type]+'</span>'
+        html +=  '<span class="android"><i class="fa fa-android"></i> '+this.data.totals_a[type]+'</span></div>'
+        html +=  ' '+this.data.totals[type]+' '
+    $valueWrapper.html(html);
   },
 
 
@@ -197,7 +216,6 @@ PAGE_EXEC = {
   init: function(){
     var _this = this;
     _this.getData().all();
-
 
     laydate.render({
       elem: '#filter_time'
