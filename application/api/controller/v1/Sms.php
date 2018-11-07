@@ -18,6 +18,7 @@ class Sms extends ApiBase
 {
     protected  $appKey = '';
     protected  $appSecret = '';
+    protected  $test_inter = 0;
     // usage 与对应的模板id
     protected $SmsTemplate  = array(
       // 'u_000'   => '4022147',
@@ -38,8 +39,16 @@ class Sms extends ApiBase
     protected function initialize()
     {
         parent::initialize();
-        $this->appKey     = config('secret.nim.appKey');
-        $this->appSecret  = config('secret.nim.appSecret');
+        $test_inter = input('param.test_inter');
+        if($test_inter){
+          $this->appKey = "8542794600d06d41ec89c8956972f886";
+          $this->appSecret  = "7310b481e48f";
+          $this->test_inter = 1;
+        }else{
+          $this->appKey     = config('secret.nim.appKey');
+          $this->appSecret  = config('secret.nim.appSecret');
+        }
+
     }
 
 
@@ -161,6 +170,8 @@ class Sms extends ApiBase
     public function send($usage = 0, $phone = NULL)
     {
       $dev = input('param.dev');
+
+
       if(!$usage){
         $this->jsonReturn(-10001,[],'usage empty');
         exit;
@@ -234,11 +245,7 @@ class Sms extends ApiBase
           break;
         }
         if($isSuccess){
-          if(count($phones)==1){
-            $this->jsonReturn(0,[],'success');
-          }else{
-            $this->jsonReturn(0,$sendCallBack,'success');
-          }
+          $this->jsonReturn(0,$sendCallBack,'success');
         }else{
           if($sendCallBack[''.$phone]['code'] == 10200){
             $this->jsonReturn(10200,$sendCallBack,'too often');
@@ -397,7 +404,7 @@ class Sms extends ApiBase
               // 提交事务
               Db::connect('database_carpool')->commit();
           } catch (\Exception $e) {
-              echo($e);
+              // echo($e);
               // 回滚事务
               Db::connect('database_carpool')->rollback();
               $logMsg = "合并账号失败:".json_encode($this->request->post());
@@ -439,6 +446,9 @@ class Sms extends ApiBase
     $templates = $this->SmsTemplate;
     $templateid =   $templates['u_'.$usage] ; //短信验证码的模板ID
 
+    if($this->test_inter){
+      $templateid = '9284311';
+    }
     $cacheData_o = $this->codeCache($usage,$phone);
 
     if($cacheData_o && time() - $cacheData_o['time'] < 52 && !$dev){  //1分钟内不准再发。
@@ -447,7 +457,6 @@ class Sms extends ApiBase
     $NIM = new NimServer($this->appKey,$this->appSecret,'fsockopen');
     // var_dump($SMS);
     $phone = preg_replace('# #','',$phone);
-
     if($dev){
       $sendRes  = array( //test
         'code'  => 200,
@@ -460,7 +469,6 @@ class Sms extends ApiBase
     /**/
     if(isset($sendRes['obj'])){
       $this->codeCache($usage,$phone,$sendRes['obj'],$expiration);
-
       unset($sendRes['obj']);
     }
     return  $sendRes;
@@ -517,6 +525,15 @@ class Sms extends ApiBase
 
 
 
+
+  /**
+   * 查询短信发送情况
+   */
+  public function sms_status($sendid){
+    $NIM = new NimServer($this->appKey,$this->appSecret,'fsockopen');
+    $res = $NIM->querySMSStatus($sendid);
+    $this->jsonReturn(0,$res);
+  }
 
 
 }
