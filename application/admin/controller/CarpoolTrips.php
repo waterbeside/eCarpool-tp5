@@ -73,7 +73,7 @@ class CarpoolTrips extends AdminBase
     $join[] = ['address s','s.addressid = t.startpid', 'left'];
     $join[] = ['address e','e.addressid = t.endpid', 'left'];
     //从info表取得行程
-    if($type === 0 ){
+    if(is_numeric($type) && $type == 0 ){
       //筛选用户信息
       if (isset($filter['keyword']) && $filter['keyword'] ){
         $map[] = ['d.loginname|d.phone|d.name|p.loginname|p.phone|p.name','like', "%{$filter['keyword']}%"];
