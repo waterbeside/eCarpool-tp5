@@ -20,7 +20,20 @@ class Department extends Model
     * [create_department_by_str 根据部门路径字符串添加部门到数据库，并返回完整id层级数径]
     */
    public function create_department_by_str($department_str,$company_id = 1){
+      if(!$department_str){
+       return 0;
+      }
+      //验证该部门是否已存在，是则直接返回；
+      $department_str_path = str_replace('/',',',$department_str);
+      $checkPathName = $this->where([['fullname','=',$department_str_path]])->find();
+      if($checkPathName){
+       return $checkPathName;
+      }
+
       $array = explode('/',$department_str);
+
+
+      // dump($department_str_path);exit;
       $lists = [];
       $ids = [];
       foreach ($array as $key => $value) {
@@ -30,13 +43,15 @@ class Department extends Model
           'pid' => 0,
           'company_id'=>$company_id,
           'status'=>1,
-          'path'=>'0'
+          'path'=>'0',
+          'fullname'=> $value,
         ];
         $data_p = [];
         if($key > 0){
           $data_p = $lists[$key-1];
           $data['pid']  = $data_p['id'];
           $data['path'] = $data_p['path'].','.$data_p['id'];
+          $data['fullname'] = $data_p['fullname'].','.$value;
         }
         $check  = $this->where([['name','=',$value],["pid","=",$data['pid']]])->find();
         if(!$check){
@@ -49,7 +64,7 @@ class Department extends Model
         $ids[] = $data['id'];
         $lists[$key] = $data;
       }
-      return $ids;
+      return end($lists);
    }
 
 
