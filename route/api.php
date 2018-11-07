@@ -24,12 +24,15 @@ Route::group([], function () {
   Route::rule('api/:version/sms/verify','api/:version.sms/verify');
   Route::rule('api/:version/sms/:usage','api/:version.sms/send','GET')->pattern(['usage' => '\d+']);
   Route::rule('api/:version/sms/:usage','api/:version.sms/verify','POST')->pattern(['usage' => '\d+']);
+  Route::rule('api/:version/sms/status/:sendid','api/:version.sms/sms_status');
 
   //app启动调用
   Route::rule('api/:version/app_initiate','api/:version.app_initiate/index','GET');
 
   //同步Hr系统
-  Route::rule('api/:version/sync_hr','api/:version.sync_hr/index','get');
+  Route::rule('api/:version/sync_hr/single','api/:version.sync_hr/single','GET');
+  Route::rule('api/:version/sync_hr/to_primary','api/:version.sync_hr/to_primary','GET');
+  Route::rule('api/:version/sync_hr/all','api/:version.sync_hr/all','GET');
 
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
 
