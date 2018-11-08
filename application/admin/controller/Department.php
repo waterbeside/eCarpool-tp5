@@ -171,11 +171,19 @@ class Department extends AdminBase
     /**
      * /
      */
-    public function create_all_department(){
-      $lists = UserTemp::field('department')->group('department')->select();
-      // dump($lists);
-      if(!$lists){
-        $this->jsonReturn(20002,"No Data");
+    public function create_all_department($page = 0, $pagesize = 50,$return = 1){
+      if($page>0){
+        $lists = UserTemp::field('department')->group('department')->page($page,$pagesize)->select();
+      }else{
+        $lists = UserTemp::field('department')->group('department')->select();
+      }
+      // dump($lists);exit;
+      if(!count($lists)){
+        if($page>0 && $return ){
+          return $this->fetch('index/multi_jump',['url'=>'','msg'=>'完成']);
+        }else{
+          return $this->jsonReturn(20002,"No Data");
+        }
       }
       $department_model = new DepartmentModel();
       $success = [];
@@ -188,7 +196,25 @@ class Department extends AdminBase
           $fail[]    = $value['department'];
         }
       }
-      $this->jsonReturn(0,["success"=>$success,"fail"=>$fail],"成功");
+      if( $return ){
+            $jumpUrl  = url('create_all_department',['page'=>$page+1,'pagesize'=>$pagesize,'return'=>$return]);
+            $msg = "";
+            $successMsg = "success:<br />";
+            foreach ( $success as $key => $value) {
+              $br = $key%2 == 1 ? "<br />" : "";
+              $successMsg .= $value.",".$br;
+            }
+            $failMsg = "fail:<br />";
+            foreach ( $fail as $key => $value) {
+              $br = $key%2 == 1 ? "<br />" : "";
+              $failMsg .= $value.",".$br;
+            }
+            $msg .= $successMsg."<br />".$failMsg."<br />";
+            return $this->fetch('index/multi_jump',['url'=>$jumpUrl,'msg'=>$msg]);
+
+      }else{
+        $this->jsonReturn(0,["success"=>$success,"fail"=>$fail],"成功");
+      }
     }
 
 
