@@ -45,10 +45,10 @@ class UserTemp extends Model
       return false;
     }
     $lastDate = $redis->get($lastDateKey);
-    if($lastDate && strtotime($date)<strtotime($lastDate)){
-      $this->errorMsg ='最新同步过的日期大于您设定的日期，无须再同步。';
-      return false;
-    }
+    // if($lastDate && strtotime($date)<strtotime($lastDate)){
+    //   $this->errorMsg ='最新同步过的日期大于您设定的日期，无须再同步。';
+    //   return false;
+    // }
     if($isLoading){
       $this->errorMsg ='后台正在执行同步，请稍候再试';
       return false;
@@ -61,7 +61,7 @@ class UserTemp extends Model
     $redis->setex($isloadingKey,60*10,1);
     $redis->set($lastDateKey,$date);
     $dataArray = $this->clientRequest(config('secret.HR_api.getUserlist'), ['modiftytime' => $date]);
-    dump($dataArray);
+    // dump($dataArray);
     if(!$dataArray){
       $this->errorMsg ='无新数据';
       $isLoading = $redis->delete($isloadingKey);
@@ -190,6 +190,7 @@ class UserTemp extends Model
       $returnData = [
         'uid' => $res_old['uid'],
         'code'=> $data['code'],
+        "status"=>$res_old['success'],
         // 'uids' => [$res_old['uid'],$res_new['uid']],
       ];
     }else{
