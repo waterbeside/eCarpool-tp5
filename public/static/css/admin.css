@@ -67,6 +67,7 @@ body {background:#FFF;}
 
 .layui-input:disabled { background: #f0f0f0; color:#888}
 .layui-btn:disabled { background: #cacaca; color:#fff}
+.layui-input-sm {  height: 30px;}
 
 .amain-body { background: #f9f9f9}
 .amain-body .layui-tab-content { padding-bottom: 20px}
@@ -250,8 +251,8 @@ span.J-btn-checkall .fa {color:  #aaa;font-size: 14px;cursor: no-drop}
 .amain-tool-bar li.btn-item {padding-right: 0;}
 .amain-tool-bar li .layui-btn-sm i {font-size: 12px!important; margin-right: 3px;}
 .amain-tool-bar li.btn-item-add { float:right}
-.amain-tool-bar li.btn-item-right { float:right}
-
+.amain-tool-bar li.btn-item-right { float:right; padding-left: 10px; min-width: 40px}
+.amain-tool-bar li.btn-item-right input {display: inline; max-width: 120px;vertical-align; middle; }
 
 
 
