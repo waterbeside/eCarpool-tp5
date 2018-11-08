@@ -125,9 +125,12 @@ class SyncHr extends ApiBase
       }
       if($tid){
         $res = $userTempModel->where('id',$tid)->find();
+        if($res && !in_array($res['status'],[-1,0])){
+          $this->jsonReturn(-1,['status'=>$res['status']],'已同步过，无需再同步');
+        }
       }
-      if($res===false){
-        $this->jsonReturn(0,$userTempModel->errorMsg);
+      if(!$res){
+        $this->jsonReturn(-1,($tid ? "无此数据":$userTempModel->errorMsg ));
       }
       if($res === 10003){
         OldUserModel::where('loginname',$code)->update(['is_active'=>0,'modifty_time'=>date("Y-m-d H:i:s")]);
@@ -135,7 +138,7 @@ class SyncHr extends ApiBase
       }
       $res_toPrimary = $userTempModel->toPrimary($res['code'],$res);
       if(!$res_toPrimary){
-        $this->jsonReturn(-1,"拉取成功,但：".$userTempModel->errorMsg);
+        $this->jsonReturn(-1,['status'=>$res['status']],($tid ? "同步失败": $userTempModel->errorMsg ));
       }
       $this->jsonReturn(0,$res_toPrimary,"同步成功");
       exit;
