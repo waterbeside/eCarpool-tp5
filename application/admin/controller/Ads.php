@@ -81,7 +81,9 @@ class Ads extends AdminBase
               $data['app_ids'] .=  $key;
             }
           }
-
+          if($data['link_type']>0 && !trim($data['link'])){
+            return $this->jsonReturn(-1,'你选择了跳转，请填写跳转连接');
+          }
           $validate_result = $this->validate($data, 'app\content\validate\Ads');
           if ($validate_result !== true) {
             return $this->jsonReturn(-1,$validate_result);
@@ -95,6 +97,8 @@ class Ads extends AdminBase
             'type' => $data['type'],
             'sort' => $data['sort'],
             'create_time' => date('Y-m-d H:i:s'),
+            'link_type' => $data['link_type'],
+            'link' => $data['link'],
           ];
           if($data['thumb'] && trim($data['thumb'])){
             $upData['images'][0] =  $data['thumb'];
@@ -145,6 +149,9 @@ class Ads extends AdminBase
               $data['app_ids'] .=  $key;
             }
           }
+          if($data['link_type']>0 && !trim($data['link'])){
+            return $this->jsonReturn(-1,'你选择了跳转，请填写跳转连接');
+          }
           $validate_result = $this->validate($data, 'app\content\validate\Ads');
           if ($validate_result !== true) {
             return $this->jsonReturn(-1,$validate_result);
@@ -156,6 +163,8 @@ class Ads extends AdminBase
             'status' => $data['status'],
             'type' => $data['type'],
             'sort' => $data['sort'],
+            'link_type' => $data['link_type'],
+            'link' => $data['link'],
           ];
           if($data['thumb'] && trim($data['thumb'])){
             $upData['images'][0] =  $data['thumb'];

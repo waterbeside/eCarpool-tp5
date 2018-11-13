@@ -65,6 +65,23 @@
                           </div>
 
                           <div class="layui-form-item">
+                              <label class="layui-form-label">跳转类型</label>
+                              <div class="layui-input-block">
+                                <select name="link_type">
+                                    <option value="0"  >不跳转</option>
+                                    <option value="1"  > webview</option>
+                                    <option value="2"  > app内页</option>
+                                </select>
+                              </div>
+                          </div>
+                          <div class="layui-form-item">
+                              <label class="layui-form-label">跳转连接</label>
+                              <div class="layui-input-block">
+                                  <input type="text" name="link" value=""  placeholder="跳转连接或内页映射名" class="layui-input">
+                              </div>
+                          </div>
+
+                          <div class="layui-form-item">
                               <label class="layui-form-label">状态</label>
                               <div class="layui-input-block">
                                   <input type="radio" name="status" value="1" title="显示" checked="checked">
