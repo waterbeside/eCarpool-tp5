@@ -42,7 +42,7 @@ class User extends Model
       "name" => $data['name'],
       "loginname"=> $data['code'],
       "sex"=> $data['sex'],
-      // "status"=> 1,
+      "status"=> 1,
       "modifty_time"=> $data['modifty_time'],
       "department_id"=> $data['department_id'],
     ];
@@ -56,7 +56,7 @@ class User extends Model
         'indentifier' => uuid_create(),
         'company_id' => 1,
         'nickname' => $data['name'],
-        'status' => 1,
+        // 'status' => 1,
         'password' => $pw,
       ];
       $inputUserData = array_merge($inputUserData_default,$inputUserData);

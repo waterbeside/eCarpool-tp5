@@ -51,6 +51,7 @@ class UserTest extends Model
       "sex"=> $data['sex'],
       "modifty_time"=> $data['modifty_time'],
       "department_id"=> $data['department_id'],
+      'is_active' => 1,
     ];
 
     //查找用户旧数据
@@ -63,7 +64,6 @@ class UserTest extends Model
         'company_id' => 1,
         'nativename' => $data['name'],
         'route_short_name' => 'XY',
-        'is_active' => 1,
         'md5password' => $pw,
       ];
       $inputUserData = array_merge($inputUserData_default,$inputUserData);
