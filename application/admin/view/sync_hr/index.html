@@ -151,15 +151,15 @@ var PAGE_EXEC = {
       var tid = $row.data("id");
       var url = "{:url('sync_single')}";
       $loadingBox.html('<i class="fa fa-spinner fa-spin"></i>').show();
-      $target.hide()
+      $target.hide();
 
       $.getJSON(url,{tid:tid}).then(function(res, textStatus) {
-        console.log(res);
+        // console.log(res);
         layer.msg(res.desc);
         if(res.code===0){
           var status =  res.data.status ;
           var statusStr = typeof(_this.data.statusArray[status])!="undefined" ? _this.data.statusArray[status] : status;
-          console.log(statusStr);
+          // console.log(statusStr);
           $wrapper.html(statusStr);
         }else{
           var status = typeof(res.data.status)!="undefined" ? res.data.status : 0;
