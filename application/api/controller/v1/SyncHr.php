@@ -132,9 +132,14 @@ class SyncHr extends ApiBase
       if(!$res){
         $this->jsonReturn(-1,($tid ? "无此数据":$userTempModel->errorMsg ));
       }
+
       if($res === 10003){
-        OldUserModel::where('loginname',$code)->update(['is_active'=>0,'modifty_time'=>date("Y-m-d H:i:s")]);
-        $this->jsonReturn(10003,"用户已离积");
+        $userData = OldUserModel::where('loginname',$code)->find();
+        if($userData && $userData["company_id"] == 1 && !in_array($userData['Department'],['李宁','常安花园'])){
+          OldUserModel::where('uid',$userData['uid'])->update(['is_active'=>0,'modifty_time'=>date("Y-m-d H:i:s")]);
+          return $this->jsonReturn(10003,"用户已离积");
+        }
+        return $this->jsonReturn(-1,($tid ? "无此数据":$userTempModel->errorMsg ));
       }
       $res_toPrimary = $userTempModel->toPrimary($res['code'],$res);
       if(!$res_toPrimary){
