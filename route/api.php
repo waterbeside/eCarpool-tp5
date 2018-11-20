@@ -34,6 +34,16 @@ Route::group([], function () {
   Route::rule('api/:version/sync_hr/to_primary','api/:version.sync_hr/to_primary','GET');
   Route::rule('api/:version/sync_hr/all','api/:version.sync_hr/all','GET');
 
+  //行程相关
+  Route::rule('api/:version/trips/wall/:id','api/:version.trips/wall_detail','GET');
+  Route::rule('api/:version/trips/info/:id','api/:version.trips/info_detail','GET');
+  Route::rule('api/:version/trips/wall','api/:version.trips/wall_list','GET');
+  Route::rule('api/:version/trips/info','api/:version.trips/info_list','GET');
+  Route::rule('api/:version/trips/history','api/:version.trips/history','GET');
+  Route::rule('api/:version/trips','api/:version.trips/index','GET');
+
+
+
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
 
 // Route::resource('api/:version/docs','api/:version.docs')->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
