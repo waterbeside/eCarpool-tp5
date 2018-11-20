@@ -42,13 +42,14 @@ class SyncHr extends AdminBase
       if (isset($filter['status']) &&  is_numeric($filter['status'])  ){
         $map[] = ['status','=', $filter['status']];
       }
-
-      $lists = UserTemp::alias('u')->where($map)->order('id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+      $UserTemp = new UserTemp();
+      $lastTime = $UserTemp->getLastExecuteTime();
+      $lists = $UserTemp->alias('u')->where($map)->order('id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
 
       // dump($lists);exit;
       //
       $port = $this->request->port();
-      return $this->fetch('index', ['lists' => $lists, 'filter' => $filter,'pagesize'=>$pagesize,'port'=>$port]);
+      return $this->fetch('index', ['lastTime'=>$lastTime,'lists' => $lists, 'filter' => $filter,'pagesize'=>$pagesize,'port'=>$port]);
   }
 
 
@@ -57,7 +58,7 @@ class SyncHr extends AdminBase
    *
    */
 
-  public function sync_all($date = null, $type = 0, $page = 0, $pagesize = 50,$return = 1 )
+  public function sync_all($date = null, $type = 0, $page = 0, $pagesize = 10,$return = 1 )
   {
 
     ini_set ('memory_limit', '128M');
@@ -71,7 +72,8 @@ class SyncHr extends AdminBase
     if($date){ $params['date'] = $date; }
 
     try {
-      $client = new \GuzzleHttp\Client();
+      $client = new \GuzzleHttp\Client(['verify'=>false]);
+      // $client->setDefaultOption('verify', false);
       $response = $client->request('get', $url, ['query' => $params]);
       $content = $response->getBody()->getContents();
 
@@ -129,7 +131,8 @@ class SyncHr extends AdminBase
       ];
 
       try {
-        $client = new \GuzzleHttp\Client();
+        $client = new \GuzzleHttp\Client(['verify'=>false]);
+        // $client->setDefaultOption('verify', false);
         $response = $client->request('get', $url, ['query' => $params]);
         $content = $response->getBody()->getContents();
         $res = json_decode($content,true);

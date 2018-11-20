@@ -39,7 +39,7 @@ class Department extends Model
       foreach ($array as $key => $value) {
         $data = [
           'name' => $value,
-          'name_en' => $value,
+          // 'name_en' => $value,
           'pid' => 0,
           'company_id'=>$company_id,
           'status'=>1,

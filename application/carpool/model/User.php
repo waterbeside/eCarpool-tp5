@@ -16,10 +16,11 @@ class User extends Model
         return date('Y-m-d H:i:s');
     }*/
 
-    // 直接使用配置参数名
+   protected $table = 'user';
    protected $connection = 'database_carpool';
-
    protected $pk = 'uid';
+
+   public $errorMsg = '';
 
    public function getDetail($account="",$uid=0){
      if(!$account && !$uid){
@@ -54,11 +55,13 @@ class User extends Model
     */
    public function syncDataFromTemp($data){
      $inputUserData = [
-       "name" => $data['name'],
+       'nativename' => $data['name'],
        "loginname"=> $data['code'],
        "sex"=> $data['sex'],
        "modifty_time"=> $data['modifty_time'],
        "department_id"=> $data['department_id'],
+       'company_id' => isset($data['department_city']) && mb_strtolower($data['department_city']) == "vietnam" ? 11 : 1,
+       'is_active' => 1,
      ];
 
      //查找用户旧数据
@@ -67,11 +70,9 @@ class User extends Model
        $pw = $this->createPasswordFromCode($data['code']);
        $inputUserData_default = [
          'indentifier' => uuid_create(),
+         "name" => $data['name'],
          'deptid' => $data['code'],
-         'company_id' => 1,
-         'nativename' => $data['name'],
          'route_short_name' => 'XY',
-         'is_active' => 1,
          'md5password' => $pw,
        ];
        $inputUserData = array_merge($inputUserData_default,$inputUserData);
@@ -98,7 +99,7 @@ class User extends Model
          return false;
        }else{
          $inputUserData['success'] = 2;
-         $this->errorMsg = "user:更新成功";
+         $this->errorMsg = "user:更新成功。";
          return $inputUserData;
        }
      }

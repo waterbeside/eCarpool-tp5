@@ -45,6 +45,7 @@ class User extends Model
       "status"=> 1,
       "modifty_time"=> $data['modifty_time'],
       "department_id"=> $data['department_id'],
+      'company_id' => isset($data['department_city']) && mb_strtolower($data['department_city']) == "vietnam" ? 11 : 1,
     ];
 
     //查找用户旧数据
@@ -54,7 +55,6 @@ class User extends Model
 
       $inputUserData_default = [
         'indentifier' => uuid_create(),
-        'company_id' => 1,
         'nickname' => $data['name'],
         // 'status' => 1,
         'password' => $pw,

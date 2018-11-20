@@ -14,6 +14,7 @@
               <a class="layui-btn layui-btn-sm   layui-btn-primary" href="javascript:void(0);" onclick="PAGE_EXEC.sync('all')"  ><i class="fa "></i> 同步到正式库</a>
             </li>
             <li class="btn-item btn-item-right">
+
               <input type="text" name="date" value="{:date('Y-m-d')}" placeholder="{:date('Y-m-d')}" class="layui-input layui-input-sm"   >
               <a class="layui-btn layui-btn-sm   layui-btn-primary" href="javascript:void(0);" onclick="PAGE_EXEC.download_from_hr()"  ><i class="fa fa-cloud-download"></i> 执行拉取</a>
             </li>
@@ -46,6 +47,7 @@
                   <input type="hidden" name="export" value="0">
                   <button class="layui-btn"><i class="fa fa-search"></i></button>
               </div>
+              <span style="font-size:12px; float:right">Last: {$lastTime|date="Y-m-d H:i:s"}</span>
           </form>
           <hr />
 

@@ -2,8 +2,8 @@
 namespace app\api\controller\v1;
 
 use app\api\controller\ApiBase;
-// use app\carpool\model\User as OldUserModel;
-use app\user\model\UserTest as OldUserModel ;
+use app\carpool\model\User as OldUserModel;
+// use app\user\model\UserTest as OldUserModel ;
 use app\user\model\User as NewUserModel;
 use app\user\model\Department;
 use app\user\model\UserTemp ;
@@ -40,7 +40,7 @@ class SyncHr extends ApiBase
     /**
      *
      */
-    public function all($date = null, $type = 0, $page = 0, $pagesize = 50 )
+    public function all($date = null, $type = 0, $page = 0, $pagesize = 30 )
     {
       $this->check_localhost(1);
       ini_set ('memory_limit', '128M');
@@ -135,7 +135,7 @@ class SyncHr extends ApiBase
 
       if($res === 10003){
         $userData = OldUserModel::where('loginname',$code)->find();
-        if($userData && $userData["company_id"] == 1 && !in_array($userData['Department'],['李宁','常安花园'])){
+        if($userData &&  in_array($userData["company_id"],[1,11]) && !in_array($userData['Department'],['李宁','高明常安花园','高明一中','佛山市政府'])){
           OldUserModel::where('uid',$userData['uid'])->update(['is_active'=>0,'modifty_time'=>date("Y-m-d H:i:s")]);
           return $this->jsonReturn(10003,"用户已离积");
         }

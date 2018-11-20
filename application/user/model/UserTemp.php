@@ -1,8 +1,8 @@
 <?php
 namespace app\user\model;
 use my\RedisData;
-// use app\carpool\model\User as OldUserModel;
-use app\user\model\UserTest as OldUserModel ;
+use app\carpool\model\User as OldUserModel;
+// use app\user\model\UserTest as OldUserModel ;
 use app\user\model\User as UserModel;
 use app\user\model\UserProfile;
 use app\user\model\Department;
@@ -19,7 +19,11 @@ class UserTemp extends Model
 
   public $errorMsg = '';
 
-
+  public function getLastExecuteTime(){
+    $lastExecuteTimeKey = "carpool:user:sync_hr:lastExecuteTime";
+    $redis = new RedisData();
+    return $redis->get($lastExecuteTimeKey);
+  }
 
   public function updateStatusAndTime($id,$status=0){
     $updateUserTempData = [
@@ -34,17 +38,25 @@ class UserTemp extends Model
    * @param  string $date 更新日期
    */
   public function pullListFromHr($date = ''){
-    $date = $date ? $date : date("Y-m-d");
+    $executeTime  = time();
     $redis = new RedisData();
     $isloadingKey = "carpool:user:sync_hr:isloading";
-    $lastDateKey = "carpool:user:sync_hr:lastDate";
+    $lastExecuteTimeKey = "carpool:user:sync_hr:lastExecuteTime";
     $cacheKey = "carpool:user:sync_hr:$date";
     $isLoading = $redis->get($isloadingKey);
     if($isLoading){
       $this->errorMsg ='后台正在执行同步，请稍候再试';
       return false;
     }
-    $lastDate = $redis->get($lastDateKey);
+
+    $lastTime = $redis->get($lastExecuteTimeKey);
+    $date = $date ? $date : ($lastTime ? date("Y-m-d H:i:s",$lastTime) : date("Y-m-d"));
+
+    if(strtotime($date) < strtotime("2018-01-01")){
+      $this->errorMsg ='时间过于久远，不再同步';
+      return false;
+    }
+
     // if($lastDate && strtotime($date)<strtotime($lastDate)){
     //   $this->errorMsg ='最新同步过的日期大于您设定的日期，无须再同步。';
     //   return false;
@@ -53,13 +65,12 @@ class UserTemp extends Model
       $this->errorMsg ='后台正在执行同步，请稍候再试';
       return false;
     }
-    $cacheData = json_decode($redis->get($cacheKey),true);
+    /*$cacheData = json_decode($redis->get($cacheKey),true);
     if($cacheData){
       $this->errorMsg ='该日期数据已经同步过';
       return false;
-    }
-    $redis->setex($isloadingKey,60*10,1);
-    $redis->set($lastDateKey,$date);
+    }*/
+    $redis->setex($isloadingKey,60*4,1);
     $dataArray = $this->clientRequest(config('secret.HR_api.getUserlist'), ['modiftytime' => $date]);
     // dump($dataArray);
     if(!$dataArray){
@@ -67,7 +78,7 @@ class UserTemp extends Model
       $isLoading = $redis->delete($isloadingKey);
       return false;
     }
-    $redis->set($cacheKey,json_encode($dataArray));
+    // $redis->set($cacheKey,json_encode($dataArray));
 
     $returnData = [];
     foreach ($dataArray as $key => $value) {
@@ -77,6 +88,8 @@ class UserTemp extends Model
       }
       $returnData[$key] = $data;
     }
+    $redis->set($lastExecuteTimeKey,$executeTime);
+
     $isLoading = $redis->delete($isloadingKey);
     return $returnData;
   }
@@ -111,7 +124,7 @@ class UserTemp extends Model
    */
   protected function clientRequest($url,$data=[],$type='POST'){
     try {
-      $client = new \GuzzleHttp\Client();
+      $client = new \GuzzleHttp\Client(['verify'=>false]);
       $response = $client->request($type, $url, ['form_params' => $data]);
       $body = $response->getBody();
       $remainingBytes = $body->getContents();
@@ -180,8 +193,9 @@ class UserTemp extends Model
     //创建及取得部门信息
     $DepartmentModel = new Department();
     $department_data = $DepartmentModel->create_department_by_str($data['department']);
+    $department_fullname_array  = explode(",",$department_data['fullname']);
     $data['department_id'] = $department_data['id'];
-
+    $data['department_city'] = isset($department_fullname_array[1])? $department_fullname_array[1]: "";
     $OldUserModel = new OldUserModel();
     $res_old = $OldUserModel->syncDataFromTemp($data); // 入到旧表中
 

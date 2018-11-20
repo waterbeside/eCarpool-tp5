@@ -46,11 +46,12 @@ class UserTest extends Model
    */
   public function syncDataFromTemp($data){
     $inputUserData = [
-      "name" => $data['name'],
+      'nativename' => $data['name'],
       "loginname"=> $data['code'],
       "sex"=> $data['sex'],
       "modifty_time"=> $data['modifty_time'],
       "department_id"=> $data['department_id'],
+      'company_id' => isset($data['department_city']) && mb_strtolower($data['department_city']) == "vietnam" ? 11 : 1,
       'is_active' => 1,
     ];
 
@@ -61,8 +62,7 @@ class UserTest extends Model
       $inputUserData_default = [
         'indentifier' => uuid_create(),
         'deptid' => $data['code'],
-        'company_id' => 1,
-        'nativename' => $data['name'],
+        "name" => $data['name'],
         'route_short_name' => 'XY',
         'md5password' => $pw,
       ];
