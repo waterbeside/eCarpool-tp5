@@ -35,13 +35,16 @@ Route::group([], function () {
   Route::rule('api/:version/sync_hr/all','api/:version.sync_hr/all','GET');
 
   //行程相关
+  Route::rule('api/:version/trips/info/:id/passengers','api/:version.trips/passengers','GET');
   Route::rule('api/:version/trips/wall/:id','api/:version.trips/wall_detail','GET');
   Route::rule('api/:version/trips/info/:id','api/:version.trips/info_detail','GET');
   Route::rule('api/:version/trips/wall','api/:version.trips/wall_list','GET');
   Route::rule('api/:version/trips/info','api/:version.trips/info_list','GET');
   Route::rule('api/:version/trips/history','api/:version.trips/history','GET');
   Route::rule('api/:version/trips','api/:version.trips/index','GET');
-
+  Route::rule('api/:version/trips/:from','api/:version.trips/add','POST');
+  Route::rule('api/:version/trips/:from/:id','api/:version.trips/change','PATCH');
+  Route::rule('api/:version/trips/:from/:id','api/:version.trips/cancel','DELETE');
 
 
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();

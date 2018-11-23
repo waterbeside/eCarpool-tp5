@@ -5,6 +5,9 @@ return [
   "Can not be empty" => 'không thể để trống',
   "Illegal access" => 'Cấm truy cập bất hợp pháp',
   "No data"=>"Chưa có dữ liệu",
+  "Parameter error"=>"Parameter error",
+  "No permission" => "No permission",
+
   //用户相关
   'Please enter user name'  => 'Vui lòng nhập tên người dùng',
   'Please enter your password' => 'Vui lòng nhập mật khẩu của bạn',
@@ -22,6 +25,18 @@ return [
   'No need to merge' => 'Không cần phải hợp nhất',
   'The phone number has been bound to this account, no need to merge.' => 'Số điện thoại đã bị ràng buộc vào tài khoản này, không cần phải hợp nhất',
   'The phone number has been registered for another account'=>'Số điện thoại đã được đăng ký một tài khoản khác',
+
+
+  //字段相关
+  'Please select date and time' => '请选择日期时间',
+
+  //拼车相关
+  "The point of departure must not be empty" => '起点不能为空',
+  "The destination cannot be empty" => '终点不能为空',
+  "The departure time has passed. Please select the time again" => "出发时间已经过了，请重选时间。",
+  "You have already made one trip at {:time}, should not be published twice within the same time"=> "您在 {:time} 已有一趟行程，在相近时间内请勿重复发布",
+  'The number of empty seats cannot be empty'=>'空座位个数不能为空',
+
 
   //附件相关
   "Wrong format"=>'Định dạng không chính xác',
