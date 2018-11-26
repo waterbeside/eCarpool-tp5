@@ -35,7 +35,7 @@ Route::group([], function () {
   Route::rule('api/:version/sync_hr/all','api/:version.sync_hr/all','GET');
 
   //行程相关
-  Route::rule('api/:version/trips/info/:id/passengers','api/:version.trips/passengers','GET');
+  Route::rule('api/:version/trips/wall/:id/passengers','api/:version.trips/passengers','GET');
   Route::rule('api/:version/trips/wall/:id','api/:version.trips/wall_detail','GET');
   Route::rule('api/:version/trips/info/:id','api/:version.trips/info_detail','GET');
   Route::rule('api/:version/trips/wall','api/:version.trips/wall_list','GET');
