@@ -30,13 +30,24 @@ return [
   'Please select date and time' => '请选择日期时间',
 
   //拼车相关
+  "Car pooling" => "拼车",
   "The point of departure must not be empty" => '起点不能为空',
   "The destination cannot be empty" => '终点不能为空',
   "The departure time has passed. Please select the time again" => "出发时间已经过了，请重选时间。",
   "You have already made one trip at {:time}, should not be published twice within the same time"=> "您在 {:time} 已有一趟行程，在相近时间内请勿重复发布",
   'The number of empty seats cannot be empty'=>'空座位个数不能为空',
-  'The trip has been completed or cancelled. Operation is not allowed.' => '该行程已结束或取消，不允许操作。'
+  'The trip has been completed or cancelled. Operation is not allowed' => '该行程已结束或取消，不允许操作。',
   'The trip not started, unable to operate' => '行程未开始，无法操作',
+  'You can`t take your own' => '你不能自己搭自己',
+  'Failed, the owner has cancelled the trip'=>'搭车失败，车主已取消该行程',
+  'Failed, the trip has ended'=>'搭车失败，该行程已结束',
+  'You have already taken this trip'=>'您已搭乘过本行程',
+
+  '{:name} took your car'=> '{:name}搭了你的车',
+  '{:name} accepted your ride requst'=>'{:name}接受了你的约车需求',
+  'The driver {:name} cancelled the trip' => '司机{:name}取消了行程',
+  'The passenger {:name} cancelled the trip' => '乘客{:name}取消了行程',
+
   //附件相关
   "Wrong format"=>'格式不正确',
   "Upload successful" => '上传成功',
