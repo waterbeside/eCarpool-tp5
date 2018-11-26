@@ -110,7 +110,7 @@ class Trips extends ApiBase
      * 历史行程
      */
     public function history($pagesize =20){
-      return $this->unsetResultValue($this->index($pagesize,1,1));
+       $this->unsetResultValue($this->index($pagesize,1,1));
     }
 
     /**
@@ -140,7 +140,7 @@ class Trips extends ApiBase
         $join = $this->buildTripJoins("s,e,d");
 
 
-        $results = WallModel::alias('t')->field($fields)->join($join)->where($map)->order(' time DESC, t.love_wall_ID DESC  ')
+        $results = WallModel::alias('t')->field($fields)->join($join)->where($map)->order(' time ASC, t.love_wall_ID ASC  ')
         ->paginate($pagesize, false,  ['query'=>request()->param()])->toArray();
         if(!$results['data']){
           return $this->jsonReturn(20002,$results,lang('No data'));
@@ -202,7 +202,7 @@ class Trips extends ApiBase
     /**
      * 约车需求
      */
-    public function info_list($keyword="",$status = 0 ,$pagesize=20, $wid = 0, $returnType = 1){
+    public function info_list($keyword="",$status = 0 ,$pagesize=20, $wid = 0, $returnType = 1,$orderby = ''){
         $userData = $this->getUserData();
         $company_id = $userData['company_id'];
 
@@ -241,8 +241,9 @@ class Trips extends ApiBase
         $fields .=  $this->buildAddressFields();
         $join = $this->buildTripJoins("s,e,p");
 
+        $orderby = $orderby ? $orderby : 'time ASC, t.infoid ASC ';
 
-        $modelObj =  InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('time DESC, t.infoid DESC ');
+        $modelObj =  InfoModel::alias('t')->field($fields)->join($join)->where($map)->order($orderby);
         // $sql = $modelObj->fetchSql()->select();
         if(  $pagesize > 0 || $wid > 0){
           $results =    $modelObj->paginate($pagesize, false,  ['query'=>request()->param()])->toArray();
@@ -454,14 +455,14 @@ class Trips extends ApiBase
      * @param  integer|string   $status 状态筛选
      */
     public function passengers($id , $status = "neq|2"){
-      $res =  $this->info_list("",$status ,0, $id,0);
+      $res =  $this->info_list("",$status ,0, $id,0,'status ASC, time ASC');
+
       if($res){
         foreach ($res['lists'] as $key => $value) {
           $res['lists'][$key] = $this->unsetResultValue($value,['love_wall_ID']);
         }
         if(isset($res['page'])) unset($res['page']);
       }
-
       $this->jsonReturn(0,$res,'success');
     }
 
@@ -474,16 +475,16 @@ class Trips extends ApiBase
       $from = mb_strtolower($from);
 
       if(!in_array($type,['cancel','finish','riding','hitchhiking','pickup','startaddress','endaddress']) || !$id){
-
-        $this->jsonReturn(-10001,[$type,$id],lang('Parameter error'));
+        return $this->jsonReturn(-10001,[],lang('Parameter error'));
       }
       if($from=="wall"){
         $Model    = new WallModel();
       }else if($from=="info"){
         $Model    = new InfoModel();
       }else{
-        $this->jsonReturn(-10001,[],lang('Parameter error'));
+        return $this->jsonReturn(-10001,[],lang('Parameter error'));
       }
+
       $userData = $this->getUserData();
       $uid = $userData['uid']; //取得用户id
       $fields = "*,x(start_latlng) as start_lng , y(start_latlng) as start_lat,x(end_latlng) as end_lng,y(end_latlng) as end_lat";
@@ -536,7 +537,7 @@ class Trips extends ApiBase
               }
             }
           }
-        }else{
+        }else if($type == "cancel"){
           if($datas->carownid == $uid){  //如果司机取消，则推送给乘客
             $this->pushMsg( $datas->passengerid,lang("The driver {:name} cancelled the trip",["name"=>$userData['name']]));
           }else{ //如果乘客取消，则推送给司机
@@ -548,7 +549,8 @@ class Trips extends ApiBase
       }
 
       /*********** riding 搭车  ***********/
-      if($type == "riding" || $type = "hitchhiking"){
+      if($type == "riding" || $type == "hitchhiking"){
+
         if($from !="wall"){
           return $this->jsonReturn(-10001,[],lang('Parameter error'));
         }
