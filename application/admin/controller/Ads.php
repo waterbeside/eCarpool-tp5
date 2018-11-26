@@ -41,7 +41,7 @@ class Ads extends AdminBase
         if (isset($filter['platform']) && $filter['platform'] ){
           $whereExp .= $whereExp ? "AND  ".$filter['platform'] ." in(platforms)" : $filter['platform'] ." in(platforms)";
         }
-        $lists  = AdsModel::where($map)->where($whereExp)->json(['images'])->order(['sort' => 'DESC', 'id' => 'DESC'])->paginate(20, false, ['page' => $page]);
+        $lists  = AdsModel::where($map)->where($whereExp)->json(['images'])->order(['sort' => 'DESC', 'id' => 'DESC'])->paginate($pagesize, false, ['page' => $page]);
         $typeList = config('content.common_notice_type');
         foreach ($lists as $key => $value) {
           $lists[$key]['platform_list'] =  explode(',',$value['platforms']);
