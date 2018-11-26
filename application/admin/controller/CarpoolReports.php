@@ -62,7 +62,7 @@ class CarpoolReports extends AdminBase
   public function public_driver_count($timeStr = 0){
     $period = $this->get_period($timeStr);
 
-    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid <> '' AND time >=  ".$period[0]." AND time < ".$period[1]." ";
+    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid > 0 AND time >=  ".$period[0]." AND time < ".$period[1]." ";
 
 
     //从info表取得非空座位的乘搭的司机数
@@ -84,7 +84,7 @@ class CarpoolReports extends AdminBase
    */
   public function public_passenger_count($timeStr){
     $period = $this->get_period($timeStr);
-    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid <> '' AND time >=  ".$period[0]." AND time < ".$period[1]." ";
+    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid > 0 AND time >=  ".$period[0]." AND time < ".$period[1]." ";
     //取得该月乘客人次
     // $from['count_p'] = "SELECT love_wall_ID FROM info as i  where  $where_base  GROUP BY carownid, passengerid, love_wall_ID, time";
     // $from = "SELECT * FROM info as i  where  i.status <> 2  AND time >=  ".$period[0]." AND time < ".$period[1]." ";
@@ -107,7 +107,7 @@ class CarpoolReports extends AdminBase
    */
   public function public_user_count($timeStr){
     $period = $this->get_period($timeStr);
-    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid <> '' AND time >=  ".$period[0]." AND time < ".$period[1]." ";
+    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid > 0 AND time >=  ".$period[0]." AND time < ".$period[1]." ";
 
     $from_01 = "SELECT distinct startpid,endpid,time,carownid,passengerid FROM info as i  where  $where_base ";
     $from_passenger  = "SELECT  passengerid
@@ -137,7 +137,7 @@ class CarpoolReports extends AdminBase
    */
   public function public_subcompany_count($timeStr){
     $period = $this->get_period($timeStr);
-    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid <> '' AND time >=  ".$period[0]." AND time < ".$period[1]." ";
+    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid >0 AND time >=  ".$period[0]." AND time < ".$period[1]." ";
 
 
 
@@ -149,7 +149,7 @@ class CarpoolReports extends AdminBase
    */
   public function public_ranking($timeStr = 0,$type){
     $period = $this->get_period($timeStr);
-    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid <> '' AND time >=  ".$period[0]." AND time < ".$period[1]." ";
+    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid >0 AND time >=  ".$period[0]." AND time < ".$period[1]." ";
     $from_01 = "SELECT distinct startpid,endpid,time,carownid,passengerid FROM info as i  where  $where_base ";
     if(!in_array($type,['driver','passenger'])){
       return $this->jsonReturn(-1,'type error');
@@ -197,7 +197,7 @@ class CarpoolReports extends AdminBase
       return $this->jsonReturn(-1,'type error');
     }
     $period = $this->get_period($timeStr);
-    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid <> '' AND time >=  ".$period[0]." AND time < ".$period[1]." ";
+    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid >0 AND time >=  ".$period[0]." AND time < ".$period[1]." ";
     $from_01 = "SELECT distinct startpid,endpid,time,carownid,passengerid FROM info as i where  $where_base   ";
 
     $sql  = "SELECT  {$fieldname} , count({$fieldname}) as c , a.addressname, a.latitude, a.longtitude, a.city
@@ -264,7 +264,7 @@ class CarpoolReports extends AdminBase
       $this->jsonReturn(0,['lists'=>$lists]);
     }
 
-    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid <> ''  $whereTime ";
+    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid >0  $whereTime ";
     $from = "SELECT distinct startpid,endpid,time,carownid,passengerid FROM info as i  where  $where_base ";
 
     if($type == 'trips'){
