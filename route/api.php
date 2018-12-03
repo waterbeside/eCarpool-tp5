@@ -46,6 +46,15 @@ Route::group([], function () {
   Route::rule('api/:version/trips/:from/:id','api/:version.trips/change','PATCH');
   Route::rule('api/:version/trips/:from/:id','api/:version.trips/cancel','DELETE');
 
+  //地址相关
+  Route::resource('api/:version/address','api/:version.address');
+
+  //用户相关
+  Route::resource('api/:version/user','api/:version.user');
+  Route::rule('api/:version/user/:id/position','api/:version.user_position/read','GET');
+  Route::rule('api/:version/user/:id/position','api/:version.user_position/save','POST');
+
+
 
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
 
