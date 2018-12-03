@@ -3,6 +3,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\ApiBase;
 use app\carpool\model\User as UserModel;
+use app\User\model\UserOauth;
 use think\facade\Cache;
 use my\RedisData;
 use com\Nim as NimServer;
@@ -53,13 +54,14 @@ class Sms extends ApiBase
 
 
 
-    protected function codeCache($usage,$phone,$code=false,$exp=900)
+    protected function codeCache($usage,$phone,$code=false,$msg="",$exp=900)
     {
       $redis = new RedisData();
       $key = "common:sms_code:".$usage.":".$phone;
       if($code){
         $data = [
           'code'=>$code,
+          'msg'=>$msg,
           'time'=>time()
         ];
         // Cache::tag('public')->set($key, $data ,$exp);
@@ -309,7 +311,6 @@ class Sms extends ApiBase
             return  $this->jsonReturn(-10002,[],'client error');
           };
           // collect user input data
-          $isAllData = in_array($client,array('ios','android')) ? 1 : 0 ;
           $phoneUserData = UserModel::where([['phone','=',$phone]])->find();
       		if(!$phoneUserData){
             $this->jsonReturn(10002,[],'user does not exist');
@@ -317,6 +318,9 @@ class Sms extends ApiBase
       		if(!$phoneUserData['is_active']){
             $this->jsonReturn(10003,[],'user does not active');
       		}
+
+
+
           $jwt = $this->createPassportJwt(['uid'=>$phoneUserData['uid'],'loginname'=>$phoneUserData['loginname'],'client' => $client]);
           $returnData = array(
     				'user' => array(
@@ -328,6 +332,8 @@ class Sms extends ApiBase
     				),
     				'token'	=> $jwt
     			);
+
+
           $isAllUserData = in_array($client,['ios','android']) ? 1 : 0;
     			if($isAllUserData){
     				$returnData['user'] = $phoneUserData;
@@ -338,6 +344,12 @@ class Sms extends ApiBase
     					$returnData['user']['passwd'] = '';
     				}
     			}
+          $oAuthList = UserOauth::where('user_id',$phoneUserData['uid'])->select();
+          if($oAuthList){
+            foreach ($oAuthList as $key => $value) {
+              $returnData['user']['open_id_type_'.$value['type']] = $value['identifier'];
+            }
+          }
           if(isset($returnData['user'])){
             break;
           }else{
@@ -468,7 +480,7 @@ class Sms extends ApiBase
     }
     /**/
     if(isset($sendRes['obj'])){
-      $this->codeCache($usage,$phone,$sendRes['obj'],$expiration);
+      $this->codeCache($usage,$phone,$sendRes['obj'],$sendRes['msg'],$expiration);
       unset($sendRes['obj']);
     }
     return  $sendRes;
