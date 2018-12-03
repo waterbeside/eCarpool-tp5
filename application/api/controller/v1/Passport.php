@@ -30,19 +30,31 @@ class Passport extends ApiBase
        $more = request()->param('more');
        $type = $more == 1 ? 1 : request()->param('type');
        $userInfo = $this->userBaseInfo;
+
        if(in_array($type,[1,2])){
          $uid = $userInfo['uid'];
          $userInfo_ex = $this->getUserData(true);
+         $userInfo_ex['avatar'] = $userInfo_ex['imgpath'];
+         $userInfo_ex['department'] = $userInfo_ex['Department'];
+
          if($type==2){
-           $userInfo = $userInfo_ex;
-           unset($userInfo['passwd']);
-           unset($userInfo['md5password']);
+           $fields = [
+             'uid','loginname','name','nativename',
+             'department','company_id','department_id',
+             'phone','mobile','avatar','imgpath','sex',
+             'companyname','home_address_id','company_address_id','indentifier',
+             'im_md5password','is_active','modifty_time','extra_info',
+             'carnumber','carcolor'
+            ];
          }
          if($type == 1){
-           $userInfo['name'] = $userInfo_ex['name'];
-           $userInfo['Department'] = $userInfo_ex['Department'];
+           $fields = [
+             'uid','loginname','name','nativename',
+             'department','company_id','department_id',
+             'avatar','imgpath'
+            ];
          }
-         $userInfo['avatar'] = $userInfo_ex['imgpath'];
+         $userInfo = $this->filtFields($userInfo_ex,$fields);
 
        }
 
@@ -213,6 +225,21 @@ class Passport extends ApiBase
     {
       return $this->jsonReturn(0,"success");
 
+    }
+
+    protected function filtFields($datas,$fields){
+      if(is_string($fields)){
+        $fields = explode(",",$fields);
+      }
+      $datas_n = [];
+      if(is_array($fields)){
+        foreach ($fields as $key => $value) {
+          $datas_n[$value] = isset($datas[$value]) ? $datas[$value] : NULL;
+        }
+        return $datas_n;
+      }else{
+        return $datas;
+      }
     }
 
 
