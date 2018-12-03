@@ -16,6 +16,7 @@ class ApiBase extends Base
     protected $jwtInfo ;
     public $userBaseInfo;
     public $passportError;
+    public $userData = NULL;
 
     protected function initialize()
     {
@@ -117,6 +118,9 @@ class ApiBase extends Base
         $this->checkPassport($returnType);
         $uid = $this->userBaseInfo['uid'];
       }
+      if($this->userData){
+        return $this->userData;
+      }
       if($uid){
         $userData = UserModel::find($uid);
       }
@@ -126,6 +130,7 @@ class ApiBase extends Base
       if(!$userData['is_active']){
         return $returnType ? $this->jsonReturn(10003,'该用户被封禁') : false;
       }
+      $this->userData = $userData;
       return $userData;
 
     }
