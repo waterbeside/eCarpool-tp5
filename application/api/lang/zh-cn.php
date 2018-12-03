@@ -31,6 +31,7 @@ return [
 
   //拼车相关
   "Car pooling" => "拼车",
+  "Address name cannot be empty" => '地址名称不能为空',
   "The point of departure must not be empty" => '起点不能为空',
   "The destination cannot be empty" => '终点不能为空',
   "The departure time has passed. Please select the time again" => "出发时间已经过了，请重选时间。",

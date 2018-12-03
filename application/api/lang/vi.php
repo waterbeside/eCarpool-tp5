@@ -31,6 +31,7 @@ return [
 
   //拼车相关
   "Car pooling" => "Đi chung xe",
+  "Address name cannot be empty" => '地址名称不能为空',
   "The point of departure must not be empty" => 'Điểm bắt đầu không được để trống',
   "The destination cannot be empty" => 'Điểm kết thúc không được để trống',
   "The departure time has passed. Please select the time again" => "Thời gian khởi hành đã trôi qua, vui lòng chọn lại thời gian",
