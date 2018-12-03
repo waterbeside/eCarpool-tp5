@@ -32,7 +32,7 @@ class Trips extends ApiBase
      */
     public function index($pagesize=20,$type=0,$fullData = 0){
 
-      $userData = $this->getUserData();
+      $userData = $this->getUserData(1);
       $uid = $userData['uid'];
       $extra_info = json_decode($userData['extra_info'],true);
       $merge_ids = isset($extra_info['merge_id']) && is_array($extra_info['merge_id']) && $type ==1  ? $extra_info['merge_id'] : [];
@@ -116,8 +116,8 @@ class Trips extends ApiBase
     /**
      * 墙上空座位
      */
-    public function wall_list($pagesize=20,$keyword=""){
-        $userData = $this->getUserData();
+    public function wall_list($pagesize=20,$keyword="",$map_type=NULL){
+        $userData = $this->getUserData(1);
         $company_id = $userData['company_id'];
         $time_e = strtotime("+20 day");
         $time_s = strtotime("-1 hour");
@@ -131,6 +131,9 @@ class Trips extends ApiBase
         ];
         if($keyword){
           $map[] = ['d.name|s.addressname|e.addressname|t.startname|t.endname','like',"%{$keyword}%"];
+        }
+        if(is_numeric($map_type)){
+          $map[] = ['t.map_type','=',$map_type];
         }
         $fields = 't.time, t.status, t.seat_count';
         $fields .= ', t.love_wall_ID as id, t.subtime , t.carownid as driver_id  ';
@@ -177,7 +180,7 @@ class Trips extends ApiBase
         $this->jsonReturn(-1,[],'lost id');
         // return $this->error('lost id');
       }
-      $fields = 't.time, t.status,  t.seat_count';
+      $fields = 't.time, t.status,  t.seat_count, t.map_type';
       $fields .= ', t.love_wall_ID as id ,t.love_wall_ID , t.subtime , t.carownid as driver_id  ';
       $fields .= ','.$this->buildUserFields('d');
       $fields .=  $this->buildAddressFields();
@@ -202,10 +205,9 @@ class Trips extends ApiBase
     /**
      * 约车需求
      */
-    public function info_list($keyword="",$status = 0 ,$pagesize=20, $wid = 0, $returnType = 1,$orderby = ''){
-        $userData = $this->getUserData();
+    public function info_list($keyword="",$status = 0 ,$pagesize=20, $wid = 0, $returnType = 1,$orderby = '',$map_type=NULL){
+        $userData = $this->getUserData(1);
         $company_id = $userData['company_id'];
-
 
         $time_e = strtotime("+20 day");
         $time_s = strtotime("-1 hour");
@@ -230,6 +232,9 @@ class Trips extends ApiBase
 
         if($keyword){
           $map[] = ['s.addressname|p.name|e.addressname|t.startname|t.endname','like',"%{$keyword}%"];
+        }
+        if(is_numeric($map_type)){
+          $map[] = ['t.map_type','=',$map_type];
         }
 
         $fields = 't.time, t.status ';
@@ -295,7 +300,7 @@ class Trips extends ApiBase
         // return $this->error('lost id');
       }
 
-      $fields = 't.time, t.status';
+      $fields = 't.time, t.status, t.map_type';
       $fields .= ',t.infoid as id, t.infoid , t.love_wall_ID , t.subtime , t.carownid as driver_id, t.passengerid as passenger_id  ';
 
       $fields .= ','.$this->buildUserFields('d');
@@ -322,9 +327,9 @@ class Trips extends ApiBase
      */
     public function add($from){
       if(!in_array($from,['wall','info'])){
-        $this->jsonReturn(-10001,[],'参数有误');
+        $this->jsonReturn(992,[],lang('Parameter error'));
       }
-      $userData = $this->getUserData();
+      $userData = $this->getUserData(1);
       $uid = $userData['uid']; //取得用户id
 
 
@@ -357,7 +362,7 @@ class Trips extends ApiBase
         $this->jsonReturn(-1,[],$InfoModel->errorMsg);
       }
       if(!$WallModel->checkRepetition($time,$uid,120)){
-        $this->jsonReturn(-1,[],$WalloModel->errorMsg);
+        $this->jsonReturn(-1,[],$WallModel->errorMsg);
       }
 
       $createAddress = array();
@@ -366,7 +371,9 @@ class Trips extends ApiBase
         $startDatas = $datas['start'];
         $startDatas['company_id'] = $userData['company_id'];
         $startRes = $AddressModel->addFromTrips($startDatas);
+
         if(!$startRes){
+          $this->jsonReturn(-1,[],lang("The point of departure must not be empty"));
           $this->jsonReturn(-1,[],lang("The point of departure must not be empty"));
         }
         $datas['start']['addressid'] = $startRes['addressid'];
@@ -475,23 +482,25 @@ class Trips extends ApiBase
       $from = mb_strtolower($from);
 
       if(!in_array($type,['cancel','finish','riding','hitchhiking','pickup','startaddress','endaddress']) || !$id){
-        return $this->jsonReturn(-10001,[],lang('Parameter error'));
+        return $this->jsonReturn(992,[],lang('Parameter error'));
       }
       if($from=="wall"){
         $Model    = new WallModel();
       }else if($from=="info"){
         $Model    = new InfoModel();
       }else{
-        return $this->jsonReturn(-10001,[],lang('Parameter error'));
+        return $this->jsonReturn(992,[],lang('Parameter error'));
       }
 
-      $userData = $this->getUserData();
+      $userData = $this->getUserData(1);
       $uid = $userData['uid']; //取得用户id
       $fields = "*,x(start_latlng) as start_lng , y(start_latlng) as start_lat,x(end_latlng) as end_lng,y(end_latlng) as end_lat";
       $datas = $Model->field($fields)->get($id);
       if(!$datas){
         return $this->jsonReturn(20002,[],lang('No data'));
       }
+      $isDriver    = $datas->carownid == $uid ? true : false; //是否司机操作
+      $driver_id   = $datas->carownid ; //司机id;
 
       /*********** 完成或取消 ***********/
       if(in_array($type,["cancel","finish"])){
@@ -504,10 +513,11 @@ class Trips extends ApiBase
           return $this->jsonReturn(-1,[],lang('The trip not started, unable to operate'));
         }
         //检查是否允许操作
-        if($from=="info" && $datas->carownid != $uid && $datas->passengerid != $uid){
+        if($from=="info" && !$isDriver && $datas->passengerid != $uid){
             return $this->jsonReturn(-1,[],lang('No permission'));
         }
-        if($from=="wall" && $datas->carownid != $uid){ //从空座位取消
+        //如果是乘客从空座位操作, 则查出infoid，递归到from = info操作。
+        if($from=="wall" && !$isDriver){
             $infoDatas = InfoModel::where([["love_wall_ID",'=',$id],['passengerid',"=",$uid]])->order("status")->find();
             if(!$infoDatas){
               return $this->jsonReturn(-1,[],lang('No permission'));
@@ -517,31 +527,43 @@ class Trips extends ApiBase
             }
             return $this->change("info",$infoDatas['infoid'],$type); exit;
         }
-        //保存更新的数据
-        $datas->status      = $type == "cancel" ? 2 : 3;
-        $datas->cancel_time  = date('YmdHi',time());
-        if($type == "cancel") $datas->cancel_user_id =$uid;
+
+
+        //处理要更新的数据
+        if($type == "cancel"){ //如果是取消
+          $datas->cancel_user_id = $uid;
+          $datas->cancel_time    = date('YmdHi',time());
+          $datas->status         = 2;
+          if($from == "info" && $isDriver){
+              $datas->status          = 0;
+              $datas->love_wall_ID    = NULL;
+              $datas->carownid        = NULL;
+          }
+        }else{ //如果是完结
+          $datas->status         = 3;
+        }
+
+        //保存改变的状态
         $res = $datas->save();
+
         if(!$res){
           return $this->jsonReturn(-1,[],lang('Fail'));
         }
-        if($from=="wall" && $datas->carownid == $uid ){ //如果是司机操作空座位，则同时对乘客行程进行操作。
+
+
+        if($from=="wall" && $isDriver ){ //如果是司机操作空座位，则同时对乘客行程进行操作。
           $upInfoData = $type == "finish" ? ["status"=>3] : ["status"=>0,"love_wall_ID"=>NULL,"carownid"=>-1] ;
           InfoModel::where([["love_wall_ID",'=',$id],["status","<",2]])->update($upInfoData);
-          if($type == "canncel"){  //给乘客发送取消的推送消息
-            $passengerids = InfoModel::where([["love_wall_ID",'=',$id],["status","<",2]])->column('passengerid');
-            if($passengerids){
-              $cancel_push_msg = lang("The driver {:name} cancelled the trip",["name"=>$userData['name']]) ;
-              foreach ($passengerids as $key => $value) {
-                $this->pushMsg($value,$cancel_push_msg);
-              }
-            }
-          }
-        }else if($type == "cancel"){
-          if($datas->carownid == $uid){  //如果司机取消，则推送给乘客
-            $this->pushMsg( $datas->passengerid,lang("The driver {:name} cancelled the trip",["name"=>$userData['name']]));
+        }
+
+        //如果是取消操作，则推送消息
+        if($type == "cancel"){
+          if($isDriver){ // 如果是司机，则推给乘客
+            $cancel_push_msg = lang("The driver {:name} cancelled the trip",["name"=>$userData['name']]) ;
+            $passengerids = $from == "wall" ?  InfoModel::where([["love_wall_ID",'=',$id],["status","<",2]])->column('passengerid') : $datas->passengerid ;
+            if($passengerids) $this->pushMsg($passengerids,$cancel_push_msg);
           }else{ //如果乘客取消，则推送给司机
-            $this->pushMsg( $datas->carownid,lang("The passenger {:name} cancelled the trip",["name"=>$userData['name']]));
+            $this->pushMsg($driver_id,lang("The passenger {:name} cancelled the trip",["name"=>$userData['name']]));
           }
         }
         return $this->jsonReturn(0,[],"success");
@@ -552,7 +574,7 @@ class Trips extends ApiBase
       if($type == "riding" || $type == "hitchhiking"){
 
         if($from !="wall"){
-          return $this->jsonReturn(-10001,[],lang('Parameter error'));
+          return $this->jsonReturn(992,[],lang('Parameter error'));
         }
 
         if( $datas->status == 2){
@@ -563,7 +585,7 @@ class Trips extends ApiBase
           return $this->jsonReturn(-1,[],lang('Failed, the trip has ended'));
         }
         // 断定是否自己搭自己
-        if($datas->carownid == $uid){
+        if($isDriver){
           return $this->jsonReturn(-1,[],lang('You can`t take your own'));
         }
 
@@ -613,7 +635,7 @@ class Trips extends ApiBase
       /*********** pickup 接受需求  ***********/
       if($type == "pickup" ){
         if($from !="info"){
-          return $this->jsonReturn(-10001,[],lang('Parameter error'));
+          return $this->jsonReturn(992,[],lang('Parameter error'));
         }
         // 断定是否自己搭自己
         if($datas->passengerid == $uid){
@@ -621,7 +643,6 @@ class Trips extends ApiBase
         }
         if($datas->status > 0 ){
           return $this->jsonReturn(-1,[],lang("This requirement has been picked up or cancelled"));
-          // return $this->error('此需求已被人搭载或被取消');
         }
         $datas->carownid = $uid;
         $datas->status = 1;
@@ -717,7 +738,7 @@ class Trips extends ApiBase
      */
     protected function buildUserFields($a="u",$fields=[]){
       $format_array = [];
-      $fields = !empty($fields) ? $fields : ['uid','loginname','name','phone','mobile','Department','sex','company_id','department_id','companyname','imgpath','carnumber'];
+      $fields = !empty($fields) ? $fields : ['uid','loginname','name','phone','mobile','Department','sex','company_id','department_id','companyname','imgpath','carnumber','im_id'];
 
       foreach ($fields as $key => $value) {
         $format_array[$key] = $a.".".$value." as ".$a."_".mb_strtolower($value);
@@ -815,7 +836,7 @@ class Trips extends ApiBase
       ];
       if(is_string($unsetFields) && $unsetFields=="list"){
         $unsetFields = [
-          'p_companyname','d_companyname'
+          'p_companyname','d_companyname','d_im_id','p_im_id'
           ,'start_longitude','start_latitude','start_addressid'
          ,'end_longitude','end_latitude','end_addressid'
         ];
@@ -853,7 +874,19 @@ class Trips extends ApiBase
       if(!$uid || !$message){
         return false;
       }
-      $res = (new PullMessage())->add($uid,$message,lang("Car pooling"),101,1);
+      $PullMessage = new PullMessage();
+      if(is_array($uid)){
+        $res = [];
+        foreach($uid as $key => $value) {
+          if(is_numeric($value)){
+            $res[] = $PullMessage->add($value,$message,lang("Car pooling"),101,1);
+          }
+        }
+      }else if(is_numeric($uid)){
+        $res = $PullMessage->add($uid,$message,lang("Car pooling"),101,1);
+      }else{
+        return false;
+      }
       return $res;
     }
 
