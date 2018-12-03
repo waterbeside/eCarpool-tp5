@@ -35,17 +35,25 @@ class AppVersion extends AdminBase
           }
         }
 
+        $dafaultValue = [
+          'latest_version'=> '000',
+          'current_versioncode'=> '000',
+          'update_time'=> '000',
+          'max_versioncode'=> '000',
+          'min_versioncode'=> '000',
+          'update_version_id'=> 0,
+        ];
 
         $lists_current = VersionModel::where("app_id",$app_id)->select();
-        $current_ios = [];
-        $current_android = [];
+        $current_ios = $dafaultValue;
+        $current_android = $dafaultValue;
         foreach ($lists_current as $key => $value) {
           if($value['platform']=="Android"){
-            $current_android = $current_android ? $current_android : $value;
+            $current_android = $value ? $value : $current_android ;
             continue;
           }
           if($value['platform']=="iOS"){
-            $current_ios = $current_ios ? $current_ios : $value;
+            $current_ios = $value ? $value : $current_ios;
             continue;
           }
         }
@@ -57,7 +65,7 @@ class AppVersion extends AdminBase
           "current_ios" => $current_ios ,
           "current_android" => $current_android,
           "app_id_list"  => config('others.app_id_list'),
-          "app_id"  => $app_id
+          "app_id"  => $app_id,
         ];
 
 
