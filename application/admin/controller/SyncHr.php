@@ -136,8 +136,8 @@ class SyncHr extends AdminBase
         $response = $client->request('get', $url, ['query' => $params]);
         $content = $response->getBody()->getContents();
         $res = json_decode($content,true);
-      } catch (Exception $e) {
-        // $this->errorMsg ='拉取失败';
+      } catch (\GuzzleHttp\Exception\ClientException $exception) {
+        $responseBody = $exception->getResponse()->getBody()->getContents();
         $this->jsonReturn(0,'同步失败');
       }
       if($content){
