@@ -136,7 +136,8 @@ class UserTemp extends Model
       $dataArray = json_decode($bodyString,true);
       unset($bodyString);
       return $dataArray;
-    } catch (Exception $e) {
+    } catch (\GuzzleHttp\Exception\ClientException $exception) {
+      $responseBody = $exception->getResponse()->getBody()->getContents();
       $this->errorMsg ='拉取失败';
       return false;
     }
