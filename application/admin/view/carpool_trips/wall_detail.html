@@ -19,13 +19,13 @@
     </div>
     <div class="member-bar">
       <div class="member-bar-inner">
-        <a class="member-item driver" href="{:url('admin/User/public_detail',['id'=>$data['driver_id']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
-          <div class="avatar" style="background-image:url('{$data.driver_avatar}')"></div>
+        <a class="member-item driver" href="{:url('admin/User/public_detail',['id'=>$data['d_uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
+          <div class="avatar" style="background-image:url('{$data.d_avatar}')"></div>
           <div class="member-info ">
               <p class="type">司机</p>
-              <p class="name layui-elip"><b title="{$data.driver_name} / {$data.driver_loginname}">{$data.driver_name}</b></p>
-              <!-- <p class="loginname layui-elip"><small>{$data.driver_loginname}</small></p> -->
-              <p class="phone">{$data.driver_phone}</p>
+              <p class="name layui-elip"><b title="{$data.d_name} / {$data.d_loginname}">{$data.d_name}</b></p>
+              <!-- <p class="loginname layui-elip"><small>{$data.d_loginname}</small></p> -->
+              <p class="phone">{$data.d_phone}</p>
           </div>
         </a>
         {foreach name="data.passengers" item="vo"}
@@ -69,13 +69,13 @@
         <tr>
           <td class="td-label" width="100">司机</td>
           <td>
-            {php}echo $data['driver_sex']==1 ? '<i class="fa fa-mars"></i>' : ($data['driver_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
-            <a href="{:url('admin/User/public_detail',['id'=>$data['driver_id']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情" style="color:#3d7ea3;">
-              {$data.driver_name} ({$data.driver_loginname})
+            {php}echo $data['d_sex']==1 ? '<i class="fa fa-mars"></i>' : ($data['d_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+            <a href="{:url('admin/User/public_detail',['id'=>$data['d_uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情" style="color:#3d7ea3;">
+              {$data.d_name} ({$data.d_loginname})
             </a>
             <p class="department">
-              {$data.driver_department} / {php}echo $data['driver_companyname']!='' ? $data['driver_companyname'] : '-' ;{/php} /
-              <?php echo isset($companys[$data['driver_company_id']]) ? $companys[$data['driver_company_id']] : $data['driver_company_id']; ?>
+              {$data.d_department} / {php}echo $data['d_companyname']!='' ? $data['d_companyname'] : '-' ;{/php} /
+              <?php echo isset($companys[$data['d_company_id']]) ? $companys[$data['d_company_id']] : $data['d_company_id']; ?>
             </p>
 
           </td>
@@ -86,7 +86,7 @@
           <td>
             <a onclick="openParentLayer('{:url('admin/CarpoolTrips/detail',['id'=>$vo['infoid'],'type'=>0])}',{area:['500px','90%'],title:'行程：{$data.start_addressname} > {$data.end_addressname}'});" href="javascript:void(0);"  style="float:right" class="layui-btn  layui-btn-xs " >行程</a>
             {php}echo $vo['sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
-            <a href="{:url('admin/User/public_detail',['id'=>$data['driver_id']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情" style="color:#3d7ea3;">
+            <a href="{:url('admin/User/public_detail',['id'=>$data['d_uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情" style="color:#3d7ea3;">
               {$vo.name} ({$vo.loginname})
             </a>
             <p class="department">
@@ -172,8 +172,8 @@ function drawRouteLine(start,end,mapObj,callBack){
 }
 
 var data = {
-  start:["{$data.start_longtitude}","{$data.start_latitude}"],
-  end:["{$data.end_longtitude}","{$data.end_latitude}"]
+  start:["{$data.start_longitude}","{$data.start_latitude}"],
+  end:["{$data.end_longitude}","{$data.end_latitude}"]
 }
 cLoadScript(GV.config.url.amapScript,function(){
   var map = showMap('map-content');

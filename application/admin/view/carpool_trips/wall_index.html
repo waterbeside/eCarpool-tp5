@@ -69,16 +69,17 @@
                         <thead>
                         <tr >
                             <th lay-data="{field:'infoid', width:80,fixed: 'left' }" >#</th>
-                            <th lay-data="{field:'carnumber', width:100, fixed: 'left' }">车牌</th>
-                            <th lay-data="{field:'driver_name', minWidth:180, }">司机</th>
-                            <!-- <th lay-data="{field:'driver_phone',width:100,}">司机电话</th> -->
-                            <th lay-data="{field:'driver_department' ,width:120}">司机部门</th>
+                            <th lay-data="{field:'d_carnumber', width:120, fixed: 'left' }">车牌</th>
+                            <th lay-data="{field:'d_name', minWidth:180, }">司机</th>
+                            <!-- <th lay-data="{field:'d_phone',width:100,}">司机电话</th> -->
+                            <th lay-data="{field:'d_department' ,width:120}">司机部门</th>
                             <th lay-data="{field:'seat_count' ,width:80}">空位数</th>
-                            <th lay-data="{field:'took_count',minWidth:80 }">乘客数</th>
+                            <th lay-data="{field:'took_count',Width:60 }">乘客数</th>
 
                             <th lay-data="{field:'time', width:120,}">出发时间</th>
                             <th lay-data="{field:'start_addressname', width:120, style:'color:#d4772b;' }">起点</th>
                             <th lay-data="{field:'end_addressname', width:120,style:'color:#ba5d48;' }">终点</th>
+                            <th lay-data="{field:'map_type', width:60 }">map_type</th>
                             <th lay-data="{field:'subtime', width:120}">发布时间</th>
                             <th lay-data="{field:'options', width:100,fixed: 'right'}">操作</th>
                         </tr>
@@ -89,19 +90,19 @@
                             <td>{$vo.love_wall_ID}</td>
                             <td>
                               <small title="{$vo['love_wall_ID']}"> <i class="fa fa-car"></i></small>
-                              {$vo.carnumber}
+                              {$vo.d_carnumber}
                             </td>
                             <td>
                               <div class="driver status_{$vo.status}">
-                                {php}echo $vo['driver_sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['driver_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
-                                <a href="{:url('admin/User/public_detail',['id'=>$vo['driver_id']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
-                                  {$vo.driver_name} ({$vo.driver_loginname})
+                                {php}echo $vo['d_sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['d_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+                                <a href="{:url('admin/User/public_detail',['id'=>$vo['d_uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
+                                  {$vo.d_name} ({$vo.d_loginname})
                                 </a>
                               </div>
                             </td>
                             <td>
-                              {$vo.driver_department} / {php}echo $vo['driver_companyname']!='' ? $vo['driver_companyname'] : '-' ;{/php} /
-                              <?php echo isset($companys[$vo['driver_company_id']]) ? $companys[$vo['driver_company_id']] : $vo['driver_company_id']; ?>
+                              {$vo.d_department} / {php}echo $vo['d_companyname']!='' ? $vo['d_companyname'] : '-' ;{/php} /
+                              <?php echo isset($companys[$vo['d_company_id']]) ? $companys[$vo['d_company_id']] : $vo['d_company_id']; ?>
                             </td>
                             <td>
                               {$vo.seat_count}
@@ -110,9 +111,10 @@
                             <td>{$vo.time}</td>
                             <td>{$vo.start_addressname}</td>
                             <td>{$vo.end_addressname}</td>
+                            <td>{$vo.map_type}</td>
                             <td>{$vo.subtime}</td>
                             <td>
-                              <a onclick="openLayer('{:url('admin/CarpoolTrips/detail',['id'=>$vo['love_wall_ID'],'type'=>1])}',{area:['700px','90%'],title:'【{$vo.driver_name}】的空座位'});" href="javascript:void(0);"  class="layui-btn  layui-btn-xs " >详情</a>
+                              <a onclick="openLayer('{:url('admin/CarpoolTrips/detail',['id'=>$vo['love_wall_ID'],'type'=>1])}',{area:['700px','90%'],title:'【{$vo.d_name}】的空座位'});" href="javascript:void(0);"  class="layui-btn  layui-btn-xs " >详情</a>
                             </td>
                         </tr>
                         {/foreach}

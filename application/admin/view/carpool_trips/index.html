@@ -69,16 +69,17 @@
                         <thead>
                         <tr >
                             <th lay-data="{field:'infoid', width:80,fixed: 'left' }" >#</th>
-                            <th lay-data="{field:'carnumber', width:120, fixed: 'left' }">车牌</th>
-                            <th lay-data="{field:'driver_name', minWidth:180, }">司机</th>
-                            <!-- <th lay-data="{field:'driver_phone',width:100,}">司机电话</th> -->
-                            <th lay-data="{field:'driver_department' ,width:120}">司机部门</th>
-                            <th lay-data="{field:'passenger_name',minWidth:180 }">乘客</th>
-                            <!-- <th lay-data="{field:'passenger_phone' ,width:100}">乘客电话</th> -->
-                            <th lay-data="{field:'passenger_department' ,width:120}">乘客部门</th>
+                            <th lay-data="{field:'d_carnumber', width:120, fixed: 'left' }">车牌</th>
+                            <th lay-data="{field:'d_name', minWidth:180, }">司机</th>
+                            <!-- <th lay-data="{field:'d_phone',width:100,}">司机电话</th> -->
+                            <th lay-data="{field:'d_department' ,width:120}">司机部门</th>
+                            <th lay-data="{field:'p_name',minWidth:180 }">乘客</th>
+                            <!-- <th lay-data="{field:'p_phone' ,width:100}">乘客电话</th> -->
+                            <th lay-data="{field:'p_department' ,width:120}">乘客部门</th>
                             <th lay-data="{field:'time', width:120,}">出发时间</th>
                             <th lay-data="{field:'start_addressname', width:120 }">起点</th>
                             <th lay-data="{field:'end_addressname', width:120 }">终点</th>
+                            <th lay-data="{field:'map_type', width:60}">map_type</th>
                             <th lay-data="{field:'subtime', width:120}">发布时间</th>
                             <th lay-data="{field:'options', width:140,fixed: 'right'}">操作</th>
                         </tr>
@@ -89,38 +90,41 @@
                             <td>{$vo.infoid}</td>
                             <td>
                               <small title="{$vo['love_wall_ID']}">{$vo['love_wall_ID'] ? '<i class="fa fa-car"></i>' : '<i class="fa fa-user"></i>'}&nbsp;&nbsp;</small>
-                              {$vo.carnumber}
+                              {$vo.d_carnumber}
                             </td>
                             <td>
                               <div class="driver status_{$vo.status}">
-                                {php}echo $vo['driver_sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['driver_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
-                                <a href="{:url('admin/User/public_detail',['id'=>$vo['driver_id']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情" >
-                                  {$vo.driver_name} ({$vo.driver_loginname})
+                                {php}echo $vo['d_sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['d_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+                                <a href="{:url('admin/User/public_detail',['id'=>$vo['d_uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情" >
+                                  {$vo.d_name} ({$vo.d_loginname})
                                 </a>
                               </div>
                             </td>
-                            <!-- <td>{$vo.driver_phone}</td> -->
+                            <!-- <td>{$vo.d_phone}</td> -->
                             <td>
-                              {$vo.driver_department} / {php}echo $vo['driver_companyname']!='' ? $vo['driver_companyname'] : '-' ;{/php} /
-                              <?php echo isset($companys[$vo['driver_company_id']]) ? $companys[$vo['driver_company_id']] : $vo['driver_company_id']; ?>
+                              {$vo.d_department} / {php}echo $vo['d_companyname']!='' ? $vo['d_companyname'] : '-' ;{/php} /
+                              <?php echo isset($companys[$vo['d_company_id']]) ? $companys[$vo['d_company_id']] : $vo['d_company_id']; ?>
+                              || {$vo.d_full_department}
                             </td>
 
                             <td>
                               <div class="passenger status_{$vo.status}">
-                                {php}echo $vo['passenger_sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['passenger_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
-                                <a href="{:url('admin/User/public_detail',['id'=>$vo['passenger_id']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
-                                {$vo.passenger_name} ({$vo.passenger_loginname})
+                                {php}echo $vo['p_sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['p_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+                                <a href="{:url('admin/User/public_detail',['id'=>$vo['p_uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
+                                {$vo.p_name} ({$vo.p_loginname})
                                 </a>
                               </div>
                             </td>
-                            <!-- <td>{$vo.passenger_phone}</td> -->
+                            <!-- <td>{$vo.p_phone}</td> -->
                             <td>
-                              {$vo.passenger_department} / {php}echo $vo['passenger_companyname'] ? $vo['passenger_companyname'] : '-' ;{/php} /
-                              <?php echo isset($companys[$vo['passenger_company_id']]) ? $companys[$vo['passenger_company_id']] : $vo['driver_company_id']; ?>
+                              {$vo.p_department} / {php}echo $vo['p_companyname'] ? $vo['p_companyname'] : '-' ;{/php} /
+                              <?php echo isset($companys[$vo['p_company_id']]) ? $companys[$vo['p_company_id']] : $vo['d_company_id']; ?>
+                              || {$vo.p_full_department}
                             </td>
                             <td>{$vo.time}</td>
                             <td><div class="start status_{$vo.status}">{$vo.start_addressname}</div></td>
                             <td><div class="end status_{$vo.status}">{$vo.end_addressname}</div></td>
+                            <td>{$vo.map_type}</td>
                             <td>{$vo.subtime}</td>
                             <td>
                               <a onclick="openLayer('{:url('admin/CarpoolTrips/detail',['id'=>$vo['infoid'],'type'=>0])}',{area:['500px','90%'],title:'行程：{$vo.start_addressname} > {$vo.end_addressname}'});" href="javascript:void(0);"  class="layui-btn  layui-btn-xs " >详情</a>
