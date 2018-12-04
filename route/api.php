@@ -8,6 +8,8 @@ Route::group([], function () {
   Route::resource('api/:version/docs','api/:version.docs');
   //通知公告相关
   Route::resource('api/:version/notice','api/:version.notice');
+  //banner相关
+  Route::resource('api/:version/ads','api/:version.ads');
   //通行证相关
   Route::resource('api/:version/passport','api/:version.passport');
   Route::rule('api/:version/passport','api/:version.passport/delete','DELETE');
