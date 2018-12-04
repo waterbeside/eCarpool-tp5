@@ -21,12 +21,39 @@ class Address extends ApiBase
     }
 
 
+    /**
+     *
+     *
+     */
+    public function my(){
+      $this->checkPassport(1);
+      $uid = $this->userBaseInfo['uid'];
+      // $resultSet = Db::query('call get_my_address('.$uid.')');
+      $res = Db::connect('database_carpool')->query('call get_my_address(:uid)', [
+        'uid' => $uid,
+      ]);
 
+      if($res){
+        $result = $res[0];
+        foreach ($result as $key => $value) {
+          $result[$key]['longitude'] = $value['longtitude'];
+          $result[$key]['addressid'] = intval($value['addressid']);
+          unset($result[$key]['longtitude']);
+        }
+        $returnData  = array(
+          'lists' => $result,
+          'total'=> count($result)
+        );
+        $this->jsonReturn(0,$returnData,"success");
+        // $this->success('加载成功','',$returnData);
+      }else{
+        $this->jsonReturn(-1,"","fail");
+      }
+    }
 
     /**
      * POST 创建地址
      *
-     * @param  int  $id
      * @return \think\Response
      */
     public function save()

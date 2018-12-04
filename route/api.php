@@ -49,7 +49,8 @@ Route::group([], function () {
   Route::rule('api/:version/trips/:from/:id','api/:version.trips/cancel','DELETE');
 
   //地址相关
-  Route::resource('api/:version/address','api/:version.address');
+  Route::rule('api/:version/address/my','api/:version.address/my','GET');
+  Route::rule('api/:version/address','api/:version.address/save','POST');
 
   //用户相关
   Route::resource('api/:version/user','api/:version.user');
