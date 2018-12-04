@@ -98,7 +98,7 @@ class UserTemp extends Model
    * * 从HR接口拉取单一用户数据
    * @param  string $code 用户工号
    */
-  public function pullUserFromHr($code=''){
+  public function pullUserFromHr($code='',$addTemp = 1){
     if(!$code){
       $this->errorMsg = "empty code";
       return false;
@@ -110,8 +110,19 @@ class UserTemp extends Model
     }
     $resData = $dataArray[0];
     // dump($resData);exit;
-    $data = $this->addFromHr($resData);
+    if($addTemp) {
+      $data = $this->addFromHr($resData);
+    }else{
+      $data = [
+        "code" => $resData['Code'],
+        "name" => $resData['EmployeeName'],
+        "modifty_time" => $resData['ModiftyTime'],
+        "department" => $resData['OrgFullName'],
+        "sex" => $resData['Sex'],
+      ];
+    }
     return $data;
+    
   }
 
 

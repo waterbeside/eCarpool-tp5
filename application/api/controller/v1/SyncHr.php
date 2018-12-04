@@ -112,16 +112,18 @@ class SyncHr extends ApiBase
 
 
 
-    public function single($code=0,$tid=0){
+    public function single($code=0,$tid=0,$is_sync=0){
 
       if(!$this->check_localhost() && !$this->checkPassport()){
         $this->error(lang('Illegal access'));
       }
-
+      if(!$code && !$tid){
+        return $this->jsonReturn(992,[],lang('Parameter error'));
+      }
       $userTempModel = new UserTemp();
       if($code){
         $tid = 0;
-        $res = $userTempModel->pullUserFromHr($code);
+        $res = $userTempModel->pullUserFromHr($code,$is_sync);
       }
       if($tid){
         $res = $userTempModel->where('id',$tid)->find();
@@ -130,22 +132,26 @@ class SyncHr extends ApiBase
         }
       }
       if(!$res){
-        $this->jsonReturn(-1,($tid ? "无此数据":$userTempModel->errorMsg ));
+        $this->jsonReturn(20002,($tid ? "无此数据":$userTempModel->errorMsg ));
       }
 
       if($res === 10003){
         $userData = OldUserModel::where('loginname',$code)->find();
         if($userData &&  in_array($userData["company_id"],[1,11]) && !in_array($userData['Department'],['李宁','高明常安花园','高明一中','佛山市政府'])){
-          OldUserModel::where('uid',$userData['uid'])->update(['is_active'=>0,'modifty_time'=>date("Y-m-d H:i:s")]);
+          if($is_sync) OldUserModel::where('uid',$userData['uid'])->update(['is_active'=>0,'modifty_time'=>date("Y-m-d H:i:s")]);
           return $this->jsonReturn(10003,"用户已离积");
         }
-        return $this->jsonReturn(-1,($tid ? "无此数据":$userTempModel->errorMsg ));
+        return $this->jsonReturn(20002,($tid ? "无此数据":$userTempModel->errorMsg ));
       }
-      $res_toPrimary = $userTempModel->toPrimary($res['code'],$res);
-      if(!$res_toPrimary){
-        $this->jsonReturn(-1,['status'=>$res['status']],($tid ? "同步失败": $userTempModel->errorMsg ));
+      if($is_sync){
+        $res_toPrimary = $userTempModel->toPrimary($res['code'],$res);
+        if(!$res_toPrimary){
+          $this->jsonReturn(-1,['status'=>$res['status']],($tid ? "同步失败": $userTempModel->errorMsg ));
+        }
+        $this->jsonReturn(0,$res_toPrimary,"同步成功");
+      }else{
+        $this->jsonReturn(0,$res,"success");
       }
-      $this->jsonReturn(0,$res_toPrimary,"同步成功");
       exit;
     }
 

@@ -128,6 +128,7 @@ class SyncHr extends AdminBase
       $params = [
         'code'=>$code,
         'tid'=>$tid,
+        'is_sync'=>1,
       ];
 
       try {
