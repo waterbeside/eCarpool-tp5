@@ -56,12 +56,20 @@ class ScoreAccount extends AdminBase
           $map[] = ['cu.Department|cu.companyname','like', "%{$filter['keyword_dept']}%"];
           $isJoinUser = true;
         }
+        //筛选部门
+        if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
+          $map[] = ['d.fullname|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
+          // $map[] = ['u.Department|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
+          $isJoinUser = true;
+        }
+
 
         if($isJoinUser){
-          $fields .=' ,cu.uid ,cu.name as name , cu.phone as phone , cu.company_id ,cu.loginname, cu.Department, cu.sex , cu.companyname';
+          $fields .=' ,cu.uid ,cu.name as name , cu.phone as phone , cu.company_id ,cu.loginname, cu.Department, cu.sex , cu.companyname, d.fullname as full_department';
           $fields .=' ,c.company_name ';
           $join[] =  ['carpool.user cu','cu.loginname = ac.carpool_account', 'left'];
           $join[] =  ['carpool.company c','cu.company_id = c.company_id','left'];
+          $join[] =  ['carpool.t_department d','cu.department_id = d.id','left'];
         }
 
         if($export){
@@ -75,7 +83,10 @@ class ScoreAccount extends AdminBase
 
         foreach ($lists as $key => $value) {
           if(!$isJoinUser){
-            $userInfo = CarpoolUserModel::field('*')->view('company','company_name','company.company_id=user.company_id')->where(['loginname'=>$value['carpool_account']])->find();
+            $userInfo = CarpoolUserModel::field('*')
+            ->view('company','company_name','company.company_id=user.company_id')
+            ->view('t_department','fullname as full_department','t_department.id=user.department_id')
+            ->where(['loginname'=>$value['carpool_account']])->find();
             $lists[$key]['uid'] = $userInfo['uid'] ? $userInfo['uid'] : '';
             $lists[$key]['loginname'] = $userInfo['loginname'] ? $userInfo['loginname'] : '';
             $lists[$key]['name'] = $userInfo['name'] ? $userInfo['name'] : '';
@@ -85,6 +96,7 @@ class ScoreAccount extends AdminBase
             $lists[$key]['company_id'] = $userInfo['company_id'] ? $userInfo['company_id'] : '';
             $lists[$key]['companyname'] = $userInfo['companyname'] ? $userInfo['companyname'] : '';
             $lists[$key]['company_name'] = $userInfo['company_name'] ? $userInfo['company_name'] : '';
+            $lists[$key]['full_department'] = $userInfo['full_department'] ? $userInfo['full_department'] : '';
           }
         }
         if(!$export){
@@ -95,7 +107,7 @@ class ScoreAccount extends AdminBase
 
       }elseif($type=='2'||$type=="carpool"){ //拼车帐号列表
 
-        $fields  ='cu.uid ,cu.name as name , cu.phone as phone , cu.company_id ,cu.loginname, cu.Department, cu.sex , cu.companyname, cu.is_active';
+        $fields  ='cu.uid ,cu.name as name , cu.phone as phone , cu.company_id ,cu.loginname, cu.Department, cu.sex , cu.companyname, cu.is_active, d.fullname as full_department';
         $fields .=' ,c.company_name ';
         $map = [];
         $isJoinAccount = $export ? true : false;
@@ -115,15 +127,17 @@ class ScoreAccount extends AdminBase
         }
         //筛选部门
         if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
-          $map[] = ['cu.Department|cu.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
+          // $map[] = ['cu.Department|cu.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
+          $map[] = ['d.fullname|cu.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
         }
         $join = [
           ['company c','cu.company_id = c.company_id','left'],
         ];
+        $join[] =  ['t_department d','cu.department_id = d.id','left'];
+
         if($isJoinAccount){
           $fields .=' ,ac.carpool_account ,ac.id as account_id  , ac.account , ac.balance ,ac.identifier, ac.platform, ac.register_date';
           $join[] =  ['carpool_score.t_account ac','cu.loginname = ac.carpool_account', 'left'];
-
         }
         if($export){
           $lists = CarpoolUserModel::alias('cu')->field($fields)->join($join)->where($map)->order('uid DESC')->select();
@@ -162,10 +176,11 @@ class ScoreAccount extends AdminBase
         ->setCellValue('C1','电话')
         ->setCellValue('D1','账号')
         ->setCellValue('E1','公司')
-        ->setCellValue('F1','部门')
-        ->setCellValue('G1','分厂')
-        ->setCellValue('H1','积分余额')
-        ->setCellValue('I1','性别')
+        ->setCellValue('F1','分厂')
+        ->setCellValue('G1','部门')
+        ->setCellValue('H1','部门(HR)')
+        ->setCellValue('I1','积分余额')
+        ->setCellValue('J1','性别')
         ;
 
         foreach ($lists as $key => $value) {
@@ -177,8 +192,9 @@ class ScoreAccount extends AdminBase
           ->setCellValue('E'.$rowNum,$value['company_name'] ?  $value['company_name'] :  $value['company_id'] )
           ->setCellValue('F'.$rowNum,$value['companyname'])
           ->setCellValue('G'.$rowNum,$value['Department'])
-          ->setCellValue('H'.$rowNum,$value['balance'])
-          ->setCellValue('I'.$rowNum,$value['sex'])
+          ->setCellValue('H'.$rowNum,$value['full_department'])
+          ->setCellValue('I'.$rowNum,$value['balance'])
+          ->setCellValue('J'.$rowNum,$value['sex'])
           ;
         }
         /*$value = "Hello World!" . PHP_EOL . "Next Line";
@@ -211,7 +227,6 @@ class ScoreAccount extends AdminBase
       }else{
         $accountInfo = $accountModel->getDetailByAccount($type,$account);
       }
-
       if($accountInfo && $accountInfo['carpool']){
         $userInfo = $accountInfo['carpool'];
       }
@@ -221,7 +236,6 @@ class ScoreAccount extends AdminBase
       if(!isset($accountInfo['id'])){
         $accountInfo = NULL ;
       }
-
       $returnData = [
         'accountInfo'=>$accountInfo,
         'userInfo'=>$userInfo

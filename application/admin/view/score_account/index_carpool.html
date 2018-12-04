@@ -33,7 +33,7 @@
                         </div>
                         〜
                         <div class="layui-input-inline">
-                          <input type="number" name="filter[ceiling]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="不限" class="layui-input"  style="width:60px" >
+                          <input type="number" name="filter[ceiling]" value="{$filter['ceiling'] ? $filter['ceiling'] :''}" placeholder="不限" class="layui-input"  style="width:60px" >
                         </div>
                     </div>
                     <div class="layui-inline">
@@ -51,7 +51,8 @@
                         <th lay-data="{field:'name' }">姓名</th>
                         <th lay-data="{field:'score', width:100}">积分余额</th>
                         <th lay-data="{field:'phone', width:120}">手机</th>
-                        <th lay-data="{field:'Department', width:120}">部门</th>
+                        <th lay-data="{field:'full_department', width:160}">部门(HR)</th>
+                        <th lay-data="{field:'Department', width:80}">部门</th>
                         <th lay-data="{field:'company_name', width:140}">公司</th>
                         <th lay-data="{field:'other', width:60}">...</th>
                         <th lay-data="{field:'options', width:150,fixed: 'right'}">操作</th>
@@ -73,6 +74,7 @@
                         </td>
                         <td class="field-score"><span>{$vo['balance']}</span></td>
                         <td>{$vo.phone}</td>
+                        <td>{$vo.full_department}</td>
                         <td>{$vo.Department}</td>
                         <td>{php}echo $vo['companyname'] ? $vo['companyname'].' / ' : '';{/php}{$vo.company_name}</td>
 

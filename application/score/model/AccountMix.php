@@ -3,6 +3,7 @@ namespace app\score\model;
 
 use think\Model;
 use app\carpool\model\User as CarpoolUserModel;
+use app\user\model\Department as DepartmentModel;
 
 class AccountMix extends Model
 {
@@ -69,6 +70,7 @@ class AccountMix extends Model
           $accountInfo['carpool'] = $this->getCarpoolAccount($account);
         }
       }
+      $accountInfo['carpool']['full_department'] = DepartmentModel::where('id',$accountInfo['carpool']['department_id'])->value('fullname');
       return $accountInfo;
     }
 
