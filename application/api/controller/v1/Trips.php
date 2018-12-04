@@ -8,6 +8,7 @@ use app\carpool\model\Wall as WallModel;
 use app\carpool\model\Address;
 use app\carpool\model\WallLike;
 use app\carpool\model\user as UserModel;
+// use app\user\model\Department as DepartmentModel;
 use app\common\model\PullMessage;
 
 use think\Db;
@@ -124,10 +125,10 @@ class Trips extends ApiBase
         $map = [
           ['d.company_id','=',$company_id],
           // ['love_wall_ID','>',0],
-          ['status','<',2],
+          ['t.status','<',2],
           // ['go_time','between time',[date('YmdHi',$time_s),date('YmdHi',$time_e)]],
-          ['time','<',(date('YmdHi',$time_e))],
-          ['time','>',(date('YmdHi',$time_s))],
+          ['t.time','<',(date('YmdHi',$time_e))],
+          ['t.time','>',(date('YmdHi',$time_s))],
         ];
         if($keyword){
           $map[] = ['d.name|s.addressname|e.addressname|t.startname|t.endname','like',"%{$keyword}%"];
@@ -137,10 +138,11 @@ class Trips extends ApiBase
         }
         $fields = 't.time, t.status, t.seat_count';
         $fields .= ', t.love_wall_ID as id, t.subtime , t.carownid as driver_id  ';
+        $fields .= ', dd.fullname as d_full_department  ';
 
         $fields .= ','.$this->buildUserFields('d');
         $fields .=  $this->buildAddressFields();
-        $join = $this->buildTripJoins("s,e,d");
+        $join = $this->buildTripJoins("s,e,d,department");
 
 
         $results = WallModel::alias('t')->field($fields)->join($join)->where($map)->order(' time ASC, t.love_wall_ID ASC  ')
@@ -182,9 +184,10 @@ class Trips extends ApiBase
       }
       $fields = 't.time, t.status,  t.seat_count, t.map_type';
       $fields .= ', t.love_wall_ID as id ,t.love_wall_ID , t.subtime , t.carownid as driver_id  ';
+      $fields .= ', dd.fullname as d_full_department  ';
       $fields .= ','.$this->buildUserFields('d');
       $fields .=  $this->buildAddressFields();
-      $join = $this->buildTripJoins("s,e,d");
+      $join = $this->buildTripJoins("s,e,d,department");
       $data = WallModel::alias('t')->field($fields)->join($join)->where("t.love_wall_ID",$id)->find();
       if(!$data){
         return $this->jsonReturn(20002,$data,lang('No data'));
@@ -221,8 +224,8 @@ class Trips extends ApiBase
             ['p.company_id','=',$company_id],
             // ['love_wall_ID','>',0],
             // ['go_time','between time',[date('YmdHi',$time_s),date('YmdHi',$time_e)]],
-            ['time','<',(date('YmdHi',$time_e))],
-            ['time','>',(date('YmdHi',$time_s))],
+            ['t.time','<',(date('YmdHi',$time_e))],
+            ['t.time','>',(date('YmdHi',$time_s))],
           ];
         }
 
@@ -240,11 +243,12 @@ class Trips extends ApiBase
         $fields = 't.time, t.status ';
         // $fields = ', FROM_UNIXTIME(t.go_time,'%Y-%M-%D %h:%i:%s') as format_time';
         $fields .= ',t.infoid as id, t.love_wall_ID , t.subtime , t.carownid as driver_id , t.passengerid as passenger_id  ';
+        $fields .= ', pd.fullname as p_full_department  ';
 
         // $fields .= ','.$this->buildUserFields('d');
         $fields .= ','.$this->buildUserFields('p');
         $fields .=  $this->buildAddressFields();
-        $join = $this->buildTripJoins("s,e,p");
+        $join = $this->buildTripJoins("s,e,p,department");
 
         $orderby = $orderby ? $orderby : 'time ASC, t.infoid ASC ';
 
@@ -302,10 +306,10 @@ class Trips extends ApiBase
 
       $fields = 't.time, t.status, t.map_type';
       $fields .= ',t.infoid as id, t.infoid , t.love_wall_ID , t.subtime , t.carownid as driver_id, t.passengerid as passenger_id  ';
-
       $fields .= ','.$this->buildUserFields('d');
+      $fields .= ', dd.fullname as d_full_department  ';
       $fields .= ','.$this->buildUserFields('p');
-
+      $fields .= ', pd.fullname as p_full_department  ';
       $fields .=  $this->buildAddressFields();
       $join = $this->buildTripJoins();
       $data = InfoModel::alias('t')->field($fields)->join($join)->where("t.infoid",$id)->find();
@@ -708,7 +712,7 @@ class Trips extends ApiBase
     /**
      * 创件状态筛选map
      */
-    protected function buildStatusMap($status){
+    protected function buildStatusMap($status,$t="t"){
       $statusExp = '=';
       if(is_string($status) && strpos($status,'|')){
         $statusArray = explode('|',$status);
@@ -726,9 +730,9 @@ class Trips extends ApiBase
           $statusExp = "in";
       }
       if(in_array(mb_strtolower($statusExp),['=','<=','>=','<','>','<>','in','eq','neq','not in','lt','gt','egt','elt'])){
-        return ['status',$statusExp,$status];
+        return [$t.'.status',$statusExp,$status];
       }else{
-        return ['status',"=",$status];
+        return [$t.'.status',"=",$status];
       }
     }
 
@@ -766,7 +770,7 @@ class Trips extends ApiBase
      * @param  string|array $filter
      * @return array
      */
-    protected function buildTripJoins($filter="d,p,s,e"){
+    protected function buildTripJoins($filter="d,p,s,e,department"){
       if(is_string($filter)){
         $filter = explode(",",$filter);
       }
@@ -777,8 +781,14 @@ class Trips extends ApiBase
         }
         if(in_array('s',$filter) || in_array('start',$filter))      $join[] = ['address s','s.addressid = t.startpid', 'left'];
         if(in_array('e',$filter) || in_array('end',$filter))        $join[] = ['address e','e.addressid = t.endpid', 'left'];
-        if(in_array('d',$filter) || in_array('driver',$filter))    $join[] = ['user d','d.uid = t.carownid', 'left'];
-        if(in_array('p',$filter) || in_array('passenger',$filter)) $join[] = ['user p','p.uid = t.passengerid', 'left'];
+        if(in_array('d',$filter) || in_array('driver',$filter)){
+          $join[] = ['user d','d.uid = t.carownid', 'left'];
+          if(in_array('department',$filter))  $join[] = ['t_department dd','dd.id = d.department_id', 'left'];
+        }
+        if(in_array('p',$filter) || in_array('passenger',$filter)){
+          $join[] = ['user p','p.uid = t.passengerid', 'left'];
+          if(in_array('department',$filter))  $join[] = ['t_department pd','pd.id = p.department_id', 'left'];
+        }
       }
       return $join;
     }
