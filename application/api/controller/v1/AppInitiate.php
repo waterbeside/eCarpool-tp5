@@ -33,7 +33,6 @@ class AppInitiate extends ApiBase
     $lang = (new I18nLangModel())->formatLangCode($this->language);
     $platform_list = config('others.platform_list');
 
-
     /**
      * 通知列表
      */
@@ -81,6 +80,7 @@ class AppInitiate extends ApiBase
         "link_type" => $value["link_type"],
         "link" => $value["link"],
         "create_time" => $value["create_time"],
+        "type" => $value["type"],
       ];
     }
 
