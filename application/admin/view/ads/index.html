@@ -71,7 +71,7 @@
                             <td>
                               {$vo.title}
                             </td>
-                            <td>{php}echo $typeList[$vo['type']] ? $typeList[$vo['type']]: $vo['type'] ; {/php}</td>
+                            <td>{php}echo isset($typeList[$vo['type']]) ? $typeList[$vo['type']]: $vo['type'] ; {/php}</td>
 
                             <td>{php}echo $vo['status']==1 ? '<b class="text-red">显示</b>' : '<b class="text-gray">不显示</b>';{/php}</td>
                             <td>{$vo.create_time}</td>
