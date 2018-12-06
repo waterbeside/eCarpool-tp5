@@ -57,7 +57,8 @@ Route::group([], function () {
   Route::rule('api/:version/user/:id/position','api/:version.user_position/read','GET');
   Route::rule('api/:version/user/:id/position','api/:version.user_position/save','POST');
 
-
+  //*********公开的
+  Route::resource('api/:version/publics/idle','api/:version.publics.idle');
 
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
 
