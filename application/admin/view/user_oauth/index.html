@@ -1,0 +1,129 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body page-score-userOauth">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief ">
+      <ul class="  amain-tool-bar" >
+          <li class="layui-this"><a href="{:url('admin/UserOauth/index')}"  >第三方登入管理</a></li>
+
+      </ul>
+
+
+        <div class="layui-tab-content">
+                <form class="layui-form layui-form-pane" action="{:url('admin/UserOauth/index')}" method="get">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">检索</label>
+
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
+                        </div>
+                        <div class="layui-input-inline" style="width:120px">
+                            <select name="filter[type]"  >
+                                <option value="0"   {if condition="$filter.type==0"} selected="selected"{/if}> 类型:不限</option>
+                                {foreach name="$typeList" key='key' item="vo"}
+                                <option value="{$key}" {if condition="$filter.type==$key"} selected="selected"{/if}> {$vo}</option>
+                                {/foreach}
+                            </select>
+                        </div>
+                        <div class="layui-input-inline" style="width:120px">
+                            <select name="filter[is_delete]" >
+                                <option value="0"   {if condition="$filter.is_delete==0"} selected="selected"{/if}> 状态:綁定</option>
+                                <option value="1"   {if condition="$filter.is_delete==1"} selected="selected"{/if}> 状态:已解绑</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <!-- <input type="hidden" name="export" value="0"> -->
+                        <button class="layui-btn"><i class="fa fa-search"></i></button>
+                    </div>
+                </form>
+                <hr>
+
+                <table lay-filter="listtable" class="layui-table">
+                    <thead>
+                      <tr>
+                          <th lay-data="{field:'id', width:100,fixed: 'left'}" >ID</th>
+                          <th lay-data="{field:'user_id',  width:90}">UID</th>
+                          <th lay-data="{field:'type',  width:90}">类型</th>
+                          <th lay-data="{field:'loginname',minWidth:120}">用户名</th>
+                          <th lay-data="{field:'name', width:100}">姓名</th>
+                          <th lay-data="{field:'identifier', width:100}">identifier</th>
+                          <th lay-data="{field:'access_token', width:100}">access_token</th>
+                          <th lay-data="{field:'full_department', width:160}">部门(HR)</th>
+                          <th lay-data="{field:'company_name', width:100}">公司</th>
+                          <th lay-data="{field:'binding_date', width:120}">绑定日期</th>
+                          <th lay-data="{field:'unbinding_date', width:120}">解绑日期</th>
+                          <!-- <th lay-data="{field:'score', width:80}">分</th> -->
+                          <th lay-data="{field:'other', width:60}">...</th>
+                          <th lay-data="{field:'options', width:140,fixed: 'right'}">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {foreach name="lists" item="vo"}
+                    <tr  >
+                        <td>{$vo.id}</td>
+                        <td>{$vo.user_id}</td>
+                        <td><?php echo isset($typeList[$vo['type']]) ? $typeList[$vo['type']] : $vo['type'] ?></td>
+                        <td>
+                          <a href="{:url('admin/User/public_detail',['id'=>$vo['user_id']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
+                            {$vo.loginname}
+                          </a>
+                        </td>
+                        <td>{$vo.name}</td>
+                        <td>{$vo.identifier}</td>
+                        <td>{$vo.access_token}</td>
+                        <td>{$vo.full_department}</td>
+                        <td>{$vo.company_name}</td>
+                        <td>{$vo.binding_date}</td>
+                        <td>
+                          <div <?php echo  ($vo['is_delete']  ? 'class="is_delete"' : ''); ?>>
+                            {$vo.unbinding_date}
+                          </div>
+                        </td>
+                        <td>
+                          {php}echo $vo['sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+                        </td>
+                        <td>
+                            {php}
+                              echo $vo['is_delete'] == 1 ? '已解绑' : '<a href="'.url('admin/UserOauth/delete',['id'=>$vo['id']]).'" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="解绑" ><i class="layui-icon">&#xe640;</i> 解绑账号</a>' ;
+                            {/php}
+
+                        </td>
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+                <!--分页-->
+                {$lists|raw}
+
+        </div>
+    </div>
+</div>
+<style>
+  .page-score-userOauth .layui-table-box  tr.delete, .page-score-userOauth .layui-table-box  tr.delete a { color:#bbb}
+
+</style>
+{/block}
+{block name="script"}
+<script>
+PAGE_EXEC = {
+  init: function(){
+    initLayuiTable({ limit: {$pagesize} })
+    var $tableWrapper = $(".page-score-userOauth [lay-filter=LAY-table-1] .layui-table-box");
+    var $tableWrapper_main = $tableWrapper.find(".layui-table-main");
+    var $tr = $tableWrapper_main.find('tr');
+    $tr.each(function(index, el) {
+      if($(el).find("[data-field=unbinding_date]").find('.is_delete').length > 0){
+
+        $(el).addClass('delete');
+      }
+    });
+  }
+}
+PAGE_EXEC.init()
+</script>
+
+{/block}
