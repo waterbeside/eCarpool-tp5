@@ -32,7 +32,7 @@ class Ads extends ApiBase
       $redis = new RedisData();
       $lastVeison = $redis->get($keyOfDataVersion);
 
-      if($ver > 0 && $lastVeison && $ver > intval($lastVeison)){
+      if($ver > 0 && $lastVeison && $ver >= intval($lastVeison)){
         return $this->jsonReturn(20008,[],'No new data');
       }
 
