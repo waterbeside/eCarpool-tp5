@@ -55,14 +55,15 @@ class User extends Model
     */
    public function syncDataFromTemp($data){
      $inputUserData = [
-       'nativename' => $data['name'],
        "loginname"=> $data['code'],
        "sex"=> $data['sex'],
        "modifty_time"=> $data['modifty_time'],
        "department_id"=> $data['department_id'],
        'company_id' => isset($data['department_city']) && mb_strtolower($data['department_city']) == "vietnam" ? 11 : 1,
-       'is_active' => 1,
      ];
+     if($data['name']){
+       $inputUserData['nativename'] = $data['name'];
+     }
 
      //查找用户旧数据
      $oldData = $this->where("loginname",$data['code'])->find();
@@ -74,6 +75,8 @@ class User extends Model
          'deptid' => $data['code'],
          'route_short_name' => 'XY',
          'md5password' => $pw,
+         'is_active' => 1,
+         // 'is_delete' => 0,
        ];
        $inputUserData = array_merge($inputUserData_default,$inputUserData);
        $returnId = $this->insertGetId($inputUserData);
