@@ -21,7 +21,6 @@ class SyncHr extends ApiBase
     protected function initialize()
     {
         parent::initialize();
-
     }
 
 
@@ -83,7 +82,7 @@ class SyncHr extends ApiBase
           if($res_toPrimary){
             $success .=$value['code'].",";
           }else{
-            $fail .=$value['code'].",";
+            $fail    .=$value['code'].",";
           }
         }
       }
@@ -111,9 +110,7 @@ class SyncHr extends ApiBase
 
 
 
-
     public function single($code=0,$tid=0,$is_sync=0){
-
       if(!$this->check_localhost() && !$this->checkPassport()){
         $this->error(lang('Illegal access'));
       }
@@ -124,24 +121,34 @@ class SyncHr extends ApiBase
       if($code){
         $tid = 0;
         $res = $userTempModel->pullUserFromHr($code,$is_sync);
+        if(!$res){
+          $this->jsonReturn(-1,$userTempModel->errorMsg);
+        }
       }
       if($tid){
         $res = $userTempModel->where('id',$tid)->find();
-        if($res && !in_array($res['status'],[-1,0])){
-          $this->jsonReturn(-1,['status'=>$res['status']],'已同步过，无需再同步');
+        if(!$res){
+          return $this->jsonReturn(20002,'无此数据');
         }
-      }
-      if(!$res){
-        $this->jsonReturn(20002,($tid ? "无此数据":$userTempModel->errorMsg ));
+        if(!in_array($res['status'],[-1,0])){
+          return $this->jsonReturn(-1,['status'=>$res['status']],'已同步过，无需再同步');
+        }
       }
 
-      if($res === 10003){
+      if($res['code'] == -2){
+        return $this->jsonReturn(-1,$res,$userTempModel->errorMsg);
+      }
+
+      if($res['code'] == -1 ){
         $userData = OldUserModel::where('loginname',$code)->find();
-        if($userData &&  in_array($userData["company_id"],[1,11]) && !in_array($userData['Department'],['李宁','高明常安花园','高明一中','佛山市政府'])){
-          if($is_sync) OldUserModel::where('uid',$userData['uid'])->update(['is_active'=>0,'modifty_time'=>date("Y-m-d H:i:s")]);
-          return $this->jsonReturn(10003,"用户已离积");
+        if(!$userData){
+          return $this->jsonReturn(20002,$res,"用户不存在");
         }
-        return $this->jsonReturn(20002,($tid ? "无此数据":$userTempModel->errorMsg ));
+        if($userData &&  in_array($userData["company_id"],[1,11]) && !in_array($userData['Department'],['李宁','高明常安花园','高明一中','佛山市政府'])){
+          // if($is_sync) OldUserModel::where('uid',$userData['uid'])->update(['is_active'=>0,'modifty_time'=>date("Y-m-d H:i:s")]);
+          return $this->jsonReturn(10003,$res,"用户已离积");
+        }
+        return $this->jsonReturn(20002,$res,"用户不存在");
       }
       if($is_sync){
         $res_toPrimary = $userTempModel->toPrimary($res['code'],$res);

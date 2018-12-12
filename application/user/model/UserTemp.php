@@ -105,24 +105,33 @@ class UserTemp extends Model
     }
     $dataArray = $this->clientRequest(config('secret.HR_api.getUser'), ['employeecode' => $code]);
     if(!$dataArray){
-      $this->errorMsg ='无该员工';
-      return 10003;
+      $this->errorMsg ='查无数据';
+      return false;
     }
+
     $resData = $dataArray[0];
+
+    $data = [
+      "code" => $resData['Code'],
+      "name" => $resData['EmployeeName'],
+      "modifty_time" => $resData['ModiftyTime'],
+      "department" => $resData['OrgFullName'],
+      "sex" => $resData['Sex'],
+    ];
+    if($resData['Code'] == -2){
+      $this->errorMsg ='员工在职但未开放';
+      return $data;
+    }
+    if($resData['Code'] == -1){
+      $this->errorMsg ='员工不存在或离职';
+      return $data;
+    }
     // dump($resData);exit;
     if($addTemp) {
       $data = $this->addFromHr($resData);
-    }else{
-      $data = [
-        "code" => $resData['Code'],
-        "name" => $resData['EmployeeName'],
-        "modifty_time" => $resData['ModiftyTime'],
-        "department" => $resData['OrgFullName'],
-        "sex" => $resData['Sex'],
-      ];
     }
     return $data;
-    
+
   }
 
 
