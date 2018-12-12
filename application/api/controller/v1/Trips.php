@@ -72,7 +72,7 @@ class Trips extends ApiBase
           'total'=>$results['total'],
           'pageSize'=>$results['per_page'],
           'lastPage'=>$results['last_page'],
-          'currentPage'=>$results['current_page'],
+          'currentPage'=>intval($results['current_page']),
         ];
       }else{
         $datas =    $modelObj->select();
@@ -165,7 +165,7 @@ class Trips extends ApiBase
             'total'=>$results['total'],
             'pageSize'=>$results['per_page'],
             'lastPage'=>$results['last_page'],
-            'currentPage'=>$results['current_page'],
+            'currentPage'=>intval($results['current_page']),
           ]
         ];
         $this->jsonReturn(0,$returnData,"success");
@@ -265,7 +265,7 @@ class Trips extends ApiBase
             'total'=>$results['total'],
             'pageSize'=>$results['per_page'],
             'lastPage'=>$results['last_page'],
-            'currentPage'=>$results['current_page'],
+            'currentPage'=>intval($results['current_page']),
           ];
         }else{
           $datas =    $modelObj->select();
