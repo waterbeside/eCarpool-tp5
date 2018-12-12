@@ -63,6 +63,8 @@
 
             <div class="layui-tab-content" style="margin:0 -10px">
               <div class="layui-tab-item layui-show">
+                <blockquote class="layui-elem-quote">共检得 <b>{$lists->total()}</b> 条数据</blockquote>
+                
                 <div class="order-list">
                   <form class="layui-form">
                     {if !count($lists)>0}无数据{/if}
