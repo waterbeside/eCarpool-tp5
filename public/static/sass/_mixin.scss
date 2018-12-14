@@ -1,0 +1,22 @@
+@mixin blank($height) {
+  height: $height; overflow: hidden; line-height: 1;display: block; clear: both;
+}
+
+@mixin colorBtn($color,$darker:0,$setHover:1) {
+  $text-color : #fff;
+  $border-color: darken($color, 5%);
+  @if $darker == 1 { $text-color:darken($color,20%)  } @else { $text-color:lighten($color,60%) }
+  border:1px solid $border-color; color:$text-color;  background: $color;
+  @if $setHover == 1 {
+    &:hover {
+      border-color:darken($border-color,4%); background:darken($color,8%);
+    }
+  }
+}
+
+@mixin coverPic($url){
+   background-position: center; background-repeat: no-repeat; background-size: cover;
+   @if $url {
+     background-image: url($url);
+   }
+}

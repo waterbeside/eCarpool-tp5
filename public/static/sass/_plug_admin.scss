@@ -1,0 +1,112 @@
+.center-block {   display: block; margin-left: auto; margin-right: auto;}
+.pull-right {   float: right !important; }
+.pull-left {   float: left !important; }
+.hide {   display: none !important; }
+.show {   display: block !important; }
+.invisible { visibility: hidden; }
+.text-hide {   font: 0/0 a; color: transparent;   text-shadow: none;   background-color: transparent;   border: 0; }
+.hidden {   display: none !important; }
+.affix {   position: fixed; }
+
+/***** jTreegrid jDatagrid ****/
+.table-tree {
+  .treeField {
+    .fa { color: $color-silver; margin-right: 3px};
+    .J-treeBtn { cursor:pointer; }
+    .fa-folder-open,  .fa-folder { color: #cf8d00;  cursor:pointer; font-size: 14px; text-shadow:1px 1px 1px rgba(0,0,0,0.1)}
+    .fa-file-o {color: $color-silver-l1; font-size: 12px;text-shadow:1px 1px 1px rgba(0,0,0,0.1)}
+  }
+  .J-treegrid-checkall { font-size: 14px;  }
+  .J-treegrid-checkall .fa {color:  #337AB7;}
+  @for $i from 1 through 4 {
+    tr[data-deep="#{$i}"] .treeField { background: url('../images/tree-line-#{$i}.png') 20px center no-repeat}
+  }
+  &[lay-size='sm']  tr .treeField { background-position: 15px center }
+}
+
+.table-datagrid ,  .table-tree {
+  tbody {
+    tr.J-datagrid-row-selected, tr.J-datagrid-row-selected {background: #FCEAC9}
+    tr.J-multiple-row-selected, tr.J-multiple-row-selected {background: #E8EAFF}
+  }
+}
+
+a.J-btn-checkall .fa {color:  #337AB7;font-size: 14px;}
+span.J-btn-checkall .fa {color: #aaa;font-size: 14px;cursor: no-drop}
+.toolbar-datagrid-btn-wrap  { padding:0 0 10px }
+.treegrid-menu i { margin: 0 13px 0 -23px}
+.toolbar-datagrid-btn-wrap i { margin: 0 5px 0 0}
+
+/* 模态框相关 */
+.modal {
+  $body-pading : 15px;
+  display: none;   overflow: hidden; position: fixed; top: 0; right: 0; bottom: 0; left: 0;z-index: 1050; -webkit-overflow-scrolling: touch;   outline: 0;
+  &.fade .modal-dialog {
+    -webkit-transform: translate(0, -25%);
+    -ms-transform: translate(0, -25%);
+    -o-transform: translate(0, -25%);
+    transform: translate(0, -25%);
+    -webkit-transition: -webkit-transform 0.3s ease-out;
+    -o-transition: -o-transform 0.3s ease-out;
+    transition: transform 0.3s ease-out;
+  }
+  &.in .modal-dialog {
+    -webkit-transform: translate(0, 0);
+    -ms-transform: translate(0, 0);
+    -o-transform: translate(0, 0);
+    transform: translate(0, 0);
+  }
+  &-open {overflow: hidden;
+    .modal {  overflow-x: hidden; overflow-y: auto;}
+  }
+  &-dialog {   position: relative; width: auto; margin: 10px;}
+  &-content {position: relative; background-color: #FFF;  border: 1px solid #999; border: 1px solid rgba(0, 0, 0, 0.2);border-radius: 3px;
+    -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+    -webkit-background-clip: padding-box;
+            background-clip: padding-box;
+    outline: 0;
+  }
+  &-backdrop {
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 1040; background-color: #000;
+    &.fade { opacity: 0; filter: alpha(opacity=0); }
+    &.in { opacity: 0.5;  filter: alpha(opacity=50);}
+  }
+  &-header {   padding: $body-pading; border-bottom: 1px solid #e5e5e5;
+    .close { margin-top: -2px; float: right; border:none;  font-size: 20px; opacity: .6; cursor: pointer; font-weight: 900;
+      &:hover { opacity: 1}
+    }
+  }
+  &-title {  font-size: 18px; margin: 0; line-height: 1.42857143; }
+  &-body {  position: relative;  padding: $body-pading;}
+  &-footer {   padding: $body-pading;text-align: right;  border-top: 1px solid $color-border;
+    .btn + .btn {  margin-left: 5px; margin-bottom: 0; }
+    .btn-group .btn + .btn {   margin-left: -1px;}
+    .btn-block + .btn-block {   margin-left: 0; }
+  }
+  &-scrollbar-measure {   position: absolute;   top: -9999px; width: 50px; height: 50px; overflow: scroll;}
+  &-bottom-btns-bar {
+    margin:10px #{-$body-pading} #{-$body-pading}; padding: 15px; border-top: 1px solid $color-border; text-align: right;
+
+  }
+
+}
+
+.clearfix:before, .clearfix:after,
+.modal-header:before, .modal-header:after, .modal-footer:before,
+.modal-footer:after {   content: " "; display: table;}
+.clearfix:after, .modal-header:after, .modal-footer:after {  clear: both;}
+.modal-body .amain-body { margin: 0;background: none}
+
+@media (min-width: 768px) {
+  .modal {
+    &-dialog { width: 600px; margin: 30px auto; }
+    &-content {
+      -webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    }
+  }
+}
+@media (min-width: 992px) {
+  .modal-lg {   width: 900px; }
+}

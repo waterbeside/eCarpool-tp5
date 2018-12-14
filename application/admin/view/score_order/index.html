@@ -1,6 +1,6 @@
 {extend name="base" /}
 {block name="body"}
-<div class="amain-body page-order-list">
+<div class="amain-body P-order-list">
 
     <!--tab标签-->
     <div class="layui-tab ">
@@ -64,39 +64,39 @@
             <div class="layui-tab-content" style="margin:0 -10px">
               <div class="layui-tab-item layui-show">
                 <blockquote class="layui-elem-quote">共检得 <b>{$lists->total()}</b> 条数据</blockquote>
-                
+
                 <div class="order-list">
                   <form class="layui-form">
                     {if !count($lists)>0}无数据{/if}
                     {foreach name="lists" item="vo"}
                     <div class="am-card order-item ">
-                       <div class="am-card-heading">
-                         <h3># {$vo.uuid|iconv_substr=0,8}/{$vo.id}</h3>
-                         <h5><i class="fa fa-clock-o"></i> {$vo.creation_time}</h5>
-                         <h4 class="layui-badge goodOrder-status_{$vo.status}"><?php echo $statusList[$vo['status']]; ?> </h4>
-                         <div class="layui-clear"></div>
-                       </div>
-                       <div class="user">
-                         <div class="user-item name">姓名：<b>{$vo.name}</b></div>
-                         <div class="user-item" > 电话：<b>{$vo.phone}</b> </div>
-                         <div class="user-item"> 帐号：<b>{$vo.loginname}</b>  </div>
-                         <div class="user-item"> 公司：<b><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></b>  </div>
-                         <div class="user-item" title="{$vo.Department}/{$vo.companyname}"> 部门：<b>{$vo.Department}</b>  </div>
-                       </div>
-                      <div class="am-card-body">
-                        <div class="goods">
-                          <?php foreach($vo['goods'] as $good_i => $good){ ?>
-                            <div class="good" title="{$good.name} &times; {$good.num}">
-                              <div class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
-                              <h5 class="layui-elip">{$good.name}</h5>
-                              <div class="num"> &times; {$good.num} </div>
-                            </div>
-                          <?php } ?>
-
-
+                      <div class="am-card-padding-inner">
+                        <div class="am-card-heading">
+                          <h3># {$vo.uuid|iconv_substr=0,8}/{$vo.id}</h3>
+                          <h5><i class="fa fa-clock-o"></i> {$vo.creation_time}</h5>
+                          <h4 class="layui-badge goodOrder-status_{$vo.status}"><?php echo $statusList[$vo['status']]; ?> </h4>
+                          <div class="layui-clear"></div>
                         </div>
-                        <div class="btns-wrapper">
-                          <a href="{:url('admin/ScoreOrder/detail',['id'=>$vo['id']])}"  data-title="查看订单 #{$vo.id}"  data-trigger="modal" title="查看订单 #{$vo.id}" class="ibtn layui-btn layui-btn  layui-btn-radius   "> <i class="fa fa-list"></i> 订单详情</a>
+                        <div class="user">
+                          <div class="user-item name">姓名：<b>{$vo.name}</b></div>
+                          <div class="user-item" > 电话：<b>{$vo.phone}</b> </div>
+                          <div class="user-item"> 帐号：<b>{$vo.loginname}</b>  </div>
+                          <div class="user-item"> 公司：<b><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></b>  </div>
+                          <div class="user-item" title="{$vo.Department}/{$vo.companyname}"> 部门：<b>{$vo.Department}</b>  </div>
+                        </div>
+                        <div class="am-card-body">
+                          <div class="goods">
+                            <?php foreach($vo['goods'] as $good_i => $good){ ?>
+                              <div class="good" title="{$good.name} &times; {$good.num}">
+                                <div class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
+                                <h5 class="layui-elip">{$good.name}</h5>
+                                <div class="num"> &times; {$good.num} </div>
+                              </div>
+                            <?php } ?>
+                          </div>
+                          <div class="btns-wrapper">
+                            <a href="{:url('admin/ScoreOrder/detail',['id'=>$vo['id']])}"  data-title="查看订单 #{$vo.id}"  data-trigger="modal" title="查看订单 #{$vo.id}" class="ibtn layui-btn layui-btn  layui-btn-radius   "> <i class="fa fa-list"></i> 订单详情</a>
+                          </div>
                         </div>
                       </div>
                     </div>
