@@ -23,9 +23,9 @@ class ContentIdle extends AdminBase
 
     public function index($filter=NULL,$pagesize=24){
 
-      $fields = "t.id,t.user_id,t.title,t.desc,t.images,t.location,t.price,t.status,t.is_seller,t.post_time,u.name,u.phone,u.loginname";
+      $fields = "t.id,t.user_id,t.title,t.desc,t.images,t.location,t.price,t.status,t.is_seller,t.post_time,t.original_price,u.name,u.phone,u.loginname";
       $map = [
-        // ["is_delete","<>",1],
+        ["is_delete","<>",1],
         // ["u.loginname","exp",Db::raw("IS NOT NULL")],
         // ["show_level",">",0],
       ];
@@ -75,20 +75,21 @@ class ContentIdle extends AdminBase
         $results[$key]['thumb']       = str_replace('http:/g','http://g',$results[$key]['thumb']);
         unset($results[$key]['images']);
       }
-
+      $categorys_list = (new CategoryModel())->getList();
       $returnData = [
         'lists'=>$results,
         'pagesize'=>$pagesize,
         'filter'=>$filter,
         'status_list'=>  config('content.idle_status'),
-        'showLevel_list'=>  config('content.show_level')
+        'showLevel_list'=>  config('content.show_level'),
+        'categorys_list'=>  $categorys_list,
       ];
       return $this->fetch('index', $returnData);
     }
 
 
     public function read($id){
-      $fields = "t.id,t.user_id,t.title,t.desc,t.images,t.location,t.price,t.status,t.is_seller,t.post_time,t.is_delete,u.name,u.phone,u.loginname";
+      $fields = "t.id,t.user_id,t.title,t.desc,t.images,t.location,t.price,t.status,t.is_seller,t.post_time,t.is_delete,t.original_price,u.name,u.phone,u.loginname";
       $map = [
         ["t.id","=",$id],
       ];
@@ -110,8 +111,15 @@ class ContentIdle extends AdminBase
       }
       $datas['images'] = $imagesList;
       $datas['thumb']       = isset($datas['images'][0]['path']) ? $datas['images'][0]['path'] : '';
-      unset($datas['is_delete']);
-      $this->jsonReturn(0,$datas,'success');
+      $categorys_list = (new CategoryModel())->getList();
+      $returnData = [
+        'data'=>$datas,
+        'status_list'=>  config('content.idle_status'),
+        'showLevel_list'=>  config('content.show_level'),
+        'categorys_list'=>  $categorys_list,
+      ];
+      return $this->fetch('read', $returnData);
+
     }
 
 

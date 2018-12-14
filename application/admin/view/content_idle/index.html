@@ -3,7 +3,7 @@
 <div class="amain-body">
 
     <!--tab标签-->
-    <div class="layui-tab layui-tab-brief">
+    <div class="layui-tab layui-tab-brief dark-grey-wrapper">
         <ul class="amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/ContentIdle/index')}"  >二手市场管理</a></li>
             <!-- <li class="btn-item btn-item-add">
@@ -12,8 +12,6 @@
             </li> -->
         </ul>
         <div class="layui-tab-content">
-
-
 
                 <form class="layui-form layui-form-pane" action="{:url('admin/ContentIdle/index')}" method="get">
                     <div class="layui-inline">
@@ -52,40 +50,54 @@
                 </form>
                 <hr>
                 <blockquote class="layui-elem-quote">共检得 <b>{$lists->total()}</b> 条数据</blockquote>
-                
 
-                <table  class="layui-table">
-                    <thead>
-                    <tr >
-                        <th >#</th>
-                        <th>用户</th>
-                        <th>状态</th>
-                        <th >标</th>
-                        <th >余额</th>
-                        <th>时间</th>
+                <div class="idle-list ">
+                  {foreach name="lists" item="vo"}
+                  <div class="am-card">
+                    <div class="am-card-inner">
+                      <div class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>">
+                          <div class="cover-thumb-inner"></div>
+                      </div>
+                      <div class="am-card-body">
+                        <h5 class="am-card-title layui-elip" >
+                          <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"   data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}">{$vo.title}
+                          </a>
+                        </h5>
+                        <span class="id">#{$vo.id} <input type="checkbox" name="id[{$vo.id}]" /></span>
+                        <p class="name-bar"><span class="name">{$vo.name} / {$vo.loginname}</span><span class="time">{$vo.post_time}</span></p>
+                        <p class="am-card-text">
+                          <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"   data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}">
+                          {$vo.desc|iconv_substr=0,250}...</a></p>
+                        <div class="info-bar">
+                          <span class="info-item price"> 价格：<b >{$vo.price}</b></span>
+                          <!-- <span class="info-item original_price"> 原价：<b >{$vo.original_price}</b></span> -->
+                          <span class="info-item  status">状态：<b><?php echo isset($status_list[$vo['status']]) ? $status_list[$vo['status']] : $vo['status'] ;?>  </b></span>
+                        </div>
+                        <div class="btns-wrapper">
+                          <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"  data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}" class="ibtn layui-btn    layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/foreach}
 
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {foreach name="lists" item="vo"}
-                    <tr>
-                        <td>{$vo.id}</td>
-                        <td>{$vo.name} / {$vo.loginname}
-                        </td>
-                        <td>{php}echo isset($status_list[$vo['status']]) ? $status_list[$vo['status']] : $vo['status'] ; {/php}</td>
-
-                        <td>{$vo.title}</td>
-                        <td>{$vo.desc} </td>
-                        <td>{$vo.post_time|date='Y-m-d H:i'}</td>
-                    </tr>
-                    {/foreach}
-                    </tbody>
-                </table>
+                </div>
                 <!--分页-->
                 {$lists|raw}
+
         </div>
+        <div class="blank80"></div>
+    </div>
+    <div class="am-bottom-tool-bar">
+      <div class="am-bottom-tool-bar-inner layui-form">
+        <div class="layui-input-inline">
+          
+        </div>
+      </div>
     </div>
 </div>
+<!-- 底部工具栏 -->
+
 
 {/block}
 {block name="script"}
