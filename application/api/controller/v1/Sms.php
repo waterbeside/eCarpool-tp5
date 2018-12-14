@@ -3,7 +3,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\ApiBase;
 use app\carpool\model\User as UserModel;
-use app\User\model\UserOauth;
+use app\user\model\UserOauth;
 use think\facade\Cache;
 use my\RedisData;
 use com\Nim as NimServer;
@@ -172,8 +172,6 @@ class Sms extends ApiBase
     public function send($usage = 0, $phone = NULL)
     {
       $dev = input('param.dev');
-
-
       if(!$usage){
         $this->jsonReturn(-10001,[],'usage empty');
         exit;
