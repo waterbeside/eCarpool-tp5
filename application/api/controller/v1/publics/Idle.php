@@ -81,6 +81,7 @@ class Idle extends ApiBase
       // dump($datas);exit;
       foreach ($datas as $key => $value) {
         // $datas[$key]['post_time']   =
+        $datas[$key]['time']   = strtotime($value['post_time']);
         $datas[$key]['thumb']       = isset($value['images'][0]->path) ? $value['images'][0]->path : '';
         $datas[$key]['thumb']       = str_replace('http:/g','http://g',$datas[$key]['thumb']);
         unset($datas[$key]['images']);
@@ -118,6 +119,7 @@ class Idle extends ApiBase
       if(!$datas || $datas['is_delete'] == 1){
         $this->jsonReturn(20002,[],'No Data');
       }
+      $datas['time']   = strtotime($datas['post_time']);
       $datas['images'] = json_decode(json_encode($datas['images']),true);
       $imagesList = [];
       foreach ($datas['images'] as $key => $value) {
