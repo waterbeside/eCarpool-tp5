@@ -12,6 +12,7 @@ return [
   'Please enter user name'  => 'Vui lòng nhập tên người dùng',
   'Please enter your password' => 'Vui lòng nhập mật khẩu của bạn',
   'User name or password error' => 'Tên người dùng hoặc mật khẩu không chính xác',
+  'Name error' => 'Name error',
   'The user is banned' => 'Người dùng bị cấm',
 
   'Please enter the correct old password' => 'Vui lòng nhập đúng mật khẩu cũ',
@@ -31,7 +32,7 @@ return [
 
   //拼车相关
   "Car pooling" => "Đi chung xe",
-  "Address name cannot be empty" => '地址名称不能为空',
+  "Address name cannot be empty" => 'Address name cannot be empty',
   "The point of departure must not be empty" => 'Điểm bắt đầu không được để trống',
   "The destination cannot be empty" => 'Điểm kết thúc không được để trống',
   "The departure time has passed. Please select the time again" => "Thời gian khởi hành đã trôi qua, vui lòng chọn lại thời gian",

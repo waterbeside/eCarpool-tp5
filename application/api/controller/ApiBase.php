@@ -128,7 +128,10 @@ class ApiBase extends Base
         return $returnType ? $this->jsonReturn(10004,'您尚未登入') : false;
       }
       if(!$userData['is_active']){
-        return $returnType ? $this->jsonReturn(10003,'该用户被封禁') : false;
+        return $returnType ? $this->jsonReturn(10003,lang('The user is banned')) : false;
+      }
+      if($userData['is_delete']){
+        return $returnType ? $this->jsonReturn(10003,lang('The user is deleted')) : false;
       }
       $this->userData = $userData;
       return $userData;

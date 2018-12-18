@@ -12,7 +12,9 @@ return [
   'Please enter user name'  => '请输入用户名',
   'Please enter your password' => '请输入密码',
   'User name or password error' => '用户名或密码错误',
+  'Name error' => '姓名错误',
   'The user is banned' => '该用户被封禁',
+  'The user is deleted' => '该用户被封禁',
 
   'Please enter the correct old password' => '请输入正确的旧密码',
   'Two passwords are different'=>'两次密码不一至',
