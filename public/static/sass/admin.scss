@@ -252,10 +252,24 @@ body {background:#FFF; color:$color-black-l1}
 
 /*** 底部工具按钮栏 ****/
 .am-bottom-tool-bar {
-  position: fixed; bottom: 0; left: 0; right: 0; min-height: 40px; background: rgba($color-black-l2,.9); border-top:1px solid $color-black;
+  $height:40px;
+  position: fixed; bottom: 0; left: 0; right: 0; min-height: $height; background: rgba($color-dark-white,.9); border-top:1px solid $color-border;
   &-inner {
-    padding: 4px 10px;
+    display: flex; padding: 4px 10px;
   }
+  .btns-wrapper { margin-left: 10px;}
+  .form-wrapper { padding: 10px;}
+  .btn-drop {
+    .drop-box {
+      display: none;
+      bottom:$height + 10px;
+    }
+    &.show {
+      display: block;
+
+    }
+  }
+
 }
 
 
@@ -616,6 +630,17 @@ body {background:#FFF; color:$color-black-l1}
       border:1px solid $color-primary;    background: #fff;
       .am-card-title a {color: darken($color-primary,10%) }
       .cover-thumb {  opacity:1;}
+    }
+    &.checked {
+      border-color:$color-black; border-right: 3px solid $color-black-l2;
+      .cover-thumb-inner  {
+        display: flex; align-items: center; justify-content: center;
+        background:$color-black; color: #fff; opacity: .85;
+        &:after {
+          content: '✓'; font-size: 40px;text-align: center;
+          display: block;
+        }
+      }
     }
   }
   .name-bar {
