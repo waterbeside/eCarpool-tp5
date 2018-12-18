@@ -110,3 +110,22 @@ span.J-btn-checkall .fa {color: #aaa;font-size: 14px;cursor: no-drop}
 @media (min-width: 992px) {
   .modal-lg {   width: 900px; }
 }
+
+
+.btn-drop {
+  position: relative;
+  .drop-box  {
+    // display: none;
+    position: absolute;
+    background: $color-dark-white; border-radius: 3px; border:1px solid $color-border;
+    box-shadow: 0 0 10px rgba(0,0,0,.2);
+    li {
+       border-bottom: 1px solid $color-gray-l1;
+       a {
+         display: block; min-width: 120px; padding: 8px 12px;
+         &:hover { background-color:$color-gray-l1; color:$color-primary}
+       }
+    }
+
+  }
+}

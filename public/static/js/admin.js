@@ -381,6 +381,39 @@ function admin_init(){
 
       return false;
   });
+
+  /**
+   * 下拉按钮
+   */
+  $(document).on('click',  '.btn-drop > a,.btn-drop >button', function() {
+  // $('#clear-cache').on('click', function () {
+      var $dropBox = $(this).closest('.btn-drop').find('.drop-box');
+      if($dropBox.hasClass('show')){
+        $dropBox.removeClass('show');
+      }else{
+        $dropBox.addClass('show');
+
+      }
+      $dropBox.click(function(e){
+        e.stopPropagation();
+      })
+      // $dropBox.find('a').click(function(e){
+      //   e.stopPropagation();
+      // })
+
+
+      return false;
+  });
+
+
+  /**
+   * 关闭drop
+   */
+  $(document).on('click', function(e) {
+    $('.drop-box').removeClass('show')
+  });
+
+
 }
 
 admin_init();
