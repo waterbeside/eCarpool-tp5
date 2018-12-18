@@ -1,6 +1,6 @@
 {extend name="base" /}
 {block name="body"}
-<div class="amain-body">
+<div class="amain-body P-idle-list">
 
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief dark-grey-wrapper">
@@ -20,7 +20,7 @@
                           <select name="filter[status]" >
                             <option value="">状态:不限</option>
                             {foreach name="status_list" key="key" item="vo"}
-                             <option value="{$key}" {php}echo $filter['status']== "$key" ? 'selected' : ''; {/php} >{$key>0?'+':'-'} {$vo}</option>
+                             <option value="{$key}" {php}echo $filter['status']== "$key" ? 'selected' : ''; {/php} > {$vo}</option>
                             {/foreach}
                            </select>
                         </div>
@@ -30,7 +30,7 @@
                           <select name="filter[show_level]" >
                             <option value="">审核:不限</option>
                             {foreach name="showLevel_list" key="key" item="vo"}
-                             <option value="{$key}" {php}echo $filter['show_level']== "$key" ? 'selected' : ''; {/php} >{$key>0?'+':'-'} {$vo}</option>
+                             <option value="{$key}" {php}echo $filter['show_level']== "$key" ? 'selected' : ''; {/php} >{$key} : {$vo}</option>
                             {/foreach}
                            </select>
                         </div>
@@ -53,17 +53,18 @@
 
                 <div class="idle-list ">
                   {foreach name="lists" item="vo"}
-                  <div class="am-card">
+                  <div class="am-card" data-id = "{$vo.id}">
                     <div class="am-card-inner">
                       <div class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>">
-                          <div class="cover-thumb-inner"></div>
+                          <div class="cover-thumb-inner">
+                          </div>
                       </div>
                       <div class="am-card-body">
                         <h5 class="am-card-title layui-elip" >
                           <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"   data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}">{$vo.title}
                           </a>
                         </h5>
-                        <span class="id">#{$vo.id} <input type="checkbox" name="id[{$vo.id}]" /></span>
+                        <span class="id">#{$vo.id} <input type="checkbox" name="id[]" value="{$vo.id}" /></span>
                         <p class="name-bar"><span class="name">{$vo.name} / {$vo.loginname}</span><span class="time">{$vo.post_time}</span></p>
                         <p class="am-card-text">
                           <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"   data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}">
@@ -72,9 +73,10 @@
                           <span class="info-item price"> 价格：<b >{$vo.price}</b></span>
                           <!-- <span class="info-item original_price"> 原价：<b >{$vo.original_price}</b></span> -->
                           <span class="info-item  status">状态：<b><?php echo isset($status_list[$vo['status']]) ? $status_list[$vo['status']] : $vo['status'] ;?>  </b></span>
+                          <span class="info-item  show_level">审：<b><?php echo isset($showLevel_list[$vo['show_level']]) && $showLevel_list[$vo['show_level']] <1 ? $showLevel_list[$vo['show_level']] : $vo['status'] ;?>  </b></span>
                         </div>
                         <div class="btns-wrapper">
-                          <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"  data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}" class="ibtn layui-btn    layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a>
+                          <!-- <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"  data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}" class="ibtn layui-btn    layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a> -->
                         </div>
                       </div>
                     </div>
@@ -89,9 +91,24 @@
         <div class="blank80"></div>
     </div>
     <div class="am-bottom-tool-bar">
-      <div class="am-bottom-tool-bar-inner layui-form">
-        <div class="layui-input-inline">
-          
+      <div class="am-bottom-tool-bar-inner " lay-filter="form-bottom-tool">
+        <div class="form-wrapper layui-form">
+          <div class="layui-input-inline">
+            <input type="checkbox" name="checkall" lay-filter="checkall" title="全选：" lay-skin="primary" >
+            <span> 已选： <b class="j-hasCheck ">0</b></span>
+          </div>
+        </div>
+        <div class="btns-wrapper">
+          <div class="btn-drop">
+            <button type="button" class="layui-btn" >审</button>
+            <ul class="drop-box">
+              <?php foreach($showLevel_list as $key => $value){
+                if($key < 0 || $key > 0){
+                  echo '<li class="" data-value = "'.$key.'"><a href="javascript:void(0);" onclick="PAGE_EXEC.audit(\''.$key.'\')">'.$value.'</a></li>';
+                }
+              } ?>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -102,13 +119,106 @@
 {/block}
 {block name="script"}
 <script>
-// initLayuiTable({ limit: {$pagesize} })
-// var laydate = layui.laydate;
-  //执行一个laydate实例
-  laydate.render({
-    elem: '#filter_time'
-    ,range: '~' //或 range: '~' 来自定义分割字符
-  });
+PAGE_EXEC = {
+  data :{
+    checkedCount :0 ,
+  },
+  init: function(){
+    var _this = this;
+    laydate.render({
+      elem: '#filter_time'
+      ,range: '~' //或 range: '~' 来自定义分割字符
+    });
+
+    var $listWrapper = $('.P-idle-list .idle-list');
+    var $items = $listWrapper.find('.am-card');
+    var $checkBoxs = $listWrapper.find('input[type="checkbox"]');
+    form.on('checkbox(checkall)', function(data){
+      var value = data.elem.checked;
+      $checkBoxs.prop('checked', value);
+      _this.changeCheckStyle($checkBoxs,value);
+    });
+
+    $items.each(function(index, el) {
+      var $checkBox = $(el).find('input[type="checkbox"]');
+      var $imgBox   = $(el).find(".cover-thumb");
+      $checkBox.change(function(event) {
+        _this.changeCheckStyle($checkBox,$(this).prop('checked'));
+      });
+      $imgBox.click(function(){
+        var value = $checkBox.prop('checked');
+        $checkBox.prop('checked', !value);
+        _this.changeCheckStyle($checkBox,!value);
+      })
+
+    });
+  },
+
+  /**
+   * 更改被check的行的样式
+   * @param  $(dom)   $el   checkbox
+   * @param  boolean  $el   值
+   */
+  changeCheckStyle: function($el,value){
+    var _this = this;
+    if(value){
+      $el.closest('.am-card').addClass('checked');
+    }else{
+      $el.closest('.am-card').removeClass('checked');
+    }
+    _this.countCheck();
+  },
+
+  /**
+   * 计算被checked复选框的个数，并显示
+   * @return {[type]} [description]
+   */
+  countCheck: function(){
+    var $toolbarWrapper = $(".am-bottom-tool-bar");
+    var $listWrapper = $('.P-idle-list .idle-list');
+    var $items = $listWrapper.find('.am-card');
+    var item_count = $items.length;
+    var item_checked_count = $listWrapper.find('.am-card.checked').length;
+    this.data.checkedCount = item_checked_count;
+    if(item_count > item_checked_count){
+      $toolbarWrapper.find('input[name="checkall"]').prop('checked', false)
+    }else{
+      $toolbarWrapper.find('input[name="checkall"]').prop('checked', true)
+    }
+    $toolbarWrapper.find(".j-hasCheck").html(item_checked_count);
+    form.render(null, 'form-bottom-tool');
+
+  },
+
+
+
+
+  audit(show_level){
+    var ids = [];
+    var $toolbarWrapper = $(".am-bottom-tool-bar");
+    var $listWrapper = $('.P-idle-list .idle-list');
+    var $items = $listWrapper.find('.am-card.checked');
+    $items.each(function(index, el) {
+      ids.push($(el).data('id'));
+    });
+    var data = {
+      show_level:show_level,
+      id:ids
+    }
+    console.log(data)
+
+  }
+
+
+
+
+
+
+}
+PAGE_EXEC.init();
+
+
+
 
 </script>
 {/block}

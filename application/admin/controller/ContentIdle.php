@@ -23,9 +23,9 @@ class ContentIdle extends AdminBase
 
     public function index($filter=NULL,$pagesize=24){
 
-      $fields = "t.id,t.user_id,t.title,t.desc,t.images,t.location,t.price,t.status,t.is_seller,t.post_time,t.original_price,u.name,u.phone,u.loginname";
+      $fields = "t.id,t.user_id,t.title,t.desc,t.images,t.location,t.price,t.status,t.is_seller,t.post_time,t.original_price,t.show_level,u.name,u.phone,u.loginname";
       $map = [
-        ["is_delete","<>",1],
+        ["t.is_delete","<>",1],
         // ["u.loginname","exp",Db::raw("IS NOT NULL")],
         // ["show_level",">",0],
       ];
