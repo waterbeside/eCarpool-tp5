@@ -90,23 +90,28 @@ class Passport extends ApiBase
         $userData = $userModel_o->where('loginname',$data['username'])->find();
     		if(!$userData){
           $userData = $userModel_o->where('phone',$data['username'])->find();
-    			if(!$userData){
-            $this->jsonReturn(10001,lang('User name or password error'));
-    				return false;
-    			}
     		}
-        if(!$userData['is_active']){
+        if(!$userData){
+          $this->jsonReturn(10001,lang('User name or password error'));
+          return false;
+        }
+        if($userData['is_delete']){
           $this->jsonReturn(10003,lang('The user is banned'));
+        }
+
+        if(!$userData['is_active']){
+          $this->jsonReturn(10003,[],lang('The user is deleted'));
+
         }
 
     		if(strtolower($userData['md5password']) != strtolower($userModel_o->hashPassword($data['password']))){
           $this->jsonReturn(10001,lang('User name or password error'));
     		}
 
-
-        if(!$userData){
-          $this->jsonReturn(10001,lang('User name or password error'));
+        if(isset($data['name']) && $data['name'] != $userData['nativename']){
+          $this->jsonReturn(10001,lang('Name error'));
         }
+
 
         $jwt = $this->createPassportJwt(['uid'=>$userData['uid'],'loginname'=>$userData['loginname'],'client' => $data['client']]);
         $returnData = array(
