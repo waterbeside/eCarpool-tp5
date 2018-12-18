@@ -87,40 +87,46 @@ class Sms extends ApiBase
 
     /**
      * 合并积分
+     * tAccount  目标账号
+     * $oAccount 被删账号
      */
     protected function mergeScore($tAccount,$oAccount,$nowTime){
       Db::connect('database_score')->startTrans();
       try{
         $scoreAccount_t = Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$tAccount],['is_delete','<>', 1]])->find();//取出目标员工号的积分账号信息
         $scoreAccount_o = Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$oAccount],['is_delete','<>', 1]])->find();//取出手机号的积分账号信息
-        $score_t = $scoreAccount_t['balance'];
-        $score_o = $scoreAccount_o['balance'];
+        if(!$scoreAccount_t){
+          throw new \Exception('10002');
+        }else{
+          $score_t = $scoreAccount_t['balance'];
+          $score_o = $scoreAccount_o['balance'];
+          $score_new = $score_t + $score_o; //合并积分
+          $historyData = [
+            "account_id" => $scoreAccount_t['id'],
+            "operand" => abs($score_o),
+            "reason" => $score_o > 0 ? 301 : -301,
+            "result" => $score_new,
+            "extra_info" => '{}',
+            "is_delete" => 0,
+            "time" => date('Y-m-d H:i:s'),
+          ];
+          Db::connect('database_score')->table('t_history')->insert($historyData); //插入因合并
+          Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$tAccount]])->setField('balance',$score_new); //员工账号加到手号账的积分
+          $historyData_o = [
+            "account_id" => $scoreAccount_o['id'],
+            "operand" => abs($score_o),
+            "reason" => -301,
+            "result" => 0,
+            "extra_info" => '{}',
+            "is_delete" => 0,
+            "time" => date('Y-m-d H:i:s'),
+          ];
+          Db::connect('database_score')->table('t_history')->insert($historyData_o); //旧账号添加一条扣分的历史
+          Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$oAccount]])->update(['carpool_account'=>'delete_'.$oAccount.'_'.$nowTime,'is_delete'=> 0,'balance'=>0]); //删除手机账号的积分账号
+            // 提交事务
+          Db::connect('database_score')->commit();
+        }
 
-        $score_new = $score_t + $score_o; //合并积分
-        $historyData = [
-          "account_id" => $scoreAccount_t['id'],
-          "operand" => abs($score_o),
-          "reason" => $score_o > 0 ? 301 : -301,
-          "result" => $score_new,
-          "extra_info" => '{}',
-          "is_delete" => 0,
-          "time" => date('Y-m-d H:i:s'),
-        ];
-        Db::connect('database_score')->table('t_history')->insert($historyData); //插入因合并
-        Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$tAccount]])->setField('balance',$score_new); //员工账号加到手号账的积分
-        $historyData_o = [
-          "account_id" => $scoreAccount_o['id'],
-          "operand" => abs($score_o),
-          "reason" => -301,
-          "result" => 0,
-          "extra_info" => '{}',
-          "is_delete" => 0,
-          "time" => date('Y-m-d H:i:s'),
-        ];
-        Db::connect('database_score')->table('t_history')->insert($historyData_o); //旧账号添加一条扣分的历史
-        Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$oAccount]])->update(['carpool_account'=>'delete_'.$oAccount.'_'.$nowTime,'is_delete'=> 0,'balance'=>0]); //删除手机账号的积分账号
-          // 提交事务
-        Db::connect('database_score')->commit();
       } catch (\Exception $e) {
         // echo($e);
         Db::connect('database_score')->rollback();
@@ -317,6 +323,10 @@ class Sms extends ApiBase
             $this->jsonReturn(10003,[],'user does not active');
       		}
 
+          if($phoneUserData['is_delete']){
+            $this->jsonReturn(10003,[],'user does not active');
+      		}
+
 
 
           $jwt = $this->createPassportJwt(['uid'=>$phoneUserData['uid'],'loginname'=>$phoneUserData['loginname'],'client' => $client]);
@@ -399,7 +409,8 @@ class Sms extends ApiBase
               $update_phoneUserData = [
                 "loginname" => 'delete_'.$phoneUserData['loginname'].'_'.$nowTime,
                 "phone" => 'delete_'.$phoneUserData['phone'],
-                "is_active" => 0
+                "is_active" => 0,
+                "is_delete" => 1
               ];
 
               Db::connect('database_carpool')->table('user')->where('uid',$phoneUserData['uid'])->update($update_phoneUserData);//更改原手机账号状态为禁用。
@@ -419,7 +430,11 @@ class Sms extends ApiBase
               Db::connect('database_carpool')->rollback();
               $logMsg = "合并账号失败:".json_encode($this->request->post());
               $this->log($logMsg,-1);
-              $this->jsonReturn(-1,[],lang('Fail'),['debug'=>$e->getMessage()]);
+              if($e->getMessage()=="10002"){
+                $this->jsonReturn(10002,[],"目标账号未开通积分账号，请直接登入员工号进行绑定操作",['debug'=>$e->getMessage()]);
+              }else{
+                $this->jsonReturn(-1,[],lang('Fail'),['debug'=>$e->getMessage()]);
+              }
           }
           $this->log('合并账号成功',0);
 
