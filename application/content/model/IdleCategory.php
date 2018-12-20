@@ -7,7 +7,7 @@ use my\RedisData;
 
 class IdleCategory extends Model
 {
-    protected $table = 't_idle';
+    protected $table = 't_idle_category';
     protected $connection = 'database_content';
     protected $pk = 'id';
 
