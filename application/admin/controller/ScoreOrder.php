@@ -52,15 +52,20 @@ class ScoreOrder extends AdminBase
     $map[] = ['creation_time', 'between time', [$time_s, $time_e]];
 
     //筛选单号
+    $mapOrderRaw = '';
     if (isset($filter['order_num']) && $filter['order_num']){
-      if( strpos($filter['order_num'],"/")>0){
-        $oNums = explode("/",$filter['order_num']);
-        $map[] = ['t.uuid','like', "%{$oNums[0]}%"];
-      }else{
-        if(is_numeric($filter['order_num'])){
-          $map[] = ['t.id','=', $filter['order_num']];
+      $orderNums = explode("|",$filter['order_num']);
+      foreach ($orderNums as $key => $value) {
+        $mapOrderRaw = $mapOrderRaw ? $mapOrderRaw." or " : " ";
+        if( strpos($value,"/")>0){
+          $oNums = explode("/",$value);
+          $mapOrderRaw  .= " t.uuid like  '%{$oNums[0]}%' ";
         }else{
-          $map[] = ['t.uuid','like', "%{$filter['order_num']}%"];
+          if(is_numeric($value)){
+            $mapOrderRaw .= " t.id = '{$value}' ";
+          }else{
+            $mapOrderRaw .= " t.uuid like '%{$value}%'  ";
+          }
         }
       }
     }
@@ -84,13 +89,17 @@ class ScoreOrder extends AdminBase
       $join[] = ['carpool.user cu','cu.loginname = ac.carpool_account', 'left'];
     }
 
-
-    if($export){
-      $lists = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC')->select();
-    }else{
-      $lists = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+    $ModelBase = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC');
+    if(!empty($mapOrderRaw)){
+      $ModelBase = $ModelBase->whereRaw($mapOrderRaw);
     }
-
+    if($export){
+      $lists = $ModelBase->select();
+    }else{
+      $lists = $ModelBase
+      // ->fetchSql()->select();
+      ->paginate($pagesize, false,  ['query'=>request()->param()]);
+    }
 
     $goodList = []; //商品缓存
     $GoodsModel = new GoodsModel();

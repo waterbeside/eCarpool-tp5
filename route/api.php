@@ -59,6 +59,8 @@ Route::group([], function () {
 
   //*********公开的
   Route::resource('api/:version/publics/idle','api/:version.publics.idle');
+  Route::rule('api/:version/publics/comments','api/:version.publics.comments/index','GET');
+
 
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
 
