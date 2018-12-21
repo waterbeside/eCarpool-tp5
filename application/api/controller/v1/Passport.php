@@ -4,6 +4,7 @@ namespace app\api\controller\v1;
 use app\api\controller\ApiBase;
 use app\carpool\model\User as UserModel_o;
 use app\carpool\model\Department as DepartmentModel_o;
+use app\user\model\Department as DepartmentModel;
 use app\user\model\User as UserModel;
 use Firebase\JWT\JWT;
 use think\Db;
@@ -44,7 +45,7 @@ class Passport extends ApiBase
              'phone','mobile','avatar','imgpath','sex',
              'companyname','home_address_id','company_address_id','indentifier',
              'im_md5password','is_active','modifty_time','extra_info',
-             'carnumber','carcolor'
+             'carnumber','carcolor','client_id',
             ];
          }
          if($type == 1){
@@ -55,6 +56,7 @@ class Passport extends ApiBase
             ];
          }
          $userInfo = $this->filtFields($userInfo_ex,$fields);
+         $userInfo['full_department'] = DepartmentModel::where("id",$userInfo['department_id'])->value('fullname');
 
        }
 
