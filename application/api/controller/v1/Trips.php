@@ -555,29 +555,35 @@ class Trips extends ApiBase
         }
 
 
+        //如果是取消操作，则推送消息(设置要推的消息);
+        if($type == "cancel"){
+          if($isDriver){ // 如果是司机，则推给乘客
+            $cancel_push_msg = lang("The driver {:name} cancelled the trip",["name"=>$userData['name']]) ;
+            $passengerids = $from == "wall" ?  InfoModel::where([["love_wall_ID",'=',$id],["status","<",2]])->column('passengerid') : $datas->passengerid ;
+            $sendTarget = $passengerids ;
+          }else{ //如果乘客取消，则推送给司机
+            $cancel_push_msg = lang("The passenger {:name} cancelled the trip",["name"=>$userData['name']]) ;
+            $sendTarget = $driver_id;
+          }
+        }
+
         if($from=="wall" && $isDriver ){ //如果是司机操作空座位，则同时对乘客行程进行操作。
           $upInfoData = $type == "finish" ? ["status"=>3] : ["status"=>0,"love_wall_ID"=>NULL,"carownid"=>-1] ;
           InfoModel::where([["love_wall_ID",'=',$id],["status","<",2]])->update($upInfoData);
         }
 
-        //如果是取消操作，则推送消息
-        if($type == "cancel"){
-          if($isDriver){ // 如果是司机，则推给乘客
-            $cancel_push_msg = lang("The driver {:name} cancelled the trip",["name"=>$userData['name']]) ;
-            $passengerids = $from == "wall" ?  InfoModel::where([["love_wall_ID",'=',$id],["status","<",2]])->column('passengerid') : $datas->passengerid ;
-            if($passengerids) $this->pushMsg($passengerids,$cancel_push_msg);
-          }else{ //如果乘客取消，则推送给司机
-            $this->pushMsg($driver_id,lang("The passenger {:name} cancelled the trip",["name"=>$userData['name']]));
-          }
+        //如果是取消操作，执行推送消息
+        if($type == "cancel" && isset($cancel_push_msg) && isset($sendTarget) && !empty($sendTarget)){
+          $this->pushMsg($sendTarget,$cancel_push_msg);
         }
+
         return $this->jsonReturn(0,[],"success");
 
       }
 
       /*********** riding 搭车  ***********/
       if($type == "riding" || $type == "hitchhiking"){
-
-
+        
         if($from !="wall"){
           return $this->jsonReturn(992,[],lang('Parameter error'));
         }
