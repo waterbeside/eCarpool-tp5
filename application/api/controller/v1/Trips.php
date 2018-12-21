@@ -9,7 +9,7 @@ use app\carpool\model\Address;
 use app\carpool\model\WallLike;
 use app\carpool\model\user as UserModel;
 // use app\user\model\Department as DepartmentModel;
-use app\common\model\PullMessage;
+use app\common\model\PushMessage;
 
 use think\Db;
 
@@ -577,6 +577,7 @@ class Trips extends ApiBase
       /*********** riding 搭车  ***********/
       if($type == "riding" || $type == "hitchhiking"){
 
+
         if($from !="wall"){
           return $this->jsonReturn(992,[],lang('Parameter error'));
         }
@@ -884,19 +885,23 @@ class Trips extends ApiBase
       if(!$uid || !$message){
         return false;
       }
-      $PullMessage = new PullMessage();
+      $PushMessage = new PushMessage();
       if(is_array($uid)){
         $res = [];
         foreach($uid as $key => $value) {
           if(is_numeric($value)){
-            $res[] = $PullMessage->add($value,$message,lang("Car pooling"),101,1);
+            $res[] = $PushMessage->add($value,$message,lang("Car pooling"),101,1);
+            // $PushMessage->push($value,$message,lang("Car pooling"),2);
           }
         }
       }else if(is_numeric($uid)){
-        $res = $PullMessage->add($uid,$message,lang("Car pooling"),101,1);
+        $res = $PushMessage->add($uid,$message,lang("Car pooling"),101,1);
+        // $PushMessage->push($uid,$message,lang("Car pooling"),2);
       }else{
         return false;
       }
+      $pushRes = $PushMessage->push($uid,$message,lang("Car pooling"),1);
+      // $this->jsonReturn(1,[$pushRes],11);
       return $res;
     }
 
