@@ -1,6 +1,6 @@
 {extend name="base" /}
 {block name="body"}
-<div class="amain-body page-score-userOauth">
+<div class="amain-body P-userOauth">
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief ">
       <ul class="  amain-tool-bar" >
@@ -102,17 +102,14 @@
         </div>
     </div>
 </div>
-<style>
-  .page-score-userOauth .layui-table-box  tr.delete, .page-score-userOauth .layui-table-box  tr.delete a { color:#bbb}
 
-</style>
 {/block}
 {block name="script"}
 <script>
 PAGE_EXEC = {
   init: function(){
     initLayuiTable({ limit: {$pagesize} })
-    var $tableWrapper = $(".page-score-userOauth [lay-filter=LAY-table-1] .layui-table-box");
+    var $tableWrapper = $(".P-userOauth [lay-filter=LAY-table-1] .layui-table-box");
     var $tableWrapper_main = $tableWrapper.find(".layui-table-main");
     var $tr = $tableWrapper_main.find('tr');
     $tr.each(function(index, el) {
