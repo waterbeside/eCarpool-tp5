@@ -28,6 +28,14 @@ $height-header:60px;
        background-color: lighten($color-silver-l2,15%);
     }
     td, th {border-color:lighten($color-silver-l2,10%)}
+    &-box {
+      tr.delete {
+        background-color:$color-dark-white;
+        & , a {
+          color:$color-silver-l2;
+        }
+      }
+    }
   }
   &-tab {overflow: visible;}
   &-tab-title > li > a {display: block;}
