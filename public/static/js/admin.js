@@ -325,9 +325,10 @@ function admin_init(){
   $(document).on('click',  '.ajax-delete', function() {
   // $('.ajax-delete').on('click', function () {
       var _href = $(this).attr('href');
+      var content = $(this).data('hint') || "确定删除？";
       layer.open({
           shade: false,
-          content: '确定删除？',
+          content: content,
           btn: ['确定', '取消'],
           yes: function (index) {
               $.ajax({
