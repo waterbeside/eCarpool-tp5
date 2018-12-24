@@ -7,6 +7,11 @@
 
             <fieldset class="amain-fieldset layui-elem-field" >
               <legend>基本信息</legend>
+              <?php
+              if($user['is_delete']){
+                echo '<blockquote class="layui-elem-quote">该账号已被逻辑删除</blockquote>';
+              }
+              ?>
               <div class="layui-form-item">
                   <label class="layui-form-label">用户名(工号)</label>
                   <div class="layui-input-block">
