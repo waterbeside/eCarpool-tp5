@@ -100,6 +100,7 @@ class Ads extends AdminBase
             'create_time' => date('Y-m-d H:i:s'),
             'link_type' => $data['link_type'],
             'link' => $data['link'],
+            'duration' => $data['duration'],
           ];
           if($data['thumb'] && trim($data['thumb'])){
             $upData['images'][0] =  $data['thumb'];
@@ -171,6 +172,7 @@ class Ads extends AdminBase
             'sort' => $data['sort'],
             'link_type' => $data['link_type'],
             'link' => $data['link'],
+            'duration' => $data['duration'],
           ];
           if($data['thumb'] && trim($data['thumb'])){
             $upData['images'][0] =  $data['thumb'];

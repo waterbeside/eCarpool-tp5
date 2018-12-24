@@ -86,14 +86,21 @@
                                   <input type="radio" name="status" value="0" title="隐藏" {if condition="$data.status==0"} checked="checked"{/if}>
                               </div>
                           </div>
+                          <div class="layui-form-item">
+                              <label class="layui-form-label">持续时间</label>
+                              <div class="layui-input-block">
+                                  <input type="nubmer" name="sort" value="{$data.sort}" class="layui-input">
+                                  <div class="layui-form-mid layui-word-aux" >越大越前</div>
+                              </div>
+                          </div>
 
 
 
                           <div class="layui-form-item">
                               <label class="layui-form-label">排序</label>
                               <div class="layui-input-block">
-                                  <input type="nubmer" name="sort" value="{$data.sort}" class="layui-input">
-                                  <div class="layui-form-mid layui-word-aux" >越大越前</div>
+                                  <input type="nubmer" name="duration" value="{$data.duration}" class="layui-input">
+                                  <div class="layui-form-mid layui-word-aux" >以秒为单位</div>
                               </div>
                           </div>
 
