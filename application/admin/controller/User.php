@@ -73,7 +73,10 @@ class User extends AdminBase
       foreach($companyLists as $key => $value) {
         $companys[$value['company_id']] = $value['company_name'];
       }
-      $userInfo->full_department = Department::where('id',$userInfo->department_id)->value('fullname');
+      $DepartmentModel = new Department();
+      $userInfo->full_department = $DepartmentModel->where('id',$userInfo->department_id)->value('fullname');
+      $department_format = $DepartmentModel->formatFullName($userInfo->full_department);
+      $userInfo->department_format = $department_format ? $department_format['branch']."/".$department_format['formatName'] : '';
       $returnData = [
         'data'=>$userInfo,
         'companys'=>$companys,
@@ -197,6 +200,21 @@ class User extends AdminBase
      */
     public function delete($id)
     {
+        if($this->user_model->where('uid', $id)->update(['is_delete' => 1])){
+            $this->log('删除用户成功，id='.$id,0);
+            return $this->jsonReturn(0,'删除成功');
+        } else {
+            $this->log('删除用户失败，id='.$id,-1);
+            return $this->jsonReturn(-1,'删除失败');
+        }
+    }
+
+    /**
+     * 彻底删除用户
+     * @param $id
+     */
+    public function shift_delete($id)
+    {
         // if($this->user_model->where('uid', $id)->update(['is_delete' => 1])){
         if ($this->user_model->destroy($id)) {
             $this->log('删除用户成功，id='.$id,0);
@@ -211,7 +229,6 @@ class User extends AdminBase
     /****
     用户数据库处理相关
     *****/
-
 
     /**
      * 导入旧库
