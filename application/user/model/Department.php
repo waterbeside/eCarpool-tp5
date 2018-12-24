@@ -68,4 +68,62 @@ class Department extends Model
    }
 
 
+   public function formatFullName($fullNameStr){
+     if(!$fullNameStr){
+       return false;
+     }
+     if(is_numeric($fullNameStr)){
+       $fullName = $this->where("id",$fullNameStr)->cache(320)->value("fullname");
+     }else if(is_string($fullNameStr)){
+       $fullName = $fullNameStr;
+     }
+     if(!isset($fullName) || !$fullName){
+       return false;
+     }
+     $path_list = explode(',',$fullName);
+     $departmentName_per = isset($path_list[3]) ?  $path_list[3] : "";
+     $departmentName = isset($path_list[4]) ?  $path_list[4] : "";
+
+     $returnData = [
+       'branch' => $departmentName_per ,
+       'department' => $departmentName,
+       // 'formatName' => $departmentName,
+       'fullName' => $fullName,
+     ];
+
+     if(preg_match('/[\x{4e00}-\x{9fa5}]/u', $departmentName)>0){
+       $returnData['formatName'] = $departmentName;
+       return $returnData;
+     }
+
+     $departmentName_epl_1 = explode(" and ",$departmentName);
+
+     $newName = "";
+     foreach ($departmentName_epl_1 as $letters) {
+       $departmentName_epl = explode(" ",$letters);
+       $newName .= $newName ? ' and ' : '';
+       if(count($departmentName_epl)>1 && strlen($departmentName) > 16 ){
+         $shortName = "";
+         foreach ($departmentName_epl as $key => $value) {
+           if(strpos($value,'(') === false && strlen($value) > 2 ){
+             $shortName .= strtoupper($value{0});
+           }else{
+             $shortName .= " ".$value;
+           }
+         }
+         $newName .= $shortName;
+       }else{
+         $newName .= $letters;
+       }
+
+     }
+     $returnData['formatName'] = $newName;
+
+     return $returnData;
+
+
+
+   }
+
+
 }
