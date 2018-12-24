@@ -205,12 +205,37 @@ PAGE_EXEC = {
       show_level:show_level,
       id:ids
     }
-    console.log(data)
+    var api = '{:url("audit")}';
+    if(ids.length < 1){
+      layer.msg('请选选择要操作的数据');
+      return false;
+    }
+
+    var loading = layer.load(2,{ shade: [0.2,'#fff']});
+    $.ajax({
+      url:api,
+      data:data,
+      type:'post',
+      dataType:'json',
+    }).done(function(res){
+      if(res.code === 0){
+        layer.msg('审核成功');
+        setTimeout(function(){
+          reload();
+        },500)
+      }else{
+        layer.msg('审核失败，请稍候再试');
+        console.log(res);
+      }
+    }).fail(function(err){
+      layer.msg('审核失败，请稍候再试');
+      console.log(err);
+    }).always(function(){
+      layer.close(loading);
+    });
+    return false;
 
   }
-
-
-
 
 
 

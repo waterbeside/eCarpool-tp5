@@ -123,5 +123,32 @@ class ContentIdle extends AdminBase
     }
 
 
+    /**
+     * 审
+     * @param  integer $id [description]
+     */
+    public function audit($id = NULL){
+      $show_level          = $this->request->post('show_level');
+      if(!$id || !$show_level){
+        $this->jsonReturn(-1,'参数错误');
+      }
+      $data = [
+        'show_level'=>$show_level,
+      ];
+      $map = [];
+      $map[] = is_array($id) ? ['id','in',$id] : ['id','=',$id];
+      $res = IdleModel::where($map)->update($data);
+      if($res === false){
+        $this->jsonReturn(-1,'提交失败');
+      }
+      $this->jsonReturn(0,'成功');
+
+
+
+    }
+
+
+
+
 
 }
