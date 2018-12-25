@@ -23,6 +23,7 @@ class AdminBase extends Base
 
     protected $jwtInfo ;
     public $userBaseInfo;
+    protected $redisObj = NULL;
 
     protected function initialize()
     {
@@ -210,12 +211,26 @@ class AdminBase extends Base
      * @return 返回最新版本；
      */
     public function updateDataVersion($cacheVersionKey){
-      $redis = new RedisData();
-      $cacheVersion = $redis->get($cacheVersionKey);
+      $redisObj = $this->redis();
+      $cacheVersion = $redisObj->get($cacheVersionKey);
       $newVersion = $cacheVersion ? intval($cacheVersion) + 1 : 1;
-      $redis->set($cacheVersionKey,$newVersion);
+      $redisObj->set($cacheVersionKey,$newVersion);
       return $newVersion;
     }
+
+    /**
+     * 创建redis对像
+     * @return redis
+     */
+    public function redis(){
+      if(!$this->redisObj){
+          $this->redisObj = new RedisData();
+      }
+      return $this->redisObj;
+    }
+
+
+
 
 
 }
