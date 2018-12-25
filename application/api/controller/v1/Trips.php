@@ -371,13 +371,12 @@ class Trips extends ApiBase
 
       $createAddress = array();
       //处理起点
-      if(!$datas['start']['addressid'] && !$map_type){
+      if((!isset($datas['start']['addressid']) || !$datas['start']['addressid']) && !$map_type){
         $startDatas = $datas['start'];
         $startDatas['company_id'] = $userData['company_id'];
         $startRes = $AddressModel->addFromTrips($startDatas);
 
         if(!$startRes){
-          $this->jsonReturn(-1,[],lang("The point of departure must not be empty"));
           $this->jsonReturn(-1,[],lang("The point of departure must not be empty"));
         }
         $datas['start']['addressid'] = $startRes['addressid'];
@@ -385,7 +384,7 @@ class Trips extends ApiBase
       }
 
       //处理终点
-      if(!$datas['end']['addressid'] && !$map_type ){
+      if((!isset($datas['end']['addressid']) || !$datas['end']['addressid']) && !$map_type ){
         $endDatas = $datas['end'];
         $endDatas['company_id'] = $userData['company_id'];
         $endRes = $AddressModel->addFromTrips($endDatas);
@@ -583,7 +582,7 @@ class Trips extends ApiBase
 
       /*********** riding 搭车  ***********/
       if($type == "riding" || $type == "hitchhiking"){
-        
+
         if($from !="wall"){
           return $this->jsonReturn(992,[],lang('Parameter error'));
         }
@@ -906,8 +905,12 @@ class Trips extends ApiBase
       }else{
         return false;
       }
-      $pushRes = $PushMessage->push($uid,$message,lang("Car pooling"),1);
-      // $this->jsonReturn(1,[$pushRes],11);
+      try {
+        $pushRes = $PushMessage->push($uid,$message,lang("Car pooling"),1);
+      } catch (Exception $e) {
+        $pushRes =  $e->getMessage();
+      }
+
       return $res;
     }
 
