@@ -142,11 +142,15 @@ class ContentIdle extends AdminBase
         $this->jsonReturn(-1,'提交失败');
       }
       $this->jsonReturn(0,'成功');
-
-
-
     }
 
+
+
+    public function recache(){
+      $redisObj = $this->redis();
+      $redisObj->delete('carpool:idle:content');
+      $this->jsonReturn(0,'success');
+    }
 
 
 

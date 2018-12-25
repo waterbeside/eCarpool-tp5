@@ -6,8 +6,11 @@
     <div class="layui-tab layui-tab-brief dark-grey-wrapper">
         <ul class="amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/ContentIdle/index')}"  >二手市场管理</a></li>
+            <li class="btn-item btn-item-right">
+              <a class="layui-btn layui-btn-sm  layui-btn-warning " href="javascript:void(0);" onclick="PAGE_EXEC.recache()"  >清除前端缓存</a>
+            </li>
             <!-- <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ContentIdle/add')}"  data-title="添加部门"  data-trigger="modal" >
+              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ContentIdle/add')}"  data-title="发布信息"  data-trigger="modal" >
               <i class="fa fa-plus"></i> 发布信息</a>
             </li> -->
         </ul>
@@ -229,6 +232,30 @@ PAGE_EXEC = {
       }
     }).fail(function(err){
       layer.msg('审核失败，请稍候再试');
+      console.log(err);
+    }).always(function(){
+      layer.close(loading);
+    });
+    return false;
+
+  },
+
+  recache :function(){
+    var loading = layer.load(2,{ shade: [0.2,'#fff']});
+    var api = '{:url("recache")}';
+    $.ajax({
+      url:api,
+      type:'post',
+      dataType:'json',
+    }).done(function(res){
+      if(res.code === 0){
+        layer.msg('成功');
+      }else{
+        layer.msg('失败，请稍候再试');
+        console.log(res);
+      }
+    }).fail(function(err){
+      layer.msg('失败，请稍候再试');
       console.log(err);
     }).always(function(){
       layer.close(loading);
