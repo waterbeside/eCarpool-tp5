@@ -46,7 +46,7 @@ class IGtAPNPayload
             }elseif($this->badge >= 0) {
                 $apsMap["badge"] = $this->badge;
             }
-            if($this -> sound == null || $this->sound == '' )
+            if($this->sound == null || $this->sound == '' )
             {
                 $apsMap["sound"] = 'default';
             }elseif($this->sound != $this->APN_SOUND_SILENCE)
@@ -54,7 +54,7 @@ class IGtAPNPayload
                 $apsMap["sound"] = $this->sound;
             }
 
-            if (sizeof($apsMap) == 0) {
+            if (empty($apsMap) || sizeof($apsMap) == 0) {
                 throw new Exception("format error");
             }
             if ($this->contentAvailable > 0) {
@@ -74,7 +74,7 @@ class IGtAPNPayload
             if($this->apnsCollapseId != null){
                 $map["apns-collapse-i"] = $this->apnsCollapseId;
             }
-            if($this -> multiMedias != null && sizeof($this -> multiMedias) > 0) {
+            if( (is_array($this->multiMedias) || is_object($this->multiMedias)) && $this->multiMedias != null && sizeof($this->multiMedias) > 0) {
                 $map["_grinfo_"] = $this->check_multiMedias();
             }
             if ($this->voicePlayType == 1){
@@ -84,8 +84,10 @@ class IGtAPNPayload
                 $map["_gvp_m_"] = $this->voicePlayMessage;
             }
             return json_encode($map);
-        } catch (Exception $e) {
-            throw new Exception("create apn payload error", -1, $e);
+        }
+        catch (Exception $e) {
+          throw new Exception($e->getMessage(), -1, $e);
+            // throw new Exception("create apn payload error", -1, $e);
         }
     }
 
@@ -98,13 +100,13 @@ class IGtAPNPayload
 
     function check_multiMedias()
     {
-        if(sizeof($this -> multiMedias) > 3) {
+        if(!empty($this->multiMedias) &&  sizeof($this->multiMedias) > 3) {
             throw new RuntimeException("MultiMedias size overlimit");
         }
 
         $needGeneRid = false;
         $rids = array();
-        for($i = 0; $i < sizeof($this -> multiMedias); $i++) {
+        for($i = 0; $i < sizeof($this->multiMedias); $i++) {
             $media = $this -> multiMedias[$i];
             if($media -> get_rid() == null) {
                 $needGeneRid = true;
@@ -117,7 +119,7 @@ class IGtAPNPayload
             }
         }
 
-        if(sizeof($rids) != sizeof($this -> multiMedias))  {
+        if(sizeof($rids) != sizeof($this->multiMedias))  {
             $needGeneRid = true;
         }
         if($needGeneRid) {
@@ -171,7 +173,7 @@ class DictionaryAlertMsg implements ApnMsg{
         if ($this->titleLocKey != null && $this->titleLocKey != "") {
             $alertMap["title-loc-key"] = $this->titleLocKey;
         }
-        if (sizeof($this->titleLocArgs) > 0) {
+        if (!empty($this->titleLocArgs) && sizeof($this->titleLocArgs) > 0) {
             $alertMap["title-loc-args"] = $this->titleLocArgs;
         }
         if ($this->actionLocKey != null && $this->actionLocKey) {
@@ -180,7 +182,7 @@ class DictionaryAlertMsg implements ApnMsg{
         if ($this->locKey != null && $this->locKey != "") {
             $alertMap["loc-key"] = $this->locKey;
         }
-        if (sizeof($this->locArgs) > 0) {
+        if (!empty($this->locArgs)  && sizeof($this->locArgs) > 0) {
             $alertMap["loc-args"] = $this->locArgs;
         }
         if ($this->launchImage != null && $this->launchImage != "") {
@@ -195,7 +197,7 @@ class DictionaryAlertMsg implements ApnMsg{
         if ($this->subtitle != null && $this->subtitle != "") {
             $alertMap["subtitle"] = $this->subtitle;
         }
-        if (sizeof($this->subtitleLocArgs) > 0) {
+        if (!empty($this->subtitleLocArgs)  && sizeof($this->subtitleLocArgs) > 0) {
         $alertMap["subtitle-loc-args"] = $this->subtitleLocArgs;
         }
         if ($this->subtitleLocKey != null && $this->subtitleLocKey != "") {
