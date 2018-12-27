@@ -70,11 +70,32 @@ class Address extends ApiBase
       $userData = $this->getUserData(1);
       $data['company_id'] = intval($userData['company_id']);
       $AddressModel = new AddressModel();
-      $res = (new AddressModel())->addFromTrips($data);
+      $res = $AddressModel->addFromTrips($data);
       if(!$res){
         $this->jsonReturn(-1,[],lang('Fail'));
       }
       return $this->jsonReturn(0,$res,'success');
     }
+
+    /**
+     * GET 通过id取详情
+     * @return \think\Response
+     */
+    public function read($id)
+    {
+      if(!$id){
+        return $this->my();
+      }
+      $res = AddressModel::field('addressid,addressname,ordernum,company_id,city,latitude,longtitude')->find($id);
+      if(!$res){
+        $this->jsonReturn(20002,[],lang('No data'));
+      }
+      $res['longitude'] = $res['longtitude'];
+      unset($res['longtitude']);
+      if(isset($data['company_id'])) $data['company_id'] = intval($data['company_id']);
+      if(isset($data['ordernum'])) $data['ordernum'] = intval($data['ordernum']);
+      return $this->jsonReturn(0,$res,'success');
+    }
+
 
 }

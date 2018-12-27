@@ -32,11 +32,12 @@ class Address extends Model
        'longtitude'=>$data['longitude'],
      ];
      $res = $this
-     ->field("address_type,addressname,longtitude as longitude,latitude,create_time,company_id,city")
+     ->field("address_type,addressname,longtitude as longitude,latitude,create_time,company_id,city,addressid")
      ->where($findMap)->find();
 
      if($res){
        $data = array_merge($data,$res->toArray());
+       if(isset($data['company_id'])) $data['company_id'] = intval($data['company_id']);
        return $data;
      }
      //如果没有数据，则创建
@@ -46,7 +47,7 @@ class Address extends Model
        'longtitude' => $data['longitude'],
        'latitude'   => $data['latitude'],
        'create_time'   => date("Y-m-d H:i:s"),
-       'company_id'   => $data['company_id'],
+       'company_id'   => intval($data['company_id']),
        'city'       => isset($data['city']) && $data['city'] ? $data['city'] : "--",
      ];
      $createID = $this->insertGetId($inputData);
