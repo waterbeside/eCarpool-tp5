@@ -56,6 +56,8 @@ class Passport extends ApiBase
             ];
          }
          $userInfo = $this->filtFields($userInfo_ex,$fields);
+         if(isset($userInfo['sex'])) $userInfo['sex'] = intval($userInfo['sex']);
+         if(isset($userInfo['company_id'])) $userInfo['company_id'] = intval($userInfo['company_id']);
          $userInfo['full_department'] = DepartmentModel::where("id",$userInfo['department_id'])->value('fullname');
 
        }

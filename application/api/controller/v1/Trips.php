@@ -371,7 +371,7 @@ class Trips extends ApiBase
 
       $createAddress = array();
       //处理起点
-      if((!isset($datas['start']['addressid']) || !$datas['start']['addressid']) && !$map_type){
+      if((!isset($datas['start']['addressid']) || !$datas['start']['addressid'] || !is_numeric($datas['start']['addressid'])) && !$map_type){
         $startDatas = $datas['start'];
         $startDatas['company_id'] = $userData['company_id'];
         $startRes = $AddressModel->addFromTrips($startDatas);
@@ -384,7 +384,7 @@ class Trips extends ApiBase
       }
 
       //处理终点
-      if((!isset($datas['end']['addressid']) || !$datas['end']['addressid']) && !$map_type ){
+      if((!isset($datas['end']['addressid']) || !$datas['end']['addressid']  || !is_numeric($datas['end']['addressid'])) && !$map_type ){
         $endDatas = $datas['end'];
         $endDatas['company_id'] = $userData['company_id'];
         $endRes = $AddressModel->addFromTrips($endDatas);
@@ -575,8 +575,8 @@ class Trips extends ApiBase
         if($type == "cancel" && isset($cancel_push_msg) && isset($sendTarget) && !empty($sendTarget)){
           $this->pushMsg($sendTarget,$cancel_push_msg);
         }
-
-        return $this->jsonReturn(0,[],"success");
+        $extra = $this->errorMsg ? ['pushMsg'=>$this->errorMsg] : [1];
+        return $this->jsonReturn(0,[],"success",$extra);
 
       }
 
@@ -639,7 +639,8 @@ class Trips extends ApiBase
         $datas->status = 1 ;
         $datas->save();
         $this->pushMsg($datas->carownid,lang('{:name} took your car',["name"=>$userData['name']]));
-        return $this->jsonReturn(0,['infoid'=>$res],'success');
+        $extra = $this->errorMsg ? ['pushMsg'=>$this->errorMsg] : [1];
+        return $this->jsonReturn(0,['infoid'=>$res],'success',$extra);
       }
 
       /*********** pickup 接受需求  ***********/
@@ -698,8 +699,8 @@ class Trips extends ApiBase
 
       }
 
-
-      return $this->jsonReturn(-1,[],lang("Fail"));
+      $extra = $this->errorMsg ? ['pushMsg'=>$this->errorMsg] : [];
+      return $this->jsonReturn(-1,[],lang("Fail"),$extra);
     }
 
 
@@ -834,6 +835,10 @@ class Trips extends ApiBase
         $value_format['end_longitude'] = $value['end_lng'];
         $value_format['end_latitude'] = $value['end_lat'];
       }
+      if(isset($value['p_sex'])) $value_format['p_sex'] = intval($value['p_sex']);
+      if(isset($value['p_company_id'])) $value_format['p_company_id'] = intval($value['p_company_id']);
+      if(isset($value['d_sex'])) $value_format['d_sex'] = intval($value['d_sex']);
+      if(isset($value['d_company_id'])) $value_format['d_company_id'] = intval($value['d_company_id']);
       return $value_format;
     }
 
@@ -907,7 +912,10 @@ class Trips extends ApiBase
       }
       try {
         $pushRes = $PushMessage->push($uid,$message,lang("Car pooling"),1);
-      } catch (Exception $e) {
+        $this->errorMsg = $pushRes;
+
+      } catch (\Exception $e) {
+        $this->errorMsg = $e->getMessage();
         $pushRes =  $e->getMessage();
       }
 
