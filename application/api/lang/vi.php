@@ -29,6 +29,7 @@ return [
 
   //字段相关
   'Please select date and time' => 'Vui lòng chọn ngày và giờ',
+  'Please enter content' => 'Vui lòng nhập nội dung',
 
   //拼车相关
   "Car pooling" => "Đi chung xe",

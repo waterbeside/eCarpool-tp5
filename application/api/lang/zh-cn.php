@@ -30,6 +30,7 @@ return [
 
   //字段相关
   'Please select date and time' => '请选择日期时间',
+  'Please enter content' => '请填写内容',
 
   //拼车相关
   "Car pooling" => "拼车",

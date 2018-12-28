@@ -89,9 +89,7 @@ class Trips extends ApiBase
       }
 
       foreach ($datas as $key => $value) {
-
         $datas[$key] = $fullData ? $this->formatResultValue($value) : $this->unsetResultValue($this->formatResultValue($value),"list");
-
         // $datas[$key] = $this->formatResultValue($value,$merge_ids);
         $datas[$key]['show_owner']      = $value['infoid']>0 && $uid == $value['passengerid']  &&  $value['carownid'] > 0  ?  1 : 0;
         $datas[$key]['status'] = intval($value['status']);
@@ -102,6 +100,7 @@ class Trips extends ApiBase
         'lists'=>$datas,
         'page' =>$pageData
       ];
+
       $this->jsonReturn(0,$returnData,"success");
 
     }
