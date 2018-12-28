@@ -37,6 +37,8 @@ Route::group([], function () {
   Route::rule('api/:version/sync_hr/all','api/:version.sync_hr/all','GET');
 
   //行程相关
+  Route::rule('api/:version/trips/wall/:id/comments','api/:version.trip_comments/index','GET');//行程评论
+  Route::rule('api/:version/trips/wall/:id/comments','api/:version.trip_comments/save','POST');//行程评论
   Route::rule('api/:version/trips/wall/:id/passengers','api/:version.trips/passengers','GET');
   Route::rule('api/:version/trips/wall/:id','api/:version.trips/wall_detail','GET');
   Route::rule('api/:version/trips/info/:id','api/:version.trips/info_detail','GET');
@@ -47,6 +49,7 @@ Route::group([], function () {
   Route::rule('api/:version/trips/:from','api/:version.trips/add','POST');
   Route::rule('api/:version/trips/:from/:id','api/:version.trips/change','PATCH');
   Route::rule('api/:version/trips/:from/:id','api/:version.trips/cancel','DELETE');
+
 
   //地址相关
   Route::rule('api/:version/address/:id','api/:version.address/read','GET')->pattern(['id' => '\d+']);
