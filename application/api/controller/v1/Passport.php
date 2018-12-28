@@ -6,6 +6,7 @@ use app\carpool\model\User as UserModel_o;
 use app\carpool\model\Department as DepartmentModel_o;
 use app\user\model\Department as DepartmentModel;
 use app\user\model\User as UserModel;
+use app\carpool\model\Address;
 use Firebase\JWT\JWT;
 use think\Db;
 
@@ -151,14 +152,13 @@ class Passport extends ApiBase
     public function update_field($field=""){
       //验证字段是否可以被改
       $field = strtolower($field);
-      $fields = array('carnumber','carcolor','cartype','password','sex','company_id','department','name','mobile');
+      $fields = array('carnumber','carcolor','cartype','password','sex','company_id','department','name','mobile','myaddress');
       if(!in_array($field,$fields)){
         return $this->jsonReturn(-10002,"Error");
       }
       //验证帐号并取得账号信息
       $userData = $this->getUserData(true);
       $uid = $userData['uid'];
-
 
       $value = $this->request->param($field);
 
@@ -208,6 +208,11 @@ class Passport extends ApiBase
           }
           break;
 
+        case 'myaddress':
+          return $this->change_address();
+          break;
+
+
         default:
           if(!in_array($field,array('carnumber','carcolor'))){
             if($value==''){
@@ -226,6 +231,52 @@ class Passport extends ApiBase
           break;
       }
     }
+
+
+    /**
+   * 改变地址
+   */
+  public function change_address(){
+    $userData                 = $this->getUserData(true);
+    $uid                      = $userData['uid'];
+    $data['company_id']       = $userData['company_id'];
+    $data['addressid']       =  $this->request->post('addressid');
+    $data['addressname']      =  $this->request->post('addressname');
+    $data['latitude']         =  $this->request->post('latitude');
+    $data['longitude']        =  $this->request->post('longitude');
+    $data['city']             = $this->request->post('city');
+    $from                     = $this->request->post('from');
+    if($from=="work"){
+      $from = "company";
+    }
+
+
+    if(!in_array($from,array('home','company'))){
+      $this->jsonReturn(992,[],lang('Parameter error'));
+    }
+    $createAddress = [];
+    //处理起点
+    if(!isset($data['addressid']) || !$data['addressid'] || !is_numeric($data['addressid'])){
+      $AddressModel = new Address();
+      $res = $AddressModel->addFromTrips($data);
+      if(!$res){
+        $errorMsg = $AddressModel->errorMsg ? $AddressModel->errorMsg  : lang("Fail");
+        $this->jsonReturn(-1,[],$errorMsg);
+      }
+      $data['addressid'] = $res['addressid'];
+      $createAddress[0] = $res;
+    }
+    if(!is_numeric($data['addressid'])){
+      $this->jsonReturn(992,[],lang('Parameter error'));
+    }
+    $status = UserModel_o::where("uid",$uid)->update([$from.'_address_id'=>$data['addressid']]);
+    if($status!==false){
+      return $this->jsonReturn(0,['createAddress'=>$createAddress],"success");
+    }else{
+      return $this->jsonReturn(-1,[],"fail");
+    }
+
+  }
 
     /**
      * 登出
