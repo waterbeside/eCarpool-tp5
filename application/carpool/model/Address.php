@@ -22,7 +22,7 @@ class Address extends Model
 
    public function addFromTrips($data){
      if(empty($data['longitude']) || empty($data['latitude']) || empty($data['addressname'])){
-       $this->errorMsg = lang("Can not be empty");
+       $this->errorMsg = lang('Parameter error');
        return false;
      }
      //先查找有没有对应的地址
