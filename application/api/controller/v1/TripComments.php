@@ -22,14 +22,17 @@ class TripComments extends ApiBase
     }
 
 
-    public function index($id,$pagesize = 0,$num = 0, $getcount = 0){
+    public function index($id,$pagesize = 0,$num = 0, $getcount = 0,$order="ASC"){
       if(!$id){
         return $this->jsonReturn(992,[],lang('Parameter error'));
       }
       $map = [
         ['love_wall_ID','=',$id]
       ];
-      $orderby = "t.reply_time ASC";
+      if(!in_array(mb_strtolower($order),['asc','desc'])){
+        $order = 'ASC';
+      }
+      $orderby = "t.reply_time {$order}";
       $join = [
         ['user u','u.uid = t.uid', 'left']
       ];
