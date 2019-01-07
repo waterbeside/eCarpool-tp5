@@ -57,6 +57,7 @@ class UserPosition extends ApiBase
             'longitude' => floatval($res['longitude']),
             'latitude'  => floatval($res['latitude']),
             'update_time'  => intval($update_time),
+            'now'  => time(),
           ];
           $this->jsonReturn(0,$returnData,'success');
         }else{
