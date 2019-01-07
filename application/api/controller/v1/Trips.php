@@ -10,6 +10,7 @@ use app\carpool\model\WallLike;
 use app\carpool\model\user as UserModel;
 // use app\user\model\Department as DepartmentModel;
 use app\common\model\PushMessage;
+use app\carpool\model\UserPosition as UserPositionModel;
 
 use think\Db;
 
@@ -24,8 +25,6 @@ class Trips extends ApiBase
     protected function initialize()
     {
         parent::initialize();
-        $this->checkPassport(1);
-
     }
 
     /**
@@ -156,7 +155,7 @@ class Trips extends ApiBase
           //取点赞数
           $lists[$key]['like_count']    = WallLike::where('love_wall_ID',$value['id'])->count();
           //取已坐数
-          $lists[$key]['took_count']    =  InfoModel::where('love_wall_ID',$value['id'])->count();
+          $lists[$key]['took_count']    =  InfoModel::where([['love_wall_ID','=',$value['id']],["status","<>",2]])->count();
         }
         $returnData = [
           'lists'=>$lists,
@@ -175,10 +174,13 @@ class Trips extends ApiBase
      * 空座位详情页
      * @param  integer $id 空座位id
      */
-    public function wall_detail($id){
-      $uid = $this->userBaseInfo['uid'];
-      if(!$id){
-        $this->jsonReturn(-1,[],'lost id');
+    public function wall_detail($id,$returnType=1,$pb = 0){
+      if(!$pb){
+        $this->checkPassport(1);
+        $uid = $this->userBaseInfo['uid'];
+      }
+      if(!$id || !is_numeric($id)){
+        $this->jsonReturn(992,[],'lost id');
         // return $this->error('lost id');
       }
       $fields = 't.time, t.status,  t.seat_count, t.map_type';
@@ -189,19 +191,23 @@ class Trips extends ApiBase
       $join = $this->buildTripJoins("s,e,d,department");
       $data = WallModel::alias('t')->field($fields)->join($join)->where("t.love_wall_ID",$id)->find();
       if(!$data){
-        return $this->jsonReturn(20002,$data,lang('No data'));
+        return $returnType ? $this->jsonReturn(20002,$data,lang('No data')) : [];
       }
 
-      $data = $this->unsetResultValue($this->formatResultValue($data),"detail");
+      $data = $this->unsetResultValue($this->formatResultValue($data),($pb ? "detail_pb" : "detail"));
 
-      $data['uid']          = $uid;
       $countBaseMap = ['love_wall_ID','=',$data['love_wall_ID']];
       $data['took_count']       = InfoModel::where([$countBaseMap,['status','<',2]])->count(); //取已坐数
       $data['took_count_all']   = InfoModel::where([$countBaseMap,['status','<>',2]])->count() ; //取已坐数
-      $data['hasTake']          = InfoModel::where([$countBaseMap,['status','<',2],['passengerid','=',$uid]])->count(); //查看是否已搭过此车主的车
-      $data['hasTake_finish']   = InfoModel::where([$countBaseMap,['status','=',3],['passengerid','=',$uid]])->count();  //查看是否已搭过此车主的车
+
+      if(!$pb){
+        $data['uid']          = $uid;
+        $data['hasTake']          = InfoModel::where([$countBaseMap,['status','<',2],['passengerid','=',$uid]])->count(); //查看是否已搭过此车主的车
+        $data['hasTake_finish']   = InfoModel::where([$countBaseMap,['status','=',3],['passengerid','=',$uid]])->count();  //查看是否已搭过此车主的车
+      }
       // return $this->success('加载成功','',$data);
-      $this->jsonReturn(0,$data,'success');
+      return $returnType ?   $this->jsonReturn(0,$data,'success') : $data;
+
     }
 
     /**
@@ -296,10 +302,13 @@ class Trips extends ApiBase
      * 行程详情页
      * @param  integer $id 行程id
      */
-    public function info_detail($id){
-      $uid = $this->userBaseInfo['uid'];
-      if(!$id){
-        $this->jsonReturn(-1,[],'lost id');
+    public function info_detail($id,$returnType=1,$pb = 0){
+      if(!$pb){
+        $this->checkPassport(1);
+        $uid = $this->userBaseInfo['uid'];
+      }
+      if(!$id || !is_numeric($id)){
+        $this->jsonReturn(992,[],'lost id');
         // return $this->error('lost id');
       }
 
@@ -313,13 +322,15 @@ class Trips extends ApiBase
       $join = $this->buildTripJoins();
       $data = InfoModel::alias('t')->field($fields)->join($join)->where("t.infoid",$id)->find();
       if(!$data){
-        return $this->jsonReturn(20002,$data,lang('No data'));
+        return $returnType ? $this->jsonReturn(20002,$data,lang('No data')) : [];
       }
-      $data = $this->unsetResultValue($this->formatResultValue($data),"detail");
-      $data['uid']          = $uid;
+      $data = $this->unsetResultValue($this->formatResultValue($data),($pb ? "detail_pb" : "detail"));
+      if(!$pb){
+        $data['uid']          = $uid;
+      }
 
       // return $this->success('加载成功','',$data);
-      $this->jsonReturn(0,$data,'success');
+      return $returnType ?   $this->jsonReturn(0,$data,'success') : $data;
     }
 
 
@@ -480,6 +491,7 @@ class Trips extends ApiBase
      * @param string $from  行程类型 wall|info
      */
     public function change($from="",$id,$type=""){
+      $this->checkPassport(1);
       $type = mb_strtolower($type);
       $from = mb_strtolower($from);
 
@@ -498,9 +510,13 @@ class Trips extends ApiBase
       $uid = $userData['uid']; //取得用户id
       $fields = "*,x(start_latlng) as start_lng , y(start_latlng) as start_lat,x(end_latlng) as end_lng,y(end_latlng) as end_lat";
       $datas = $Model->field($fields)->get($id);
+
       if(!$datas){
         return $this->jsonReturn(20002,[],lang('No data'));
       }
+      $map_type = $datas['map_type'];
+      $appid = $map_type ? 2 : 1;
+
       $isDriver    = $datas->carownid == $uid ? true : false; //是否司机操作
       $driver_id   = $datas->carownid ; //司机id;
 
@@ -572,7 +588,7 @@ class Trips extends ApiBase
 
         //如果是取消操作，执行推送消息
         if($type == "cancel" && isset($cancel_push_msg) && isset($sendTarget) && !empty($sendTarget)){
-          $this->pushMsg($sendTarget,$cancel_push_msg);
+          $this->pushMsg($sendTarget,$cancel_push_msg,$appid);
         }
         $extra = $this->errorMsg ? ['pushMsg'=>$this->errorMsg] : [1];
         return $this->jsonReturn(0,[],"success",$extra);
@@ -637,7 +653,7 @@ class Trips extends ApiBase
         }
         $datas->status = 1 ;
         $datas->save();
-        $this->pushMsg($datas->carownid,lang('{:name} took your car',["name"=>$userData['name']]));
+        $this->pushMsg($datas->carownid,lang('{:name} took your car',["name"=>$userData['name']]),$appid);
         $extra = $this->errorMsg ? ['pushMsg'=>$this->errorMsg] : [1];
         return $this->jsonReturn(0,['infoid'=>$res],'success',$extra);
       }
@@ -658,7 +674,7 @@ class Trips extends ApiBase
         $datas->status = 1;
         $res = $datas->save();
         if($res){
-          $this->pushMsg($datas->passengerid,lang('{:name} accepted your ride requst',["name"=>$userData['name']]));
+          $this->pushMsg($datas->passengerid,lang('{:name} accepted your ride requst',["name"=>$userData['name']]),$appid);
           return $this->jsonReturn(0,[],'success');
         }
       }
@@ -711,6 +727,94 @@ class Trips extends ApiBase
        return $this->change($from,$id,'cancel');
     }
 
+
+
+    /**
+     * 用户位置
+     */
+    public function user_position($from,$id,$uid){
+      $this->checkPassport(1);
+      if(!$from || !$id || !$uid){
+        $this->jsonReturn(992,[],lang('Parameter error'));
+      }
+      $uids = [];
+      $now = time();
+      $myUid = $this->userBaseInfo['uid'];
+
+      if(in_array($from,['rides','wall'])){ //如果是墙上空座位
+        $from = 'wall';
+        $tripData = $this->wall_detail($id,0);
+        if(!$tripData){
+          $this->jsonReturn(-1,[],lang('The trip does not exist'));
+        }
+        $wid = $id ;
+      }else if(in_array($from,['requests','info'])){ //如果是行程约车需求
+        $from = 'info';
+        $tripData = $this->info_detail($id,0);
+        if(!$tripData){
+          $this->jsonReturn(-1,[],lang('The trip does not exist'));
+        }
+
+        $wid = $tripData['love_wall_ID'] ;
+        if(!$wid){
+          if($tripData['d_uid']) $uids[] = $tripData['d_uid'];
+          $uids[] = $tripData['p_uid'];
+        }
+      }else{
+        $this->jsonReturn(992,[],lang('Parameter error'));
+      }
+      //查找该行程的所有乘客id，以便用检查是否有权查询其它用户的位置信息
+      if($wid){
+        if($tripData['d_uid']) $uids[] = $tripData['d_uid'];
+        $passengerids = InfoModel::where([["love_wall_ID",'=',$wid],['status',"<>",2]])->column('passengerid');
+        $uids = array_merge($uids,$passengerids);
+      }
+      // if(!in_array($myUid,$uids)){
+      //   $this->jsonReturn(-1,[],lang('You are not the driver or passenger of this trip').lang('.').lang('Not allowed to view other`s location information').lang('.'));
+      // }
+      //
+      if(isset($tripData['d_uid']) && $tripData['d_uid'] == $uid){
+        $userData = [
+          'uid' =>  $uid,
+          'name' => $tripData['d_name'],
+          'loginname' => $tripData['d_loginname'],
+          'sex' => $tripData['d_sex'],
+          'department' => $tripData['d_department'],
+          'full_department' => $tripData['d_full_department'],
+        ];
+      }else if(isset($tripData['p_uid']) && $tripData['p_uid'] == $uid){
+        $userData = [
+          'uid' =>  $uid,
+          'name' => $tripData['p_name'],
+          'loginname' => $tripData['p_loginname'],
+          'sex' => $tripData['p_sex'],
+          'department' => $tripData['p_department'],
+          'full_department' => $tripData['p_full_department'],
+        ];
+      }else{
+        $this->jsonReturn(-1,[],lang('This user has not joined this trip or has cancelled the itinerary'));
+      }
+
+      $returnData = [
+        'from' => $from,
+        'tripData' => $tripData,
+        'userData' => $userData,
+        'position' => null,
+        'now'  => $now,
+      ];
+      $res = UserPositionModel::find($uid);
+      if($res){
+        $res = array_change_key_case($res->toArray(),CASE_LOWER);
+        $position = [
+            'longitude' => floatval($res['longitude']),
+            'latitude'  => floatval($res['latitude']),
+            'update_time'  => $res['update_time'] ? strtotime($res['update_time']) : 0 ,
+        ];
+        $returnData['position']  =    $position;
+      }
+      $this->jsonReturn(0,$returnData,'success');
+
+    }
 
 
     /* ----------------------------------------------------------------- */
@@ -866,6 +970,16 @@ class Trips extends ApiBase
         $unsetFields = [];
         $unsetFields = array_merge($unsetFields_default,$unsetFields);
       }
+      if(is_string($unsetFields) && $unsetFields=="detail_pb"){
+        $unsetFields = [
+          'p_companyname','d_companyname','d_im_id','p_im_id'
+          ,'d_phone','d_mobile','d_full_department','d_company_id','d_department_id','d_department'
+          ,'p_phone','p_mobile','p_full_department','p_company_id','p_department_id','p_department'
+          ,'start_addressid'
+          ,'end_addressid'
+        ];
+        $unsetFields = array_merge($unsetFields_default,$unsetFields);
+      }
       if(is_array($unsetFields)){
         foreach ($unsetFields as $key => $value) {
            unset($data[$value]);
@@ -890,7 +1004,7 @@ class Trips extends ApiBase
      * @param  integer $uid      [对方id]
      * @param  string  $message  [发送的内容]
      */
-    protected function pushMsg($uid,$message){
+    protected function pushMsg($uid,$message,$appid = 1){
       if(!$uid || !$message){
         return false;
       }
@@ -910,9 +1024,8 @@ class Trips extends ApiBase
         return false;
       }
       try {
-        $pushRes = $PushMessage->push($uid,$message,lang("Car pooling"),1);
+        $pushRes = $PushMessage->push($uid,$message,lang("Car pooling"),$appid);
         $this->errorMsg = $pushRes;
-
       } catch (\Exception $e) {
         $this->errorMsg = $e->getMessage();
         $pushRes =  $e->getMessage();
