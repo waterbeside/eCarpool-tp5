@@ -17,7 +17,9 @@ class Department extends Model
 
 
    /**
-    * [create_department_by_str 根据部门路径字符串添加部门到数据库，并返回完整id层级数径]
+    * create_department_by_str 根据部门路径字符串添加部门到数据库，并返回最后部门id]
+    * @param  string  $department_str 部门全称
+    * @param  integer  $company_id 公司id
     */
    public function create_department_by_str($department_str,$company_id = 1){
       if(!$department_str){
@@ -67,8 +69,12 @@ class Department extends Model
       return end($lists);
    }
 
-
-   public function formatFullName($fullNameStr){
+   /**
+    * 格式化部门
+    * @param  [type]  $fullNameStr [description]
+    * @param  integer $type        0：返回数组， 1：返回分厂加公司名(string)，2：返回分厂加公司名缩写(string)
+    */
+   public function formatFullName($fullNameStr,$type=0){
      if(!$fullNameStr){
        return false;
      }
@@ -90,6 +96,9 @@ class Department extends Model
        // 'formatName' => $departmentName,
        'fullName' => $fullName,
      ];
+     if($type == 1){
+       return $returnData['branch'].','.$returnData['department'];
+     }
 
      if(preg_match('/[\x{4e00}-\x{9fa5}]/u', $departmentName)>0){
        $returnData['formatName'] = $departmentName;
@@ -119,6 +128,9 @@ class Department extends Model
      }
      $returnData['formatName'] = $newName;
 
+     if($type == 2){
+       return $returnData['branch'].','.$returnData['formatName'];
+     }
      return $returnData;
 
 
