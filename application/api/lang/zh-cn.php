@@ -1,6 +1,8 @@
 <?php
 return [
   //通用
+  '.' => '。',
+  ',' => '，',
   'Fail' => '失败',
   "Can not be empty" => '不能为空',
   "Illegal access" => '禁止非法访问',
@@ -42,10 +44,14 @@ return [
   'The number of empty seats cannot be empty'=>'空座位个数不能为空',
   'The trip has been completed or cancelled. Operation is not allowed' => '该行程已结束或取消，不允许操作。',
   'The trip not started, unable to operate' => '行程未开始，无法操作',
+  'The trip does not exist' => '该行程不存在',
   'You can`t take your own' => '你不能自己搭自己',
   'Failed, the owner has cancelled the trip'=>'搭车失败，车主已取消该行程',
   'Failed, the trip has ended'=>'搭车失败，该行程已结束',
   'You have already taken this trip'=>'您已搭乘过本行程',
+  'You are not the driver or passenger of this trip'=>'你不是本行程的司机或乘客',
+  'Not allowed to view other`s location information'=>'不允许查看对方的位置信息',
+  'This user has not joined this trip or has cancelled the itinerary' => '该用户没有参与本次行程或已取消了行程',
 
   '{:name} took your car'=> '{:name}搭了你的车',
   '{:name} accepted your ride requst'=>'{:name}接受了你的约车需求',

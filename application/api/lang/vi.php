@@ -1,6 +1,7 @@
 <?php
 return [
   //通用
+  '.' => '.',
   'Fail' => 'Thất bại',
   "Can not be empty" => 'không thể để trống',
   "Illegal access" => 'Cấm truy cập bất hợp pháp',
@@ -41,10 +42,15 @@ return [
   'The number of empty seats cannot be empty'=>'Số lượng chỗ trống không được để trống',
   'The trip has been completed or cancelled. Operation is not allowed' => 'Chuyến đi đã bị đóng hoặc hủy và không có hành động nào được phép',
   'The trip not started, unable to operate' => 'Chuyến đi chưa bắt đầu và không thể hoạt động',
+  'The trip does not exist' => 'Chuyến đi không tồn tại',
   'You can`t take your own' => 'Bạn không thể tự mình làm',
   'Failed, the owner has cancelled the trip'=>'Không thành công, chủ sở hữu đã hủy chuyến đi',
   'Failed, the trip has ended'=>'Không thành công, chuyến đi đã kết thúc',
   'You have already taken this trip'=>'Bạn đã thực hiện chuyến đi này',
+  'You are not the driver or passenger of this trip'=>'Bạn không phải là tài xế hoặc hành khách của chuyến đi này',
+  'Not allowed to view  other`s location information'=>'Không được phép xem thông tin vị trí của người khác',
+  'This user has not joined this trip or has cancelled the itinerary' => 'Người dùng này chưa tham gia chuyến đi này hoặc đã hủy hành trình',
+
 
   '{:name} took your car'=> '{:name} đã lấy xe của bạn ',
   '{:name} accepted your ride requst'=>'{:name} đã chấp nhận nhu cầu xe hơi của bạn',
