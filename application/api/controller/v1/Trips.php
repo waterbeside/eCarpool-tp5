@@ -8,7 +8,7 @@ use app\carpool\model\Wall as WallModel;
 use app\carpool\model\Address;
 use app\carpool\model\WallLike;
 use app\carpool\model\user as UserModel;
-// use app\user\model\Department as DepartmentModel;
+use app\user\model\Department as DepartmentModel;
 use app\common\model\PushMessage;
 use app\carpool\model\UserPosition as UserPositionModel;
 
@@ -41,7 +41,9 @@ class Trips extends ApiBase
       $viewSql  =  $InfoModel->buildUnionSql($uid,$merge_ids);
       $fields = 't.infoid , t.love_wall_ID , t.time, t.trip_type , t.time, t.status, t.passengerid, t.carownid , t.seat_count,  t.subtime, t.map_type ';
       $fields .= ','.$this->buildUserFields('d');
+      $fields .= ', dd.fullname as d_full_department  ';
       $fields .= ','.$this->buildUserFields('p');
+      $fields .= ', pd.fullname as p_full_department  ';
       $fields .=  $this->buildAddressFields();
       $join = $this->buildTripJoins();
 
@@ -88,9 +90,14 @@ class Trips extends ApiBase
       }
 
       foreach ($datas as $key => $value) {
+        $value['trip_type'] = intval($value['trip_type']);
+        $value['infoid'] = intval($value['infoid']);
+        $value['love_wall_ID'] = intval($value['love_wall_ID']);
+        $value['seat_count'] = intval($value['seat_count']);
+
         $datas[$key] = $fullData ? $this->formatResultValue($value) : $this->unsetResultValue($this->formatResultValue($value),"list");
         // $datas[$key] = $this->formatResultValue($value,$merge_ids);
-        $datas[$key]['show_owner']      = $value['infoid']>0 && $uid == $value['passengerid']  &&  $value['carownid'] > 0  ?  1 : 0;
+        $datas[$key]['show_owner']  = $value['trip_type'] ||  ($value['infoid']>0 && $uid == $value['passengerid']  &&  $value['carownid'] > 0)  ?  1 : 0;
         $datas[$key]['status'] = intval($value['status']);
         $data[$key]['took_count']   = $value['infoid'] > 0 ? 0 : InfoModel::where([['love_wall_ID','=',$value['love_wall_ID']],['status','<>',2]])->count() ; //取已坐数
 
@@ -942,6 +949,15 @@ class Trips extends ApiBase
       if(isset($value['p_company_id'])) $value_format['p_company_id'] = intval($value['p_company_id']);
       if(isset($value['d_sex'])) $value_format['d_sex'] = intval($value['d_sex']);
       if(isset($value['d_company_id'])) $value_format['d_company_id'] = intval($value['d_company_id']);
+      if(isset($value['d_full_department']) || isset($value['p_full_department'])){
+        $DepartmentModel = new DepartmentModel;
+      }
+      if(isset($value['d_full_department'])){
+        $value_format['d_department'] = $DepartmentModel->formatFullName($value['d_full_department'],1);
+      }
+      if(isset($value['p_full_department'])){
+        $value_format['p_department'] = $DepartmentModel->formatFullName($value['p_full_department'],1);
+      }
       return $value_format;
     }
 
@@ -960,7 +976,8 @@ class Trips extends ApiBase
       ];
       if(is_string($unsetFields) && $unsetFields=="list"){
         $unsetFields = [
-          'p_companyname','d_companyname','d_im_id','p_im_id'
+          'p_companyname','d_companyname'
+          // ,'d_im_id','p_im_id'
           ,'start_longitude','start_latitude','start_addressid'
          ,'end_longitude','end_latitude','end_addressid'
         ];
