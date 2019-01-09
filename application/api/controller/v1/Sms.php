@@ -365,6 +365,23 @@ class Sms extends ApiBase
           }
           break;
 
+        /******** 重置密码 *********/
+        case 102:
+        $password = input('post.password');
+        if($password){
+          if(strlen($password) < 6){
+            return $this->jsonReturn(-10002,[],lang('The new password should be no less than 6 characters'));
+          }
+          $hashPassword = md5($password); //加密后的密码
+          $status = UserModel::where([['phone','=',$phone],['is_delete','<>',1],['is_active','=',0]])->update(['md5password'=>$hashPassword]);
+          if($status!==false){
+            return $this->jsonReturn(0,[],"success");
+          }else{
+            return $this->jsonReturn(-1,[],"fail");
+          }
+        }
+        break;
+
         /******** 绑定手机号 *********/
         case 103:
           if($userData['phone'] == $phone){
@@ -437,7 +454,6 @@ class Sms extends ApiBase
               }
           }
           $this->log('合并账号成功',0);
-
           break;
 
         default:
