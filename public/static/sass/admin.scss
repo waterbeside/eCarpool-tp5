@@ -260,10 +260,11 @@ body {background:#FFF; color:$color-black-l1}
 
 /*** 底部工具按钮栏 ****/
 .am-bottom-tool-bar {
-  $height:40px;
-  position: fixed; bottom: 0; left: 0; right: 0; min-height: $height; background: rgba($color-dark-white,.9); border-top:1px solid $color-border;
+  $height:48px;
+  $inner-padding:4px;
+  position: fixed; bottom: 0; left: 0; right: 0; min-height: $height + $inner-padding*4; background: rgba($color-dark-white,.9); border-top:1px solid $color-border;
   &-inner {
-    display: flex; padding: 4px 10px;
+    display: flex; padding: $inner-padding 10px;
   }
   .btns-wrapper { margin-left: 10px;}
   .form-wrapper { padding: 10px;}
