@@ -481,7 +481,7 @@ class Trips extends ApiBase
      * @param  integer          $id 空座位id
      * @param  integer|string   $status 状态筛选
      */
-    public function passengers($id , $status = "neq|2"){
+    public function passengers($id , $status = "lt|2"){
       $res =  $this->info_list("",$status ,0, $id,0,'status ASC, time ASC');
 
       if($res){
@@ -744,6 +744,7 @@ class Trips extends ApiBase
       if(!$from || !$id || !$uid){
         $this->jsonReturn(992,[],lang('Parameter error'));
       }
+      $msg = "";
       $uids = [];
       $now = time();
       $myUid = $this->userBaseInfo['uid'];
@@ -770,37 +771,24 @@ class Trips extends ApiBase
       }else{
         $this->jsonReturn(992,[],lang('Parameter error'));
       }
-      //查找该行程的所有乘客id，以便用检查是否有权查询其它用户的位置信息
-      if($wid){
-        if($tripData['d_uid']) $uids[] = $tripData['d_uid'];
-        $passengerids = InfoModel::where([["love_wall_ID",'=',$wid],['status',"<>",2]])->column('passengerid');
-        $uids = array_merge($uids,$passengerids);
-      }
-      // if(!in_array($myUid,$uids)){
-      //   $this->jsonReturn(-1,[],lang('You are not the driver or passenger of this trip').lang('.').lang('Not allowed to view other`s location information').lang('.'));
-      // }
-      //
+
+
       if(isset($tripData['d_uid']) && $tripData['d_uid'] == $uid){
-        $userData = [
-          'uid' =>  $uid,
-          'name' => $tripData['d_name'],
-          'loginname' => $tripData['d_loginname'],
-          'sex' => $tripData['d_sex'],
-          'department' => $tripData['d_department'],
-          'full_department' => $tripData['d_full_department'],
-        ];
+        $user_prefix = 'd';
       }else if(isset($tripData['p_uid']) && $tripData['p_uid'] == $uid){
-        $userData = [
-          'uid' =>  $uid,
-          'name' => $tripData['p_name'],
-          'loginname' => $tripData['p_loginname'],
-          'sex' => $tripData['p_sex'],
-          'department' => $tripData['p_department'],
-          'full_department' => $tripData['p_full_department'],
-        ];
+        $user_prefix = 'p';
       }else{
         $this->jsonReturn(-1,[],lang('This user has not joined this trip or has cancelled the itinerary'));
       }
+
+      $userData = [
+        'uid' =>  $uid,
+        'name' => $tripData[$user_prefix.'_name'],
+        'loginname' => $tripData[$user_prefix.'_loginname'],
+        'sex' => $tripData[$user_prefix.'_sex'],
+        'department' => $tripData[$user_prefix.'_department'],
+        'full_department' => $tripData[$user_prefix.'_full_department'],
+      ];
 
       $returnData = [
         'from' => $from,
@@ -809,6 +797,23 @@ class Trips extends ApiBase
         'position' => null,
         'now'  => $now,
       ];
+
+
+      //验证是否成员，查找该行程的所有乘客id，以便用检查是否有权查询其它用户的位置信息
+      if($wid){
+        if($tripData['d_uid']) $uids[] = $tripData['d_uid'];
+        $passengerids = InfoModel::where([["love_wall_ID",'=',$wid],['status',"<>",2]])->column('passengerid');
+        $uids = array_merge($uids,$passengerids);
+      }
+      if(!in_array($myUid,$uids)){
+        $this->jsonReturn(0,$returnData,lang('You are not the driver or passenger of this trip').lang('.').lang('Not allowed to view other`s location information').lang('.'));
+      }
+      //验证允许时间
+      if( $tripData['time'] - $now > 3600 || $now - $tripData['time'] > 7200 ){
+        $msg = lang("Can't see other people's location information,Because not in the allowed range of time");
+        $this->jsonReturn(0,$returnData,$msg);
+      }
+
       $res = UserPositionModel::find($uid);
       if($res){
         $res = array_change_key_case($res->toArray(),CASE_LOWER);
@@ -817,9 +822,15 @@ class Trips extends ApiBase
             'latitude'  => floatval($res['latitude']),
             'update_time'  => $res['update_time'] ? strtotime($res['update_time']) : 0 ,
         ];
-        $returnData['position']  =    $position;
+        if( ($position['longitude']>0 || $position['latitude']>0) && $now - $position['update_time'] < 7200  ){
+          $returnData['position']  =    $position;
+          $msg = 'Load success';
+        }else{
+          $msg = lang("User has not uploaded location information recently");
+
+        }
       }
-      $this->jsonReturn(0,$returnData,'success');
+      $this->jsonReturn(0,$returnData,$msg);
 
     }
 
@@ -978,8 +989,10 @@ class Trips extends ApiBase
         $unsetFields = [
           'p_companyname','d_companyname'
           // ,'d_im_id','p_im_id'
-          ,'start_longitude','start_latitude','start_addressid'
-         ,'end_longitude','end_latitude','end_addressid'
+          // ,'start_longitude','start_latitude'
+          ,'start_addressid'
+          // ,'end_longitude','end_latitude'
+          ,'end_addressid'
         ];
         $unsetFields = array_merge($unsetFields_default,$unsetFields);
       }
