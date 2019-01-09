@@ -51,6 +51,8 @@ return [
   'Not allowed to view  other`s location information'=>'Không được phép xem thông tin vị trí của người khác',
   'This user has not joined this trip or has cancelled the itinerary' => 'Người dùng này chưa tham gia chuyến đi này hoặc đã hủy hành trình',
 
+  "Can't see other people's location information,Because not in the allowed range of time" => "Không thể xem thông tin vị trí của bên kia. Bởi vì nó không nằm trong phạm vi thời gian cho phép",
+  "User has not uploaded location information recently" => "Người dùng chưa được tải lên thông tin vị trí gần đây",
 
   '{:name} took your car'=> '{:name} đã lấy xe của bạn ',
   '{:name} accepted your ride requst'=>'{:name} đã chấp nhận nhu cầu xe hơi của bạn',

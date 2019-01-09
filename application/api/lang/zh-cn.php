@@ -53,6 +53,10 @@ return [
   'Not allowed to view other`s location information'=>'不允许查看对方的位置信息',
   'This user has not joined this trip or has cancelled the itinerary' => '该用户没有参与本次行程或已取消了行程',
 
+  "Can't see other people's location information,Because not in the allowed range of time" => "不在允许的时间范围内，无法查询对方的实时位置",
+  "User has not uploaded location information recently" => "用户最近没有上传实时位置",
+
+
   '{:name} took your car'=> '{:name}搭了你的车',
   '{:name} accepted your ride requst'=>'{:name}接受了你的约车需求',
   'The driver {:name} cancelled the trip' => '司机{:name}取消了行程',
