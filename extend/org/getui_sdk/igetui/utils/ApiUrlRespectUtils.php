@@ -40,7 +40,7 @@ class ApiUrlRespectUtils
             try {
 				$homepage = HttpManager::httpHead($hosts[$i]);
             } catch (Exception $e) {
-                echo($e);
+                // echo($e);
             }
             $ends = array_sum(explode(" ",microtime()));
             $diff=$ends-$start;
