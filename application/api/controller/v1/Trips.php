@@ -204,13 +204,15 @@ class Trips extends ApiBase
       $data = $this->unsetResultValue($this->formatResultValue($data),($pb ? "detail_pb" : "detail"));
 
       $countBaseMap = ['love_wall_ID','=',$data['love_wall_ID']];
-      $data['took_count']       = InfoModel::where([$countBaseMap,['status','<',2]])->count(); //取已坐数
+      $data['took_count']       = InfoModel::where([$countBaseMap,["status","in",[0,1,3,4]]])->count(); //取已坐数
       $data['took_count_all']   = InfoModel::where([$countBaseMap,['status','<>',2]])->count() ; //取已坐数
 
       if(!$pb){
-        $data['uid']          = $uid;
-        $data['hasTake']          = InfoModel::where([$countBaseMap,['status','<',2],['passengerid','=',$uid]])->count(); //查看是否已搭过此车主的车
-        $data['hasTake_finish']   = InfoModel::where([$countBaseMap,['status','=',3],['passengerid','=',$uid]])->count();  //查看是否已搭过此车主的车
+        $data['uid']              = $uid;
+        $data['take_status']      = InfoModel::where([$countBaseMap,['passengerid','=',$uid]])->order("subtime DESC")->value('status'); //查看是否已搭过此车主的车
+        $data['take_status']      = intval($data['take_status']);
+        $data['hasTake']          = in_array($data['take_status'],[0,1,4]) ? 1 : InfoModel::where([$countBaseMap,["status","in",[0,1,4]],['passengerid','=',$uid]])->count(); //查看是否已搭过此车主的车
+        $data['hasTake_finish']   = $data['take_status'] == 3 ? 1 : InfoModel::where([$countBaseMap,['status','=',3],['passengerid','=',$uid]])->count();  //查看是否已搭过此车主的车
       }
       // return $this->success('加载成功','',$data);
       return $returnType ?   $this->jsonReturn(0,$data,'success') : $data;
@@ -481,7 +483,7 @@ class Trips extends ApiBase
      * @param  integer          $id 空座位id
      * @param  integer|string   $status 状态筛选
      */
-    public function passengers($id , $status = "lt|2"){
+    public function passengers($id , $status = "neq|2"){
       $res =  $this->info_list("",$status ,0, $id,0,'status ASC, time ASC');
 
       if($res){
@@ -502,7 +504,7 @@ class Trips extends ApiBase
       $type = mb_strtolower($type);
       $from = mb_strtolower($from);
 
-      if(!in_array($type,['cancel','finish','riding','hitchhiking','pickup','startaddress','endaddress']) || !$id){
+      if(!in_array($type,['cancel','finish','riding','hitchhiking','pickup','get_on','startaddress','endaddress']) || !$id){
         return $this->jsonReturn(992,[],lang('Parameter error'));
       }
       if($from=="wall"){
@@ -527,10 +529,10 @@ class Trips extends ApiBase
       $isDriver    = $datas->carownid == $uid ? true : false; //是否司机操作
       $driver_id   = $datas->carownid ; //司机id;
 
-      /*********** 完成或取消 ***********/
-      if(in_array($type,["cancel","finish"])){
+      /*********** 完成或取消或上车 ***********/
+      if(in_array($type,["cancel","finish","get_on"])){
         //检查是否已取消或完成
-        if($datas->status > 1){
+        if(in_array($datas->status,[2,3])){
           return $this->jsonReturn(-1,[],lang('The trip has been completed or cancelled. Operation is not allowed'));
         }
         //检查时间
@@ -541,14 +543,22 @@ class Trips extends ApiBase
         if($from=="info" && !$isDriver && $datas->passengerid != $uid){
             return $this->jsonReturn(-1,[],lang('No permission'));
         }
+        // 断定是否自己上自己车
+        if($type == "get_on" && $isDriver){
+          return $this->jsonReturn(-1,[],lang('You can`t take your own'));
+        }
+
         //如果是乘客从空座位操作, 则查出infoid，递归到from = info操作。
         if($from=="wall" && !$isDriver){
-            $infoDatas = InfoModel::where([["love_wall_ID",'=',$id],['passengerid',"=",$uid]])->order("status")->find();
+
+            $infoDatas = InfoModel::where([["love_wall_ID",'=',$id],['passengerid',"=",$uid],['status','in',[0,1,4]]])->order("status")->find();
             if(!$infoDatas){
-              return $this->jsonReturn(-1,[],lang('No permission'));
-            }
-            if($infoDatas['status'] > 1){
-              return $this->jsonReturn(-1,[],lang('The trip has been completed or cancelled. Operation is not allowed'));
+              $checkCount = InfoModel::where([["love_wall_ID",'=',$id],['passengerid',"=",$uid]])->order("status")->count();
+              if(!$checkCount){
+                return $this->jsonReturn(-1,[],lang('No permission'));
+              }else {
+                return $this->jsonReturn(-1,[],lang('The trip has been completed or cancelled. Operation is not allowed'));
+              }
             }
             return $this->change("info",$infoDatas['infoid'],$type); exit;
         }
@@ -564,8 +574,10 @@ class Trips extends ApiBase
               $datas->love_wall_ID    = NULL;
               $datas->carownid        = NULL;
           }
-        }else{ //如果是完结
+        }else if($type == "finish"){ //如果是完结
           $datas->status         = 3;
+        }else if($type == "get_on"){
+          $datas->status         = 4;
         }
 
         //保存改变的状态
@@ -579,23 +591,26 @@ class Trips extends ApiBase
         //如果是取消操作，则推送消息(设置要推的消息);
         if($type == "cancel"){
           if($isDriver){ // 如果是司机，则推给乘客
-            $cancel_push_msg = lang("The driver {:name} cancelled the trip",["name"=>$userData['name']]) ;
-            $passengerids = $from == "wall" ?  InfoModel::where([["love_wall_ID",'=',$id],["status","<",2]])->column('passengerid') : $datas->passengerid ;
+            $push_msg = lang("The driver {:name} cancelled the trip",["name"=>$userData['name']]) ;
+            $passengerids = $from == "wall" ?  InfoModel::where([["love_wall_ID",'=',$id],["status","in",[0,1,4]]])->column('passengerid') : $datas->passengerid ;
             $sendTarget = $passengerids ;
           }else{ //如果乘客取消，则推送给司机
-            $cancel_push_msg = lang("The passenger {:name} cancelled the trip",["name"=>$userData['name']]) ;
+            $push_msg = lang("The passenger {:name} cancelled the trip",["name"=>$userData['name']]) ;
             $sendTarget = $driver_id;
           }
+        }else if($type == 'get_on'){
+          $push_msg = lang("The passenger {:name} has got on your car",["name"=>$userData['name']]) ;
+          $sendTarget = $driver_id;
         }
 
         if($from=="wall" && $isDriver ){ //如果是司机操作空座位，则同时对乘客行程进行操作。
           $upInfoData = $type == "finish" ? ["status"=>3] : ["status"=>0,"love_wall_ID"=>NULL,"carownid"=>-1] ;
-          InfoModel::where([["love_wall_ID",'=',$id],["status","<",2]])->update($upInfoData);
+          InfoModel::where([["love_wall_ID",'=',$id],["status","in",[0,1,4]]])->update($upInfoData);
         }
 
-        //如果是取消操作，执行推送消息
-        if($type == "cancel" && isset($cancel_push_msg) && isset($sendTarget) && !empty($sendTarget)){
-          $this->pushMsg($sendTarget,$cancel_push_msg,$appid);
+        //如果是取消或上车操作，执行推送消息
+        if( ($type == "cancel" || $type == "get_on") && isset($push_msg) && isset($sendTarget) && !empty($sendTarget)){
+          $this->pushMsg($sendTarget,$push_msg,$appid);
         }
         $extra = $this->errorMsg ? ['pushMsg'=>$this->errorMsg] : [1];
         return $this->jsonReturn(0,[],"success",$extra);
@@ -624,8 +639,9 @@ class Trips extends ApiBase
         $seat_count = $datas->seat_count;
         $checkInfoMap = [['love_wall_ID','=',$id],['status','<>',2]];
         $took_count = InfoModel::where($checkInfoMap)->count();
+
         if($took_count >= $seat_count){
-          return $this->jsonReturn(-1,[],lang('Failed, seat is full'));
+          return $this->jsonReturn(-1,[$seat_count,$took_count],lang('Failed, seat is full'));
         }
         $checkInfoMap[] = ['passengerid','=',$uid];
         $checkHasTake = InfoModel::where($checkInfoMap)->count();
@@ -788,6 +804,7 @@ class Trips extends ApiBase
         'sex' => $tripData[$user_prefix.'_sex'],
         'department' => $tripData[$user_prefix.'_department'],
         'full_department' => $tripData[$user_prefix.'_full_department'],
+        'imgpath' => $tripData[$user_prefix.'_imgpath'],
       ];
 
       $returnData = [
@@ -815,6 +832,7 @@ class Trips extends ApiBase
       }
 
       $res = UserPositionModel::find($uid);
+
       if($res){
         $res = array_change_key_case($res->toArray(),CASE_LOWER);
         $position = [
@@ -827,9 +845,11 @@ class Trips extends ApiBase
           $msg = 'Load success';
         }else{
           $msg = lang("User has not uploaded location information recently");
-
         }
+      }else{
+        $msg = lang("User has not uploaded location information recently");
       }
+
       $this->jsonReturn(0,$returnData,$msg);
 
     }

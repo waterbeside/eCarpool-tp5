@@ -46,6 +46,7 @@ return [
   'You can`t take your own' => 'Bạn không thể tự mình làm',
   'Failed, the owner has cancelled the trip'=>'Không thành công, chủ sở hữu đã hủy chuyến đi',
   'Failed, the trip has ended'=>'Không thành công, chuyến đi đã kết thúc',
+  'Failed, seat is full' => 'Thất bại, chỗ ngồi đã đầy',
   'You have already taken this trip'=>'Bạn đã thực hiện chuyến đi này',
   'You are not the driver or passenger of this trip'=>'Bạn không phải là tài xế hoặc hành khách của chuyến đi này',
   'Not allowed to view  other`s location information'=>'Không được phép xem thông tin vị trí của người khác',
@@ -58,6 +59,7 @@ return [
   '{:name} accepted your ride requst'=>'{:name} đã chấp nhận nhu cầu xe hơi của bạn',
   'The driver {:name} cancelled the trip' => 'Trình điều khiển {:name} đã hủy hành trình',
   'The passenger {:name} cancelled the trip' => 'Hành khách {:name} đã hủy chuyến đi',
+  'The passenger {:name} has got on your car' => 'Hành khách {:name} đã lên xe của bạn',
 
   //附件相关
   "Wrong format"=>'Định dạng không chính xác',
