@@ -6,6 +6,8 @@ use app\content\model\CommonNotice as NoticeModel;
 use app\carpool\model\UpdateVersion as VersionModel;
 use app\carpool\model\VersionDetails as VersionDetailsModel;
 use app\content\model\Ads as AdsModel;
+use app\common\model\Apps as AppsModel;
+use my\RedisData;
 
 use app\common\model\I18nLang as I18nLangModel;
 use think\Db;
@@ -158,6 +160,33 @@ class AppInitiate extends ApiBase
       // dump($lists);
       return $this->jsonReturn(0,$returnData,'success');
     }
+
+
+    /**
+     * 取得app的api域名
+     */
+    public function get_url($app_id = 1,$platform = 0)
+    {
+       $AppsModel = new AppsModel();;
+       $redData = $AppsModel->itemCache($app_id);
+
+       if($redData && $redData['domain'] ){
+         $app = $redData;
+       }
+       if(!isset($app) || !$app){
+         $app = $AppsModel->get($app_id);
+       }
+       if(!$app){
+         $this->jsonReturn(20002,[],lang('No data'));
+       }
+       $redDataStr = json_encode($app);
+       $AppsModel->itemCache($app_id,$redDataStr);
+       $app['app_url'] = $app['is_ssl'] ? "https://" . $app['domain'] : "http://" . $app['domain'];
+       $app['islatest']  = false;
+       $this->jsonReturn(0,$app,'success');
+
+    }
+
 
 
 }

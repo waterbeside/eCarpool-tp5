@@ -29,6 +29,7 @@ Route::group([], function () {
   Route::rule('api/:version/sms/status/:sendid','api/:version.sms/sms_status');
 
   //app启动调用
+  Route::rule('api/:version/app_initiate/url','api/:version.app_initiate/get_url','GET');
   Route::rule('api/:version/app_initiate','api/:version.app_initiate/index','GET');
 
   //同步Hr系统
@@ -65,6 +66,7 @@ Route::group([], function () {
   //*********公开的
   Route::resource('api/:version/publics/idle','api/:version.publics.idle');
   Route::rule('api/:version/publics/comments','api/:version.publics.comments/index','GET');
+  Route::rule('api/:version/app/url','api/:version.app/get_url','GET');
 
 
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
