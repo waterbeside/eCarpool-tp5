@@ -6,7 +6,10 @@
           <span class="location"> ( <i class="fa fa-map-marker"></i> {$data.location} )</span>
           <span class="date">{$data.post_time}</span>
         </div>
-        <h3 class="title">{$data.title}</h3>
+        <h3 class="title">
+          {$data.title}
+          <?php echo $data['is_delete'] ? '<small class="is_delete">【已删】</small>' : '' ;?>
+        </h3>
         <div class="price-bar">
           <span class="price">¥ {$data.price}</span>
           <span class="status"><?php echo isset($status_list[$data['status']]) ? $status_list[$data['status']] : $data['status'] ;?> </span>
