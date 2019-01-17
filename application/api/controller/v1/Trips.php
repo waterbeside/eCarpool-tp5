@@ -41,9 +41,9 @@ class Trips extends ApiBase
       $viewSql  =  $InfoModel->buildUnionSql($uid,$merge_ids);
       $fields = 't.infoid , t.love_wall_ID , t.time, t.trip_type , t.time, t.status, t.passengerid, t.carownid , t.seat_count,  t.subtime, t.map_type ';
       $fields .= ','.$this->buildUserFields('d');
-      $fields .= ', dd.fullname as d_full_department  ';
+      $fields .= ', dd.fullname as d_full_department';
       $fields .= ','.$this->buildUserFields('p');
-      $fields .= ', pd.fullname as p_full_department  ';
+      $fields .= ', pd.fullname as p_full_department';
       $fields .=  $this->buildAddressFields();
       $join = $this->buildTripJoins();
 
@@ -190,7 +190,7 @@ class Trips extends ApiBase
         $this->jsonReturn(992,[],'lost id');
         // return $this->error('lost id');
       }
-      $fields = 't.time, t.status,  t.seat_count, t.map_type';
+      $fields = 't.time, t.status,  t.seat_count, t.map_type, t.im_tid, t.im_chat_tid';
       $fields .= ', t.love_wall_ID as id ,t.love_wall_ID , t.subtime , t.carownid as driver_id  ';
       $fields .= ', dd.fullname as d_full_department  ';
       $fields .= ','.$this->buildUserFields('d');
@@ -209,7 +209,7 @@ class Trips extends ApiBase
 
       if(!$pb){
         $data['uid']              = $uid;
-        $data['take_status']      = InfoModel::where([$countBaseMap,['passengerid','=',$uid]])->order("subtime DESC")->value('status'); //查看是否已搭过此车主的车
+        $data['take_status']      = InfoModel::where([$countBaseMap,['passengerid','=',$uid]])->order("subtime DESC , infoid DESC")->value('status'); //查看是否已搭过此车主的车
         $data['take_status']      = intval($data['take_status']);
         $data['hasTake']          = in_array($data['take_status'],[0,1,4]) ? 1 : InfoModel::where([$countBaseMap,["status","in",[0,1,4]],['passengerid','=',$uid]])->count(); //查看是否已搭过此车主的车
         $data['hasTake_finish']   = $data['take_status'] == 3 ? 1 : InfoModel::where([$countBaseMap,['status','=',3],['passengerid','=',$uid]])->count();  //查看是否已搭过此车主的车
@@ -648,6 +648,7 @@ class Trips extends ApiBase
         if($checkHasTake>0){
           return $this->jsonReturn(-1,[],lang('You have already taken this trip'));
         }
+
         $setInfoDatas = array(
           'passengerid'   => $uid,
           'carownid'      => $datas->carownid,
