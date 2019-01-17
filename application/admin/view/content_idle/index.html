@@ -17,8 +17,8 @@
         <div class="layui-tab-content">
 
                 <form class="layui-form layui-form-pane" action="{:url('admin/ContentIdle/index')}" method="get">
-                    <div class="layui-inline">
-                        <input type="hidden" name="pagesize" value="{$pagesize}">
+                   <input type="hidden" name="pagesize" value="{$pagesize}">
+                    <div class="layui-inline" style="width:120px">
                         <div class="layui-input-inline">
                           <select name="filter[status]" >
                             <option value="">状态:不限</option>
@@ -28,13 +28,21 @@
                            </select>
                         </div>
                     </div>
-                    <div class="layui-inline">
+                    <div class="layui-inline" style="width:120px">
                         <div class="layui-input-inline">
                           <select name="filter[show_level]" >
                             <option value="">审核:不限</option>
                             {foreach name="showLevel_list" key="key" item="vo"}
                              <option value="{$key}" {php}echo $filter['show_level']== "$key" ? 'selected' : ''; {/php} >{$key} : {$vo}</option>
                             {/foreach}
+                           </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline" style="width:80px">
+                        <div class="layui-input-inline">
+                          <select name="filter[is_delete]" >
+                            <option value="0">正常</option>
+                            <option value="1"  {php}echo is_numeric($filter['is_delete']) && $filter['is_delete'] ? 'selected' : ''; {/php} >已删</option>
                            </select>
                         </div>
                     </div>
@@ -75,8 +83,12 @@
                         <div class="info-bar">
                           <span class="info-item price"> 价格：<b >{$vo.price}</b></span>
                           <!-- <span class="info-item original_price"> 原价：<b >{$vo.original_price}</b></span> -->
-                          <span class="info-item  status">状态：<b><?php echo isset($status_list[$vo['status']]) ? $status_list[$vo['status']] : $vo['status'] ;?>  </b></span>
+                          <span class="info-item  status">
+                            状态：<b><?php echo isset($status_list[$vo['status']]) ? $status_list[$vo['status']] : $vo['status'] ;?>  </b>
+                              <?php echo $vo['is_delete'] ? '/已删' : '' ;?>
+                          </span>
                           <span class="info-item  show_level">审：<b><?php echo isset($showLevel_list[$vo['show_level']]) && $showLevel_list[$vo['show_level']] <1 ? $showLevel_list[$vo['show_level']] : $vo['status'] ;?>  </b></span>
+
                         </div>
                         <div class="btns-wrapper">
                           <!-- <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"  data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}" class="ibtn layui-btn    layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a> -->
@@ -97,21 +109,28 @@
       <div class="am-bottom-tool-bar-inner " lay-filter="form-bottom-tool">
         <div class="form-wrapper layui-form">
           <div class="layui-input-inline">
-            <input type="checkbox" name="checkall" lay-filter="checkall" title="全选：" lay-skin="primary" >
+            <input type="checkbox" name="checkall" lay-filter="checkall" title="全选" lay-skin="primary" >
             <span> 已选： <b class="j-hasCheck ">0</b></span>
           </div>
         </div>
         <div class="btns-wrapper">
-          <div class="btn-drop">
-            <button type="button" class="layui-btn" >审</button>
-            <ul class="drop-box">
-              <?php foreach($showLevel_list as $key => $value){
-                if($key < 0 || $key > 0){
-                  echo '<li class="" data-value = "'.$key.'"><a href="javascript:void(0);" onclick="PAGE_EXEC.audit(\''.$key.'\')">'.$value.'</a></li>';
-                }
-              } ?>
+            <div class="btn-drop">
+              <button type="button" class="layui-btn layui-btn-success" >审</button>
+              <ul class="drop-box">
+                <?php foreach($showLevel_list as $key => $value){
+                  if($key < 0 || $key > 0){
+                    echo '<li class="" data-value = "'.$key.'"><a href="javascript:void(0);" onclick="PAGE_EXEC.audit(\''.$key.'\')">'.$value.'</a></li>';
+                  }
+                } ?>
             </div>
-          </div>
+            <div class="btn-drop" style="margin-left:4px;">
+              <button type="button" class="layui-btn layui-btn-normal" >改变状态</button>
+              <ul class="drop-box">
+                <?php foreach($status_list as $key => $value){
+                    echo '<li class="" data-value = "'.$key.'"><a href="javascript:void(0);" onclick="PAGE_EXEC.status(\''.$key.'\')">'.$value.'</a></li>';
+                } ?>
+            </div>
+
         </div>
       </div>
     </div>
@@ -193,10 +212,37 @@ PAGE_EXEC = {
 
   },
 
+  changeSubmit:function(setting){
+    var loading = layer.load(2,{ shade: [0.2,'#fff']});
+    $.ajax({
+      url:setting.api,
+      data:setting.data,
+      type:'post',
+      dataType:'json',
+    }).done(function(res){
+      if(res.code === 0){
+        layer.msg('成功');
+        setTimeout(function(){
+          reload();
+        },500)
+      }else{
+        layer.msg('失败，请稍候再试');
+        console.log(res);
+      }
+    }).fail(function(err){
+      layer.msg('失败，请稍候再试');
+      console.log(err);
+    }).always(function(){
+      layer.close(loading);
+    });
+    return false;
+  },
 
-
-
-  audit(show_level){
+  changeSelect:function(setting){
+    var _this = this;
+    var defaults = {
+      confirmMsg:"是否确定执行",
+    }
     var ids = [];
     var $toolbarWrapper = $(".am-bottom-tool-bar");
     var $listWrapper = $('.P-idle-list .idle-list');
@@ -204,40 +250,48 @@ PAGE_EXEC = {
     $items.each(function(index, el) {
       ids.push($(el).data('id'));
     });
-    var data = {
-      show_level:show_level,
-      id:ids
+    var idCount = ids.length;
+
+    var options = $.extend({}, defaults, setting);
+    if(typeof(options.data)=='undefined'){
+      options.data = {}
     }
-    var api = '{:url("audit")}';
-    if(ids.length < 1){
+    options.data.id = ids;
+
+    if(idCount < 1){
       layer.msg('请选选择要操作的数据');
       return false;
     }
-
-    var loading = layer.load(2,{ shade: [0.2,'#fff']});
-    $.ajax({
-      url:api,
-      data:data,
-      type:'post',
-      dataType:'json',
-    }).done(function(res){
-      if(res.code === 0){
-        layer.msg('审核成功');
-        setTimeout(function(){
-          reload();
-        },500)
-      }else{
-        layer.msg('审核失败，请稍候再试');
-        console.log(res);
-      }
-    }).fail(function(err){
-      layer.msg('审核失败，请稍候再试');
-      console.log(err);
-    }).always(function(){
-      layer.close(loading);
-    });
+    layer.confirm('已选'+idCount+'条数据，'+options.confirmMsg, {
+            btn: ['确定', '取消']
+        }, function (index, layero) {
+          return _this.changeSubmit(options)
+        }
+     );
     return false;
 
+  },
+
+  audit: function(show_level){
+    var setting = {
+      data : {
+        show_level:show_level,
+      },
+      api: '{:url("audit")}'
+    }
+    this.changeSelect(setting);
+    return false;
+  },
+
+  status: function(status){
+    var setting = {
+      data : {
+        status:status,
+      },
+      api: '{:url("status")}'
+    }
+    this.changeSelect(setting);
+    return false;
   },
 
   recache :function(){

@@ -23,13 +23,18 @@ class ContentIdle extends AdminBase
 
     public function index($filter=NULL,$pagesize=24){
 
-      $fields = "t.id,t.user_id,t.title,t.desc,t.images,t.location,t.price,t.status,t.is_seller,t.post_time,t.original_price,t.show_level,u.name,u.phone,u.loginname";
+      $fields = "t.id,t.user_id,t.title,t.desc,t.images,t.location,t.price,t.status,t.is_seller,t.post_time,t.is_delete,t.original_price,t.show_level,u.name,u.phone,u.loginname";
       $map = [
-        ["t.is_delete","<>",1],
+        // ["t.is_delete","<>",1],
         // ["u.loginname","exp",Db::raw("IS NOT NULL")],
         // ["show_level",">",0],
       ];
 
+      if(isset($filter['is_delete']) && $filter['is_delete']){
+        $map[] = ["t.is_delete","=",1];
+      }else{
+        $map[] = ["t.is_delete","<>",1];
+      }
       if(isset($filter['keyword']) && $filter['keyword']){
         $map[] = ['t.title|t.desc','like','%'.$filter['keyword'].'%'];
       }
@@ -99,7 +104,7 @@ class ContentIdle extends AdminBase
       $orderby = "t.status DESC, post_time DESC";
       $datas = IdleModel::alias('t')->field($fields)->json(['images'])->where($map)->join($join)->find();
       if(!$datas || $datas['is_delete'] == 1){
-        $this->jsonReturn(20002,[],'No Data');
+        // $this->jsonReturn(20002,[],'No Data');
       }
       $datas['images'] = json_decode(json_encode($datas['images']),true);
       $imagesList = [];
@@ -134,6 +139,28 @@ class ContentIdle extends AdminBase
       }
       $data = [
         'show_level'=>$show_level,
+      ];
+      $map = [];
+      $map[] = is_array($id) ? ['id','in',$id] : ['id','=',$id];
+      $res = IdleModel::where($map)->update($data);
+      if($res === false){
+        $this->jsonReturn(-1,'提交失败');
+      }
+      $this->jsonReturn(0,'成功');
+    }
+
+
+    /**
+     * 修改状态
+     * @param  integer $id [description]
+     */
+    public function status($id = NULL){
+      $status          = $this->request->post('status');
+      if(!$id || !is_numeric($status)){
+        $this->jsonReturn(-1,'参数错误');
+      }
+      $data = [
+        'status'=>$status,
       ];
       $map = [];
       $map[] = is_array($id) ? ['id','in',$id] : ['id','=',$id];
