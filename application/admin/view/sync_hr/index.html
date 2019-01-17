@@ -15,7 +15,7 @@
             </li>
             <li class="btn-item btn-item-right">
 
-              <input type="text" name="date" value="{:date('Y-m-d')}" placeholder="{:date('Y-m-d')}" class="layui-input layui-input-sm"   >
+              <input type="text" name="date" value="<?php echo $lastTime ? date('Y-m-d',$lastTime) : date('Y-m-d'); ?>" placeholder="{:date('Y-m-d')}" class="layui-input layui-input-sm"   >
               <a class="layui-btn layui-btn-sm   layui-btn-primary" href="javascript:void(0);" onclick="PAGE_EXEC.download_from_hr()"  ><i class="fa fa-cloud-download"></i> 执行拉取</a>
             </li>
 
@@ -50,9 +50,9 @@
               <span style="font-size:12px; float:right">Last: {$lastTime|date="Y-m-d H:i:s"}</span>
           </form>
           <hr />
+          <blockquote class="layui-elem-quote">共检得 <b>{$lists->total()}</b> 条数据</blockquote>
+           <hr>
 
-
-            <hr>
             <table class="layui-table">
                 <thead>
                 <tr>
