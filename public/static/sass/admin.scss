@@ -65,6 +65,10 @@ body {background:#FFF; color:$color-black-l1}
   .layui-layer-content {margin:0 auto}
 }
 
+.layui-form-pane {
+  .layui-form-label ,.layui-input-inline, .layui-inline .layui-btn { margin:2px 0;}
+}
+
 .aframe  {
   .header{
     background-color: $color-black; width:100%;   height:$height-header;   display: flex; display: -webkit-flex;
@@ -126,7 +130,9 @@ body {background:#FFF; color:$color-black-l1}
       }
     }
   }
-  .layui-tab-content > .layui-tab-item{   position: absolute; top: 41px; left: 0; right: 0; bottom: 0;   overflow: hidden; transition: all 0.3s;z-index: 2;}
+  .layui-tab-content > .layui-tab-item{
+    $top:  41px;
+    position: absolute; top: $top; left: 0; right: 0; bottom: $height-header - $top - 3;   overflow: hidden; transition: all 0.3s;z-index: 2;}
   iframe{ background:#fff url(../images/loading-2.gif) center  no-repeat; display: block;   width:100%; height:100%; border:0;}
 }
 
@@ -260,15 +266,21 @@ body {background:#FFF; color:$color-black-l1}
 
 /*** 底部工具按钮栏 ****/
 .am-bottom-tool-bar {
-  $height:48px;
+  $height:40px;
   $inner-padding:4px;
-  position: fixed; bottom: 0; left: 0; right: 0; min-height: $height + $inner-padding*4; background: rgba($color-dark-white,.9); border-top:1px solid $color-border;
+  $bg-color:rgba($color-dark-white,.95);
+  position: fixed; bottom: 0; left: 0; right: 0; min-height: $height ;
+  background:$bg-color; border-top:1px solid darken($bg-color,20%);
+  box-shadow: 0 -4px 8px rgba(0,0,0,.1);
   &-inner {
-    display: flex; padding: $inner-padding 10px;
+    display: flex; justify-content: space-between;padding: $inner-padding 10px;
   }
-  .btns-wrapper { margin-left: 10px;}
+
+  .btns-wrapper { margin-left: 10px; text-align: right;  }
   .form-wrapper { padding: 10px;}
+  // .layui-btn {box-shadow: 0 0 8px rgba(255,255,255,.1)}
   .btn-drop {
+    display: inline-block;
     .drop-box {
       display: none;
       bottom:$height + 10px;
@@ -659,7 +671,9 @@ body {background:#FFF; color:$color-black-l1}
 }
 
 .P-idle-detail {
-  .title { font-size: 24px; margin: 12px 0 6px; line-height: 1.6}
+  .title { font-size: 24px; margin: 12px 0 16px; line-height: 1.6;
+    small { color: $color-gray}
+  }
   .text-box { padding: 4px 0 0}
   .time-bar {
     margin: -20px -15px 4px; padding: 4px 15px; background: $color-primary; color:#FFF;
