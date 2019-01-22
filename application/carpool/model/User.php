@@ -65,6 +65,10 @@ class User extends Model
        $inputUserData['nativename'] = $data['name'];
      }
 
+     if(isset($data['department_format']) && $data['department_format']){
+       $inputUserData['Department'] = $data['department_format'];
+     }
+
      //查找用户旧数据
      $oldData = $this->where("loginname",$data['code'])->find();
      if(!$oldData){ // 不存在用户则添加一个
