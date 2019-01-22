@@ -1,8 +1,8 @@
 <?php
 namespace app\admin\controller;
 
-use app\common\model\Apps as AppsModel;
 use app\admin\controller\AdminBase;
+use app\common\model\Apps as AppsModel;
 use think\Db;
 
 /**
