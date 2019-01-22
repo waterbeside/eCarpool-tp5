@@ -414,6 +414,23 @@ function admin_init(){
     $('.drop-box').removeClass('show')
   });
 
+  /**
+   * jump-select
+   */
+  $(document).on('change','select.select-jump', function(e) {
+      var e=e||event;
+      var $target = $(e.target);
+      var href = $target.find('option:selected').attr('href');
+      if(href){
+        layer.load(2,{ shade: [0.2,'#fff']});
+        location.href = href;
+      }else{
+        return false;
+      }
+  });
+
+
+
 
 }
 
