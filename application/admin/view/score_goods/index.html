@@ -6,18 +6,24 @@
     <div class="layui-tab layui-tab-brief">
 
         <ul class="  amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/ScoreGoods/index')}"  >产品管理</a></li>
+            <li class="layui-this"><a href="{:url('admin/ScoreGoods/index',['rule_number'=>$rule_number])}"  >产品管理</a></li>
             <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ScoreGoods/add')}"  data-title="添加商品"  data-trigger="modal" >
+              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ScoreGoods/add',['rule_number'=>$rule_number])}"  data-title="添加商品"  data-trigger="modal" >
               <i class="fa fa-plus"></i> 添加商品</a>
             </li>
-
+            <li class="btn-item btn-item-right ">
+              <select name="rule_number" class="select-jump my-select"     >
+                {foreach name="$rule_number_lists" key="key" item="vo"}
+                <option value="{$key}" {php} echo isset($rule_number) && is_numeric($rule_number) && $rule_number == $key ? 'selected' : ''; {/php} href="{:url('index',['rule_number'=>$key])}">{$vo.title} </option>
+                {/foreach}
+              </select>
+            </li>
         </ul>
 
         <div class="layui-tab-content dark-grey-wrapper ">
 
 
-                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreGoods/index')}" method="get">
+                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreGoods/index',['rule_number'=>$rule_number])}" method="get">
                     <div class="layui-inline">
                         <label class="layui-form-label">检索</label>
                         <div class="layui-input-inline">

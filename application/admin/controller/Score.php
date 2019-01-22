@@ -168,19 +168,26 @@ class Score extends AdminBase
 
       $configs = $this->systemConfig;
       $redis = new RedisData();
-      $soreSettingData=json_decode($redis->get("CONFIG_SETTING"),true);
+      $rule_number =  $this->request->param('rule_number',0);
+      $cacheKey = "CONFIG_SETTING:".$rule_number;
+
+      $soreSettingData=json_decode($redis->get($cacheKey),true);
       // dump($soreSettingData);
       if ($this->request->isPost()){
         $datas          = $this->request->post('');
         $order_date     = explode(',',$datas['order_date']);
         $exchange_date  = explode(',',$datas['exchange_date']);
+        $rule_number =  isset($datas['rule_number']) ? $datas['rule_number'] : false;
+        if(!is_numeric($rule_number)){
+          $this->error("请选择地区");
+        }
+
         $data['order_date'] = $order_date;
         $data['exchange_date'] = $exchange_date;
         $soreSettingData['order_date'] = [];
         $soreSettingData['exchange_date'] = [];
 
         foreach ($order_date as $key => $value) {
-
           if(is_numeric($value)){
             $soreSettingData['order_date'][]= intval($value);
           }
@@ -201,7 +208,7 @@ class Score extends AdminBase
         $soreSettingData['lottery_integral_price']    = $datas['lottery_integral_price'];
 
         $soreSettingDataStr = json_encode($soreSettingData);
-        $redis->set('CONFIG_SETTING', $soreSettingDataStr);
+        $redis->set($cacheKey, $soreSettingDataStr);
         $this->log('修改积分配置成功',0);
         $this->success("修改成功");
 
@@ -216,8 +223,13 @@ class Score extends AdminBase
         $data['lottery_material_switch']  =  isset($data['lottery_material_switch'])  ? $data['lottery_material_switch'] : 0  ;
         $data['lottery_integral_price']   =  isset($data['lottery_integral_price'])   ? $data['lottery_integral_price']  : 0  ;*/
 
-
-        return $this->fetch('config',['configs'=>$configs,'data'=>$data]);
+        $returnData = [
+          'rule_number' => $rule_number,
+          'rule_number_lists'=> config("score.rule_number"),
+          'configs'=>$configs,
+          'data'=>$data
+        ];
+        return $this->fetch('config',$returnData);
 
       }
 

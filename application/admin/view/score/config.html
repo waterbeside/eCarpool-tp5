@@ -5,10 +5,17 @@
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
 
-        <ul class="layui-tab-title amain-tool-bar" >
+        <ul class=" amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/Score/config')}"  >积分配置</a></li>
             <li ><a href="{:url('admin/Score/doc',['cate'=>'score'])}"  >积分文档</a></li>
             <li ><a href="{:url('admin/Score/doc',['cate'=>'lottery'])}"  >抽奖文档</a></li>
+            <li class="btn-item btn-item-right">
+              <select name="rule_number" class="select-jump my-select"   >
+                {foreach name="rule_number_lists" key="key" item="vo"}
+                <option value="{$key}" {php} echo isset($rule_number) && is_numeric($rule_number) && $rule_number == $key ? 'selected' : ''; {/php} href="{:url('config',['rule_number'=>$key])}">{$vo.title} </option>
+                {/foreach}
+              </select>
+            </li>
         </ul>
 
         <div class="layui-tab-content">

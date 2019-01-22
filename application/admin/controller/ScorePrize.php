@@ -19,9 +19,10 @@ class ScorePrize extends AdminBase
    * 抽奖列表
    * @return mixed
    */
-  public function index($keyword="",$filter=['status'=>'0,1,2','is_hidden'=>''],$page = 1,$pagesize = 20)
+  public function index($keyword="",$filter=['status'=>'0,1,2','is_hidden'=>''],$page = 1,$pagesize = 20, $rule_number= 0)
   {
     $map = [];
+
     $status = input("param.status");
     if($status!==null){
       $filter['status'] = $status;
@@ -32,12 +33,14 @@ class ScorePrize extends AdminBase
     }else{
       if(strpos($filter['status'],',')>0){
         $map[] = ['status','in', $filter['status']];
-
       }
     }
     if(  is_numeric($filter['is_hidden']) && $filter['is_hidden']!==0){
       $is_delete = $filter['is_hidden'] ? 1 : 0 ;
       $map[] = ['is_delete','=', $filter['is_hidden']] ;
+    }
+    if (is_numeric($rule_number)) {
+        $map[] = ['rule_number','=', $rule_number];
     }
     if ($keyword) {
         $map[] = ['name|desc','like', "%{$keyword}%"];
@@ -55,6 +58,8 @@ class ScorePrize extends AdminBase
     $auth['admin/ScorePrize/add'] = $this->checkActionAuth('admin/ScorePrize/add');
     $returnData =  [
       'lists' => $lists,
+      'rule_number' => $rule_number,
+      'rule_number_lists' => config("score.rule_number"),
       'keyword' => $keyword,
       'pagesize'=>$pagesize,
       'statusList'=>$statusList,
@@ -106,6 +111,7 @@ class ScorePrize extends AdminBase
         'status' =>  in_array($data['status'],[-1,0,1,2]) ? $data['status'] : -1 ,
         'is_delete'=> 0,
 
+        'rule_number' => $data['rule_number'],
         'update_time' => date('Y-m-d H:i:s'),
       ];
       if($data['thumb'] && trim($data['thumb'])){
@@ -126,6 +132,7 @@ class ScorePrize extends AdminBase
           return $this->jsonReturn(-1,'添加失败');
       }
     }else{
+      $rule_number =  $this->request->param('rule_number');
       $prize_status = config('score.prize_status');
       $id           = $this->request->param('id/d',0);
       $data = [];
@@ -137,7 +144,7 @@ class ScorePrize extends AdminBase
         $data['publication_number'] = $maxData['max(publication_number)'] ? $maxData['max(publication_number)'] + 1 : 1 ;
         // $data['publication_number'] = (PrizeModel::where('identity',$data['identity'])->max('publication_number')) + 1  ;
       }
-      return $this->fetch('add', ['data'=>$data,'id'=>$id,'prize_status' => $prize_status]);
+      return $this->fetch('add', ['data'=>$data,'id'=>$id,'prize_status' => $prize_status,'rule_number'=>$rule_number]);
 
     }
   }

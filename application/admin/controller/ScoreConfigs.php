@@ -27,10 +27,17 @@ class ScoreConfigs extends AdminBase
       $value = $this->request->post('value');
       $value_array = json_decode($value,true);
 
+      $rule_number = $this->request->post('rule_number');
       $data_used  = [];
       $data_used_count = 0;
       $data_used_keys = [];
       $total_rate = 0;
+
+      if(!is_numeric($rule_number) ){
+        $this->error("请选择地区");
+      }
+
+
 
       foreach ($value_array as $key => $v) {
         $v['rate'] = strval($v['rate']);
@@ -77,10 +84,14 @@ class ScoreConfigs extends AdminBase
 
 
       // $value = json_encode();
-      $res = ScoreConfigsModel::where('name','awards')->setField('value', $value);
+      $map = [
+        ['name','=','awards'],
+        ['rule_number','=',$rule_number],
+      ];
+      $res = ScoreConfigsModel::where($map)->setField('value', $value);
       if($res!==false){
         $redis = new RedisData();
-        $redis->delete("score:configs:awards");
+        $redis->delete("score:configs:awards:".$rule_number);
         // $redis->set("score:configs:awards",$value_public); 不由后台生成
         $this->log('更新转盘抽奖奖项成功',0);
         $this->success("更新成功");
@@ -91,7 +102,12 @@ class ScoreConfigs extends AdminBase
 
 
     }else{
-      $res = ScoreConfigsModel::where('name','awards')->column('value');
+      $rule_number = $this->request->param('rule_number',0);
+      $map = [
+        ['name','=','awards'],
+        ['rule_number','=',$rule_number],
+      ];
+      $res = ScoreConfigsModel::where($map)->column('value');
       $lists = [];
       if($res){
         $lists = json_decode($res[0],true);
@@ -104,6 +120,8 @@ class ScoreConfigs extends AdminBase
 
       $returnData =  [
         'lists' => $lists,
+        'rule_number' => $rule_number,
+        'rule_number_lists'=> config("score.rule_number")
       ];
 
       return $this->fetch('awards',$returnData);
