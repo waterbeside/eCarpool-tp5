@@ -14,6 +14,22 @@ $height-header:60px;
 .dark-grey-wrapper {background: darken($color-dark-white,2%)}
 .text-green { color: $color-green}
 
+
+select.my-select {
+   $height:38px;
+   height: $height;
+   // line-height: $height;
+   border-radius: 3px;
+   border-color: $color-border;
+   vertical-align: middle;
+   text-transform: none;
+   word-wrap: normal;
+   -webkit-appearance: none;
+   padding:0 24px 0 8px;
+   background-image: url('../images/caret-down.gif');
+   background-position: right 8px center;
+   background-repeat: no-repeat;
+}
 //重置layui相关样式
 .layui {
   &-input:disabled { background: #f0f0f0; color:#888}
@@ -259,6 +275,7 @@ body {background:#FFF; color:$color-black-l1}
       &-add { float:right}
       &-right { float:right; padding-left: 10px; min-width: 40px;
         input {display: inline; max-width: 120px;vertical-align: middle; }
+        select { height: 30px; line-height: 30px;}
       }
     }
   }
@@ -276,7 +293,7 @@ body {background:#FFF; color:$color-black-l1}
     display: flex; justify-content: space-between;padding: $inner-padding 10px;
   }
 
-  .btns-wrapper { margin-left: 10px; text-align: right;  }
+
   .form-wrapper { padding: 10px;}
   // .layui-btn {box-shadow: 0 0 8px rgba(255,255,255,.1)}
   .btn-drop {
@@ -287,7 +304,12 @@ body {background:#FFF; color:$color-black-l1}
     }
     &.show {
       display: block;
-
+    }
+  }
+  .btns-wrapper {
+    margin-left: 10px; text-align: right;
+    .btn-drop {
+      .drop-box {right: 0; text-align: left;}
     }
   }
 
