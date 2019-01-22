@@ -36,4 +36,17 @@ class Apps extends Model
     }
   }
 
+  /**
+   * get list
+   */
+  public function getList(){
+    $cacheKey = "carpool_management:apps";
+    $redis = $this->redis();
+    $lists =  json_decode($redis->get($cacheKey),true);
+    if(!$lists){
+      $lists = $this->order('sort DESC')->select();
+    }
+    return $lists;
+  }
+
 }
