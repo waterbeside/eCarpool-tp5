@@ -36,6 +36,8 @@ Route::group([], function () {
   Route::rule('api/:version/sync_hr/single','api/:version.sync_hr/single','GET');
   Route::rule('api/:version/sync_hr/to_primary','api/:version.sync_hr/to_primary','GET');
   Route::rule('api/:version/sync_hr/all','api/:version.sync_hr/all','GET');
+  Route::rule('api/:version/sync_hr/department','api/:version.sync_hr/create_department','POST');
+  Route::rule('api/:version/sync_hr/department/:id','api/:version.sync_hr/department','GET');
 
   //行程相关
   Route::rule('api/:version/trips/:from/:id/user/:uid/position','api/:version.trips/user_position','GET');//行程的用户位置

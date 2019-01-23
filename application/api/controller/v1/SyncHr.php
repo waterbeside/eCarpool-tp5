@@ -181,7 +181,51 @@ class SyncHr extends ApiBase
     }
 
 
+    /**
+     * 创建部门 并返回部门 id
+     */
+    public function create_department(){
+       $this->check_localhost(1);
+       $fullname  = input('post.fullname');
+       if(!$fullname){
+         $this->jsonReturn(992,'Param:fullname error');
+       }
+       // $sep       = input('post.sep',',');
+       // if(!in_array($sep,['/',','])){
+       //   $this->jsonReturn(992,'Param:ep error');
+       // }
+       $fullname = str_replace(',','/',$fullname);
 
+       $DepartmentModel = new Department();
+
+       $res = $DepartmentModel->create_department_by_str($fullname);
+       if(!$res){
+         $this->jsonReturn(-1,'fail');
+       }
+       $res['format_name'] = $DepartmentModel->formatFullName($res['fullname'],1);
+       $returnData = $res;
+       $this->jsonReturn(0,$returnData,'success');
+    }
+
+
+    /**
+     * 取得部门
+     */
+    public function department($id,$uncache=0){
+       $this->check_localhost(1);
+       $DepartmentModel = new Department();
+       $department = $DepartmentModel->itemCache($id);
+       if(!$department || $uncache){
+         $department =  $DepartmentModel->find($id);
+         if(!$department){
+           $this->jsonReturn(20002,Lang('No data'));
+         }
+         $department = $department->toArray();
+         $DepartmentModel->itemCache($id,$department,3600*24);
+       }
+       $department['department_format'] = $DepartmentModel->formatFullName($department['fullname']);
+       $this->jsonReturn(0,$department,'success');
+    }
 
 
 
