@@ -6,7 +6,7 @@
     <div class="layui-tab layui-tab-brief">
 
         <ul class=" amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/Score/config')}"  >积分配置</a></li>
+            <li class="layui-this"><a href="{:url('admin/Score/config',['rule_number'=>$rule_number])}"  >积分配置</a></li>
             <li ><a href="{:url('admin/Score/doc',['cate'=>'score'])}"  >积分文档</a></li>
             <li ><a href="{:url('admin/Score/doc',['cate'=>'lottery'])}"  >抽奖文档</a></li>
             <li class="btn-item btn-item-right">
@@ -22,7 +22,8 @@
 
           <div class="blank20"></div>
 
-          <form class="layui-form form-container" action="{:url('admin/Score/config')}" method="post">
+          <form class="layui-form form-container" action="{:url('admin/Score/config',['rule_number'=>$rule_number])}" method="post">
+            <input type="hidden" name="rule_number" value="{$rule_number}" />
             <table class="layui-table">
               <tbody>
                 <tr>
