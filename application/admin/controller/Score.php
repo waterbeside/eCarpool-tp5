@@ -183,18 +183,26 @@ class Score extends AdminBase
         }
 
         $data['order_date'] = $order_date;
-        $data['exchange_date'] = $exchange_date;
-        $soreSettingData['order_date'] = [];
-        $soreSettingData['exchange_date'] = [];
-
-        foreach ($order_date as $key => $value) {
-          if(is_numeric($value)){
-            $soreSettingData['order_date'][]= intval($value);
+        if($datas['order_date'] == "*"){
+          $soreSettingData['order_date'] = "*";
+        }else{
+          $soreSettingData['order_date'] = [];
+          foreach ($order_date as $key => $value) {
+            if(is_numeric($value)){
+              $soreSettingData['order_date'][]= intval($value);
+            }
           }
         }
-        foreach ($exchange_date as $key => $value) {
-          if(is_numeric($value)){
-            $soreSettingData['exchange_date'][]=intval($value);
+
+        $data['exchange_date'] = $exchange_date;
+        if($datas['exchange_date'] == "*"){
+          $soreSettingData['exchange_date'] = "*";
+        }else{
+          $soreSettingData['exchange_date'] = [];
+          foreach ($exchange_date as $key => $value) {
+            if(is_numeric($value)){
+              $soreSettingData['exchange_date'][]=intval($value);
+            }
           }
         }
 
