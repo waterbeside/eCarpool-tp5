@@ -2,6 +2,7 @@
 namespace app\user\model;
 
 use think\Model;
+use my\RedisData;
 
 class Department extends Model
 {
@@ -14,6 +15,8 @@ class Department extends Model
    protected $connection = 'database_carpool';
    protected $pk = 'id';
 
+
+   protected $redisObj ;
 
 
    /**
@@ -49,6 +52,7 @@ class Department extends Model
           'path'=>'0',
           'fullname'=> $value,
           'integral_number'=> $integral_number,
+          'deep'=> $key,
         ];
         $data_p = [];
         if($key > 0){
@@ -100,19 +104,21 @@ class Department extends Model
      $path_list = explode(',',$fullName);
      $departmentName_per = isset($path_list[3]) ?  $path_list[3] : "";
      $departmentName = isset($path_list[4]) ?  $path_list[4] : "";
+     $region = isset($path_list[1]) ?  $path_list[1] : "";
 
      $returnData = [
+       'region' => $region ,
        'branch' => $departmentName_per ,
        'department' => $departmentName,
        // 'formatName' => $departmentName,
-       'fullName' => $fullName,
+       // 'fullname' => $fullName,
      ];
      if($type == 1){
        return $returnData['branch'].','.$returnData['department'];
      }
 
      if(preg_match('/[\x{4e00}-\x{9fa5}]/u', $departmentName)>0){
-       $returnData['formatName'] = $departmentName;
+       $returnData['short_name'] = $departmentName;
        return $returnData;
      }
 
@@ -137,15 +143,48 @@ class Department extends Model
        }
 
      }
-     $returnData['formatName'] = $newName;
+     $returnData['short_name'] = $newName;
 
      if($type == 2){
-       return $returnData['branch'].','.$returnData['formatName'];
+       return $returnData['branch'].','.$returnData['short_name'];
      }
      return $returnData;
 
+   }
 
 
+   /**
+    * 创建redis对像
+    * @return redis
+    */
+   public function redis(){
+     if(!$this->redisObj){
+         $this->redisObj = new RedisData();
+     }
+     return $this->redisObj;
+   }
+   /**
+    * 处理cache
+    */
+   public function itemCache($id,$value = false,$ex = 3600*24){
+     $cacheKey = "carpool:department:".$id;
+     $redis = $this->redis();
+     if($value === null){
+       return $redis->delete($cacheKey);
+     }else if($value){
+       if(is_array($value)){
+         $value = json_encode($value);
+       }
+       if($ex > 0){
+         return $redis->setex($cacheKey,$ex,$value);
+       }else{
+         return $redis->set($cacheKey,$value);
+       }
+     }else{
+       $str =  $redis->get($cacheKey);
+       $redData = $str ? json_decode($str,true) : false;
+       return $redData;
+     }
    }
 
 
