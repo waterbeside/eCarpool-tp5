@@ -20,6 +20,12 @@
                   <div class="layui-input-inline">
                       <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:130px" >
                   </div>
+                  <div class="my-input-prebox" style="width:64px">
+                    <select name="filter[is_hr]"  >
+                      <option value="1" {php}echo isset($filter['is_hr']) &&  $filter['is_hr'] ? 'selected' : ''; {/php}>HR</option>
+                      <option value="0" {php}echo isset($filter['is_hr']) &&  $filter['is_hr'] == 0 ? 'selected' : ''; {/php}>旧</option>
+                    </select>
+                  </div>
                   <div class="layui-input-inline">
                       <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
                   </div>

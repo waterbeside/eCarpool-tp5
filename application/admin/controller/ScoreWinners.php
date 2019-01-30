@@ -7,6 +7,7 @@ use app\admin\controller\AdminBase;
 use app\common\model\Configs;
 use app\carpool\model\User as CarpoolUserModel;
 use app\carpool\model\Company as CompanyModel;
+use app\user\model\Department as DepartmentModel;
 use app\score\model\Account as ScoreAccountModel;
 use app\score\model\Winners as WinnersModel;
 use app\score\model\Prize as PrizeModel;
@@ -42,7 +43,8 @@ class ScoreWinners extends AdminBase
     }
     //筛选部门
     if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
-      $map[] = ['u.Department|u.companyname','like', "%{$filter['keyword_dept']}%"];
+      // $map[] = ['u.Department|u.companyname','like', "%{$filter['keyword_dept']}%"];
+      $map[] = ['d.fullname','like', "%{$filter['keyword_dept']}%"];
     }
 
     if (isset($filter['is_exchange']) && $filter['is_exchange'] === '1' ){
@@ -52,7 +54,7 @@ class ScoreWinners extends AdminBase
     if (isset($filter['is_exchange']) && $filter['is_exchange'] === '0' ){
       $map[] = ['t.exchange_time', "NULL",""];
     }
-    
+
     //筛选时间
     if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
       $time_s = date("Y-m-01");
@@ -70,12 +72,14 @@ class ScoreWinners extends AdminBase
       ,lo.uuid as lottery_uuid
       ,ac.id as account_id , ac.carpool_account, ac.balance
       ,u.name as user_name , u.phone as user_phone , u.company_id ,u.loginname, u.Department, u.sex , u.companyname
+      , d.fullname as full_department
     ';
     $join = [
       ['prize pr', 'pr.identity = t.prize_identity and pr.publication_number = t.publication_number','left'],
       ['lottery lo', 'lo.id = t.lottery_id','left'],
       ['account ac','ac.id = lo.account_id','left'],
       ['carpool.user u','u.loginname = ac.carpool_account','left'],
+      ['carpool.t_department d','u.department_id = d.id','left'],
     ];
     // $lists = WinnersModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC')->paginate($pagesize, false,  ['query'=>request()->param()]);
 
@@ -90,8 +94,11 @@ class ScoreWinners extends AdminBase
             // ->fetchSql()->select();
             ->paginate($pagesize, false,  ['query'=>request()->param()]);
 
+    $DepartmentModel = new DepartmentModel();
     foreach ($lists as $key => $value) {
       $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
+      $lists[$key]['Department'] = $value['full_department'] ? $DepartmentModel->formatFullName($value['full_department'],1) : $value['Department']  ;
+
     }
     $companyLists = (new CompanyModel())->getCompanys();
     $companys = [];
@@ -136,8 +143,11 @@ class ScoreWinners extends AdminBase
       $this->error("数据不存在");
     }else{
       $data['thumb'] = is_array($data["images"]) ? $data["images"][0] : "" ;
-
-      $data['userInfo'] = CarpoolUserModel::where(['loginname'=>$data['carpool_account']])->find();
+      $data['userInfo'] = CarpoolUserModel::alias('t')
+                          ->field('t.*, d.fullname as full_department')
+                          ->join([['t_department d','t.department_id = d.id','left']])
+                          ->where(['loginname'=>$data['carpool_account']])
+                          ->find();
       if($data['userInfo']){
         $data['userInfo']['avatar'] = $data['userInfo']['imgpath'] ? config('secret.avatarBasePath').$data['userInfo']['imgpath'] : config('secret.avatarBasePath')."im/default.png";
       }

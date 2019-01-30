@@ -54,11 +54,16 @@ class CarpoolTrips extends AdminBase
 
     //筛选部门
     if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
-      $keyword_dept_str = $type == 1 ? 'dd.fullname|d.companyname|' : 'dd.fullname|d.companyname|pd.fullname|p.companyname';
+      //筛选状态
+      if(isset($filter['is_hr']) && $filter['is_hr'] == 0){
+        $keyword_dept_str = $type == 1 ? 'd.companyname|d.Department' : 'd.companyname|d.Department|p.companyname|p.Department';
+      }else{
+        $keyword_dept_str = $type == 1 ? 'dd.fullname' : 'dd.fullname|pd.fullname';
+      }
       $map[] = [$keyword_dept_str,'like', "%{$filter['keyword_dept']}%"];
     }
 
-    //筛选部门
+    //筛选地址
     if (isset($filter['keyword_address']) && $filter['keyword_address'] ){
       $map[] = ['s.addressname|e.addressname','like', "%{$filter['keyword_address']}%"];
     }
