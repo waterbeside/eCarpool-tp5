@@ -64,7 +64,8 @@
         </tr>
         <tr>
           <td class="label">部门</td>
-          <td>{$data.userInfo.Department}</td>
+          <!-- <td>{$data.userInfo.Department}</td> -->
+          <td>{$data.userInfo.department_id ? $data.userInfo.full_department|str_replace=","," / ",### : $data.userInfo.Department}</td>
         </tr>
       </tbody>
     </table>
