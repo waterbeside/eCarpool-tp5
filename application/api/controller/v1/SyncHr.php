@@ -214,16 +214,16 @@ class SyncHr extends ApiBase
     public function department($id,$uncache=0){
        $this->check_localhost(1);
        $DepartmentModel = new Department();
-       $department = $DepartmentModel->itemCache($id);
-       if(!$department || $uncache){
-         $department =  $DepartmentModel->find($id);
-         if(!$department){
-           $this->jsonReturn(20002,Lang('No data'));
-         }
-         $department = $department->toArray();
-         $DepartmentModel->itemCache($id,$department,3600*24);
+       if($uncache){
+         $department = $DepartmentModel->getItem($id,0);
+       }else{
+         $department = $DepartmentModel->getItem($id);
        }
-       $department['department_format'] = $DepartmentModel->formatFullName($department['fullname']);
+
+       if(!$department){
+         $this->jsonReturn(20002,Lang('No data'));
+       }
+
        $this->jsonReturn(0,$department,'success');
     }
 

@@ -3,21 +3,21 @@
 <div class="amain-body">
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
-        <ul class="amain-tool-bar" >
+        <ul class="amain-tool-bar" ondblclick="PAGE_EXEC.showHideBtn()">
             <li class="layui-this"><a href="{:url('index')}"  >SYNC HR</a></li>
 
-
-            <li class="btn-item btn-item-right">
-              <a class="layui-btn layui-btn-sm  layui-btn-primary" href="javascript:void(0);"  onclick="PAGE_EXEC.create_department()"    > 生成部门数据 </a>
+            <li class="btn-item btn-item-right J-hide-btn hide" >
+              <a class="layui-btn layui-btn-sm  layui-btn-light" href="javascript:void(0);"  onclick="PAGE_EXEC.create_department()"    > 生成部门数据 </a>
+              <a class="layui-btn layui-btn-sm   layui-btn-light" href="javascript:void(0);" onclick="PAGE_EXEC.reset_department()"  > 替换Department字段</a>
             </li>
             <li class="btn-item btn-item-right">
               <a class="layui-btn layui-btn-sm   layui-btn-primary" href="javascript:void(0);" onclick="PAGE_EXEC.sync('all')"  ><i class="fa "></i> 同步到正式库</a>
             </li>
             <li class="btn-item btn-item-right">
-
               <input type="text" name="date" value="<?php echo $lastTime ? date('Y-m-d',$lastTime) : date('Y-m-d'); ?>" placeholder="{:date('Y-m-d')}" class="layui-input layui-input-sm"   >
               <a class="layui-btn layui-btn-sm   layui-btn-primary" href="javascript:void(0);" onclick="PAGE_EXEC.download_from_hr()"  ><i class="fa fa-cloud-download"></i> 执行拉取</a>
             </li>
+
 
 
         </ul>
@@ -64,7 +64,6 @@
                     <th  width="80">HR更新时间</th>
                     <th  width="80">拉取时间</th>
                     <th  width="80">同步时间</th>
-                    <th  >操作</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -92,9 +91,7 @@
                     <td>{$vo.modifty_time}</td>
                     <td>{$vo.create_time}</td>
                     <td>{$vo.sync_time}</td>
-                    <td>
-                      <!-- <a href="{:url('sync',['id'=>$vo['id']])}"  class="layui-btn   layui-btn-xs " data-title="云信账号"  data-trigger="modal" title="編輯云帐号">IM</a> -->
-                    </td>
+
                 </tr>
                 {/foreach}
                 </tbody>
@@ -178,7 +175,18 @@ var PAGE_EXEC = {
     }
     return false;
   },
-  create_department: function(){
+  showHideBtn : function(){
+    var $target = $('.J-hide-btn');
+    if($target.hasClass('hide')){
+      $target.removeClass('hide');
+    }else{
+      $target.addClass('hide');
+    }
+  },
+  reset_department:function(){
+    openLayer('{:url('admin/department/reset_user_department',['pagesize'=>20])}','重置用户Department');
+  },
+  create_department : function(){
     openLayer('{:url('admin/department/create_all_department')}',{area:['800px','90%'],title:'生成部门'} );
     return false;
   }
