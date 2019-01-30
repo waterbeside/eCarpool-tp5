@@ -1,14 +1,15 @@
 <?php
 namespace app\admin\controller;
 
-use app\carpool\model\Department as DepartmentModel_o;
 use app\user\model\Department as DepartmentModel;
 use app\user\model\UserTemp ;
-use app\carpool\model\CompanySub as CompanySubModel;
+use app\carpool\model\User ;
+
 use app\admin\controller\AdminBase;
 use think\facade\Config;
 use think\Db;
 use think\facade\Cache;
+use my\Tree;
 
 /**
  * 部门管理
@@ -17,12 +18,11 @@ use think\facade\Cache;
  */
 class Department extends AdminBase
 {
-    protected $department_model;
 
     protected function initialize()
     {
         parent::initialize();
-        $this->department_model = new DepartmentModel_o();
+
     }
 
     /**
@@ -31,145 +31,79 @@ class Department extends AdminBase
      * @param int    $page
      * @return mixed
      */
-    public function index($keyword = '', $page = 1)
+    public function index($pid=0,$filter = [], $page = 1)
     {
 
         $map = [];
-        if ($keyword) {
-            $map[] = ['d.department_name','like', "%{$keyword}%"];
+        if(is_numeric($pid) && (!isset($filter['is_all']) || !$filter['is_all'])){
+          $map[] = ['pid','=', $pid];
+        }else if(is_numeric($pid)){
+          $pid = 0;
         }
+        $deep = false;
+        if(!is_numeric($pid) && strpos($pid,'p_') === 0){
+          $deep = intval(str_replace('p_','',$pid));
+          $map[] = ['deep','=', $deep];
+        }
+        if(isset($filter['keyword']) && $filter['keyword']) {
+            $map[] = ['fullname','like', "%".$filter['keyword']."%"];
+        }
+        $fields = '*';
+        $order = 'name ';
+        $lists = DepartmentModel::where($map)->order($order)->field($fields)->paginate(50, false, ['query'=>request()->param()]);
 
-        $fields = 'd.departmentid,d.department_name,d.is_active,d.sub_company_id,d.company_id,cs.sub_company_name,cs.city_name,c.company_name,c.short_name as company_short_name';
-        $join = [
-          ['company_sub cs','d.sub_company_id=cs.sub_company_id','left'],
-          ['company c','d.company_id = c.company_id','left'],
+        //start 父级部门导航
+        $path_data = DepartmentModel::where('id',$pid)->find();
+        $path_array = $path_data ? explode(',',$path_data['path']) : [];
+        $path_array[] = $pid;
+        $fullname_array = explode(',',$path_data['fullname']);
+        $path = [];
+        foreach ($path_array as $key => $value) {
+          $path[$key]['id'] = $value;
+          $path[$key]['name'] = $key > 0 ? $fullname_array[$key-1] : "HOME";
+        }
+        //end 父级部门导航
+
+        $returnData = [
+          'lists' => $lists,
+          'filter' => $filter,
+          'pid'=>$pid,
+          'path' => $path,
+          'deep' => $deep,
+
         ];
-        $order = 'd.company_id ASC , d.department_name, d.departmentid ASC ';
-
-        $lists = $this->department_model->alias('d')->join($join)->where($map)->order($order)->field($fields)->paginate(50, false, ['query'=>request()->param()]);
-
-        return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword]);
+        return $this->fetch('index',$returnData );
     }
 
     /**
      * 用于选择列表
      */
-    public function public_lists(){
-      $scid = $this->request->get('scid/d');
-      $lists_cache = Cache::tag('public')->get('departments');
+    public function public_lists($deep=4,$pid = 0){
+      $map = [];
+      if($pid>0){
+        $map[] = ['','exp', Db::raw("FIND_IN_SET($pid,pid)")];
+        $cacheKey = 'carpool:department:pid:'.$pid;
+      }else{
+        $map[] = ['deep','=',$deep];
+        $cacheKey = 'carpool:department:deep:'.$deep;
+      }
+      $lists_cache = Cache::tag('public')->get($cacheKey);
       if($lists_cache){
         $lists = $lists_cache;
       }else{
-        $lists = $this->department_model->where('is_active',1)->order('departmentid ASC ')->select();
+        $lists = DepartmentModel::where($map)->order('fullname ASC ')->select();
         if($lists){
-          Cache::tag('public')->set('departments',$lists,3600);
+          Cache::tag('public')->set($cacheKey,$lists,3600*4);
         }
       }
-      $returnLists = [];
-      foreach($lists as $key => $value) {
-        if(!$scid || ($scid > 0 && $scid == $value['sub_company_id'])){
-          $returnLists[] = [
-            'id'=>$value['departmentid'],
-            'name'=>$value['department_name'],
-            'status'=>$value['is_active'],
-          ];
-        }
-      }
-      // return json(['data'=>['lists'=>$returnLists],'code'=>0,'desc'=>'success']);
-      $this->jsonReturn(0,['lists'=>$returnLists],'success');
-    }
-
-    /**
-     * 添加部门
-     * @return mixed
-     */
-    public function add()
-    {
-      if ($this->request->isPost()) {
-          $data     = $this->request->param();
-          // $validate_result = $this->validate($data, 'CompanySub');
-          $validate_result = $this->validate($data,'app\carpool\validate\Department');
-
-          if ($validate_result !== true) {
-              $this->jsonReturn(-1,$validate_result);
-          }
-
-          $sub_company_name = CompanySubModel::where(['sub_company_id'=>$data['sub_company_id']])->value('sub_company_name');
-          $data['sub_company_name'] = $sub_company_name ? $sub_company_name : '';
-
-          if ($this->department_model->allowField(true)->save($data)) {
-              $pk = $this->department_model->departmentid; //插入成功后取得id
-              Cache::tag('public')->rm('departments');
-              $this->log('新加部门成功，id='.$pk,0);
-              $this->jsonReturn(0,'保存成功');
-          } else {
-            $this->log('新加部门失败',-1);
-            $this->jsonReturn(-1,'保存失败');
-          }
-
-      }else{
-        return $this->fetch();
-      }
+      $this->jsonReturn(0,['lists'=>$lists],'success');
     }
 
 
 
-    /**
-     * 编辑部门
-     * @param $id
-     * @return mixed
-     */
-    public function edit($id)
-    {
-      if ($this->request->isPost()) {
-          $data            = $this->request->param();
-          // $validate_result = $this->validate($data, 'CompanySub');
-          $validate_result = $this->validate($data,'app\carpool\validate\Department');
-
-          if ($validate_result !== true) {
-              $this->jsonReturn(-1,$validate_result);
-          }
-
-          $sub_company_name = CompanySubModel::where(['sub_company_id'=>$data['sub_company_id']])->value('sub_company_name');
-          $data['sub_company_name'] = $sub_company_name ? $sub_company_name : '';
-
-          if ($this->department_model->allowField(true)->save($data, ['departmentid'=>$id]) !== false) {
-              Cache::tag('public')->rm('departments');
-              $this->log('更新部门成功，id='.$id,0);
-              $this->jsonReturn(0,'更新成功');
-          } else {
-              $this->log('更新部门失败，id='.$id,-1);
-              $this->jsonReturn(-1,'更新失败');
-          }
-
-       }else{
-        $datas = $this->department_model->find($id);
-
-        return $this->fetch('edit', ['datas' => $datas]);
-      }
-    }
-
-
 
     /**
-     * 删除用户
-     * @param $id
-     */
-    public function delete($id)
-    {
-        if ($this->department_model->destroy($id)) {
-            Cache::tag('public')->rm('departments');
-            $this->log('删除部门成功，id='.$id,0);
-            $this->jsonReturn(0,'删除成功');
-        } else {
-            $this->log('删除部门失败，id='.$id,-1);
-            $this->jsonReturn(-1,'删除失败');
-        }
-    }
-
-
-    /**
-     * /
+     * 临时方法，创建所有部门数据
      */
     public function create_all_department($page = 0, $pagesize = 50,$return = 1){
       if($page>0){
@@ -216,6 +150,74 @@ class Department extends AdminBase
         $this->jsonReturn(0,["success"=>$success,"fail"=>$fail],"成功");
       }
     }
+
+    /**
+     * 临时方法，把Department字段为空的用户填上
+     */
+     public function reset_user_department($page = 0, $pagesize = 20){
+       $map = [
+         ['department_id','>',0],
+         ['company_id','in',[1,11]],
+       ];
+       $fields = 'department_id,company_id,count(department_id) as c';
+       $group = 'department_id,company_id';
+       $total =  User::group($group)->where($map)->count(); //总条数
+
+       $lists =  User::field($fields)
+        ->group($group)->where($map)
+        ->page($page,$pagesize)->select();
+
+       if(!count($lists) && $page>0 ){
+         return $this->fetch('index/multi_jump',['url'=>'','msg'=>'完成']);
+       }
+       $success = [];
+       $fail = [];
+       $department_model = new DepartmentModel();
+       foreach ($lists as $key => $value) {
+         $department_data = $department_model->getItem($value['department_id']);
+         $format_department = $department_data['department_format']['format_name'];
+         $value['format_department'] = $format_department;
+         // dump($format_department);
+         //执行更新
+         $updateMap = [
+           ['company_id','=',$value['company_id']],
+           ['department_id','=',$value['department_id']],
+         ];
+         $updateData = [
+           'Department'=>$format_department,
+           'companyname'=>$department_data['department_format']['branch']
+         ];
+         if($department_data['department_format']['branch'] && $department_data['department_format']['department']){
+           $updateRes = User::where($updateMap)->update($updateData);
+         }else{
+           $updateRes = 0;
+         }
+         $value['update_res'] = $updateRes;
+         if($updateRes){
+           $success[] = $value;
+         }else{
+           $fail[] = $value;
+         }
+       }
+       // dump($lists);
+       $jumpUrl  = url('reset_user_department',['page'=>$page+1,'pagesize'=>$pagesize]);
+       $msg = "";
+       $successMsg = "success:<br />";
+       foreach ( $success as $key => $value) {
+         $br = "<br />";
+         $successMsg .= $value['department_id'].":".$value['format_department'].":".$value['update_res'].$br;
+       }
+       $failMsg = "fail:<br />";
+       foreach ( $fail as $key => $value) {
+         $br = "<br />";
+         $failMsg .= $value['department_id'].":".$value['format_department'].":".$value['update_res'].$br;
+       }
+       $msg .= $successMsg."<br />".$failMsg."<br />";
+       // return $this->fetch('index/multi_jump',['url'=>'','msg'=>$msg]);
+       return $this->fetch('index/multi_jump',['url'=>$jumpUrl,'msg'=>$msg]);
+
+
+     }
 
 
 }
