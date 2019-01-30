@@ -30,6 +30,11 @@ select.my-select {
    background-position: right 8px center;
    background-repeat: no-repeat;
 }
+.my-input-prebox {
+  display: inline-block; margin: 2px -6px 2px 0 ;vertical-align: middle;
+
+  & , input {background: lighten($color-gray-l2,2%); }
+}
 //重置layui相关样式
 .layui {
   &-input:disabled { background: #f0f0f0; color:#888}
@@ -58,6 +63,8 @@ select.my-select {
   &-btn {
     &-success { @include colorBtn($color-success);}
     &-excel {@include colorBtn(#1ba129); }
+    &-light {@include colorBtn($color-gray-l2,1);}
+    &-dark {@include colorBtn($color-black-l2);}
   }
   &-word-aux {color:$color-silver-l1 !important;}
 }
@@ -730,4 +737,8 @@ body {background:#FFF; color:$color-black-l1}
     b { font-size: 18px; color: rgb(103, 44, 139)}
   }
   .list-wrapper +.list-wrapper { border-left: 1px solid #ccc; border-right: none}
+}
+
+/** 部分列表 **/
+.P-department-list {
 }
