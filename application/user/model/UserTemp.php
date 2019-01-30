@@ -217,7 +217,9 @@ class UserTemp extends Model
     $department_fullname_array  = explode(",",$department_data['fullname']);
     $data['department_id'] = $department_data['id'];
     $data['department_city'] = isset($department_fullname_array[1])? $department_fullname_array[1]: "";
-    $data['department_format'] = $DepartmentModel->formatFullName($department_data['fullname'],1); 
+    $department_format_data = $DepartmentModel->formatFullName($department_data['fullname']);
+    $data['department_branch'] = $department_format_data['branch'];
+    $data['department_format'] = $department_format_data['format_name'];
     $OldUserModel = new OldUserModel();
     $res_old = $OldUserModel->syncDataFromTemp($data); // 入到旧表中
 
