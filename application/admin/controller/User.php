@@ -76,7 +76,7 @@ class User extends AdminBase
       $DepartmentModel = new Department();
       $userInfo->full_department = $DepartmentModel->where('id',$userInfo->department_id)->value('fullname');
       $department_format = $DepartmentModel->formatFullName($userInfo->full_department);
-      $userInfo->department_format = $department_format ? $department_format['branch']."/".$department_format['formatName'] : '';
+      $userInfo->department_format = $department_format ? $department_format['branch']."/".$department_format['short_name'] : '';
       $returnData = [
         'data'=>$userInfo,
         'companys'=>$companys,
@@ -98,9 +98,10 @@ class User extends AdminBase
 
           $sub_company_name = CompanySubModel::where(['sub_company_id'=>$data['sub_company_id']])->value('sub_company_name');
           $data['companyname'] = $sub_company_name ? $sub_company_name : '';
-          $department_name = DepartmentModel_old::where(['departmentid'=>$data['departmentid']])->value('department_name');
-          $data['Department'] = $department_name ? $department_name : '';
+          // $department_name = DepartmentModel_old::where(['departmentid'=>$data['departmentid']])->value('department_name');
+          // $data['Department'] = $department_name ? $department_name : '';
 
+          $data['Department'] = $data['departmentid'] ;
           $validate_result = $this->validate($data, 'app\carpool\validate\User');
           if ($validate_result !== true) {
             return $this->jsonReturn(-1,$validate_result);
@@ -138,11 +139,11 @@ class User extends AdminBase
           $data               = $this->request->post();
           $data['is_active']  = $this->request->post('is_active/d',0);
           unset($data['md5password']);
-
-          $sub_company_name = CompanySubModel::where(['sub_company_id'=>$data['sub_company_id']])->value('sub_company_name');
-          $data['companyname'] = $sub_company_name ? $sub_company_name : '';
-          $department_name = DepartmentModel_old::where(['departmentid'=>$data['departmentid']])->value('department_name');
-          $data['Department'] = $department_name ? $department_name : '';
+          //
+          // $sub_company_name = CompanySubModel::where(['sub_company_id'=>$data['sub_company_id']])->value('sub_company_name');
+          // $data['companyname'] = $sub_company_name ? $sub_company_name : '';
+          // $department_name = DepartmentModel_old::where(['departmentid'=>$data['departmentid']])->value('department_name');
+          // $data['Department'] = $department_name ? $department_name : '';
 
           //开始验证字段
           $validate = new \app\carpool\validate\User;
@@ -173,6 +174,12 @@ class User extends AdminBase
           if ($validate_result !== true) {
             return $this->jsonReturn(-1,$validate->getError());
           }
+
+          $user = $this->user_model->find($id);
+          if(in_array($user['company_id'],[1,11]) ){
+            $data['company_id'] = $user['company_id'];
+          }
+
           if ($this->user_model->allowField(true)->save($data, ['uid'=>$id]) !== false) {
               $this->log('保存用户成功，id='.$id,0);
               return $this->jsonReturn(0,'保存成功');
