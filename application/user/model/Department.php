@@ -110,11 +110,11 @@ class Department extends Model
        'region' => $region ,
        'branch' => $departmentName_per ,
        'department' => $departmentName,
-       // 'formatName' => $departmentName,
+       'format_name' => $departmentName_per.','.$departmentName,
        // 'fullname' => $fullName,
      ];
      if($type == 1){
-       return $returnData['branch'].','.$returnData['department'];
+       return $returnData['format_name'];
      }
 
      if(preg_match('/[\x{4e00}-\x{9fa5}]/u', $departmentName)>0){
@@ -185,6 +185,24 @@ class Department extends Model
        $redData = $str ? json_decode($str,true) : false;
        return $redData;
      }
+   }
+
+   /**
+    * 取单条数据
+    */
+   public function getItem($id,$cache_time = 3600*24){
+      $data =  $this->itemCache($id);
+      $department = $this->itemCache($id);
+      if(!$department || !$cache_time){
+        $department =  $this->find($id);
+        if(!$department){
+          return false;
+        }
+        $department = $department->toArray();
+        $this->itemCache($id,$department,$cache_time);
+      }
+      $department['department_format'] = $this->formatFullName($department['fullname']);
+      return $department;
    }
 
 
