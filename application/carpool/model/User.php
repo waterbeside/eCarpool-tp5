@@ -68,6 +68,9 @@ class User extends Model
      if(isset($data['department_format']) && $data['department_format']){
        $inputUserData['Department'] = $data['department_format'];
      }
+     if(isset($data['department_branch']) && $data['department_branch']){
+       $inputUserData['companyname'] = $data['department_branch'];
+     }
 
      //查找用户旧数据
      $oldData = $this->where("loginname",$data['code'])->find();
