@@ -4,11 +4,14 @@
 
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
-
+        <ul class="  amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/ScoreHistory/index')}"  >积分历史</a></li>
+            <li class="btn-item btn-item-right ">
+              {include file="_components/select_ruleNumber" /}
+            </li>
+        </ul>
         <div class="layui-tab-content">
-
-
-                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreHistory/index')}" method="get">
+                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreHistory/index',['rule_number'=>$rule_number])}" method="get">
                     <div class="layui-inline">
                         <input type="hidden" name="pagesize" value="{$pagesize}">
                         <div class="layui-input-inline">

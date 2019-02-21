@@ -7,6 +7,11 @@
 
             <fieldset class="amain-fieldset layui-elem-field" >
               <legend>基本信息</legend>
+              <?php
+              if($user['is_delete']){
+                echo '<blockquote class="layui-elem-quote">该账号已被逻辑删除</blockquote>';
+              }
+              ?>
               <div class="layui-form-item">
                   <label class="layui-form-label">用户名(工号)</label>
                   <div class="layui-input-block">
@@ -56,10 +61,11 @@
 
             <fieldset class="amain-fieldset layui-elem-field" >
               <legend>公司信息</legend>
+              <blockquote class="layui-elem-quote">{$user.full_department}</blockquote>
               <div class="layui-form-item">
                 <label class="layui-form-label">所属公司</label>
                 <div class="layui-input-block">
-                  <select name="company_id" lay-verify="required" lay-filter="company_id">
+                  <select name="company_id"   lay-filter="company_id" readonly>
                      <option value="0">请选择公司</option>
                    </select>
                 </div>
@@ -68,18 +74,21 @@
               <div class="layui-form-item">
                 <label class="layui-form-label">所属分厂</label>
                 <div class="layui-input-block">
-                  <select name="sub_company_id"   lay-filter="sub_company_id" lay-search>
+                  <input type="text" class="layui-input readonly" readonly disabled value="{$user.companyname}" />
+                  <!-- <select name="sub_company_id"   lay-filter="sub_company_id" lay-search>
                      <option value="0">请选择分厂</option>
-                   </select>
+                   </select> -->
                 </div>
               </div>
 
               <div class="layui-form-item">
                 <label class="layui-form-label">部门</label>
                 <div class="layui-input-block">
+                  <input type="text" class="layui-input readonly" readonly disabled value="{$user.Department}" />
+                  <!--
                   <select name="departmentid"  lay-search>
                      <option value="0">请选择部门</option>
-                   </select>
+                   </select> -->
                 </div>
               </div>
             </fieldset>
@@ -143,7 +152,7 @@
                   <div class="layui-form-item">
                       <label class="layui-form-label">nativename</label>
                       <div class="layui-input-block">
-                        <input type="text" name="nativename" value="{$user.nativename}" placeholder="nativename" class="layui-input">
+                        <input type="text" name="nativename" value="{$user.nativename}" placeholder="nativename" class="layui-input" disabled readonly>
                       </div>
                   </div>
                   <div class="layui-form-item">

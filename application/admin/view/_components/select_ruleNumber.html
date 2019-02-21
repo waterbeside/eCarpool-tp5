@@ -1,0 +1,6 @@
+<select name="rule_number" class="select-jump my-select"  >
+  <option value="NULL" {php} echo !isset($rule_number) || !is_numeric($rule_number) ? 'selected' : ''; {/php} href="{:url('index')}">全部 </option>
+  <?php foreach( config('score.rule_number') as $key => $item){ ?>
+  <option value="{$key}" {php} echo isset($rule_number) && is_numeric($rule_number) && $rule_number == $key ? 'selected' : ''; {/php} href="{:url('index',['rule_number'=>$key])}">{$item.title} </option>
+  <?php } ?>
+</select>

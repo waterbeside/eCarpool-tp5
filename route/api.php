@@ -8,6 +8,8 @@ Route::group([], function () {
   Route::resource('api/:version/docs','api/:version.docs');
   //通知公告相关
   Route::resource('api/:version/notice','api/:version.notice');
+  //banner相关
+  Route::resource('api/:version/ads','api/:version.ads');
   //通行证相关
   Route::resource('api/:version/passport','api/:version.passport');
   Route::rule('api/:version/passport','api/:version.passport/delete','DELETE');
@@ -24,12 +26,50 @@ Route::group([], function () {
   Route::rule('api/:version/sms/verify','api/:version.sms/verify');
   Route::rule('api/:version/sms/:usage','api/:version.sms/send','GET')->pattern(['usage' => '\d+']);
   Route::rule('api/:version/sms/:usage','api/:version.sms/verify','POST')->pattern(['usage' => '\d+']);
+  Route::rule('api/:version/sms/status/:sendid','api/:version.sms/sms_status');
 
   //app启动调用
+  Route::rule('api/:version/app_initiate/url','api/:version.app_initiate/get_url','GET');
   Route::rule('api/:version/app_initiate','api/:version.app_initiate/index','GET');
 
   //同步Hr系统
-  Route::rule('api/:version/sync_hr','api/:version.sync_hr/index','get');
+  Route::rule('api/:version/sync_hr/single','api/:version.sync_hr/single','GET');
+  Route::rule('api/:version/sync_hr/to_primary','api/:version.sync_hr/to_primary','GET');
+  Route::rule('api/:version/sync_hr/all','api/:version.sync_hr/all','GET');
+  Route::rule('api/:version/sync_hr/department','api/:version.sync_hr/create_department','POST');
+  Route::rule('api/:version/sync_hr/department/:id','api/:version.sync_hr/department','GET');
+
+  //行程相关
+  Route::rule('api/:version/trips/:from/:id/user/:uid/position','api/:version.trips/user_position','GET');//行程的用户位置
+  Route::rule('api/:version/trips/wall/:id/comments','api/:version.trip_comments/index','GET');//行程评论
+  Route::rule('api/:version/trips/wall/:id/comments','api/:version.trip_comments/save','POST');//行程评论
+  Route::rule('api/:version/trips/wall/:id/passengers','api/:version.trips/passengers','GET');
+  Route::rule('api/:version/trips/wall/:id','api/:version.trips/wall_detail','GET');
+  Route::rule('api/:version/trips/info/:id','api/:version.trips/info_detail','GET');
+  Route::rule('api/:version/trips/wall','api/:version.trips/wall_list','GET');
+  Route::rule('api/:version/trips/info','api/:version.trips/info_list','GET');
+  Route::rule('api/:version/trips/history','api/:version.trips/history','GET');
+  Route::rule('api/:version/trips','api/:version.trips/index','GET');
+  Route::rule('api/:version/trips/:from','api/:version.trips/add','POST');
+  Route::rule('api/:version/trips/:from/:id','api/:version.trips/change','PATCH');
+  Route::rule('api/:version/trips/:from/:id','api/:version.trips/cancel','DELETE');
+
+
+  //地址相关
+  Route::rule('api/:version/address/:id','api/:version.address/read','GET')->pattern(['id' => '\d+']);
+  Route::rule('api/:version/address/my','api/:version.address/my','GET');
+  Route::rule('api/:version/address','api/:version.address/save','POST');
+
+  //用户相关
+  Route::resource('api/:version/user','api/:version.user');
+  Route::rule('api/:version/user/:id/position','api/:version.user_position/read','GET');
+  Route::rule('api/:version/user/:id/position','api/:version.user_position/save','POST');
+
+  //*********公开的
+  Route::resource('api/:version/publics/idle','api/:version.publics.idle');
+  Route::rule('api/:version/publics/comments','api/:version.publics.comments/index','GET');
+  Route::rule('api/:version/app/url','api/:version.app/get_url','GET');
+
 
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
 

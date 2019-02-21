@@ -19,6 +19,8 @@ class Base extends Controller
     public $systemConfig  = null;
     public $language  = 'zh-cn';
     public $language_l = [];
+    public $errorMsg = '';
+
     protected function initialize()
     {
         $this->language = $this->getLang();
@@ -225,6 +227,29 @@ class Base extends Controller
 
       }else{
         $this->jump(0 , $msg, $url, $data , $wait ,  $header );
+      }
+    }
+
+
+    /**
+     * 请求数据
+     * @param  string $url  请求地址
+     * @param  array  $data 请求参数
+     * @param  string $type 请求类型
+     */
+    public function clientRequest($url,$data=[],$type='POST',$dataType="json"){
+      try {
+        $client = new \GuzzleHttp\Client(['verify'=>false]);
+        $response = $client->request($type, $url, ['form_params' => $data]);
+        $contents = $response->getBody()->getContents();
+        if(mb_strtolower($dataType)=="json"){
+          $contents = json_decode($contents,true);
+        }
+        return $contents;
+      } catch (\GuzzleHttp\Exception\ClientException $exception) {
+        $responseBody = $exception->getResponse()->getBody()->getContents();
+        $this->errorMsg ='拉取失败';
+        return false;
       }
     }
 

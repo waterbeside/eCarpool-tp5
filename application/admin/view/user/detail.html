@@ -1,8 +1,13 @@
-<div class="amain-body page-good-detail">
+<div class="amain-body P-user-detail">
 
     <div style="text-align:center; margin:-38px 0 10px;">
       <div class="cp-avatar" style="background-image:url('{$data.avatar}')"></div>
     </div>
+    <?php
+    if($data['is_delete']){
+      echo '<blockquote class="layui-elem-quote">该账号已被逻辑删除</blockquote>';
+    }
+    ?>
 
     <table class="layui-table">
       <tbody>
@@ -32,11 +37,23 @@
         </tr>
         <tr>
           <td class="label">部门</td>
-          <td>{$data.Department}</td>
+          <td>{$data.Department} 【{$data.department_format}】</td>
+        </tr>
+        <tr>
+          <td class="label">部门 Full</td>
+          <td>{$data.full_department}</td>
         </tr>
       </tbody>
     </table>
+    <div class="modal-bottom-btns-bar">
+      <button type="button" class="close layui-btn layui-btn-primary" data-dismiss="modal" aria-label="Close"><i class="fa fa-times"></i> 取消</button>
 
+      <?php if($auth['admin/pushmsg/add'] ){ ?>
+        <a href="{:url('admin/pushmsg/add',['uid'=>$data['uid']])}" class="layui-btn layui-btn-success " data-target="#modal-pushmsg" data-title="推送消息" data-top="30px" data-width="580px"  data-trigger="modal" title="发送推送">
+          <i class="fa fa-envelope"></i> 推送消息
+        </a>
+      <?php } ?>
+    </div>
 </div>
 
 <script>

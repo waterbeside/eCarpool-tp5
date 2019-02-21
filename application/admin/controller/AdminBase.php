@@ -23,6 +23,7 @@ class AdminBase extends Base
 
     protected $jwtInfo ;
     public $userBaseInfo;
+    protected $redisObj = NULL;
 
     protected function initialize()
     {
@@ -66,7 +67,7 @@ class AdminBase extends Base
                   if(strpos($accept,"text/html") !== false){
                     $this->error('没有权限');
                   }else{
-                    return $this->jsonReturn(10004,'没有权限');
+                    return $this->jsonReturn(-1,'没有权限');
                   }
                 }else{
                     $this->error('没有权限');
@@ -92,7 +93,6 @@ class AdminBase extends Base
         'uid'=>Session::get('admin_id'),
         'username'=>Session::get('admin_name')
       ];
-
     }
 
     /**
@@ -108,7 +108,6 @@ class AdminBase extends Base
       }else{
         return true;
       }
-
     }
 
     /**
@@ -121,7 +120,6 @@ class AdminBase extends Base
         $Authorization = $Authorization ? $Authorization : cookie('admin_token');
         $Authorization = $Authorization ? $Authorization : input('request.admin_token');
 
-
         if(!$Authorization){
           if($this->request->isAjax()){
             $this->jsonReturn(10004,'您尚未登入');
@@ -129,12 +127,9 @@ class AdminBase extends Base
             return $this->error('您尚未登入','admin/login/index');
           }
         }else{
-
-
           $jwtDecode = JWT::decode($Authorization, config('secret.admin_setting')['jwt_key'], array('HS256'));
           $this->jwtInfo = $jwtDecode;
           if(isset($jwtDecode->uid) && isset($jwtDecode->username) ){
-
             $now = time();
             if( $now  > $jwtDecode->exp){
               if($this->request->isAjax()){
@@ -210,12 +205,26 @@ class AdminBase extends Base
      * @return 返回最新版本；
      */
     public function updateDataVersion($cacheVersionKey){
-      $redis = new RedisData();
-      $cacheVersion = $redis->get($cacheVersionKey);
+      $redisObj = $this->redis();
+      $cacheVersion = $redisObj->get($cacheVersionKey);
       $newVersion = $cacheVersion ? intval($cacheVersion) + 1 : 1;
-      $redis->set($cacheVersionKey,$newVersion);
+      $redisObj->set($cacheVersionKey,$newVersion);
       return $newVersion;
     }
+
+    /**
+     * 创建redis对像
+     * @return redis
+     */
+    public function redis(){
+      if(!$this->redisObj){
+          $this->redisObj = new RedisData();
+      }
+      return $this->redisObj;
+    }
+
+
+
 
 
 }

@@ -16,15 +16,26 @@ class ApiBase extends Base
     protected $jwtInfo ;
     public $userBaseInfo;
     public $passportError;
+    public $userData = NULL;
 
     protected function initialize()
     {
         // config('default_lang', 'zh-cn');
         $this->loadLanguagePack();
         parent::initialize();
-
     }
 
+
+    public function getRequestPlatform(){
+      $user_agent = request()->header('USER_AGENT');
+      if(strpos($user_agent, 'iPhone')||strpos($user_agent, 'iPad')){
+          return 1;
+      }else if(strpos($user_agent, 'Android')){
+          return 2;
+      }else{
+          return 0;
+      }
+    }
 
     /**
      * 验证jwt
@@ -117,6 +128,9 @@ class ApiBase extends Base
         $this->checkPassport($returnType);
         $uid = $this->userBaseInfo['uid'];
       }
+      if($this->userData){
+        return $this->userData;
+      }
       if($uid){
         $userData = UserModel::find($uid);
       }
@@ -124,8 +138,12 @@ class ApiBase extends Base
         return $returnType ? $this->jsonReturn(10004,'您尚未登入') : false;
       }
       if(!$userData['is_active']){
-        return $returnType ? $this->jsonReturn(10003,'该用户被封禁') : false;
+        return $returnType ? $this->jsonReturn(10003,lang('The user is banned')) : false;
       }
+      if($userData['is_delete']){
+        return $returnType ? $this->jsonReturn(10003,lang('The user is deleted')) : false;
+      }
+      $this->userData = $userData;
       return $userData;
 
     }

@@ -1,36 +1,35 @@
 ``{extend name="base" /}
 {block name="body"}
-<div class="amain-body page-score-reports">
+<div class="amain-body P-score-reports">
 
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief " lay-filter="main-tab">
 
         <ul class="amain-tool-bar layui-tab-title" >
-          <li class="layui-this"> 积分期报 </li>
+          <li class="layui-this" > <a href="{:url('index')}"  >积分期报</a> </li>
+          <li class="btn-item btn-item-right ">
+            {include file="_components/select_ruleNumber" /}
+          </li>
           <!-- <li > 走势图表 </li> -->
         </ul>
 
         <div class="amain-content layui-tab-content">
           <!-- **************  s : 积分期报 ************** -->
           <div class="layui-tab-item layui-show">
-            <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreReports/index')}" method="get">
+            <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreReports/index',['rule_number'=>$rule_number])}" method="get">
                 <!-- <div class="blank10">  </div> -->
                 <div class="layui-inline">
                   <label class="layui-form-label" style="width:160px">时间范围选择</label>
-
                     <div class="layui-input-inline">
                       <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
                     </div>
                 </div>
-
                 <div class="layui-inline">
                   <input type="hidden" name="export" value="0">
                     <!-- <button class="layui-btn"><i class="fa fa-search"></i></button> -->
                 </div>
             </form>
-
             <hr>
-
             <div class="total-content">
               <div class="total-item  total-item-add">
                 <h3>新增积分</h3>
@@ -58,7 +57,6 @@
                   <dt>合计</dt>
                   <dd>0</dd>
                 </dl>
-
               </div>
               <div class="total-item  total-item-minus">
                 <h3>消耗积分</h3>
@@ -193,7 +191,7 @@ PAGE_EXEC = {
        * @param String type driver|passenger|user : 司机人次|乘客人次|参与人数
        */
       sumNum : function(type,is_minus){
-        var url = "{:url('admin/ScoreReports/public_count')}";
+        var url = "{:url('admin/ScoreReports/public_count',['rule_number'=>$rule_number])}";
         var dtd = $.Deferred();
         $.getJSON(url,{timeStr:_this.data.timeStr,type:type,is_minus:is_minus}).then(function(res, textStatus) {
             if(res.code===0){

@@ -1,0 +1,53 @@
+<div class="amain-body  " >
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <div class="layui-tab-content">
+              <form class="layui-form  " action="{:url('admin/Apps/edit')}" method="post" style="margin-right:15px;" id="editForm" >
+                 <div class="layui-form-item">
+                      <label class="layui-form-label">名称</label>
+                      <div class="layui-input-block">
+                          <input type="text" name="name" value="" required  lay-verify="required" placeholder="请输入名称" class="layui-input">
+                      </div>
+                  </div>
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">域名</label>
+                      <div class="layui-input-block">
+                          <input type="text" name="domain" value="" required  lay-verify="required" placeholder="请输入域名" class="layui-input">
+                          <div class="layui-form-mid layui-word-aux" >App所用接口的主域名。格式如"abc.com"即可。<br />开头切勿带"http://"，结尾也无需"/"</div>
+
+                      </div>
+                  </div>
+
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">使用ssl</label>
+                      <div class="layui-input-block">
+                          <input type="radio" name="is_ssl" value="1" title="是 " >
+                          <input type="radio" name="is_ssl" value="0" title="否"  checked="checked">
+                      </div>
+                  </div>
+
+
+                  <div class="layui-form-item">
+                      <div class="layui-input-block">
+                          <button class="layui-btn" lay-submit lay-filter="*">更新</button>
+                          <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                      </div>
+                  </div>
+              </form>
+        </div>
+    </div>
+</div>
+
+<script>
+PAGE_EXEC = {
+  init:function(){
+    form.render();
+    element.init();
+  }
+}
+$(function() {
+    PAGE_EXEC.init();
+});
+
+</script>

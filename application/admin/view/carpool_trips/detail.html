@@ -1,7 +1,7 @@
 {extend name="base" /}
 {block name="body"}
-<div class="amain-body page-trip-detail">
-  <div class="page-trip-detail-inner">
+<div class="amain-body P-trip-detail">
+  <div class="P-trip-detail-inner">
     <div class="trip-time">{$data.time}</div>
     <div class="trip-start-end">
       <div class="start">
@@ -19,24 +19,24 @@
     </div>
     <div class="member-bar">
       <div class="member-bar-inner">
-        <a class="member-item driver" href="{:url('admin/User/public_detail',['id'=>$data['driver_id']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
-          <div class="avatar" style="background-image:url('{$data.driver_avatar}')"></div>
+        <a class="member-item driver" href="{:url('admin/User/public_detail',['id'=>$data['d_uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
+          <div class="avatar" style="background-image:url('{$data.d_avatar}')"></div>
           <div class="member-info ">
               <p class="type">司机</p>
-              <p class="name layui-elip"><b title="{$data.driver_name} / {$data.driver_loginname}">{$data.driver_name}</b></p>
-              <!-- <p class="loginname layui-elip"><small>{$data.driver_loginname}</small></p> -->
+              <p class="name layui-elip"><b title="{$data.d_name} / {$data.d_loginname}">{$data.d_name}</b></p>
+              <!-- <p class="loginname layui-elip"><small>{$data.d_loginname}</small></p> -->
 
-              <p class="phone">{$data.driver_phone}</p>
+              <p class="phone">{$data.d_phone}</p>
           </div>
         </a>
-        <a class="member-item passenger" href="{:url('admin/User/public_detail',['id'=>$data['passenger_id']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
-          <div class="avatar" style="background-image:url('{$data.passenger_avatar}')"></div>
+        <a class="member-item passenger" href="{:url('admin/User/public_detail',['id'=>$data['p_uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
+          <div class="avatar" style="background-image:url('{$data.p_avatar}')"></div>
           <div class="member-info ">
               <p class="type">乘客</p>
-              <p class="name layui-elip"><b title="{$data.passenger_name} / {$data.passenger_loginname}">{$data.passenger_name}</b></p>
-              <!-- <p class="loginname layui-elip"><small>{$data.driver_loginname}</small></p> -->
+              <p class="name layui-elip"><b title="{$data.p_name} / {$data.p_loginname}">{$data.p_name}</b></p>
+              <!-- <p class="loginname layui-elip"><small>{$data.d_loginname}</small></p> -->
 
-              <p class="phone">{$data.driver_phone}</p>
+              <p class="phone">{$data.d_phone}</p>
           </div>
         </a>
 
@@ -70,13 +70,13 @@
         <tr>
           <td class="td-label" width="100">司机</td>
           <td>
-            {php}echo $data['driver_sex']==1 ? '<i class="fa fa-mars"></i>' : ($data['driver_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
-            <a href="{:url('admin/User/public_detail',['id'=>$data['driver_id']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情" style="color:#3d7ea3;">
-              {$data.driver_name} ({$data.driver_loginname})
+            {php}echo $data['d_sex']==1 ? '<i class="fa fa-mars"></i>' : ($data['d_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+            <a href="{:url('admin/User/public_detail',['id'=>$data['d_uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情" style="color:#3d7ea3;">
+              {$data.d_name} ({$data.d_loginname})
             </a>
             <p class="department">
-              {$data.driver_department} / {php}echo $data['driver_companyname']!='' ? $data['driver_companyname'] : '-' ;{/php} /
-              <?php echo isset($companys[$data['driver_company_id']]) ? $companys[$data['driver_company_id']] : $data['driver_company_id']; ?>
+              {$data.d_department} / {php}echo $data['d_companyname']!='' ? $data['d_companyname'] : '-' ;{/php} /
+              <?php echo isset($companys[$data['d_company_id']]) ? $companys[$data['d_company_id']] : $data['d_company_id']; ?>
             </p>
 
           </td>
@@ -84,13 +84,13 @@
         <tr>
           <td class="td-label">乘客</td>
           <td>
-            {php}echo $data['passenger_sex']==1 ? '<i class="fa fa-mars"></i>' : ($data['passenger_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
-            <a href="{:url('admin/User/public_detail',['id'=>$data['driver_id']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情" style="color:#3d7ea3;">
-              {$data.passenger_name} ({$data.passenger_loginname})
+            {php}echo $data['p_sex']==1 ? '<i class="fa fa-mars"></i>' : ($data['p_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+            <a href="{:url('admin/User/public_detail',['id'=>$data['d_uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情" style="color:#3d7ea3;">
+              {$data.p_name} ({$data.p_loginname})
             </a>
             <p class="department">
-              {$data.passenger_department} / {php}echo $data['passenger_companyname']!='' ? $data['passenger_companyname'] : '-' ;{/php} /
-              <?php echo isset($companys[$data['passenger_company_id']]) ? $companys[$data['passenger_company_id']] : $data['passenger_company_id']; ?>
+              {$data.p_department} / {php}echo $data['p_companyname']!='' ? $data['p_companyname'] : '-' ;{/php} /
+              <?php echo isset($companys[$data['p_company_id']]) ? $companys[$data['p_company_id']] : $data['p_company_id']; ?>
             </p>
           </td>
         </tr>
@@ -168,8 +168,8 @@ function drawRouteLine(start,end,mapObj,callBack){
 }
 
 var data = {
-  start:["{$data.start_longtitude}","{$data.start_latitude}"],
-  end:["{$data.end_longtitude}","{$data.end_latitude}"]
+  start:["{$data.start_longitude}","{$data.start_latitude}"],
+  end:["{$data.end_longitude}","{$data.end_latitude}"]
 }
 cLoadScript(GV.config.url.amapScript,function(){
   var map = showMap('map-content');

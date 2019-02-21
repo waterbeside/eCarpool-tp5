@@ -1,0 +1,37 @@
+
+// $color-black: #1F2D3D;
+// $color-black-l1: #324057;
+// $color-black-l2: #475669;
+
+$color-black: #242f3b;
+$color-black-l1: #374150;
+$color-black-l2: #4a5562;
+
+
+$color-silver: #8492A6;
+$color-silver-l1: #99A9BF;
+$color-silver-l2: #C0CCDA;
+$color-silver-d1: darken($color-silver,5%);
+$color-silver-d2: darken($color-silver,10%);;
+$color-silver-d3: darken($color-silver,20%);;
+
+$color-gray: #D3DCE6;
+$color-gray-l1: #E5E9F2;
+$color-gray-l2: #EFF2F7;
+$color-dark-white: #F9FAFC;
+
+$color-red : #b9381c;
+$color-green: #579c64;
+$color-orange : #E6A23C;
+
+$color-danger :  #F56C6C;
+$color-success : #67C23A;
+$color-warning : #E6A23C;
+$color-purple:   #7663af;
+$color-info:     #909399;
+$color-text-main: #303133;
+$color-text-common: #606266;
+$color-border: #d8dce7;
+$color-placeholder: #C0C4CC;
+
+$color-primary : $color-purple;

@@ -156,7 +156,8 @@ class ScoreOrder extends AdminBase
    * 商品兑换数统计
    * @return mixed
    */
-  public function goods($filter=[]){
+  public function goods($filter=[])
+  {
     $map = [];
     $map[] = ['o.is_delete','<>', 1];
     $map[] = ['o.status','=', 0];
@@ -203,14 +204,13 @@ class ScoreOrder extends AdminBase
   }
 
 
-
-
   /**
    * 完结订单
    * @param  integer $id       订单id
    * @param  string  $order_no 订单号
    */
-  public function finish($id=0,$order_no=null){
+  public function finish($id=0,$order_no=null)
+  {
     $statusList = config('score.order_status');
     $admin_id = $this->userBaseInfo['uid'];
 
@@ -248,7 +248,8 @@ class ScoreOrder extends AdminBase
   /**
    * 商品订单 下单者列表
    */
-  public function good_owners($gid,$time,$pagesize = 20,$filter=['keyword'=>'']){
+  public function good_owners($gid,$time,$pagesize = 20,$filter=['keyword'=>''])
+  {
     if(!$gid){
       $this->error('Lost id');
     }
@@ -274,7 +275,7 @@ class ScoreOrder extends AdminBase
     ];
     // $lists = OrderModel::alias('t')->field($fields)->join($join)->json(['content'])->where($map)->bind('good_num', 0, \PDO::PARAM_INT)->order('t.creator ASC ')->fetchSql()->select();
     $lists = OrderModel::alias('t')->field($fields)->join($join)->json(['content'])->where($map)->bind('good_num', 0, \PDO::PARAM_INT)->order('t.creator ASC ')->paginate($pagesize, false,  ['query'=>request()->param()]);
-    
+
 
     foreach ($lists as $key => $value) {
       $lists[$key]['userInfo'] = CarpoolUserModel::where(['loginname'=>$value['carpool_account']])->find();

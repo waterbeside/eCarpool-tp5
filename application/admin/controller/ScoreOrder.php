@@ -7,6 +7,7 @@ use app\admin\controller\AdminBase;
 use app\common\model\Configs;
 use app\carpool\model\User as CarpoolUserModel;
 use app\carpool\model\Company as CompanyModel;
+use app\user\model\Department as DepartmentModel;
 use app\score\model\Account as ScoreAccountModel;
 use app\score\model\Order as OrderModel;
 use app\score\model\Goods as GoodsModel;
@@ -29,16 +30,21 @@ class ScoreOrder extends AdminBase
    * 订单列表
    * @return mixed
    */
-  public function index($filter=[],$status="0",$page = 1,$pagesize = 15,$export=0)
+  public function index($filter=[],$status="0",$page = 1,$pagesize = 15,$export=0,$rule_number=NULL)
   {
     $map = [];
     $map[] = ['t.is_delete','<>', 1];
 
+    //地区区分
+    if (is_numeric($rule_number)) {
+      $map[] = ['t.rule_number','=', $rule_number];
+    }
 
     //筛选状态
     if(is_numeric($status)){
       $map[] = ['t.status','=', $status];
     }
+
     //筛选时间
     if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
       $time_s = date("Y-m-01");
@@ -52,15 +58,20 @@ class ScoreOrder extends AdminBase
     $map[] = ['creation_time', 'between time', [$time_s, $time_e]];
 
     //筛选单号
+    $mapOrderRaw = '';
     if (isset($filter['order_num']) && $filter['order_num']){
-      if( strpos($filter['order_num'],"/")>0){
-        $oNums = explode("/",$filter['order_num']);
-        $map[] = ['t.uuid','like', "%{$oNums[0]}%"];
-      }else{
-        if(is_numeric($filter['order_num'])){
-          $map[] = ['t.id','=', $filter['order_num']];
+      $orderNums = explode("|",$filter['order_num']);
+      foreach ($orderNums as $key => $value) {
+        $mapOrderRaw = $mapOrderRaw ? $mapOrderRaw." or " : " ";
+        if( strpos($value,"/")>0){
+          $oNums = explode("/",$value);
+          $mapOrderRaw  .= " t.uuid like  '%{$oNums[0]}%' ";
         }else{
-          $map[] = ['t.uuid','like', "%{$filter['order_num']}%"];
+          if(is_numeric($value)){
+            $mapOrderRaw .= " t.id = '{$value}' ";
+          }else{
+            $mapOrderRaw .= " t.uuid like '%{$value}%'  ";
+          }
         }
       }
     }
@@ -71,7 +82,12 @@ class ScoreOrder extends AdminBase
     }
     //筛选部门
     if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
-      $map[] = ['cu.Department|cu.companyname','like', "%{$filter['keyword_dept']}%"];
+      //筛选状态
+      if(isset($filter['is_hr']) && $filter['is_hr'] == 0){
+        $map[] = ['cu.Department|cu.companyname','like', "%{$filter['keyword_dept']}%"];
+      }else{
+        $map[] = ['d.fullname','like', "%{$filter['keyword_dept']}%"];
+      }
     }
 
     //构建sql
@@ -80,20 +96,27 @@ class ScoreOrder extends AdminBase
       ['account ac','t.creator = ac.id', 'left'],
     ];
     if( (isset($filter['keyword']) && $filter['keyword']) || (isset($filter['keyword_dept']) && $filter['keyword_dept'])){
-      $fields .= ',cu.uid, cu.loginname,cu.name, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname';
+      $fields .= ',cu.uid, cu.loginname,cu.name, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname, d.fullname as full_department';
       $join[] = ['carpool.user cu','cu.loginname = ac.carpool_account', 'left'];
+      $join[] = ['carpool.t_department d','cu.department_id = d.id','left'];
+
     }
 
-
+    $ModelBase = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC');
+    if(!empty($mapOrderRaw)){
+      $ModelBase = $ModelBase->whereRaw($mapOrderRaw);
+    }
     if($export){
-      $lists = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC')->select();
+      $lists = $ModelBase->select();
     }else{
-      $lists = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+      $lists = $ModelBase
+      // ->fetchSql()->select();
+      ->paginate($pagesize, false,  ['query'=>request()->param()]);
     }
-
 
     $goodList = []; //商品缓存
     $GoodsModel = new GoodsModel();
+    $DepartmentModel = new DepartmentModel();
     foreach($lists as $key => $value) {
       if( !(isset($filter['keyword']) && $filter['keyword']) && !(isset($filter['keyword_dept']) && $filter['keyword_dept'])){
         $userInfo = CarpoolUserModel::where(['loginname'=>$value['carpool_account']])->find();
@@ -101,14 +124,18 @@ class ScoreOrder extends AdminBase
         $lists[$key]['loginname'] = $userInfo['loginname'] ;
         $lists[$key]['name'] = $userInfo['name'] ;
         $lists[$key]['phone'] = $userInfo['phone'] ;
-        $lists[$key]['Department'] = $userInfo['Department'] ;
         $lists[$key]['sex'] = $userInfo['sex'] ;
         $lists[$key]['company_id'] = $userInfo['company_id'] ;
         $lists[$key]['companyname'] = $userInfo['companyname'] ;
+        //部门
+        $lists[$key]['Department'] =  $userInfo['Department'];
+        $lists[$key]['full_department'] =  $userInfo['department_id'] ? $DepartmentModel->where('id',$userInfo['department_id'])->value('fullname') : "";
       }
+      $lists[$key]['Department'] = $lists[$key]['full_department'] ? $DepartmentModel->formatFullName($lists[$key]['full_department'],1) : $lists[$key]['Department']  ;
+
 
       //
-      $goods = []; //信品
+      $goods = []; //商品
       foreach ($value['content'] as $gid => $num) {
         if(isset($goodList[$gid])){
           $good = $goodList[$gid];
@@ -196,7 +223,16 @@ class ScoreOrder extends AdminBase
     }else{
       // dump($lists);
       $statusList = config('score.order_status');
-      return $this->fetch('index', ['lists' => $lists, 'pagesize'=>$pagesize,'statusList'=>$statusList,'filter'=>$filter,'status'=>$status,'companys'=>$companys]);
+      $returnData = [
+        'rule_number' => $rule_number,
+        'lists' => $lists,
+        'pagesize'=>$pagesize,
+        'statusList'=>$statusList,
+        'filter'=>$filter,
+        'status'=>$status,
+        'companys'=>$companys
+      ];
+      return $this->fetch('index', $returnData);
     }
 
 
@@ -221,7 +257,11 @@ class ScoreOrder extends AdminBase
     if(!$data){
       $this->error("订单不存在");
     }else{
-      $data['userInfo'] = CarpoolUserModel::where(['loginname'=>$data['carpool_account']])->find();
+      $data['userInfo'] = CarpoolUserModel::alias('t')
+                          ->field('t.*, d.fullname as full_department')
+                          ->join([['t_department d','t.department_id = d.id','left']])
+                          ->where(['loginname'=>$data['carpool_account']])
+                          ->find();
       if($data['userInfo']){
         $data['userInfo']['avatar'] = $data['userInfo']['imgpath'] ? config('secret.avatarBasePath').$data['userInfo']['imgpath'] : config('secret.avatarBasePath')."im/default.png";
       }
@@ -350,8 +390,8 @@ class ScoreOrder extends AdminBase
   /**
    * 商品订单 下单者列表
    */
-  public function good_owners($gid,$time,$pagesize = 30,$status= 0, $filter=['keyword'=>'' ]){
-
+  public function good_owners($gid,$time,$pagesize = 30,$status= 0, $filter=['keyword'=>'' ])
+  {
     if(!$gid){
       $this->error('Lost id');
     }
@@ -433,7 +473,8 @@ class ScoreOrder extends AdminBase
   /**
    *
    */
-  public function owners($time,$pagesize = 30,$filter=['keyword'=>'']){
+  public function owners($time,$pagesize = 30,$filter=['keyword'=>''])
+  {
 
   }
 

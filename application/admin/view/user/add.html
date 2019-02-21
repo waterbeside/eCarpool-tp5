@@ -203,9 +203,9 @@
     var cid = $("select[name='sub_company_id']").val();
     $.get("{:url('admin/department/public_lists')}",{scid:cid},function(res){
       if(res.code === 0){
-        var options = '<option value="0">请选择分厂</option>';
+        var options = '<option value="0">请选择部门</option>';
         $(res.data.lists).each(function(index, el) {
-          options += '<option value="'+el.id+'">'+el.name+'</option>';
+          options += '<option value="'+el.name+'">'+el.name+'</option>';
         });
         $("select[name='departmentid']").html(options)
         if(typeof(success)=="function"){

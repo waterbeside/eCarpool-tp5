@@ -1,13 +1,15 @@
 {extend name="base" /}
 {block name="body"}
-<div class="amain-body page-order-list">
+<div class="amain-body P-lottery-list">
 
     <!--tab标签-->
     <div class="layui-tab ">
 
         <ul class="  amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/ScoreLottery/index')}"  showloading >抽奖情况</a></li>
-
+            <li class="btn-item btn-item-right ">
+              {include file="_components/select_ruleNumber" /}
+            </li>
         </ul>
 
         <div class="amain-content">
@@ -66,7 +68,8 @@
               <div class="layui-tab-item layui-show">
                 <div class="order-list">
                   <form class="layui-form lottery-table-list-wrapper" >
-                    {if !count($lists)>0}无数据{/if}
+                    <blockquote class="layui-elem-quote">共检得 <b>{$lists->total()}</b> 条数据</blockquote>
+
                     <table class="layui-table" lay-filter="listtable">
                       <thead>
                       <tr >

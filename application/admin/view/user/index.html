@@ -1,6 +1,6 @@
 {extend name="base" /}
 {block name="body"}
-<div class="amain-body">
+<div class="amain-body P-user-list">
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
       <ul class="  amain-tool-bar" >
@@ -34,21 +34,26 @@
                 <table lay-filter="listtable" class="layui-table">
                     <thead>
                       <tr>
-                          <th lay-data="{field:'uid', width:100}" fixed="left">ID</th>
-                          <th lay-data="{field:'loginname'}">用户名</th>
+                          <th lay-data="{field:'uid', width:100, fixed:'left'}" >ID</th>
+                          <th lay-data="{field:'loginname', width:120, fixed:'left'}">用户名</th>
                           <th lay-data="{field:'phone', width:100}">手机</th>
                           <th lay-data="{field:'name', width:100}">姓名</th>
-                          <th lay-data="{field:'Department', width:100}">部门</th>
+                          <th lay-data="{field:'full_department', minWidth:160}">部门(HR)</th>
+                          <th lay-data="{field:'Department', width:80}">部门</th>
                           <th lay-data="{field:'company_name', width:100}">公司</th>
                           <!-- <th lay-data="{field:'score', width:80}">分</th> -->
                           <th lay-data="{field:'other', width:60}">...</th>
-                          <th lay-data="{field:'options', width:140}">操作</th>
+                          <th lay-data="{field:'options', width:160}">操作</th>
                       </tr>
                     </thead>
                     <tbody>
                     {foreach name="user_list" item="vo"}
                     <tr>
-                        <td>{$vo.uid}</td>
+                        <td>
+                          <div <?php echo  ($vo['is_delete']  ? 'class="is_delete"' : ''); ?>>
+                            {$vo.uid}
+                          </div>
+                        </td>
                         <td>
                           <a href="{:url('admin/User/public_detail',['id'=>$vo['uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
                             {$vo.loginname}
@@ -56,8 +61,8 @@
                         </td>
                         <td>{$vo.phone}</td>
                         <td>{$vo.name}</td>
+                        <td>{$vo.full_department}</td>
                         <td>{$vo.Department}</td>
-
                         <td>{php}echo $vo['companyname'] ? $vo['companyname'].' / ' : '';{/php}{$vo.company_name}</td>
 
                         <!-- <td><a  class="layui-btn layui-btn-normal layui-btn-xs " data-title="分数管理"  data-trigger="modal" href="">0</a></td> -->
@@ -68,7 +73,14 @@
                         <td>
                           <a href="{:url('admin/nim/im_user',['uid'=>$vo['uid']])}"  class="layui-btn   layui-btn-xs " data-title="云信账号"  data-trigger="modal" title="編輯云帐号">IM</a>
                           <a href="{:url('admin/user/edit',['id'=>$vo['uid']])}"  class="layui-btn   layui-btn-xs " data-title="編輯成員"  data-trigger="modal" title="編輯"><i class="layui-icon">&#xe642;</i></a>
+                          <?php if($auth['admin/pushmsg/add'] ){ ?>
+                            <a href="{:url('admin/pushmsg/add',['uid'=>$vo['uid']])}" class="layui-btn layui-btn-success layui-btn-xs" data-title="发送推送"  data-trigger="modal" title="发送推送"  data-width="580px" ><i class="fa fa-envelope"></i></a>
+                          <?php } ?>
                           <a href="{:url('admin/user/delete',['id'=>$vo['uid']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除" ><i class="layui-icon">&#xe640;</i></a>
+                          <?php if($auth['admin/user/shift_delete'] ){ ?>
+                            <a href="{:url('admin/user/shift_delete',['id'=>$vo['uid']])}" class="layui-btn layui-btn-danger layui-btn-xs ajax-delete" title="彻底删除" data-hint="是否彻底删除?"><i class="layui-icon">&#xe640;</i></a>
+                          <?php } ?>
+
                         </td>
                     </tr>
                     {/foreach}
@@ -84,7 +96,23 @@
 {/block}
 {block name="script"}
 <script>
-initLayuiTable({ limit: {$pagesize} })
+PAGE_EXEC = {
+  init: function(){
+    initLayuiTable({ limit: {$pagesize} })
+    var $tableWrapper = $(".P-user-list [lay-filter=LAY-table-1] .layui-table-box");
+    var $tableWrapper_main = $tableWrapper.find(".layui-table-main");
+    var $tr = $tableWrapper_main.find('tr');
+    var $tableWrapper_l = $tableWrapper.find(".layui-table-fixed .layui-table-body");
+    $tr.each(function(index, el) {
+      if($(el).find("[data-field=uid]").find('.is_delete').length > 0){
+        $(el).addClass('delete');
+        $(el).find('.ajax-delete').hide();
+        $tableWrapper_l.find('tr').eq(index).addClass('delete')
+      }
+    });
+  }
+}
+PAGE_EXEC.init()
 
 </script>
 {/block}

@@ -4,6 +4,7 @@ namespace app\admin\controller;
 use app\content\model\Ads as AdsModel;
 use app\admin\controller\AdminBase;
 use think\Db;
+// use my\RedisData;
 
 /**
  * 广告图管理
@@ -41,8 +42,8 @@ class Ads extends AdminBase
         if (isset($filter['platform']) && $filter['platform'] ){
           $whereExp .= $whereExp ? "AND  ".$filter['platform'] ." in(platforms)" : $filter['platform'] ." in(platforms)";
         }
-        $lists  = AdsModel::where($map)->where($whereExp)->json(['images'])->order(['sort' => 'DESC', 'id' => 'DESC'])->paginate(20, false, ['page' => $page]);
-        $typeList = config('content.common_notice_type');
+        $lists  = AdsModel::where($map)->where($whereExp)->json(['images'])->order(['sort' => 'DESC', 'id' => 'DESC'])->paginate($pagesize, false, ['page' => $page]);
+        $typeList = config('content.ads_type');
         foreach ($lists as $key => $value) {
           $lists[$key]['platform_list'] =  explode(',',$value['platforms']);
           $lists[$key]['app_id_list'] =  explode(',',$value['app_ids']);
@@ -81,7 +82,9 @@ class Ads extends AdminBase
               $data['app_ids'] .=  $key;
             }
           }
-
+          if($data['link_type']>0 && !trim($data['link'])){
+            return $this->jsonReturn(-1,'你选择了跳转，请填写跳转连接');
+          }
           $validate_result = $this->validate($data, 'app\content\validate\Ads');
           if ($validate_result !== true) {
             return $this->jsonReturn(-1,$validate_result);
@@ -95,6 +98,9 @@ class Ads extends AdminBase
             'type' => $data['type'],
             'sort' => $data['sort'],
             'create_time' => date('Y-m-d H:i:s'),
+            'link_type' => $data['link_type'],
+            'link' => $data['link'],
+            'duration' => $data['duration'],
           ];
           if($data['thumb'] && trim($data['thumb'])){
             $upData['images'][0] =  $data['thumb'];
@@ -102,6 +108,11 @@ class Ads extends AdminBase
 
           $id = AdsModel::json(['images'])->insertGetId($upData);
           if ( $id ) {
+              //刷新数据版本的缓存。
+              foreach ($data['app_id'] as $key => $value) {
+                $keyOfDataVersion = 'carpool:ads:version:'.$key.'_'.$data['type'];
+                $this->updateDataVersion($keyOfDataVersion);
+              }
               $this->log('保存广告图成功',0);
               $this->jsonReturn(0,'保存成功');
           } else {
@@ -145,6 +156,9 @@ class Ads extends AdminBase
               $data['app_ids'] .=  $key;
             }
           }
+          if($data['link_type']>0 && !trim($data['link'])){
+            return $this->jsonReturn(-1,'你选择了跳转，请填写跳转连接');
+          }
           $validate_result = $this->validate($data, 'app\content\validate\Ads');
           if ($validate_result !== true) {
             return $this->jsonReturn(-1,$validate_result);
@@ -156,12 +170,19 @@ class Ads extends AdminBase
             'status' => $data['status'],
             'type' => $data['type'],
             'sort' => $data['sort'],
+            'link_type' => $data['link_type'],
+            'link' => $data['link'],
+            'duration' => $data['duration'],
           ];
           if($data['thumb'] && trim($data['thumb'])){
             $upData['images'][0] =  $data['thumb'];
           }
 
           if (AdsModel::json(['images'])->where('id',$id)->update($upData) !== false) {
+              foreach ($data['app_id'] as $key => $value) {
+                $keyOfDataVersion = 'carpool:ads:version:'.$key.'_'.$data['type'];
+                $this->updateDataVersion($keyOfDataVersion);
+              }
               $this->log('编辑广告图成功',0);
               $this->jsonReturn(0,'修改成功');
           } else {
@@ -171,7 +192,7 @@ class Ads extends AdminBase
 
       }else{
         $data = AdsModel::json(['images'])->find($id);
-        $typeList = config('content.common_notice_type');
+        $typeList = config('content.ads_type');
         $data['thumb'] = is_array($data["images"]) ? $data["images"][0] : "" ;
         $data['platform_list'] =  explode(',',$data['platforms']);
         $data['app_id_list'] =  explode(',',$data['app_ids']);
@@ -190,14 +211,27 @@ class Ads extends AdminBase
      */
     public function delete($id)
     {
-
-      if(AdsModel::where('id', $id)->update(['is_delete' => 1])){
+      $oldData = AdsModel::get($id);
+      if(!$oldData){
+        $this->jsonReturn(0,'删除成功');
+      }
+      $app_ids = explode(',',$oldData->app_ids);
+      $oldData->is_delete = 1;
+      if($oldData->save()){
+        if($oldData->status > 0){
+          foreach ($app_ids as $key => $value) {
+            $keyOfDataVersion = 'carpool:ads:version:'.$value.'_'.$oldData->type;
+            $this->updateDataVersion($keyOfDataVersion);
+          }
+        }
         $this->log('删除广告图成功',0);
         $this->jsonReturn(0,'删除成功');
       }else{
         $this->log('删除广告图失败',-1);
         $this->jsonReturn(-1,'删除失败');
       }
-
     }
+
+
+
 }

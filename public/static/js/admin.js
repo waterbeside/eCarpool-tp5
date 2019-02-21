@@ -325,9 +325,10 @@ function admin_init(){
   $(document).on('click',  '.ajax-delete', function() {
   // $('.ajax-delete').on('click', function () {
       var _href = $(this).attr('href');
+      var content = $(this).data('hint') || "确定删除？";
       layer.open({
           shade: false,
-          content: '确定删除？',
+          content: content,
           btn: ['确定', '取消'],
           yes: function (index) {
               $.ajax({
@@ -381,6 +382,56 @@ function admin_init(){
 
       return false;
   });
+
+  /**
+   * 下拉按钮
+   */
+  $(document).on('click',  '.btn-drop > a,.btn-drop >button', function() {
+  // $('#clear-cache').on('click', function () {
+      var $dropBox = $(this).closest('.btn-drop').find('.drop-box');
+      if($dropBox.hasClass('show')){
+        $dropBox.removeClass('show');
+      }else{
+        $dropBox.addClass('show');
+
+      }
+      $dropBox.click(function(e){
+        e.stopPropagation();
+      })
+      // $dropBox.find('a').click(function(e){
+      //   e.stopPropagation();
+      // })
+
+
+      return false;
+  });
+
+
+  /**
+   * 关闭drop
+   */
+  $(document).on('click', function(e) {
+    $('.drop-box').removeClass('show')
+  });
+
+  /**
+   * jump-select
+   */
+  $(document).on('change','select.select-jump', function(e) {
+      var e=e||event;
+      var $target = $(e.target);
+      var href = $target.find('option:selected').attr('href');
+      if(href){
+        layer.load(2,{ shade: [0.2,'#fff']});
+        location.href = href;
+      }else{
+        return false;
+      }
+  });
+
+
+
+
 }
 
 admin_init();

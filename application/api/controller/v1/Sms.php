@@ -3,6 +3,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\ApiBase;
 use app\carpool\model\User as UserModel;
+use app\user\model\UserOauth;
 use think\facade\Cache;
 use my\RedisData;
 use com\Nim as NimServer;
@@ -18,6 +19,7 @@ class Sms extends ApiBase
 {
     protected  $appKey = '';
     protected  $appSecret = '';
+    protected  $test_inter = 0;
     // usage 与对应的模板id
     protected $SmsTemplate  = array(
       // 'u_000'   => '4022147',
@@ -38,19 +40,28 @@ class Sms extends ApiBase
     protected function initialize()
     {
         parent::initialize();
-        $this->appKey     = config('secret.nim.appKey');
-        $this->appSecret  = config('secret.nim.appSecret');
+        $test_inter = input('param.test_inter');
+        if($test_inter){
+          $this->appKey = "8542794600d06d41ec89c8956972f886";
+          $this->appSecret  = "7310b481e48f";
+          $this->test_inter = 1;
+        }else{
+          $this->appKey     = config('secret.nim.appKey');
+          $this->appSecret  = config('secret.nim.appSecret');
+        }
+
     }
 
 
 
-    protected function codeCache($usage,$phone,$code=false,$exp=900)
+    protected function codeCache($usage,$phone,$code=false,$msg="",$exp=900)
     {
       $redis = new RedisData();
       $key = "common:sms_code:".$usage.":".$phone;
       if($code){
         $data = [
           'code'=>$code,
+          'msg'=>$msg,
           'time'=>time()
         ];
         // Cache::tag('public')->set($key, $data ,$exp);
@@ -76,40 +87,46 @@ class Sms extends ApiBase
 
     /**
      * 合并积分
+     * tAccount  目标账号
+     * $oAccount 被删账号
      */
     protected function mergeScore($tAccount,$oAccount,$nowTime){
       Db::connect('database_score')->startTrans();
       try{
         $scoreAccount_t = Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$tAccount],['is_delete','<>', 1]])->find();//取出目标员工号的积分账号信息
         $scoreAccount_o = Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$oAccount],['is_delete','<>', 1]])->find();//取出手机号的积分账号信息
-        $score_t = $scoreAccount_t['balance'];
-        $score_o = $scoreAccount_o['balance'];
+        if(!$scoreAccount_t){
+          throw new \Exception('10002');
+        }else{
+          $score_t = $scoreAccount_t['balance'];
+          $score_o = $scoreAccount_o['balance'];
+          $score_new = $score_t + $score_o; //合并积分
+          $historyData = [
+            "account_id" => $scoreAccount_t['id'],
+            "operand" => abs($score_o),
+            "reason" => $score_o > 0 ? 301 : -301,
+            "result" => $score_new,
+            "extra_info" => '{}',
+            "is_delete" => 0,
+            "time" => date('Y-m-d H:i:s'),
+          ];
+          Db::connect('database_score')->table('t_history')->insert($historyData); //插入因合并
+          Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$tAccount]])->setField('balance',$score_new); //员工账号加到手号账的积分
+          $historyData_o = [
+            "account_id" => $scoreAccount_o['id'],
+            "operand" => abs($score_o),
+            "reason" => -301,
+            "result" => 0,
+            "extra_info" => '{}',
+            "is_delete" => 0,
+            "time" => date('Y-m-d H:i:s'),
+          ];
+          Db::connect('database_score')->table('t_history')->insert($historyData_o); //旧账号添加一条扣分的历史
+          Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$oAccount]])->update(['carpool_account'=>'delete_'.$oAccount.'_'.$nowTime,'is_delete'=> 0,'balance'=>0]); //删除手机账号的积分账号
+            // 提交事务
+          Db::connect('database_score')->commit();
+        }
 
-        $score_new = $score_t + $score_o; //合并积分
-        $historyData = [
-          "account_id" => $scoreAccount_t['id'],
-          "operand" => abs($score_o),
-          "reason" => $score_o > 0 ? 301 : -301,
-          "result" => $score_new,
-          "extra_info" => '{}',
-          "is_delete" => 0,
-          "time" => date('Y-m-d H:i:s'),
-        ];
-        Db::connect('database_score')->table('t_history')->insert($historyData); //插入因合并
-        Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$tAccount]])->setField('balance',$score_new); //员工账号加到手号账的积分
-        $historyData_o = [
-          "account_id" => $scoreAccount_o['id'],
-          "operand" => abs($score_o),
-          "reason" => -301,
-          "result" => 0,
-          "extra_info" => '{}',
-          "is_delete" => 0,
-          "time" => date('Y-m-d H:i:s'),
-        ];
-        Db::connect('database_score')->table('t_history')->insert($historyData_o); //旧账号添加一条扣分的历史
-        Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$oAccount]])->update(['carpool_account'=>'delete_'.$oAccount.'_'.$nowTime,'is_delete'=> 0,'balance'=>0]); //删除手机账号的积分账号
-          // 提交事务
-        Db::connect('database_score')->commit();
       } catch (\Exception $e) {
         // echo($e);
         Db::connect('database_score')->rollback();
@@ -234,11 +251,7 @@ class Sms extends ApiBase
           break;
         }
         if($isSuccess){
-          if(count($phones)==1){
-            $this->jsonReturn(0,[],'success');
-          }else{
-            $this->jsonReturn(0,$sendCallBack,'success');
-          }
+          $this->jsonReturn(0,$sendCallBack,'success');
         }else{
           if($sendCallBack[''.$phone]['code'] == 10200){
             $this->jsonReturn(10200,$sendCallBack,'too often');
@@ -302,7 +315,6 @@ class Sms extends ApiBase
             return  $this->jsonReturn(-10002,[],'client error');
           };
           // collect user input data
-          $isAllData = in_array($client,array('ios','android')) ? 1 : 0 ;
           $phoneUserData = UserModel::where([['phone','=',$phone]])->find();
       		if(!$phoneUserData){
             $this->jsonReturn(10002,[],'user does not exist');
@@ -310,6 +322,13 @@ class Sms extends ApiBase
       		if(!$phoneUserData['is_active']){
             $this->jsonReturn(10003,[],'user does not active');
       		}
+
+          if($phoneUserData['is_delete']){
+            $this->jsonReturn(10003,[],'user does not active');
+      		}
+
+
+
           $jwt = $this->createPassportJwt(['uid'=>$phoneUserData['uid'],'loginname'=>$phoneUserData['loginname'],'client' => $client]);
           $returnData = array(
     				'user' => array(
@@ -321,6 +340,8 @@ class Sms extends ApiBase
     				),
     				'token'	=> $jwt
     			);
+
+
           $isAllUserData = in_array($client,['ios','android']) ? 1 : 0;
     			if($isAllUserData){
     				$returnData['user'] = $phoneUserData;
@@ -331,12 +352,35 @@ class Sms extends ApiBase
     					$returnData['user']['passwd'] = '';
     				}
     			}
+          $oAuthList = UserOauth::where('user_id',$phoneUserData['uid'])->select();
+          if($oAuthList){
+            foreach ($oAuthList as $key => $value) {
+              $returnData['user']['open_id_type_'.$value['type']] = $value['identifier'];
+            }
+          }
           if(isset($returnData['user'])){
             break;
           }else{
             $this->jsonReturn(-1,[],'fail');
           }
           break;
+
+        /******** 重置密码 *********/
+        case 102:
+        $password = input('post.password');
+        if($password){
+          if(strlen($password) < 6){
+            return $this->jsonReturn(-10002,[],lang('The new password should be no less than 6 characters'));
+          }
+          $hashPassword = md5($password); //加密后的密码
+          $status = UserModel::where([['phone','=',$phone],['is_delete','<>',1],['is_active','=',0]])->update(['md5password'=>$hashPassword]);
+          if($status!==false){
+            return $this->jsonReturn(0,[],"success");
+          }else{
+            return $this->jsonReturn(-1,[],"fail");
+          }
+        }
+        break;
 
         /******** 绑定手机号 *********/
         case 103:
@@ -382,7 +426,8 @@ class Sms extends ApiBase
               $update_phoneUserData = [
                 "loginname" => 'delete_'.$phoneUserData['loginname'].'_'.$nowTime,
                 "phone" => 'delete_'.$phoneUserData['phone'],
-                "is_active" => 0
+                "is_active" => 0,
+                "is_delete" => 1
               ];
 
               Db::connect('database_carpool')->table('user')->where('uid',$phoneUserData['uid'])->update($update_phoneUserData);//更改原手机账号状态为禁用。
@@ -397,15 +442,18 @@ class Sms extends ApiBase
               // 提交事务
               Db::connect('database_carpool')->commit();
           } catch (\Exception $e) {
-              echo($e);
+              // echo($e);
               // 回滚事务
               Db::connect('database_carpool')->rollback();
               $logMsg = "合并账号失败:".json_encode($this->request->post());
               $this->log($logMsg,-1);
-              $this->jsonReturn(-1,[],lang('Fail'),['debug'=>$e->getMessage()]);
+              if($e->getMessage()=="10002"){
+                $this->jsonReturn(10002,[],"目标账号未开通积分账号，请直接登入员工号进行绑定操作",['debug'=>$e->getMessage()]);
+              }else{
+                $this->jsonReturn(-1,[],lang('Fail'),['debug'=>$e->getMessage()]);
+              }
           }
           $this->log('合并账号成功',0);
-
           break;
 
         default:
@@ -439,6 +487,9 @@ class Sms extends ApiBase
     $templates = $this->SmsTemplate;
     $templateid =   $templates['u_'.$usage] ; //短信验证码的模板ID
 
+    if($this->test_inter){
+      $templateid = '9284311';
+    }
     $cacheData_o = $this->codeCache($usage,$phone);
 
     if($cacheData_o && time() - $cacheData_o['time'] < 52 && !$dev){  //1分钟内不准再发。
@@ -447,7 +498,6 @@ class Sms extends ApiBase
     $NIM = new NimServer($this->appKey,$this->appSecret,'fsockopen');
     // var_dump($SMS);
     $phone = preg_replace('# #','',$phone);
-
     if($dev){
       $sendRes  = array( //test
         'code'  => 200,
@@ -459,8 +509,7 @@ class Sms extends ApiBase
     }
     /**/
     if(isset($sendRes['obj'])){
-      $this->codeCache($usage,$phone,$sendRes['obj'],$expiration);
-
+      $this->codeCache($usage,$phone,$sendRes['obj'],$sendRes['msg'],$expiration);
       unset($sendRes['obj']);
     }
     return  $sendRes;
@@ -517,6 +566,15 @@ class Sms extends ApiBase
 
 
 
+
+  /**
+   * 查询短信发送情况
+   */
+  public function sms_status($sendid){
+    $NIM = new NimServer($this->appKey,$this->appSecret,'fsockopen');
+    $res = $NIM->querySMSStatus($sendid);
+    $this->jsonReturn(0,$res);
+  }
 
 
 }

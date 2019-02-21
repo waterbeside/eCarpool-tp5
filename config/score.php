@@ -50,4 +50,18 @@ return [
       "1"=>"推荐",
       "2"=>"置顶",
     ],
+    "rule_number"=>[
+      "0" => [
+        "title"=>"国内地区",
+        "region" => "",
+      ],
+      "1" => [
+        "title"=>"越南地区",
+        "region" => "Vietnam",
+      ],
+    ],
+    "integral_number_department"=>[
+      "Esquel Group" => 0,
+      "Esquel Group,Vietnam" => 1,
+    ],
 ];

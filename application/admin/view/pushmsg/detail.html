@@ -1,0 +1,64 @@
+<div class="amain-body P-push-detail">
+    <table class="layui-table">
+      <tbody>
+        <tr>
+          <td class="label" width="100">用户名</td>
+          <td>{$data.loginname}</td>
+        </tr>
+        <tr>
+          <td class="label">标题</td>
+          <td>{$data.title}</td>
+        </tr>
+        <tr>
+          <td class="label">内容</td>
+          <td>{$data.body}</td>
+        </tr>
+        <tr>
+          <td class="label">发送状态</td>
+          <td>
+            <?php
+            switch ($data['push_status']) {
+              case 0:
+                echo "未发送";
+                break;
+              case 1:
+                echo "发送成功";
+                break;
+              case -1:
+                echo "发送失败";
+                break;
+              default:
+                break;
+            }
+            ?></td>
+        </tr>
+        <tr>
+          <td class="label">创建时间</td>
+          <td>{$data.create_time|date="Y-m-d H:i"}</td>
+        </tr>
+        <tr>
+          <td class="label">推送时间</td>
+          <td><?php echo $data['push_time'] ? date("Y-m-d H:i",strtotime($data['push_time'])) : "-" ?></td>
+        </tr>
+
+      </tbody>
+    </table>
+    <blockquote class="layui-elem-quote layui-elem-quote-success">
+      <?php
+      if( isset($data['extra_data']['push_res'] )){
+        echo  json_encode($data['extra_data']['push_res']) ;
+      }else{
+        echo "-";
+      }
+      ?>
+    </blockquote>
+
+</div>
+
+<script>
+// form.render();
+
+
+
+
+</script>

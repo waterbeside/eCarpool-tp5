@@ -11,6 +11,8 @@ return [
       "2" => 'Android',
       "3" => 'H5',
       "4" => 'master',
-
+    ],
+    'user_oauth_type' => [
+      '1' => '微信',
     ]
 ];

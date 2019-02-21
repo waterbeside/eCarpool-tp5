@@ -1,0 +1,92 @@
+<div class=" P-pushmsg-add">
+    <div class=" form-wrapper">
+        <form class="layui-form form-container" action="{:url('admin/pushmsg/add')}" method="post" onsubmit="return PushmsgAdd_PAGE_EXEC.submit(this);">
+
+            <div class="layui-form-item">
+              <label class="layui-form-label">标题</label>
+              <div class="layui-input-block">
+                  <input type="text" name="title" value="" required  lay-verify="required" placeholder="标题" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">badge</label>
+              <div class="layui-input-block">
+                  <input type="text" name="badge" value="+1" placeholder="badge" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">内容</label>
+              <div class="layui-input-block">
+                <textarea name="body"    class="layui-textarea"   ></textarea>
+              </div>
+            </div>
+
+            <div class="layui-form-item">
+              <label class="layui-form-label">App_id</label>
+              <div class="layui-input-block">
+                <select name="app_id">
+                    {foreach name="app_id_list" key='key' item="vo"}
+                    <option value="{$key}" > {$vo}</option>
+                    {/foreach}
+                </select>
+
+              </div>
+            </div>
+
+            <div class="layui-form-item" <?php if($uid > 0){ echo 'style="display:none"';} ?>>
+              <label class="layui-form-label">用户uid</label>
+              <div class="layui-input-block">
+                  <input type="text" name="uid" value="{$uid ? $uid : ''}" required  lay-verify="required" placeholder="UID" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <div class="layui-input-block">
+                  <button class="layui-btn" type="submit" >提交</button>
+                  <!-- <button type="reset" class="layui-btn layui-btn-primary">重置</button> -->
+              </div>
+            </div>
+        </form>
+    </div>
+    <div class="submit-return-msg" style="display:none">
+        <div class="return-success-wrapper">
+           <div class="icon-wrapper">
+             <i class="fa fa-check-circle " data-dismiss="modal"></i>
+            </div>
+           <p class="text"> 成功 </p>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+  var PushmsgAdd_PAGE_EXEC = {
+    init: function(){
+      form.render();
+    },
+     submit: function(){
+      var $pageWrapper = $(".P-pushmsg-add");
+      var $formWrapper = $pageWrapper.find(".form-wrapper");
+      var $form = $formWrapper.find("form");
+      var setting = {
+        unrefresh:true,
+        data: $form.serializeArray(),
+        url:$form.attr("action"),
+        success:function(res){
+          if(res.code===0){
+            if($(".P-pushmsg-index").length > 0){
+              reload();
+            }
+            $pageWrapper.find(".submit-return-msg").show();
+            $formWrapper.hide();
+          }else{
+
+          }
+        }
+      };
+      ajaxSubmit(setting);
+      return false;
+    },
+  }
+  PushmsgAdd_PAGE_EXEC.init();
+</script>

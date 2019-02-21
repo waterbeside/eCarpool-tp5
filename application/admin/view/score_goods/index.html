@@ -6,18 +6,20 @@
     <div class="layui-tab layui-tab-brief">
 
         <ul class="  amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/ScoreGoods/index')}"  >产品管理</a></li>
+            <li class="layui-this"><a href="{:url('admin/ScoreGoods/index',['rule_number'=>$rule_number])}"  >产品管理</a></li>
             <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ScoreGoods/add')}"  data-title="添加商品"  data-trigger="modal" >
+              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ScoreGoods/add',['rule_number'=>$rule_number])}"  data-title="添加商品"  data-trigger="modal" >
               <i class="fa fa-plus"></i> 添加商品</a>
             </li>
-
+            <li class="btn-item btn-item-right ">
+              {include file="_components/select_ruleNumber" /}
+            </li>
         </ul>
 
         <div class="layui-tab-content dark-grey-wrapper ">
 
 
-                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreGoods/index')}" method="get">
+                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreGoods/index',['rule_number'=>$rule_number])}" method="get">
                     <div class="layui-inline">
                         <label class="layui-form-label">检索</label>
                         <div class="layui-input-inline">
@@ -45,35 +47,37 @@
                     </div>
                 </form>
                 <hr>
-                <div class="good-list">
+                <div class="card-list-01 good-list">
                   <form class="layui-form">
                     {if !count($lists)>0}无数据{/if}
                     {foreach name="lists" item="vo"}
                     <div class="am-card  <?php echo $vo['is_delete'] ? 'unshow' : '' ;?>">
-                      <div class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>">  </div>
-                      <div class="am-card-body">
-                        <h5 class="am-card-title layui-elip" >
-                          <a href="{:url('admin/ScoreGoods/edit',['id'=>$vo['id']])}"   data-title="編輯商品 #{$vo.id}"  data-trigger="modal" title="編輯商品 #{$vo.id}">{$vo.name}
+                      <div class="am-card-padding-inner">
 
-                          </a>
-                        </h5>
-                        <span class="id">#{$vo.id}</span>
-                        <p class="am-card-text">{$vo.desc|iconv_substr=0,80}...</p>
-                        <div class="info">
-                          <span class="info-item price"> 兑换价：<b >{$vo.price}</b></span>
-                          <span class="info-item  amount"> 采购价：<b >{$vo.amount}</b></span>
-                          <span class="info-item  inventory">库存：<b>{$vo.inventory >-1 ?$vo.inventory : '无限'}</b></span>
-                          <span class="info-item  status">状态：<b><?php echo $statusList[$vo['status']] ;?> / <small><?php echo $vo['is_delete'] ? "不显示" : "显示" ;?></small></b></span>
-                        </div>
-                        <div class="btns-wrapper">
-                          <a href="javascript:void(0);" onclick="refreshGoodCache(this)" data-id="{$vo.id}"  data-disabled="0" class="ibtn layui-btn layui-btn-primary    layui-btn-radius   "><i class="fa fa-refresh"></i> 刷新</a>
+                        <div class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>">  </div>
+                        <div class="am-card-body">
+                          <h5 class="am-card-title layui-elip" >
+                            <a href="{:url('admin/ScoreGoods/edit',['id'=>$vo['id']])}"   data-title="編輯商品 #{$vo.id}"  data-trigger="modal" title="編輯商品 #{$vo.id}">
+                              {$vo.name}
+                            </a>
+                          </h5>
+                          <span class="id">#{$vo.id}</span>
+                          <p class="am-card-text">{$vo.desc|iconv_substr=0,80}...</p>
+                          <div class="info-bar">
+                            <span class="info-item price"> 兑换价：<b >{$vo.price}</b></span>
+                            <span class="info-item  amount"> 采购价：<b >{$vo.amount}</b></span>
+                            <span class="info-item  inventory">库存：<b>{$vo.inventory >-1 ?$vo.inventory : '无限'}</b></span>
+                            <span class="info-item  status">状态：<b><?php echo $statusList[$vo['status']] ;?> / <small><?php echo $vo['is_delete'] ? "不显示" : "显示" ;?></small></b></span>
+                          </div>
+                          <div class="btns-wrapper">
+                            <a href="javascript:void(0);" onclick="refreshGoodCache(this)" data-id="{$vo.id}"  data-disabled="0" class="ibtn layui-btn layui-btn-primary    layui-btn-radius   "><i class="fa fa-refresh"></i> 刷新</a>
 
-                          <!-- <input type="checkbox" name="is_delete" value="1" lay-skin="switch" lay-text="显示|隐藏" {if condition="$vo.is_delete!=1"} checked="checked"{/if}> -->
-                          <a href="{:url('admin/ScoreGoods/edit',['id'=>$vo['id']])}"  data-title="編輯商品 #{$vo.id}"  data-trigger="modal" title="編輯商品 #{$vo.id}" class="ibtn layui-btn    layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a>
+                            <!-- <input type="checkbox" name="is_delete" value="1" lay-skin="switch" lay-text="显示|隐藏" {if condition="$vo.is_delete!=1"} checked="checked"{/if}> -->
+                            <a href="{:url('admin/ScoreGoods/edit',['id'=>$vo['id']])}"  data-title="編輯商品 #{$vo.id}"  data-trigger="modal" title="編輯商品 #{$vo.id}" class="ibtn layui-btn    layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a>
 
+                          </div>
                         </div>
                       </div>
-
                     </div>
                     {/foreach}
                   </form>

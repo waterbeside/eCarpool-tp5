@@ -27,7 +27,7 @@ class ScoreGoods extends AdminBase
    * 商品列表
    * @return mixed
    */
-  public function index($type='2',$keyword="",$filter=['status'=>'','is_hidden'=>''],$page = 1,$pagesize = 20)
+  public function index($type='2',$keyword="",$filter=['status'=>'','is_hidden'=>''],$page = 1,$pagesize = 20,$rule_number=NULL)
   {
     $map = [];
 
@@ -41,20 +41,35 @@ class ScoreGoods extends AdminBase
     if ($keyword) {
         $map[] = ['name|desc','like', "%{$keyword}%"];
     }
+    if (is_numeric($rule_number)) {
+        $map[] = ['rule_number','=', $rule_number];
+    }
     $lists = GoodsModel::where($map)->json(['images'])->order('id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
     foreach ($lists as $key => $value) {
       $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
     }
     $statusList = $this->goods_status;
     $scoreConfigs = (new Configs())->getConfigs("score");
-    return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword,'pagesize'=>$pagesize,'type'=>$type,'statusList'=>$statusList,'filter'=>$filter,'scoreConfigs'=>$scoreConfigs]);
+    $returnData = [
+      'lists' => $lists,
+      'rule_number' => $rule_number,
+      'rule_number_lists' => config("score.rule_number"),
+      'keyword' => $keyword,
+      'pagesize'=>$pagesize,
+      'type'=>$type,
+      'statusList'=>$statusList,
+      'filter'=>$filter,
+      'scoreConfigs'=>$scoreConfigs
+    ];
+    return $this->fetch('index', $returnData);
   }
 
 
   /**
    * 添加商品
    */
-  public function add(){
+  public function add()
+  {
     if ($this->request->isPost()) {
       $data               = $this->request->post();
       //开始验证字段
@@ -73,6 +88,7 @@ class ScoreGoods extends AdminBase
         'is_delete'=> isset($data['is_show']) && $data['is_show'] ? 0 : 1,
         'operator' => $this->userBaseInfo['uid'],
         'update_time' => date('Y-m-d H:i:s'),
+        'rule_number' => $data['rule_number'],
       ];
       if($data['thumb'] && trim($data['thumb'])){
         $upData['images'][0] =  $data['thumb'];
@@ -88,7 +104,8 @@ class ScoreGoods extends AdminBase
           return $this->jsonReturn(-1,'保存失败');
       }
     }else{
-      return $this->fetch('add', ['goods_status' => $this->goods_status]);
+      $rule_number               = $this->request->param('rule_number');
+      return $this->fetch('add', ['goods_status' => $this->goods_status,'rule_number'=>$rule_number]);
     }
   }
 
@@ -97,7 +114,8 @@ class ScoreGoods extends AdminBase
    * 编辑
    * @param  [int] $id 商品id
    */
-  public function edit($id){
+  public function edit($id)
+  {
     if ($this->request->isPost()) {
       $data               = $this->request->post();
       //开始验证字段
@@ -151,7 +169,8 @@ class ScoreGoods extends AdminBase
    * 刷新缓存
    * @var [type]
    */
-  public function public_recache($id=0){
+  public function public_recache($id=0)
+  {
     $scoreConfigs = (new Configs())->getConfigs("score");
     return (new GoodsModel())->reBuildRedis($id);
   }
