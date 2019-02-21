@@ -107,6 +107,14 @@ body {background:#FFF; color:$color-black-l1}
    & > .aframe-sidebox{ width:200px;   flex:0 0 auto; height:100%; z-index: 8}
 }
 
+
+.return-success-wrapper {
+  text-align: center;
+  .icon-wrapper {
+    font-size: 80px; color:$color-success;
+  }
+}
+
 //侧栏
 .aframe-sidebox {
   $btn-height: 38px;
@@ -332,6 +340,8 @@ body {background:#FFF; color:$color-black-l1}
   &-title { font-size: 16px; font-weight: 700;}
 }
 .am-card  + .am-card  {}
+
+
 
 
 
