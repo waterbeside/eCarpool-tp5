@@ -1,0 +1,90 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body P-pushmsg-index">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <ul class="amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('index')}"  >推送消息</a></li>
+            <li class="btn-item btn-item-add">
+              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('add')}"  data-title="添加推送"  data-trigger="modal" >
+              <i class="fa fa-plus"></i> 添加推送</a>
+            </li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+
+                <form class="layui-form layui-form-pane" action="{:url('index')}" method="get">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">检索</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="keyword" value="{$filter.keyword ? $filter.keyword : '' }" placeholder="请输入关键词" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn"><i class="fa fa-search"></i></button>
+                    </div>
+                </form>
+                <hr>
+
+                <table class="layui-table">
+                    <thead>
+                    <tr>
+                        <th lay-data="{field:'id', width:100}">ID</th>
+                        <th lay-data="{field:'body'}">标题</th>
+                        <th lay-data="{field:'loginname', width:120}">user</th>
+                        <th lay-data="{field:'push_status', width:120}">推送状态</th>
+                        <th lay-data="{field:'push_time', width:120}">创建日期<br />推送日期</th>
+                        <!-- <th lay-data="{field:'options', width:120}">操作</th> -->
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {foreach name="lists" item="vo"}
+                    <tr>
+                        <td>{$vo.id}</td>
+                        <td>
+                          <h3><a href="{:url('detail',['id'=>$vo['id']])}"  data-title="详情"  data-trigger="modal" >{$vo.title}</a></h3>
+                          <div>
+                            {$vo.body}
+                          </div>
+                        </td>
+                        <td title="{$vo.uid}">{$vo.loginname}</td>
+                        <td>
+                          <?php
+                          switch ($vo['push_status']) {
+                            case 0:
+                              echo "未发送";
+                              break;
+                            case 1:
+                              echo "发送成功";
+                              break;
+                            case -1:
+                              echo "发送失败";
+                              break;
+                            default:
+                              break;
+                          }
+                          ?>
+                        </td>
+                        <td>
+                          创:{$vo.create_time|date="Y-m-d H:i"}  <br />
+                          推:<?php echo $vo['push_time'] ? date("Y-m-d H:i",strtotime($vo['push_time'])) : "-" ?>
+                        </td>
+
+                        <!-- <td>   </td> -->
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+                <!--分页-->
+                {$lists|raw}
+
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+
+</script>
+{/block}
