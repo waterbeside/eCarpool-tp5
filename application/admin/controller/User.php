@@ -43,7 +43,7 @@ class User extends AdminBase
           $map[] = ['u.loginname|u.phone|u.name','like', "%{$filter['keyword']}%"];
         }
         //筛选部门
-        if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
+        if (isset($filter['keyword_user']) && $filter['keyword_user'] ){
           $map[] = ['d.fullname|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
           // $map[] = ['u.Department|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
         }
@@ -52,7 +52,18 @@ class User extends AdminBase
           ['t_department d','u.department_id = d.id','left'],
         ];
         $user_list = $this->user_model->alias('u')->field($fields)->join($join)->where($map)->order('uid DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
-        return $this->fetch('index', ['user_list' => $user_list, 'filter' => $filter,'pagesize'=>$pagesize]);
+        $auth = [];
+        $auth['admin/user/shift_delete'] = $this->checkActionAuth('admin/User/add');
+        $auth['admin/pushmsg/add'] = $this->checkActionAuth('admin/Pushmsg/add');
+        $auth['admin/User/shift_delete'] = $auth['admin/user/shift_delete'];
+        $auth['admin/Pushmsg/add'] = $auth['admin/pushmsg/add'];
+        $returnData = [
+          'user_list' => $user_list,
+          'filter' => $filter,
+          'pagesize'=>$pagesize,
+          'auth' => $auth,
+        ];
+        return $this->fetch('index', $returnData);
     }
 
 
@@ -77,9 +88,13 @@ class User extends AdminBase
       $userInfo->full_department = $DepartmentModel->where('id',$userInfo->department_id)->value('fullname');
       $department_format = $DepartmentModel->formatFullName($userInfo->full_department);
       $userInfo->department_format = $department_format ? $department_format['branch']."/".$department_format['short_name'] : '';
+      $auth = [];
+      $auth['admin/pushmsg/add'] = $this->checkActionAuth('admin/Pushmsg/add');
+      $auth['admin/Pushmsg/add'] = $auth['admin/pushmsg/add'];
       $returnData = [
         'data'=>$userInfo,
         'companys'=>$companys,
+        'auth' => $auth,
       ];
       return $this->fetch('detail', $returnData);
 
