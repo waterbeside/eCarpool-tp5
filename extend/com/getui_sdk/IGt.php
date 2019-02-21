@@ -1,5 +1,6 @@
 <?php
-namespace org\getui_sdk;
+namespace com\getui_sdk;
+
 //
 require_once(dirname(__FILE__) . '/' . 'IGt.Push.php');
 require_once(dirname(__FILE__) . '/' . 'igetui/utils/AppConditions.php');
@@ -155,12 +156,13 @@ Class IGt
     $default = [
       'title'=>"溢起拼车",
       'text'=>"",
-      'transmissionType'=>1,
+      'transmissionType'=>2,
       'logo'=>'http://gitsite.net/carpool_assist/static/images/carpool80.png',
-      'isRing'=>false,
-      'isVibrate'=>false,
+      'isRing'=>true,
+      'isVibrate'=>true,
       'isClearable' => true,
       'onlyWifi' =>false,
+      'content-available' =>0 ,
     ];
     if(is_string($setting)){
       $tplSetting['content'] = $setting;
@@ -209,8 +211,9 @@ Class IGt
       $alertmsg->titleLocArgs=array("TitleLocArg");
 
       $apn->alertMsg=$alertmsg;
-
-      $apn->badge= 1;
+      $apn->contentAvailable= $tplSetting['content-available'];
+      $apn->title = $tplSetting['title'];
+      $apn->badge= isset($setting['badge']) ? $setting['badge'] : "1";
       // $apn->autoBadge = "+1";
       $apn->sound="";
       $apn->add_customMsg("payload","payload");
@@ -230,18 +233,17 @@ Class IGt
       $template->set_apnInfo($apn);
 
     }else{
+      // var_dump($tplSetting);
       $template->set_title($tplSetting['title']);//通知栏标题
       $template->set_text($tplSetting['text']);//通知栏内容
-      $template->set_logo($tplSetting['isRing']);//通知栏logo
-      $template->set_isRing($tplSetting['logo']);//是否响铃
-      $template->set_isVibrate(true);//是否震动
-      $template->set_isClearable(true);//通知栏是否可清除
+      $template->set_logoURL($tplSetting['logo']);//通知栏logo
+      $template->set_isRing($tplSetting['isRing']);//是否响铃
+      $template->set_isVibrate($tplSetting['isVibrate']);//是否震动
+      $template->set_isClearable($tplSetting['isClearable']);//通知栏是否可清除
       if(isset($tplSetting['url'])){
         $template ->set_url($tplSetting['url']);//打开连接地址
       }
-      if(isset($tplSetting['content'])){
-        $template ->set_transmissionContent($tplSetting['content']);//透传内容
-      }
+
     }
 
 

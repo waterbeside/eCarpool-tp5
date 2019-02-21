@@ -9,12 +9,10 @@ use think\facade\Env;
 // require_once(Env::get('root_path') . 'extend/org/getui_sdk/IGt.php');
 
 
-class PushMessage extends Model
+class Pushmsg extends Model
 {
-  protected $table = 'pull_message';
-  protected $connection = 'database_carpool';
-  protected $pk = 'message_id';
-
+  // protected $table = 'pushmsg';
+  public $errorMsg = NULL;
 
   /**
    * 添加消息推送
@@ -22,34 +20,20 @@ class PushMessage extends Model
    * @param  $msg  [description]
    * @param [type] $type [description]
    */
-  public function  add($uid,$msg="",$title="",$type=101,$is_notify=1){
+  public function  add($data){
     $default_data = [
-      'message_time' => date("Y-m-d H:i:s"),
-      'module_id' => $type,
-      'message_type' => $type,
-      'is_notify' => 0,
+      'create_time' => date("Y-m-d H:i:s"),
     ];
-    if(is_array($msg)){
-      $data = $msg;
-    }else{
-      $data = [
-        'uid' => $uid,
-        'message_title' => $title,
-        'message_content' => $msg,
-        'is_notify' => $is_notify,
-        'module_id' => $type,
-        'message_type' => $type,
-      ];
-    }
     $data = array_merge($default_data,$data);
     return $this->insertGetId($data);
-
   }
 
 
 
-  public function push($uid,$msg="",$title="",$app_id){
+  public function push($uid,$data="",$app_id=1){
+    
     $getuiSetting = config('secret.getui')["$app_id"];
+
     if(is_array($uid)){
       $cid = User::where("uid","in",$uid)->column('client_id');
     }else{
@@ -57,13 +41,18 @@ class PushMessage extends Model
     }
 
     if(!$cid){
+      $this->errorMsg = "No client_id";
       return false;
     }
-    $tplSetting = [
-      'title' => $title,
-      'text' => $msg,
-      'content' => $msg,
+
+    $default_data = [
+      'title' => isset($data['title']) ? $data['title'] : "Carpool",
+      'content' => $data['body'],
+      'text' => isset($data['text']) ? $data['text'] : $data['body'],
+      'payload' => isset($data['payload']) ? $data['payload'] : $data['body'],
     ];
+    $tplSetting =  array_merge($default_data, $data);
+
     $IGT = new IGt($getuiSetting['appKey'],$getuiSetting['masterSecret'],$getuiSetting['appID']);
     if(is_array($cid)){
       $cids = [];
@@ -74,7 +63,7 @@ class PushMessage extends Model
       }
       return $IGT->pushMessageToList($tplSetting,$cid);
     }else{
-      return $IGT->pushMessageToSingle($tplSetting,$cid);
+      return $IGT->pushMessageToSingle($tplSetting,$cid,2);
     }
 
 
