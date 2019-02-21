@@ -29,13 +29,17 @@ class ScoreWinners extends AdminBase
    * 中奖列表
    * @return mixed
    */
-  public function index($filter=[],$page = 1,$pagesize = 20,$export=0)
+  public function index($filter=[],$page = 1,$pagesize = 20,$export=0,$rule_number=NULL)
   {
     $map = [];
     $map[] = ['t.is_delete','<>', 1];
     //筛选奖品信息
     if (isset($filter['keyword_prize']) && $filter['keyword_prize'] ){
       $map[] = ['pr.name','like', "%{$filter['keyword_prize']}%"];
+    }
+    //地区区分
+    if (is_numeric($rule_number)) {
+      $map[] = ['pr.rule_number','=', $rule_number];
     }
     //筛选用户信息
     if (isset($filter['keyword_user']) && $filter['keyword_user'] ){
@@ -106,7 +110,14 @@ class ScoreWinners extends AdminBase
       $companys[$value['company_id']] = $value['company_name'];
     }
     // dump($lists);
-    return $this->fetch('index', ['lists' => $lists,'pagesize'=>$pagesize,'filter'=>$filter,'companys'=>$companys]);
+    $returnData =  [
+      'rule_number' => $rule_number,
+      'lists' => $lists,
+      'pagesize'=>$pagesize,
+      'filter'=>$filter,
+      'companys'=>$companys
+    ];
+    return $this->fetch('index', $returnData);
 
   }
 
@@ -174,7 +185,8 @@ class ScoreWinners extends AdminBase
      * @param  integer $id       订单id
      * @param  string  $order_no 订单号
      */
-    public function finish($id=0){
+    public function finish($id=0)
+    {
       $admin_id = $this->userBaseInfo['uid'];
       if ($this->request->isPost()) {
         if(!$id ){

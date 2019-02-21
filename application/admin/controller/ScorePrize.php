@@ -19,7 +19,7 @@ class ScorePrize extends AdminBase
    * 抽奖列表
    * @return mixed
    */
-  public function index($keyword="",$filter=['status'=>'0,1,2','is_hidden'=>''],$page = 1,$pagesize = 20, $rule_number= 0)
+  public function index($keyword="",$filter=['status'=>'0,1,2','is_hidden'=>''],$page = 1,$pagesize = 20, $rule_number= NULL)
   {
     $map = [];
 
@@ -66,7 +66,6 @@ class ScorePrize extends AdminBase
       'filter'=>$filter,
       'scoreConfigs'=>$scoreConfigs,
       'auth'=>$auth,
-
     ];
 
 
@@ -77,7 +76,8 @@ class ScorePrize extends AdminBase
   /**
    * 添加抽奖
    */
-  public function add(){
+  public function add()
+  {
 
     if ($this->request->isPost()) {
       $data               = $this->request->post();
@@ -156,7 +156,8 @@ class ScorePrize extends AdminBase
    * 编辑
    * @param  [int] $id 抽奖id
    */
-  public function edit($id){
+  public function edit($id)
+  {
     if(!$id){
       $this->error("Lost id");
     }
@@ -234,7 +235,8 @@ class ScorePrize extends AdminBase
 
   /**
    */
-  public function prizes_unq($page=1,$keyword=''){
+  public function prizes_unq($page=1,$keyword='')
+  {
     $pagesize = 20;
     $map = [];
     if ($keyword) {
@@ -248,7 +250,8 @@ class ScorePrize extends AdminBase
    * 查询奖品最大期数等信息
    * @param  String $identity 奖品标识
    */
-  public function checkMaxData($identity){
+  public function checkMaxData($identity)
+  {
     if(!$identity){
       return false;
     }

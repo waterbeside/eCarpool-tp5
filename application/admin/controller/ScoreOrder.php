@@ -30,11 +30,15 @@ class ScoreOrder extends AdminBase
    * 订单列表
    * @return mixed
    */
-  public function index($filter=[],$status="0",$page = 1,$pagesize = 15,$export=0)
+  public function index($filter=[],$status="0",$page = 1,$pagesize = 15,$export=0,$rule_number=NULL)
   {
     $map = [];
     $map[] = ['t.is_delete','<>', 1];
 
+    //地区区分
+    if (is_numeric($rule_number)) {
+      $map[] = ['t.rule_number','=', $rule_number];
+    }
 
     //筛选状态
     if(is_numeric($status)){
@@ -219,7 +223,16 @@ class ScoreOrder extends AdminBase
     }else{
       // dump($lists);
       $statusList = config('score.order_status');
-      return $this->fetch('index', ['lists' => $lists, 'pagesize'=>$pagesize,'statusList'=>$statusList,'filter'=>$filter,'status'=>$status,'companys'=>$companys]);
+      $returnData = [
+        'rule_number' => $rule_number,
+        'lists' => $lists,
+        'pagesize'=>$pagesize,
+        'statusList'=>$statusList,
+        'filter'=>$filter,
+        'status'=>$status,
+        'companys'=>$companys
+      ];
+      return $this->fetch('index', $returnData);
     }
 
 
@@ -377,8 +390,8 @@ class ScoreOrder extends AdminBase
   /**
    * 商品订单 下单者列表
    */
-  public function good_owners($gid,$time,$pagesize = 30,$status= 0, $filter=['keyword'=>'' ]){
-
+  public function good_owners($gid,$time,$pagesize = 30,$status= 0, $filter=['keyword'=>'' ])
+  {
     if(!$gid){
       $this->error('Lost id');
     }
@@ -460,7 +473,8 @@ class ScoreOrder extends AdminBase
   /**
    *
    */
-  public function owners($time,$pagesize = 30,$filter=['keyword'=>'']){
+  public function owners($time,$pagesize = 30,$filter=['keyword'=>''])
+  {
 
   }
 

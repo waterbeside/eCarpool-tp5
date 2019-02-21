@@ -11,10 +11,13 @@
             <li class="btn-item-right">
               <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="exportExcel()"  ><i class="fa fa-file-excel-o"></i> 导出报表</a>
             </li>
+            <li class="btn-item btn-item-right ">
+              {include file="_components/select_ruleNumber" /}
+            </li>
         </ul>
 
         <div class="amain-content">
-          <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreOrder/index')}" method="get" onsubmit="submitForm()">
+          <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreOrder/index',['rule_number'=>$rule_number])}" method="get" onsubmit="submitForm()">
               <div class="layui-inline">
                   <div class="layui-input-inline">
                       <input type="text" name="filter[order_num]" value="{$filter['order_num'] ? $filter['order_num'] :''}" placeholder="请输入订单号" class="layui-input">

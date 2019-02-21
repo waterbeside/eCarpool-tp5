@@ -39,7 +39,7 @@ class ContentIdle extends AdminBase
         $map[] = ['t.title|t.desc','like','%'.$filter['keyword'].'%'];
       }
       if(isset($filter['keyword_user']) && $filter['keyword_user']){
-        $map[] = ['u.name|u.nativename|u.loginname','like','%'.$filter['keyword'].'%'];
+        $map[] = ['u.name|u.nativename|u.loginname','like','%'.$filter['keyword_user'].'%'];
       }
       if(isset($filter['show_level']) && is_numeric($filter['show_level']) ){
         $map[] = ['t.show_level','=',$filter['show_level']];

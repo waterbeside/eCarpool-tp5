@@ -18,42 +18,41 @@ use think\Db;
 class ScoreReports extends AdminBase
 {
   protected $exclude_scoreAccounnt_id = ['25','96','776','9','12','2'];
-  protected $exclude_carpoolAccounnt = ['GET0285739','GET0296132','GET0294174','GET0296293','GET0295503','GET0296269'];
+  protected $exclude_carpoolAccounnt  = ['GET0285739','GET0296132','GET0294174','GET0296293','GET0295503','GET0296269'];
 
   /**
    * [index description]
    *
    */
-  public function index($filter=[])
+  public function index($filter=[],$rule_number=NULL);
   {
     $timeStr = isset($filter['time'])?$filter['time']:0;
     $period = $this->get_period(isset($filter['time'])?$filter['time']:0);
     $filter['time'] = date('Y-m-d',strtotime($period[0]))." ~ ".date('Y-m-d',strtotime($period[1])- 24*60*60);
-    return $this->fetch('index',['filter'=>$filter]);
+    return $this->fetch('index',['filter'=>$filter,'rule_number'=>$rule_number]);
   }
 
   /**
    * 统计积分数
    */
-  public function public_count($timeStr = NULL,$type = 'total' , $is_minus = 0, $uid = 0){
+  public function public_count($timeStr = NULL,$type = 'total' , $is_minus = 0, $uid = 0,$rule_number = NULL){
     $period = $this->get_period($timeStr);
     $baseMap = [];
     $where_base = " is_delete = 0  AND time >=  '".$period[0]."' AND time < '".$period[1]."' ";
 
-
+    if (is_numeric($rule_number)) {
+      $where_base .= "rule_number = $rule_number ";
+    }
     if($uid){
       $loginname = CarpoolUserModel::where('uid',$uid)->value('loginname');
       $account_id = ScoreAccountModel::where('carpool_account',$account_id)->value('id');
       $where_base .= " AND (account_id = $account_id OR carpool_account = $loginname ) ";
-
     }else{
       $exclude_scoreAccounnt_id_str = implode(",", $this->exclude_scoreAccounnt_id);
       $exclude_carpoolAccounnt_str = '"'.implode("\",\"", $this->exclude_carpoolAccounnt).'"';
       $where_base .= " AND (account_id NOT IN($exclude_scoreAccounnt_id_str) OR account_id IS NULL ) ";
       $where_base .= " AND (carpool_account NOT IN($exclude_carpoolAccounnt_str) OR carpool_account IS NULL ) ";
-
     }
-
 
     // $baseMap[] = $is_minus ? ['reason','<',0] : ['reason','>',0] ;
     // "-99"=>"管理员操作",
@@ -116,7 +115,8 @@ class ScoreReports extends AdminBase
    * 返回格式化的时间范围数组
    * @param  String 由前端生成的时间范围字符串
    */
-  protected function get_period($timeStr){
+  protected function get_period($timeStr)
+  {
     $returnData = [];
     //筛选时间
     if(!$timeStr || !is_array(explode(' ~ ',$timeStr))){

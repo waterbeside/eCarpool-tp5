@@ -8,11 +8,13 @@
         <ul class="  amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/ScoreWinners/index')}"  showloading >实物抽奖</a></li>
             <li ><a href="{:url('admin/ScoreSpecialWinner/index')}"  showloading >转盘抽实物</a></li>
-
+            <li class="btn-item btn-item-right ">
+              {include file="_components/select_ruleNumber" /}
+            </li>
         </ul>
 
         <div class="amain-content">
-          <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreWinners/index')}" method="get" onsubmit="submitForm()">
+          <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreWinners/index',['rule_number'=>$rule_number])}" method="get" onsubmit="submitForm()">
               <div class="layui-inline">
                   <div class="layui-input-inline">
                       <input type="text" name="filter[keyword_prize]" value="{$filter['keyword_prize'] ? $filter['keyword_prize'] :''}" placeholder="奖品名" class="layui-input">

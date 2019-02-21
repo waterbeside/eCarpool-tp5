@@ -20,10 +20,14 @@ class ScoreHistory extends AdminBase
      * 积分历史（所有用户）
      * @return mixed
      */
-    public function index($filter=NULL,$page = 1,$pagesize = 20)
+    public function index($filter=NULL,$page = 1,$pagesize = 20,$rule_number=NULL)
     {
         $map = [];
         $map[] = ['is_delete','<>', 1];
+        //地区区分
+        if (is_numeric($rule_number)) {
+          $map[] = ['rule_number','=', $rule_number];
+        }
         // dump($filter);
         if($filter['reason']){
           $map[] = ['reason','=', $filter['reason']];
@@ -53,6 +57,7 @@ class ScoreHistory extends AdminBase
         $reasons = config('score.reason');
 
         $returnData = [
+          'rule_number' => $rule_number,
           'lists' => $lists,
           'filter' => $filter,
           'pagesize'=>$pagesize,
@@ -66,12 +71,13 @@ class ScoreHistory extends AdminBase
      * 积分历史（指定用户）
      * @return mixed
      */
-    public function lists($type=1,$account=NULL,$account_id=NULL,$filter=NULL,$page = 1,$pagesize = 20)
+    public function lists($type=1,$account=NULL,$account_id=NULL,$filter=NULL,$page = 1,$pagesize = 20,$rule_number=NULL)
     {
-
-
       $map = [];
       $map[] = ['is_delete','<>', 1];
+      if (is_numeric($rule_number)) {
+          $map[] = ['rule_number','=', $rule_number];
+      }
       // dump($filter);
       if($filter['reason']){
         $map[] = ['reason','=', $filter['reason']];
@@ -122,6 +128,7 @@ class ScoreHistory extends AdminBase
       $reasons = config('score.reason');
 
       $returnData = [
+        'rule_number' => $rule_number,
         'lists' => $lists,
         'filter' => $filter,
         'pagesize'=>$pagesize,

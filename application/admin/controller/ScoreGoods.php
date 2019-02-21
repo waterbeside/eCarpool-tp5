@@ -27,7 +27,7 @@ class ScoreGoods extends AdminBase
    * 商品列表
    * @return mixed
    */
-  public function index($type='2',$keyword="",$filter=['status'=>'','is_hidden'=>''],$page = 1,$pagesize = 20,$rule_number=0)
+  public function index($type='2',$keyword="",$filter=['status'=>'','is_hidden'=>''],$page = 1,$pagesize = 20,$rule_number=NULL)
   {
     $map = [];
 
@@ -68,7 +68,8 @@ class ScoreGoods extends AdminBase
   /**
    * 添加商品
    */
-  public function add(){
+  public function add()
+  {
     if ($this->request->isPost()) {
       $data               = $this->request->post();
       //开始验证字段
@@ -113,7 +114,8 @@ class ScoreGoods extends AdminBase
    * 编辑
    * @param  [int] $id 商品id
    */
-  public function edit($id){
+  public function edit($id)
+  {
     if ($this->request->isPost()) {
       $data               = $this->request->post();
       //开始验证字段
@@ -167,7 +169,8 @@ class ScoreGoods extends AdminBase
    * 刷新缓存
    * @var [type]
    */
-  public function public_recache($id=0){
+  public function public_recache($id=0)
+  {
     $scoreConfigs = (new Configs())->getConfigs("score");
     return (new GoodsModel())->reBuildRedis($id);
   }

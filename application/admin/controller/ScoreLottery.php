@@ -31,10 +31,14 @@ class ScoreLottery extends AdminBase
    * 已抽奖列表
    * @return mixed
    */
-  public function index($filter=[],$type="all",$result="all",$page = 1,$pagesize = 20,$export=0)
+  public function index($filter=[],$type="all",$result="all",$page = 1,$pagesize = 20,$export=0,$rule_number=NULL)
   {
     $map = [];
     $map[] = ['t.is_delete','<>', 1];
+    //地区区分
+    if (is_numeric($rule_number)) {
+      $map[] = ['t.rule_number','=', $rule_number];
+    }
     //筛选用户信息
     if (isset($type) && is_numeric($type) ){
       $map[] = ['t.type','=', $type];
@@ -69,7 +73,6 @@ class ScoreLottery extends AdminBase
 
     //筛选奖品信息
     if (isset($filter['keyword_prize']) && $filter['keyword_prize'] ){
-
       if (isset($type) && is_numeric($type) && $type == 1 ){
         $map[] = ['pr.name','like', "%{$filter['keyword_prize']}%"];
       }else{
@@ -135,8 +138,16 @@ class ScoreLottery extends AdminBase
     foreach($companyLists as $key => $value) {
       $companys[$value['company_id']] = $value['company_name'];
     }
-
-    return $this->fetch('index', ['lists' => $lists,'pagesize'=>$pagesize,'filter'=>$filter,'companys'=>$companys,'type'=>$type,'result'=>$result]);
+    $returnData = [
+      'rule_number' => $rule_number,
+      'lists' => $lists,
+      'pagesize'=>$pagesize,
+      'filter'=>$filter,
+      'companys'=>$companys,
+      'type'=>$type,
+      'result'=>$result
+    ];
+    return $this->fetch('index', $returnData);
 
   }
 
