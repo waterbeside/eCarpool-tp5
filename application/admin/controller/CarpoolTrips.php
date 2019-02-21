@@ -226,16 +226,17 @@ class CarpoolTrips extends AdminBase
       $sheet->setCellValue('A1', '起点')
       ->setCellValue('B1','终点')
       ->setCellValue('C1','出发时间')
-      ->setCellValue('D1','司机')
-      ->setCellValue('E1','司机工号')
-      ->setCellValue('F1','司机部门')
-      ->setCellValue('G1','司机部门(HR)')
-      ->setCellValue('H1','司机电话')
-      ->setCellValue('I1', $type ? '乘客数' : '乘客')
-      ->setCellValue('J1', $type ? '发布空位数' : '乘客工号')
-      ->setCellValue('K1', $type ? '-' : '乘客部门')
-      ->setCellValue('L1', $type ? '-' : '乘客部门(HR)')
-      ->setCellValue('M1', $type ? '-' : '乘客电话')
+      ->setCellValue('D1',$type ? '发布时间' : '发布(搭车)时间')
+      ->setCellValue('E1','司机')
+      ->setCellValue('F1','司机工号')
+      ->setCellValue('G1','司机部门')
+      ->setCellValue('H1','司机部门(HR)')
+      ->setCellValue('I1','司机电话')
+      ->setCellValue('J1', $type ? '乘客数' : '乘客')
+      ->setCellValue('K1', $type ? '发布空位数' : '乘客工号')
+      ->setCellValue('L1', $type ? '-' : '乘客部门')
+      ->setCellValue('M1', $type ? '-' : '乘客部门(HR)')
+      ->setCellValue('N1', $type ? '-' : '乘客电话')
       ;
 
       foreach ($lists as $key => $value) {
@@ -243,16 +244,17 @@ class CarpoolTrips extends AdminBase
         $sheet->setCellValue('A'.$rowNum, $value['start_addressname'])
         ->setCellValue('B'.$rowNum,$value['end_addressname'])
         ->setCellValue('C'.$rowNum,$value['time'])
-        ->setCellValue('D'.$rowNum,$value['d_name'])
-        ->setCellValue('E'.$rowNum,$value['d_loginname'] )
-        ->setCellValue('F'.$rowNum, isset($companys[$value['d_company_id']]) ? $value['d_department'].'/'.$companys[$value['d_company_id']] :  $value['d_department'] )
-        ->setCellValue('G'.$rowNum,$value['d_full_department'])
-        ->setCellValue('H'.$rowNum,$value['d_phone'])
-        ->setCellValue('I'.$rowNum,$type ? $value['took_count'] :  $value['p_name'])
-        ->setCellValue('J'.$rowNum,$type ? $value['seat_count'] :  $value['p_loginname'])
-        ->setCellValue('K'.$rowNum,$type ? "-" :  (  isset($companys[$value['p_company_id']]) ? $value['p_department'].'/'.$companys[$value['p_company_id']] : $value['p_department']))
-        ->setCellValue('L'.$rowNum,$type ? "-" :  $value['p_full_department'])
-        ->setCellValue('M'.$rowNum,$type ? "-" :  $value['p_phone'])
+        ->setCellValue('D'.$rowNum,$value['subtime'])
+        ->setCellValue('E'.$rowNum,$value['d_name'])
+        ->setCellValue('F'.$rowNum,$value['d_loginname'] )
+        ->setCellValue('G'.$rowNum, isset($companys[$value['d_company_id']]) ? $value['d_department'].'/'.$companys[$value['d_company_id']] :  $value['d_department'] )
+        ->setCellValue('H'.$rowNum,$value['d_full_department'])
+        ->setCellValue('I'.$rowNum,$value['d_phone'])
+        ->setCellValue('J'.$rowNum,$type ? $value['took_count'] :  $value['p_name'])
+        ->setCellValue('K'.$rowNum,$type ? $value['seat_count'] :  $value['p_loginname'])
+        ->setCellValue('L'.$rowNum,$type ? "-" :  (  isset($companys[$value['p_company_id']]) ? $value['p_department'].'/'.$companys[$value['p_company_id']] : $value['p_department']))
+        ->setCellValue('M'.$rowNum,$type ? "-" :  $value['p_full_department'])
+        ->setCellValue('N'.$rowNum,$type ? "-" :  $value['p_phone'])
         ;
       }
       /*$value = "Hello World!" . PHP_EOL . "Next Line";
@@ -276,7 +278,8 @@ class CarpoolTrips extends AdminBase
   /**
    * 明细
    */
-  public function detail($id,$type=0){
+  public function detail($id,$type=0)
+  {
     if(!$id){
       return $this->error('Lost id');
     }
@@ -369,7 +372,8 @@ class CarpoolTrips extends AdminBase
   /**
    * 格式化结果字段
    */
-  protected function formatResultValue($value,$merge_ids = [] ,$unDo = []){
+  protected function formatResultValue($value,$merge_ids = [] ,$unDo = [])
+  {
     $value_format = $value;
     $value_format['subtime'] = strtotime($value['subtime']);
 
@@ -404,7 +408,8 @@ class CarpoolTrips extends AdminBase
   /**
    * 创件要select的用户字段
    */
-  protected function buildUserFields($a="u",$fields=[]){
+  protected function buildUserFields($a="u",$fields=[])
+  {
     $format_array = [];
     $fields = !empty($fields) ? $fields : ['uid','loginname','name','phone','mobile','Department','sex','company_id','department_id','companyname','imgpath','carnumber','im_id'];
 
@@ -417,7 +422,8 @@ class CarpoolTrips extends AdminBase
   /**
    * 创件要select的地址字段
    */
-  protected function buildAddressFields($fields="",$start_latlng = false){
+  protected function buildAddressFields($fields="",$start_latlng = false)
+  {
     $fields .= ',t.startpid, t.endpid';
     $fields .= ', x(t.start_latlng) as start_lng, y(t.start_latlng) as start_lat' ;
     $fields .= ', x(t.end_latlng) as end_lng, y(t.end_latlng) as end_lat' ;
@@ -434,7 +440,8 @@ class CarpoolTrips extends AdminBase
    * @param  string|array $filter
    * @return array
    */
-  protected function buildTripJoins($filter="d,p,s,e,department"){
+  protected function buildTripJoins($filter="d,p,s,e,department")
+  {
     if(is_string($filter)){
       $filter = explode(",",$filter);
     }
