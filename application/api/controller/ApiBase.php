@@ -23,9 +23,19 @@ class ApiBase extends Base
         // config('default_lang', 'zh-cn');
         $this->loadLanguagePack();
         parent::initialize();
-
     }
 
+
+    public function getRequestPlatform(){
+      $user_agent = request()->header('USER_AGENT');
+      if(strpos($user_agent, 'iPhone')||strpos($user_agent, 'iPad')){
+          return 1;
+      }else if(strpos($user_agent, 'Android')){
+          return 2;
+      }else{
+          return 0;
+      }
+    }
 
     /**
      * 验证jwt
