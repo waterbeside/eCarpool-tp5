@@ -67,7 +67,7 @@ class AdminBase extends Base
                   if(strpos($accept,"text/html") !== false){
                     $this->error('没有权限');
                   }else{
-                    return $this->jsonReturn(10004,'没有权限');
+                    return $this->jsonReturn(-1,'没有权限');
                   }
                 }else{
                     $this->error('没有权限');
@@ -93,7 +93,6 @@ class AdminBase extends Base
         'uid'=>Session::get('admin_id'),
         'username'=>Session::get('admin_name')
       ];
-
     }
 
     /**
@@ -109,7 +108,6 @@ class AdminBase extends Base
       }else{
         return true;
       }
-
     }
 
     /**
@@ -122,7 +120,6 @@ class AdminBase extends Base
         $Authorization = $Authorization ? $Authorization : cookie('admin_token');
         $Authorization = $Authorization ? $Authorization : input('request.admin_token');
 
-
         if(!$Authorization){
           if($this->request->isAjax()){
             $this->jsonReturn(10004,'您尚未登入');
@@ -130,12 +127,9 @@ class AdminBase extends Base
             return $this->error('您尚未登入','admin/login/index');
           }
         }else{
-
-
           $jwtDecode = JWT::decode($Authorization, config('secret.admin_setting')['jwt_key'], array('HS256'));
           $this->jwtInfo = $jwtDecode;
           if(isset($jwtDecode->uid) && isset($jwtDecode->username) ){
-
             $now = time();
             if( $now  > $jwtDecode->exp){
               if($this->request->isAjax()){
