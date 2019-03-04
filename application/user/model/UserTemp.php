@@ -116,6 +116,7 @@ class UserTemp extends Model
       "name" => $resData['EmployeeName'],
       "modifty_time" => $resData['ModiftyTime'],
       "department" => $resData['OrgFullName'],
+      "email" => $resData['EMail'] ?  $resData['EMail'] : '',
       "sex" => $resData['Sex'],
     ];
     if($resData['Code'] == -2){
@@ -179,6 +180,7 @@ class UserTemp extends Model
       "modifty_time" => $resData['ModiftyTime'],
       "department" => $resData['OrgFullName'],
       "sex" => $resData['Sex'],
+      "email" => $resData['EMail'] ?  $resData['EMail'] : '',
     ];
     $returnId = $this->insertGetId($data);
     if($returnId){

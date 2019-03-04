@@ -60,6 +60,7 @@
                     <th  >姓名</th>
                     <th  >SEX</th>
                     <th  width="200">部门</th>
+                    <th  width="100">EMail</th>
                     <th  width="90">状态</th>
                     <th  width="80">HR更新时间</th>
                     <th  width="80">拉取时间</th>
@@ -73,6 +74,7 @@
                     <td>{$vo.name}</td>
                     <td>{php}echo $vo['sex']==1 ? '男' : ($vo['sex']==2 ? '女' : "-") ;{/php}</td>
                     <td>{$vo.department}</td>
+                    <td>{$vo.email}</td>
                     <td class="status">
                       <?php
                        $statusArray = [

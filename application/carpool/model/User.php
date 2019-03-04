@@ -61,8 +61,13 @@ class User extends Model
        "department_id"=> $data['department_id'],
        'company_id' => isset($data['department_city']) && mb_strtolower($data['department_city']) == "vietnam" ? 11 : 1,
      ];
+
      if($data['name']){
        $inputUserData['nativename'] = $data['name'];
+     }
+
+     if($data['email']){
+       $inputUserData['mail'] = $data['email'];
      }
 
      if(isset($data['department_format']) && $data['department_format']){
@@ -114,6 +119,7 @@ class User extends Model
        }
      }
    }
+
 
 
 }
