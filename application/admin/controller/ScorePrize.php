@@ -120,11 +120,11 @@ class ScorePrize extends AdminBase
       $id = PrizeModel::json(['images'])->insertGetId($upData);
       if ( $id ) {
           $this->log('添加抽奖成功，id='.$id,0);
-          $url =url('admin/ScorePrize/index',['status'=>'all']);
+          $url =url('admin/ScorePrize/index',['status'=>'all','rule_number'=>$data['rule_number']]);
           if($data['status'] > -1){
-            $url = url('admin/ScorePrize/index',['status'=>'0,1,2']);
+            $url = url('admin/ScorePrize/index',['status'=>'0,1,2','rule_number'=>$data['rule_number']]);
           }else if($data['status'] == -1){
-            $url = url('admin/ScorePrize/index',['status'=>-1]);
+            $url = url('admin/ScorePrize/index',['status'=>-1,'rule_number'=>$data['rule_number']]);
           }
           return $this->success('添加成功',$url);
       } else {
