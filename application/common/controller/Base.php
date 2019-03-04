@@ -16,30 +16,41 @@ use think\facade\Cache;
 class Base extends Controller
 {
 
-    public $systemConfig  = null;
+    public $systemConfig  = NULL;
     public $language  = 'zh-cn';
-    public $language_l = [];
+    public $language_l = NULL;
     public $errorMsg = '';
 
     protected function initialize()
     {
         $this->language = $this->getLang();
+
         $this->systemConfig = $this->getSystemConfigs();
         parent::initialize();
     }
 
-    public function getLang(){
-      $lang_s =  input('request._language');
-      $lang_s = $lang_s ? $lang_s : input('request.lang');
-      $lang_s = $lang_s ? $lang_s : request()->header('Accept-Lang');
-      $lang_s = $lang_s ? $lang_s : request()->header('Accept-Language');
-      $lang_l = $this->formatAcceptLang($lang_s);
-      $this->language_l = $lang_l;
-      return $lang_l[0] == 'zh' ? ( isset($lang_l[1]) ? $this->formatZhLang($lang_l[1],'zh-cn') : 'zh-cn') : $this->formatZhLang($lang_l[0]);
+    /**
+     * 取得使用语言
+     * @return [type] [description]
+     */
+    public function getLang()
+    {
+      if(!$this->language_l){
+        $lang_s =  input('request._language');
+        $lang_s = $lang_s ? $lang_s : input('request.lang');
+        $lang_s = $lang_s ? $lang_s : request()->header('Accept-Lang');
+        $lang_s = $lang_s ? $lang_s : request()->header('Accept-Language');
+        $lang_l = $this->formatAcceptLang($lang_s);
+        $this->language_l = $lang_l;
+        $this->language = $lang_l[0] == 'zh' ? ( isset($lang_l[1]) ? $this->formatZhLang($lang_l[1],'zh-cn') : 'zh-cn') : $this->formatZhLang($lang_l[0]);
+      }
+      return $this->language;
+
     }
 
 
-    public function formatZhLang($language,$default = null) {
+    public function formatZhLang($language,$default = null)
+    {
       if($language == 'zh-hant-hk'){
         return 'zh-hk';
       }
@@ -59,8 +70,12 @@ class Base extends Controller
     }
 
     /**
+     * 格式化Accept-language得来的语言。
+     * @param  string $language
+     * @return array
      */
-  	public function formatAcceptLang($language) {
+  	public function formatAcceptLang($language)
+    {
       $lang_l = explode(',',$language);
       $lang_format_list = [];
       $q_array = [];
@@ -77,6 +92,9 @@ class Base extends Controller
       foreach ($lang_format_list as $key => $value) {
         $lang[] = strtolower(trim($value['lang']));
       }
+      $baseLangArray = explode('-',$lang[0]);
+      $baseLang  = $baseLangArray[0];
+      $lang = array_merge([$baseLang],$lang);
       $lang = array_unique($lang);
       return $lang;
   	}
@@ -90,8 +108,8 @@ class Base extends Controller
      * @param  string $message [描述]
      * @param  array  $extra   [其它]
      */
-  	public function jsonReturn($code, $data, $message = '',$extra = array()) {
-
+  	public function jsonReturn($code, $data, $message = '',$extra = array())
+    {
       if(is_string($data)){
         $message = $data;
         $data = [];
@@ -112,7 +130,8 @@ class Base extends Controller
     /**
 	   * 数组去重
 	   */
-	  public function arrayUniq($arr){
+	  public function arrayUniq($arr)
+    {
 	    $arr = array_unique($arr);
 	    $arr = array_values($arr);
 	    return $arr;
@@ -121,7 +140,8 @@ class Base extends Controller
 		 /**
 	   * 二维数组去重
 	   */
-		 public function arrayUniqByKey($arr,$key){
+		 public function arrayUniqByKey($arr,$key)
+     {
          //建立一个目标数组
          $res = array();
          foreach ($arr as $value) {
@@ -141,7 +161,8 @@ class Base extends Controller
 	   * 清除数组内每个元素的两头空格
 	   * @return array||string
 	   */
-		public function trimArray($arr){
+		public function trimArray($arr)
+    {
 	    if (!is_array($arr)){
 				  return trim($arr);
 			}
@@ -149,7 +170,8 @@ class Base extends Controller
 		}
 
 
-    public function jump($isSuccess=1 , $msg = '', $url = null, $data = '', $wait = 3, array $header = []){
+    public function jump($isSuccess=1 , $msg = '', $url = null, $data = '', $wait = 3, array $header = [])
+    {
       if (is_null($url)) {
         if($isSuccess===1){
           $url =  isset($_SERVER["HTTP_REFERER"]) ? $_SERVER["HTTP_REFERER"] : ((strpos($url, '://') || 0 === strpos($url, '/')) ? url($url) : '') ;
@@ -173,7 +195,8 @@ class Base extends Controller
 
     }
 
-    public function getSystemConfigs(){
+    public function getSystemConfigs()
+    {
       $ConfigsModel = new Configs();
       $configs = $ConfigsModel->getConfigs();
       return $configs;
