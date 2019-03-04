@@ -27,18 +27,27 @@ class Score extends AdminBase
   {
     if ($this->request->isPost()) {
       $datas         = $this->request->post('');
-
+      if($datas['operand'] == 0){
+        $this->jsonReturn(-1,'请输入分值');
+      }
       if(!$datas['operand'] || !$datas['reason']){
         $this->jsonReturn(-1,'参数错误');
       }else{
         $datas['operand'] = abs(intval($datas['operand']));
       }
+
+      if( ($datas['isadd'] && $datas['reason'] < 0 ) || (!$datas['isadd'] && $datas['reason'] > 0)  ){
+        $datas['reason']  = - $datas['reason'];
+      }
       //根据accountType查出account字段
-      if($this->updateScore($datas)){
+      $accountModel = new AccountMixModel();
+      if($accountModel->updateScore($datas)){
+        $this->log('改分成功',0);
         $this->jsonReturn(0,'改分成功');
       }else{
+        $this->log('改分失败'.json_encode($this->request->post()),-1);
         $this->jsonReturn(-1,'改分失败');
-      };
+      }
 
     }else{
       $type         = input('param.type/s');
@@ -74,10 +83,11 @@ class Score extends AdminBase
   }
 
   /**
-   * 更新积分
-   * @param  Array $datas 更新的数据
+   * 更新积分(取消使用，已改用AccountMix模型里的方法)
+   * @param  array $datas 更新的数据
    */
-  public function updateScore($datas){
+  public function updateScore($datas)
+  {
 
     $type         = $datas['type'];
     $account_id   = isset($datas['account_id']) ? $datas['account_id'] : NULL;
@@ -160,7 +170,8 @@ class Score extends AdminBase
     /**
      * 积分配置
      */
-    public function config(){
+    public function config()
+    {
       # 控制积分兑换&&积分抽奖&&实物抽奖开关
                 // "order_switch" : 1,
                 // "lottery_integral_switch" : 1,
@@ -361,7 +372,8 @@ class Score extends AdminBase
      * @param  integer $page [description]
      * @return [type]        [description]
      */
-      public function test_multi_balance($page=1){
+      public function test_multi_balance($page=1)
+      {
         $lists = Db::connect('database_carpool')->table('temp_carpool_score')->page($page,1)->select();
         exit;
         if(count($lists)>0){

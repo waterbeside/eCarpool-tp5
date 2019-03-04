@@ -29,7 +29,8 @@ class  Goods extends Model
      * 从redis取出商品详情
      * @param  Int  $id 商品id
      */
-    public function getFromRedis($id){
+    public function getFromRedis($id)
+    {
       $redis = new RedisData();
       $good = json_decode($redis->get("GOODS_".$id),true);
       if(!$good){
@@ -49,7 +50,8 @@ class  Goods extends Model
      * 刷新商品的redis缓存，依赖于python接口
      * @param  Int  $id 商品id
      */
-    public function reBuildRedis($id){
+    public function reBuildRedis($id)
+    {
       $scoreConfigs = (new Configs())->getConfigs("score");
       $url = "http://".$scoreConfigs['score_host'].":".$scoreConfigs['score_port']."/secret/refresh_goods";
       $token =  $scoreConfigs['score_token'];
