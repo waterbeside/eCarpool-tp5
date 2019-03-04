@@ -4,6 +4,8 @@ namespace app\score\model;
 use think\Model;
 use app\carpool\model\User as CarpoolUserModel;
 use app\user\model\Department as DepartmentModel;
+use app\score\model\History as HistoryModel;
+use think\Db;
 
 class AccountMix extends Model
 {
@@ -22,13 +24,15 @@ class AccountMix extends Model
     protected $connection = 'database_score';
     protected $table = 't_account';
     protected $pk = 'id';
+    public $errorMsg = NULL;
 
 
     /**
      * 通过主键取得积分账号信息
      * @param  int $id
      */
-    public function getDetailById($id){
+    public function getDetailById($id)
+    {
       $accountInfo = $this->getDetail(0,"",$id,1);
       return $accountInfo;
 
@@ -39,7 +43,8 @@ class AccountMix extends Model
      * @param  int    $type 帐号名类型
      * @param  string $account 帐号名
      */
-    public function getDetailByAccount($type,$account){
+    public function getDetailByAccount($type,$account)
+    {
       $accountInfo = $this->getDetail($type,$account,NULL,1);
       return $accountInfo;
     }
@@ -50,7 +55,8 @@ class AccountMix extends Model
      * @param  int    $type 帐号名类型
      * @param  string $account 帐号名
      */
-    public function getDetail($type,$account="",$account_id=NULL,$returnAll=1){
+    public function getDetail($type,$account="",$account_id=NULL,$returnAll=1)
+    {
       $accountInfo = NULL;
       if( $type=='0' || $type=="score" ){ //直接从积分帐号取
         if($account_id){
@@ -75,10 +81,101 @@ class AccountMix extends Model
     }
 
     //取得拼车帐号
-    public function getCarpoolAccount($account){
+    public function getCarpoolAccount($account)
+    {
       $carpool_user_model = new CarpoolUserModel();
       return $carpool_user_model->getDetail($account);
     }
+
+
+
+    //**更新积分**//
+    public function  updateScore($params)
+    {
+
+      $account_id   = isset($params['account_id']) ? $params['account_id'] : NULL;
+      $account  = NULL;
+      $accountField = 'carpool_account';
+      $map = [];
+      $map[] = ['is_delete','<>', 1];
+      if(!$account_id){
+        $account      = isset($params['account']) ? $params['account'] : NULL;
+        $type         = isset($params['type']) ? $params['type'] : "carpool";
+        if($type !="carpool"){
+          $accountType = config("score.account_type");
+          foreach ($accountType as $key => $value) {
+            if( $value['name'] == $type ){
+              $accountField = $value['field'];
+              break;
+            }
+          }
+        }
+        $map[] = [$accountField,'=',$account];
+      }else{
+        $map[] = ['id','=', $account_id];
+
+      }
+      $data['operand']      = $params['operand'];
+      $data['reason']       = $params['reason'];
+      if(!$account_id && !$account){
+        $this->errorMsg = "lost account or account_id";
+        return false;
+      }
+
+      Db::connect('database_score')->startTrans();
+      try{
+        //查找是否已开通拼车帐号，拼整理data
+        $accountDetial = null ;
+
+        $accountDetial = $this->where($map)->lock(true)->find();
+        if($accountDetial && $accountDetial['id']){
+          $data['account_id'] = $accountDetial['id'];
+          $updateAccountMap = [
+            'id'=>$accountDetial['id'],
+            'update_time'=>$accountDetial['update_time']
+          ];
+          if( $data['reason'] > 0 ){
+            $data['result']    = intval($accountDetial['balance']) +  $data['operand'];
+            $upAccountStatus = $this->where($updateAccountMap)->setInc('balance', $data['operand']);
+          }
+          if( $data['reason'] < 0 ){
+            $data['result']    = intval($accountDetial['balance']) -  $data['operand'];
+            $upAccountStatus = $this->where($updateAccountMap)->setDec('balance', $data['operand']);
+          }
+          if(!$upAccountStatus){
+            throw new \Exception("更新分数失败");
+          }
+        }else{
+          if($account){
+            $data[$accountField] = $account;
+            $data['result'] = 0;
+          }else{
+            throw new \Exception("更新分数失败");
+          }
+        }
+        $data['extra_info'] = '{}';
+        $data['is_delete'] = 0;
+        $data['time'] =  date('Y-m-d H:i:s');
+        $historyModel =   new HistoryModel;
+        $upHistoryStatus = $historyModel->save($data);
+        if(!$upHistoryStatus){
+          throw new \Exception("更新分数失败");
+        }
+        // 提交事务
+        Db::connect('database_score')->commit();
+      } catch (\Exception $e) {
+          // 回滚事务
+          Db::connect('database_score')->rollback();
+          $this->errorMsg = "改分失败，请稍候再试";
+
+          // $this->log($logMsg,-1);
+          return false;
+
+      }
+      // $this->log('改分成功，'.json_encode($this->request->post()),0);
+      return true;
+
+  }
 
 
 
