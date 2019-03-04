@@ -51,14 +51,14 @@ class ScoreAccount extends AdminBase
           $map[] = ['cu.loginname|cu.name|cu.phone','like', "%{$filter['keyword']}%"];
           $isJoinUser = true;
         }
+        // //筛选部门
+        // if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
+        //   $map[] = ['cu.Department|cu.companyname','like', "%{$filter['keyword_dept']}%"];
+        //   $isJoinUser = true;
+        // }
         //筛选部门
         if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
-          $map[] = ['cu.Department|cu.companyname','like', "%{$filter['keyword_dept']}%"];
-          $isJoinUser = true;
-        }
-        //筛选部门
-        if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
-          $map[] = ['d.fullname|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
+          $map[] = ['d.fullname|cu.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
           // $map[] = ['u.Department|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
           $isJoinUser = true;
         }
