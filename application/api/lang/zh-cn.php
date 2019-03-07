@@ -14,6 +14,7 @@ return [
   'Please enter user name'  => '请输入用户名',
   'Please enter your password' => '请输入密码',
   'User name or password error' => '用户名或密码错误',
+  'The phone number you entered is incorrect' => '您输入的手机号有误',
   'Name error' => '姓名错误',
   'The user is banned' => '该用户被封禁',
   'The user is deleted' => '该用户被封禁',
@@ -29,6 +30,8 @@ return [
   'No need to merge' => '无须再合并',
   'The phone number has been bound to this account, no need to merge.' => '该手机号已绑定本帐号,无须再合并',
   'The phone number has been registered for another account'=>'该手机号已被注册其它账号',
+  'Please log in directly to the employee number to perform the binding operation' => '目标账号未开通积分账号，请直接登入员工号进行绑定操作',
+  
 
   //字段相关
   'Please select date and time' => '请选择日期时间',
@@ -71,6 +74,7 @@ return [
   "Please upload attachments" => '请上传附件',
   "Not image file format" => '图片格式不正确',
   'Images cannot be larger than 800K' => '图片不能大于800K',
+  'Images cannot be larger than {:size}' => '图片不能大于{:size}',
   "File not found"=>'找不到文件',
   "This attachment cannot be deleted" => '该附件不可以删除',
 ];

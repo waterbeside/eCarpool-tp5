@@ -13,6 +13,7 @@ return [
   'Please enter user name'  => 'Vui lòng nhập tên người dùng',
   'Please enter your password' => 'Vui lòng nhập mật khẩu của bạn',
   'User name or password error' => 'Tên người dùng hoặc mật khẩu không chính xác',
+  'The phone number you entered is incorrect' => 'Số điện thoại bạn nhập không chính xác',
   'Name error' => 'Tên không chính xác',
   'The user is banned' => 'Người dùng bị cấm',
 
@@ -27,6 +28,7 @@ return [
   'No need to merge' => 'Không cần phải hợp nhất',
   'The phone number has been bound to this account, no need to merge.' => 'Số điện thoại đã bị ràng buộc vào tài khoản này, không cần phải hợp nhất',
   'The phone number has been registered for another account'=>'Số điện thoại đã được đăng ký một tài khoản khác',
+  'Please log in directly to the employee number to perform the binding operation' => 'Vui lòng đăng nhập trực tiếp vào số nhân viên để ràng buộc',
 
   //字段相关
   'Please select date and time' => 'Vui lòng chọn ngày và giờ',
@@ -68,6 +70,7 @@ return [
   "Please upload attachments" => 'Vui lòng tải lên tệp đính kèm',
   "Not image file format" => 'Sai định dạng hình ảnh',
   'Images cannot be larger than 800K' => 'Hình ảnh không được lớn hơn 800KB',
+  'Images cannot be larger than {:size}' => 'Hình ảnh không được lớn hơn {:size}',
   "File not found"=>'Không tìm thấy tệp',
   "This attachment cannot be deleted" => 'Không thể xóa tệp đính kèm này',
 ];
