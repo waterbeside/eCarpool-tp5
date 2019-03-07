@@ -36,37 +36,69 @@ class Login extends BaseController
             $AdminLog = new AdminLog;
 
             if ($validate_result !== true) {
-                $this->jsonReturn(1,$validate_result);
-            } else {
-                $where['username'] = $data['username'];
-                // $where['password'] = md5($data['password'] . Config::get('salt'));
-
-                $Model_User = model('AdminUser');
-                $res = $Model_User->loginUser($data['username'],$data['password']);
-                if(is_array($res)){
-                  $token = $res['data']['jwt'];
-                  $user  = $res['data']['user'];
-                  if($user['status']==1){
-                    $exp = config('secret.admin_setting')['jwt_exp'];
-                    Cookie::set('admin_token',$token,$exp);
-                    Session::set('admin_id', $user['id']);
-                    Session::set('admin_name', $user['username']);
-                    // return json(array('code' => 1, 'msg' => '登录成功','data'=>['token'=>$token,'user'=>$user]));
-                    $AdminLog->add('后台用户登入成功 username ='.$data['username'],0);
-                    $this->jsonReturn(0,['token'=>$token,'user'=>$user],'登入成功');
-
-                  }else{
-                    $AdminLog->add('后台用户登入失败，帐号受限 username ='.$data['username'],-1);
-                    $this->jsonReturn(1,'此帐号受限');
-                  }
-
-                }else{
-                  $AdminLog->add('后台用户登入失败，用户名或密码错误 username ='.$data['username'],-1);
-                  $this->jsonReturn(1,'用户名或密码错误');
-                  // return json(array('code' => 0, 'msg' => '用户名或密码错误'));
-                }
-
+                $this->jsonReturn(-1,$validate_result);
             }
+
+            $where['username'] = $data['username'];
+            // $where['password'] = md5($data['password'] . Config::get('salt'));
+
+            $Model_User = model('AdminUser');
+            $res = $Model_User->loginUser($data['username'],$data['password']);
+            if(!is_array($res)){
+              $AdminLog->add('后台用户登入失败，用户名或密码错误 username ='.$data['username'],-1);
+              $this->jsonReturn(-1,'用户名或密码错误');
+              // return json(array('code' => 0, 'msg' => '用户名或密码错误'));
+            }
+
+
+            $token = $res['data']['jwt'];
+            $user  = $res['data']['user'];
+
+
+            $carpool_uid = $user['carpool_uid'];
+            if($user['status']!=1){
+              $AdminLog->add('后台用户登入失败，帐号受限 username ='.$data['username'],-1);
+              $this->jsonReturn(-1,'此帐号受限');
+            }
+
+
+
+            if($carpool_uid > 0 && $user['carpool_account']){
+
+              //从Hr接口验证是否离职
+              try {
+                $checkActiveUrl  = config('others.local_hr_sync_api.single');
+                $params = [
+                  'code'=>$user['carpool_account'],
+                  'is_sync'=>0,
+                ];
+                $checkActiveRes = $this->clientRequest($checkActiveUrl,$params,'GET');
+
+                  // $res = json_decode($content, true);
+              } catch (Exception $e) {
+                  // $this->errorMsg ='拉取失败';
+                  $this->error("登入失败");
+              }
+              if(!$checkActiveRes || $checkActiveRes['code'] !== 0 ){
+                $AdminLog->add('后台用户登入失败，用户关联的capool账号已离职 username ='.$data['username'],-1);
+                $this->jsonReturn(-1,'此帐号员工已离职');
+              }
+            }
+
+
+
+            $exp = config('secret.admin_setting.jwt_exp');
+            Cookie::set('admin_token',$token,$exp);
+            Session::set('admin_id', $user['id']);
+            Session::set('admin_name', $user['username']);
+            // return json(array('code' => 1, 'msg' => '登录成功','data'=>['token'=>$token,'user'=>$user]));
+            $AdminLog->add('后台用户登入成功 username ='.$data['username'],0);
+            $this->jsonReturn(0,['token'=>$token,'user'=>$user],'登入成功');
+
+
+
+
+
         }
     }
 

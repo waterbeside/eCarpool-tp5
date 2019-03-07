@@ -1,57 +1,89 @@
-
-        <div class="layui-tab-content">
-            <div class="layui-tab-item layui-show">
-                <form class="layui-form form-container" action="{:url('admin/admin_user/add')}" method="post">
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">帐户名</label>
-                        <div class="layui-input-block">
-                            <input type="text" name="username" value="" required lay-verify="required" placeholder="请输入帐户名" class="layui-input">
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">姓名</label>
-                        <div class="layui-input-block">
-                            <input type="text" name="nickname" value=""  placeholder="请输入姓名" class="layui-input">
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">密码</label>
-                        <div class="layui-input-block">
-                            <input type="password" name="password" value="" required lay-verify="required" placeholder="请输入密码" class="layui-input">
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">重复密码</label>
-                        <div class="layui-input-block">
-                            <input type="password" name="confirm_password" value="" required lay-verify="required" placeholder="请再次输入密码" class="layui-input">
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">状态</label>
-                        <div class="layui-input-block">
-                            <input type="radio" name="status" value="1" title="启用" checked="checked">
-                            <input type="radio" name="status" value="0" title="禁用">
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">所属权限组</label>
-                        <div class="layui-input-block">
-                            <select name="group_id" lay-verify="required">
-                                {foreach name="auth_group_list" item="vo"}
-                                <option value="{$vo.id}">{$vo.title}</option>
-                                {/foreach}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <div class="layui-input-block">
-                            <button class="layui-btn" lay-submit lay-filter="*">保存</button>
-                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
-                        </div>
-                    </div>
-                </form>
+<div class="layui-tab-content">
+    <div class="layui-tab-item layui-show">
+        <form class="layui-form form-container" action="{:url('admin/admin_user/add')}" method="post">
+            <div class="layui-form-item">
+                <label class="layui-form-label">帐户名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="username" value="" required lay-verify="required" placeholder="请输入帐户名" class="layui-input">
+                </div>
             </div>
-        </div>
-        <script>
-          form.render();
-        </script>
+            <div class="layui-form-item">
+                <label class="layui-form-label">昵称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="nickname" value=""  placeholder="请输入昵称" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">关联carpool用户</label>
+                <div class="layui-input-block">
+                  <input type="hidden" name="carpool_account" value=""  class="layui-input layui-input-inline " readonly  >
+                  <input type="hidden" name="carpool_uid" value=""   class="layui-input " readonly  >
+                  <input type="hidden" name="real_name" value=""   class="layui-input " readonly  >
+                  <a onclick="openLayer('{:url('admin/User/user_dialog')}','选择用户');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary "   >
+                    <i class="fa fa-address-book"></i> <span class="J-btn-selectUser">{$admin_user.carpool_uid ? $admin_user.carpool_account : '选择用户' }</span>
+                  </a>
+                  <a onclick="cancel_user();" href="javascript:void(0);"   class="layui-btn  layui-btn-danger J-btn-cancelUser" style="display:none"  >取消关联</a>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">密码</label>
+                <div class="layui-input-block">
+                    <input type="password" name="password" value="" required lay-verify="required" placeholder="请输入密码" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">重复密码</label>
+                <div class="layui-input-block">
+                    <input type="password" name="confirm_password" value="" required lay-verify="required" placeholder="请再次输入密码" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">状态</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="status" value="1" title="启用" checked="checked">
+                    <input type="radio" name="status" value="0" title="禁用">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">所属权限组</label>
+                <div class="layui-input-block">
+                    <select name="group_id" lay-verify="required">
+                        {foreach name="auth_group_list" item="vo"}
+                        <option value="{$vo.id}">{$vo.title}</option>
+                        {/foreach}
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="*">保存</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+  form.render();
+
+  // var laydate = layui.laydate;
+  function select_user(data){
+    $("input[name='carpool_account']").val(data.loginname);
+    $("input[name='carpool_uid']").val(data.uid);
+    $("input[name='real_name']").val(data.nativename);
+    $(".J-btn-selectUser").text(data.loginname);
+    $(".J-btn-cancelUser").show();
+    return;
+  }
+
+  function cancel_user(){
+    $("input[name='carpool_account']").val('');
+    $("input[name='carpool_uid']").val('');
+    $("input[name='real_name']").val('');
+    $(".J-btn-selectUser").text('选择用户');
+    $(".J-btn-cancelUser").hide();
+    return ;
+  }
+
+
+</script>

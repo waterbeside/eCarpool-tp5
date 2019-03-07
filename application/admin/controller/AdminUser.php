@@ -94,29 +94,37 @@ class AdminUser extends AdminBase
       if ($this->request->isPost()) {
           $data            = $this->request->param();
           $validate_result = $this->validate($data, 'AdminUser');
-
+          if($id==1){
+            $this->jsonReturn(-1,"创始人账号无法编辑");
+          }
           if ($validate_result !== true) {
-              $this->jsonReturn(1,$validate_result);
+              $this->jsonReturn(-1,$validate_result);
           } else {
-              $admin_user = $this->admin_user_model->find($id);
+              // $admin_user = $this->admin_user_model->find($id);
+              $updateData = [
+                'username' => $data['username'],
+                'status' => $data['status'],
+                'nickname' => $data['nickname'],
+                'real_name' => $data['real_name'],
+                'carpool_uid' => $data['carpool_uid'],
+                'carpool_account' => $data['carpool_account'],
+              ];
 
-              $admin_user->id       = $id;
-              $admin_user->username = $data['username'];
-              $admin_user->status   = $data['status'];
 
               if (!empty($data['password']) && !empty($data['confirm_password'])) {
                   // $admin_user->password = md5($data['password'] . Config::get('salt'));
-                  $admin_user->password  = password_hash($data['password'], PASSWORD_DEFAULT);
+                  $updateData['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
               }
-              if ($admin_user->save() !== false) {
+              $res = $this->admin_user_model->where('id',$id)->update($updateData);
+              if ($res !== false) {
                   $auth_group_access['uid']      = $id;
                   $auth_group_access['group_id'] = $data['group_id'];;
                   $this->auth_group_access_model->where('uid', $id)->update($auth_group_access);
                   $this->log('更新后台用户成功，id='.$id,0);
                   $this->jsonReturn(0,'更新成功');
               } else {
-                  $this->log('更新后台用户失败，id='.$id,1);
-                  $this->jsonReturn(1,'更新失败');
+                  $this->log('更新后台用户失败，id='.$id,-1);
+                  $this->jsonReturn(-1,'更新失败');
               }
           }
       }else{

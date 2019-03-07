@@ -14,9 +14,10 @@
                     <tr>
                         <th style="width: 30px;">ID</th>
                         <th>用户名</th>
+                        <th>CA</th>
                         <th>状态</th>
-                        <th>创建时间</th>
                         <th>组</th>
+                        <th>创建时间</th>
                         <th>最后登录时间</th>
                         <th>最后登录IP</th>
                         <th>操作</th>
@@ -27,10 +28,11 @@
                     <tr>
                         <td>{$vo.id}</td>
                         <td>{$vo.username}</td>
+                        <td>{$vo.carpool_account}</td>
                         <td>{php}echo $vo['status']==1 ? '启用' : '禁用';{/php}</td>
                         <td>{$vo.group_name}</td>
-                        <td>{$vo.create_time}</td>
-                        <td>{$vo.last_login_time}</td>
+                        <td>{$vo.create_time|date="Y-m-d"}</td>
+                        <td>{$vo.last_login_time|date="Y-m-d H:i"}</td>
                         <td>{$vo.last_login_ip}</td>
                         <td>
                             <a href="{:url('admin/admin_user/edit',['id'=>$vo['id']])}" class="layui-btn layui-btn-normal layui-btn-xs" data-title="編輯"  data-trigger="modal">编辑</a>

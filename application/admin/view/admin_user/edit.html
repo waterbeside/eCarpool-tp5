@@ -1,59 +1,92 @@
 
-        <div class="layui-tab-content">
-            <div class="layui-tab-item layui-show">
-                <form class="layui-form form-container" action="{:url('admin/admin_user/edit')}" method="post">
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">帐户名</label>
-                        <div class="layui-input-block">
-                            <input type="text" name="username" value="{$admin_user.username}" required  lay-verify="required" placeholder="请输入帐户名" class="layui-input">
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">姓名</label>
-                        <div class="layui-input-block">
-                            <input type="text" name="nickname" value="{$admin_user.nickname}"  placeholder="请输入姓名" class="layui-input">
-                        </div>
-                    </div>
-
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">密码</label>
-                        <div class="layui-input-block">
-                            <input type="password" name="password" value="" placeholder="（选填）如不修改则留空" class="layui-input">
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">重复密码</label>
-                        <div class="layui-input-block">
-                            <input type="password" name="confirm_password" value="" placeholder="（选填）如不修改则留空" class="layui-input">
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">状态</label>
-                        <div class="layui-input-block">
-                            <input type="radio" name="status" value="1" title="启用" {if condition="$admin_user.status==1"} checked="checked"{/if}>
-                            <input type="radio" name="status" value="0" title="禁用" {if condition="$admin_user.status==0"} checked="checked"{/if}>
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">所属权限组</label>
-                        <div class="layui-input-block">
-                            <select name="group_id" lay-verify="required">
-                                {foreach name="auth_group_list" item="vo"}
-                                <option value="{$vo.id}" {if condition="$admin_user.group_id==$vo.id"} selected="selected"{/if}>{$vo.title}</option>
-                                {/foreach}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="layui-form-item">
-                        <div class="layui-input-block">
-                            <input type="hidden" name="id" value="{$admin_user.id}">
-                            <button class="layui-btn" lay-submit lay-filter="*">更新</button>
-                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
-                        </div>
-                    </div>
-                </form>
+<div class="layui-tab-content">
+    <div class="layui-tab-item layui-show">
+        <form class="layui-form form-container" action="{:url('admin/admin_user/edit')}" method="post">
+            <div class="layui-form-item">
+                <label class="layui-form-label">帐户名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="username" value="{$admin_user.username}" required  lay-verify="required" placeholder="请输入帐户名" class="layui-input">
+                </div>
             </div>
-        </div>
-        <script>
-          form.render();
-        </script>
+            <div class="layui-form-item">
+                <label class="layui-form-label">昵称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="nickname" value="{$admin_user.nickname}"  placeholder="请输入昵称" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">关联carpool用户</label>
+                <div class="layui-input-block">
+                  <input type="hidden" name="carpool_account" value="{$admin_user.carpool_account}"  class="layui-input layui-input-inline " readonly  >
+                  <input type="hidden" name="carpool_uid" value="{$admin_user.carpool_uid}"   class="layui-input " readonly  >
+                  <input type="hidden" name="real_name" value="{$admin_user.real_name}"   class="layui-input " readonly  >
+                  <a onclick="openLayer('{:url('admin/User/user_dialog')}','选择用户');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary "   >
+                    <i class="fa fa-address-book"></i> <span class="J-btn-selectUser">{$admin_user.carpool_uid ? $admin_user.carpool_account : '选择用户' }</span>
+                  </a>
+                  <a onclick="cancel_user();" href="javascript:void(0);"   class="layui-btn  layui-btn-danger J-btn-cancelUser" <?php if(!$admin_user['carpool_uid']){ echo 'style="display:none"';}?>  >取消关联</a>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">密码</label>
+                <div class="layui-input-block">
+                    <input type="password" name="password" value="" placeholder="（选填）如不修改则留空" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">重复密码</label>
+                <div class="layui-input-block">
+                    <input type="password" name="confirm_password" value="" placeholder="（选填）如不修改则留空" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">状态</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="status" value="1" title="启用" {if condition="$admin_user.status==1"} checked="checked"{/if}>
+                    <input type="radio" name="status" value="0" title="禁用" {if condition="$admin_user.status==0"} checked="checked"{/if}>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">所属权限组</label>
+                <div class="layui-input-block">
+                    <select name="group_id" lay-verify="required">
+                        {foreach name="auth_group_list" item="vo"}
+                        <option value="{$vo.id}" {if condition="$admin_user.group_id==$vo.id"} selected="selected"{/if}>{$vo.title}</option>
+                        {/foreach}
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <input type="hidden" name="id" value="{$admin_user.id}">
+                    <button class="layui-btn" lay-submit lay-filter="*">更新</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+  form.render();
+
+  // var laydate = layui.laydate;
+  function select_user(data){
+    $("input[name='carpool_account']").val(data.loginname);
+    $("input[name='carpool_uid']").val(data.uid);
+    $("input[name='real_name']").val(data.nativename);
+    $(".J-btn-selectUser").text(data.loginname);
+    $(".J-btn-cancelUser").show();
+    return;
+  }
+
+  function cancel_user(){
+    $("input[name='carpool_account']").val('');
+    $("input[name='carpool_uid']").val('');
+    $("input[name='real_name']").val('');
+    $(".J-btn-selectUser").text('选择用户');
+    $(".J-btn-cancelUser").hide();
+    return ;
+  }
+
+
+</script>

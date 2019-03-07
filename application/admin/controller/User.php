@@ -21,9 +21,11 @@ use think\Db;
 class User extends AdminBase
 {
     protected $user_model;
+    public    $un_check = ['admin/user/user_dialog'];
 
     protected function initialize()
     {
+
         parent::initialize();
         $this->user_model = new UserModel_o();
     }
@@ -64,6 +66,42 @@ class User extends AdminBase
           'auth' => $auth,
         ];
         return $this->fetch('index', $returnData);
+    }
+
+
+    /**
+     * 用户列表对话框
+     * @param string $keyword
+     * @param int    $page
+     * @return mixed
+     */
+    public function user_dialog($filter = [], $page = 1, $pagesize = 12,$fun = 'select_user')
+    {
+        $fields = "u.*,c.*, d.fullname as full_department";
+        $map = [];
+        //筛选用户信息
+        if (isset($filter['keyword']) && $filter['keyword']) {
+            $map[] = ['u.loginname|u.phone|u.name','like', "%{$filter['keyword']}%"];
+        }
+        //筛选部门
+        if (isset($filter['keyword_user']) && $filter['keyword_user']) {
+            $map[] = ['d.fullname|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
+            // $map[] = ['u.Department|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
+        }
+        $join = [
+          ['company c','u.company_id = c.company_id','left'],
+          ['t_department d','u.department_id = d.id','left'],
+        ];
+        $lists = $this->user_model->alias('u')->field($fields)->join($join)->where($map)->order('uid DESC')->paginate($pagesize, false, ['query'=>request()->param()]);
+
+
+        $returnData = [
+          'lists' => $lists,
+          'filter' => $filter,
+          'pagesize'=>$pagesize,
+          'fun' => $fun,
+        ];
+        return $this->fetch('', $returnData);
     }
 
 
