@@ -3,6 +3,7 @@ namespace app\user\model;
 
 use think\Model;
 use my\RedisData;
+use think\Db;
 
 class Department extends Model
 {
@@ -163,11 +164,15 @@ class Department extends Model
      }
      return $this->redisObj;
    }
+
    /**
     * 处理cache
     */
-   public function itemCache($id,$value = false,$ex = 3600*24){
-     $cacheKey = "carpool:department:".$id;
+   public function itemCache($id,$value = false,$ex = 3600*24,$key='department'){
+     $cacheKey = "carpool:".$key.":".$id;
+     // if($keyFix){
+     //   $cacheKey = $cacheKey.":".$keyFix;
+     // }
      $redis = $this->redis();
      if($value === null){
        return $redis->delete($cacheKey);
@@ -187,6 +192,11 @@ class Department extends Model
      }
    }
 
+   public function itemChildrenCache($id,$value = false,$ex = 3600*24){
+     return $this->itemCache($id, $value , $ex,'departmentChildrens');
+   }
+
+
    /**
     * 取单条数据
     */
@@ -204,6 +214,49 @@ class Department extends Model
       $department['department_format'] = $this->formatFullName($department['fullname']);
       return $department;
    }
+
+   /**
+    * 取子部门id
+    * @param  integer  $pid  父ID
+    * @param  integer $type 0时，从path字段截取，1时历遍取.
+    * @return string        "id,id,id"
+    */
+   public function getChildrenIds($pid,$cache_time = 3600*24*2){
+     $data =  $this->itemChildrenCache($pid);
+     $ids = $this->itemChildrenCache($pid);
+     if(!$ids || !$cache_time){
+       $map = [
+          ['','exp', Db::raw("FIND_IN_SET($pid,path)")]
+       ];
+       $ids =  $this->where($map)->order('id asc')->column('id');
+       if(!$ids){
+         return false;
+       }
+       $this->itemChildrenCache($pid,$ids,$cache_time);
+     }
+     return $ids;
+   }
+
+   public function excludeChildrens($ids){
+     $idsArray = explode(",",$ids);
+     $idsArray = array_values(array_unique($idsArray));
+     $childrenList = [];
+     foreach ($idsArray as $key => $value) {
+       $childrens = $this->getChildrenIds($value);
+       if(in_array($value,$childrenList)){
+         unset($idsArray[$key]);
+       }
+       $childrenList =  $childrens ? array_merge($childrenList,$childrens) : $childrenList;
+
+     }
+     foreach ($idsArray as $key => $value) {
+       if(in_array($value,$childrenList)){
+         unset($idsArray[$key]);
+       }
+     }
+     return $idsArray;
+   }
+
 
 
 }
