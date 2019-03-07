@@ -58,6 +58,7 @@ Route::group([], function () {
   //地址相关
   Route::rule('api/:version/address/:id','api/:version.address/read','GET')->pattern(['id' => '\d+']);
   Route::rule('api/:version/address/my','api/:version.address/my','GET');
+  Route::rule('api/:version/address/citys','api/:version.address/citys','GET');
   Route::rule('api/:version/address','api/:version.address/save','POST');
 
   //用户相关
