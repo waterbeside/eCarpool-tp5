@@ -19,10 +19,11 @@ use my\Tree;
 class Department extends AdminBase
 {
 
+    public  $un_check = ['admin/department/list_dialog'];
+
     protected function initialize()
     {
         parent::initialize();
-
     }
 
     /**
@@ -31,7 +32,7 @@ class Department extends AdminBase
      * @param int    $page
      * @return mixed
      */
-    public function index($pid=0,$filter = [], $page = 1)
+    public function index($pid=0,$filter = [], $page = 1, $pagesize = 50, $returnType = 1)
     {
 
         $map = [];
@@ -50,10 +51,12 @@ class Department extends AdminBase
         }
         $fields = '*';
         $order = 'name ';
-        $lists = DepartmentModel::where($map)->order($order)->field($fields)->paginate(50, false, ['query'=>request()->param()]);
+
+        $DepartmentModel = new DepartmentModel();
+        $lists = $DepartmentModel->where($map)->order($order)->field($fields)->paginate($pagesize, false, ['query'=>request()->param()]);
 
         //start 父级部门导航
-        $path_data = DepartmentModel::where('id',$pid)->find();
+        $path_data = $DepartmentModel->where('id',$pid)->find();
         $path_array = $path_data ? explode(',',$path_data['path']) : [];
         $path_array[] = $pid;
         $fullname_array = explode(',',$path_data['fullname']);
@@ -70,9 +73,23 @@ class Department extends AdminBase
           'pid'=>$pid,
           'path' => $path,
           'deep' => $deep,
-
+          'pagesize' => $pagesize,
         ];
-        return $this->fetch('index',$returnData );
+        return $returnType ? $this->fetch('index',$returnData ) : $returnData;
+    }
+
+
+    /**
+     * 部门对话框
+     * @return mixed
+     */
+    public function list_dialog($pid=0,$filter = [], $page = 1,$fun = "select_dept",$multi = 0)
+    {
+      $returnData = $this->index($pid,$filter,$page,10,0);
+      $returnData['fun'] = $fun;
+      $returnData['multi'] = $multi;
+
+      return $this->fetch('list_dialog',$returnData );
     }
 
     /**
@@ -215,7 +232,6 @@ class Department extends AdminBase
        $msg .= $successMsg."<br />".$failMsg."<br />";
        // return $this->fetch('index/multi_jump',['url'=>'','msg'=>$msg]);
        return $this->fetch('index/multi_jump',['url'=>$jumpUrl,'msg'=>$msg]);
-
 
      }
 
