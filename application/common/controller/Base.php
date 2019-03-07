@@ -263,7 +263,12 @@ class Base extends Controller
     public function clientRequest($url,$data=[],$type='POST',$dataType="json"){
       try {
         $client = new \GuzzleHttp\Client(['verify'=>false]);
-        $response = $client->request($type, $url, ['form_params' => $data]);
+        $params = strtolower($type) == 'get' ? [
+          'query' => $data
+        ] : [
+          'form_params' => $data
+        ];
+        $response = $client->request($type, $url, $params);
         $contents = $response->getBody()->getContents();
         if(mb_strtolower($dataType)=="json"){
           $contents = json_decode($contents,true);
