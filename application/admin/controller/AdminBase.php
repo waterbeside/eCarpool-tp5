@@ -24,6 +24,7 @@ class AdminBase extends Base
     protected $jwtInfo ;
     public $userBaseInfo;
     protected $redisObj = NULL;
+    public $un_check = [];
 
     protected function initialize()
     {
@@ -45,14 +46,16 @@ class AdminBase extends Base
        // $this->checkToken(); //如果使用jwt验证
         $this->checkAuthSession(); //如果使用Session验证
 
-        $module     = $this->request->module();
-        $controller = $this->request->controller();
-        $action     = $this->request->action();
+        $module     = strtolower($this->request->module());
+        $controller = strtolower($this->request->controller());
+        $action     = strtolower($this->request->action());
 
         // dump($this->request);exit;
 
         // 排除权限
         $un_check = ['admin/Index/index', 'admin/AuthGroup/getjson', 'admin/System/clear','admin/Index/main'];
+        $un_check = array_merge($un_check,$this->un_check);
+        $un_check = array_map('strtolower', $un_check);
         $un_check_controller = ['Publics','Uploader'];
 
         if (!in_array($module . '/' . $controller . '/' . $action, $un_check) && !in_array($controller,$un_check_controller) && strpos($action,'public_' ) === false) {
@@ -70,7 +73,8 @@ class AdminBase extends Base
                     return $this->jsonReturn(-1,'没有权限');
                   }
                 }else{
-                    $this->error('没有权限');
+
+                    $this->error('没有权限',NULL,NULL,-1);
                 }
             }
         }
