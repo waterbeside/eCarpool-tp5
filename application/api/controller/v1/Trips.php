@@ -120,7 +120,7 @@ class Trips extends ApiBase
     /**
      * 墙上空座位
      */
-    public function wall_list($pagesize=20, $keyword="", $map_type=null)
+    public function wall_list($pagesize=20, $keyword="",  $map_type=NULL)
     {
         $userData = $this->getUserData(1);
         $company_id = $userData['company_id'];
@@ -137,6 +137,10 @@ class Trips extends ApiBase
         if ($keyword) {
             $map[] = ['d.name|s.addressname|e.addressname|t.startname|t.endname','like',"%{$keyword}%"];
         }
+        if ($city) {
+            $map[] = ['s.city','=',$city];
+        }
+
         if (is_numeric($map_type)) {
             $map[] = ['t.map_type','=',$map_type];
         }
@@ -221,10 +225,11 @@ class Trips extends ApiBase
     /**
      * 约车需求
      */
-    public function info_list($keyword="", $status = 0, $pagesize=20, $wid = 0, $returnType = 1, $orderby = '', $map_type=null)
+    public function info_list($keyword="", $status = 0, $pagesize=20, $wid = 0, $returnType = 1, $orderby = '',$city=NULL, $map_type=null)
     {
         $userData = $this->getUserData(1);
         $company_id = $userData['company_id'];
+
 
         $time_e = strtotime("+20 day");
         $time_s = strtotime("-1 hour");
@@ -249,6 +254,9 @@ class Trips extends ApiBase
 
         if ($keyword) {
             $map[] = ['s.addressname|p.name|e.addressname|t.startname|t.endname','like',"%{$keyword}%"];
+        }
+        if ($city) {
+            $map[] = ['s.city','=',$city];
         }
         if (is_numeric($map_type)) {
             $map[] = ['t.map_type','=',$map_type];
@@ -341,6 +349,9 @@ class Trips extends ApiBase
         // return $this->success('加载成功','',$data);
         return $returnType ?   $this->jsonReturn(0, $data, 'success') : $data;
     }
+
+
+
 
 
 

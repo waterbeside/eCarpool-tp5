@@ -3,7 +3,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\ApiBase;
 use app\carpool\model\Address as AddressModel;
-
+use think\facade\Cache;
 use think\Db;
 
 /**
@@ -95,6 +95,62 @@ class Address extends ApiBase
       if(isset($data['company_id'])) $data['company_id'] = intval($data['company_id']);
       if(isset($data['ordernum'])) $data['ordernum'] = intval($data['ordernum']);
       return $this->jsonReturn(0,$res,'success');
+    }
+
+
+    /**
+     * GET 取得城市列表 group by
+     * @return \think\Response
+     */
+    public function citys($type = 0){
+
+      if($type){
+        if(!in_array($type,[1,2,'wall','info'])){
+          return $this->jsonReturn(992,'error type');
+        }
+        $cacheKey = "carpool:citys:type:$type";
+        $res = Cache::get($cacheKey);
+        if(!$res){
+          $join = [];
+          if($type == 1 || $type == "wall"){
+            $join[] = ['love_wall s','t.addressid = s.startpid', 'left'];
+          }elseif($type == 2 || $type == "info"){
+            $join[] = ['info s','t.addressid = s.startpid', 'left'];
+          }
+          $map = [
+            ["s.time",">",date('YmdHi')],
+            ["s.status","<>",'2']
+          ];
+
+            $resList = AddressModel::alias('t')->field('t.city , count(t.city) as num')->join($join)->where($map)->group('t.city')->order('num DESC')->select();
+            $res = [];
+            $hasNull = false;
+            $hasMin = false;
+            foreach ($resList as $key => $value) {
+              if($value['city'] == "(null)"){
+                $hasNull = true;
+              }else if($value['city'] == "--"){
+                $hasMin = true;
+              }else{
+                $res[] = $value['city'];
+              }
+            }
+            if($hasMin){
+              $res[] = "--";
+            }
+            if($hasNull){
+              $res[] = "(null)";
+            }
+            Cache::set($cacheKey,$res,30);
+        }
+
+      }else{
+        $res = AddressModel::group('city')->order('city Desc')->cache(30)->column('city');
+
+      }
+      dump($res);
+
+
     }
 
 
