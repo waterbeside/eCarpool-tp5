@@ -68,7 +68,7 @@ class SyncHr extends AdminBase
     {
         ini_set('memory_limit', '128M');
         ini_set('max_execution_time', '180');
-        $url = "http://127.0.0.1:8082/api/v1/sync_hr/all";
+        $url = config("others.local_hr_sync_api.all");
         $params = [
           'type'=>$type,
           'page'=>$page,
@@ -83,7 +83,6 @@ class SyncHr extends AdminBase
             // $client->setDefaultOption('verify', false);
             $response = $client->request('get', $url, ['query' => $params]);
             $content = $response->getBody()->getContents();
-
             $res = json_decode($content, true);
         } catch (Exception $e) {
             // $this->errorMsg ='拉取失败';
@@ -134,12 +133,12 @@ class SyncHr extends AdminBase
      */
     public function sync_single($code=0, $tid=0)
     {
-        $url = "http://127.0.0.1:8082/api/v1/sync_hr/single";
+        $url = config("others.local_hr_sync_api.single");
         $params = [
-        'code'=>$code,
-        'tid'=>$tid,
-        'is_sync'=>1,
-      ];
+          'code'=>$code,
+          'tid'=>$tid,
+          'is_sync'=>1,
+        ];
 
         try {
             $client = new \GuzzleHttp\Client(['verify'=>false]);
