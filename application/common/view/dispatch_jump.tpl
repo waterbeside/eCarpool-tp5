@@ -28,7 +28,7 @@
             <?php break;?>
         <?php } ?>
         <p class="detail"></p>
-        <?php if($url!="javascript:void(0);"){ ?>
+        <?php  if($wait>0){ ?>
         <p class="jump">
             页面自动 <a id="href"  >跳转</a> 等待时间： <b id="wait"><?php echo($wait);?></b>
         </p>
@@ -40,7 +40,7 @@
             var url = "<?php echo($url);?>"
             // url = url == "javascript:history.back(-1);" ? "" :url ;
             document.getElementById('href').href = url
-            var wait = document.getElementById('wait')
+            var wait = "<?php echo($wait);?>";
 
             var interval = setInterval(function(){
                 var time = --wait.innerHTML;
