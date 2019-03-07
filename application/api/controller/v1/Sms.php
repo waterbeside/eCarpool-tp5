@@ -182,11 +182,11 @@ class Sms extends ApiBase
     {
         $dev = input('param.dev');
         if (!$usage) {
-            $this->jsonReturn(-10001, [], 'usage empty');
+            $this->jsonReturn(992, [], 'usage empty');
             exit;
         }
         if (!isset($this->SmsTemplate['u_'.$usage])) {
-            $this->jsonReturn(-10002, [], 'usage error');
+            $this->jsonReturn(992, [], 'usage error');
             exit;
         }
         $phones = $this->formatPhones($phone);
@@ -204,48 +204,52 @@ class Sms extends ApiBase
             }
 
             switch ($usage) {
-          case 100: //登入
-            if (!$phoneUserData) { //登入验证手机号是否存在。
-              $this->jsonReturn(10002, [], lang('User does not exist'));
-            }
-            break;
-          case 101: //注册
-            if ($phoneUserData) { //注册 验证手机号是否存在。
-              $this->jsonReturn(10006, [], lang('User already exists'));
-            }
-            break;
-          case 102: //重置密码
-            if (!$phoneUserData) { //验证手机号是否存在。
-              $this->jsonReturn(10002, [], lang('User does not exist'));
-            }
-            break;
-          case 103: //重绑定
-            if ($userData['phone'] == $phone) {
-                $this->jsonReturn(10100, [], lang('Already bound, please enter a new phone number'));
-            }
-            $phoneUserData2 = UserModel::where([['loginname','=',$phone]])->find();
-            if ($phoneUserData2) {
-                $this->jsonReturn(10006, [], lang('The mobile phone number has been marked with a new account, whether to merge?'));
-            }
-          /*  if($phoneUserData && $phoneUserData['phone'] == $phones[0]){
-              $this->jsonReturn(10006,[],'该手机号已绑定其它帐号');
-            }*/
-            break;
-          case 104: //合并账号
-            if ($userData['phone'] == $phone) {
-                $this->jsonReturn(10100, [], lang('The phone number has been bound to this account, no need to merge.'));
-            }
-            $phoneUserData2 = UserModel::where([['loginname','=',$phone]])->find();
-            if (!$phoneUserData2) {
-                $this->jsonReturn(10006, [], lang('No need to merge'));
-            }
+              case 100: //登入
+                if (!$phoneUserData) { //登入验证手机号是否存在。
+                  $this->jsonReturn(10002, [], lang('User does not exist'));
+                }
+                break;
+              case 101: //注册
+                if ($phoneUserData) { //注册 验证手机号是否存在。
+                  $this->jsonReturn(10006, [], lang('User already exists'));
+                }
+                break;
+              case 102: //重置密码
+                $userData = $this->getUserData();
+                if($userData && $userData['uid'] != $phoneUserData['uid']){
+                  $this->jsonReturn(10001, [], lang('The phone number you entered is incorrect'));
+                }
+                if (!$phoneUserData) { //验证手机号是否存在。
+                  $this->jsonReturn(10002, [], lang('User does not exist'));
+                }
+                break;
+              case 103: //重绑定
+                if ($userData['phone'] == $phone) {
+                    $this->jsonReturn(10100, [], lang('Already bound, please enter a new phone number'));
+                }
+                $phoneUserData2 = UserModel::where([['loginname','=',$phone]])->find();
+                if ($phoneUserData2) {
+                    $this->jsonReturn(10006, [], lang('The mobile phone number has been marked with a new account, whether to merge?'));
+                }
+              /*  if($phoneUserData && $phoneUserData['phone'] == $phones[0]){
+                  $this->jsonReturn(10006,[],'该手机号已绑定其它帐号');
+                }*/
+                break;
+              case 104: //合并账号
+                if ($userData['phone'] == $phone) {
+                    $this->jsonReturn(10100, [], lang('The phone number has been bound to this account, no need to merge.'));
+                }
+                $phoneUserData2 = UserModel::where([['loginname','=',$phone]])->find();
+                if (!$phoneUserData2) {
+                    $this->jsonReturn(10006, [], lang('No need to merge'));
+                }
 
-            break;
+                break;
 
-          default:
-            # code...
-            break;
-        }
+              default:
+                # code...
+                break;
+            }
             foreach ($phones as $key=>$phone) {
                 $sendCallBack[$phone] = $this->sendCode($phone, $usage, 6, 900, $dev);
                 if ($sendCallBack[''.$phone]['code'] == 200) {
@@ -310,157 +314,162 @@ class Sms extends ApiBase
         }
 
         switch ($usage) {
-        /******** 验证登入 *********/
-        case 100:
-          $client = input('param.client');
-          if (!in_array($client, array('ios','android','h5','web','third'))) {
-              return  $this->jsonReturn(992, [], 'client error');
-          };
-          // collect user input data
-          $phoneUserData = UserModel::where([['phone','=',$phone]])->find();
-              if (!$phoneUserData) {
-                  $this->jsonReturn(10002, [], 'user does not exist');
-              }
-              if (!$phoneUserData['is_active']) {
-                  $this->jsonReturn(10003, [], 'user does not active');
-              }
-
-          if ($phoneUserData['is_delete']) {
-              $this->jsonReturn(10003, [], 'user does not active');
-          }
-
-
-
-          $jwt = $this->createPassportJwt(['uid'=>$phoneUserData['uid'],'loginname'=>$phoneUserData['loginname'],'client' => $client]);
-          $returnData = array(
-                    'user' => array(
-                        'uid'=> $phoneUserData['uid'],
-                        'loginname' => $phoneUserData['loginname'],
-                        'name'=> $phoneUserData['name'],
-                        'company_id'=>$phoneUserData['company_id'],
-                        'avatar' => $phoneUserData['imgpath'],
-                    ),
-                    'token'	=> $jwt
-                );
-
-
-          $isAllUserData = in_array($client, ['ios','android']) ? 1 : 0;
-                if ($isAllUserData) {
-                    $returnData['user'] = $phoneUserData;
-                    if (isset($returnData['user']['md5password'])) {
-                        $returnData['user']['md5password'] = '';
-                    }
-                    if (isset($returnData['user']['passwd'])) {
-                        $returnData['user']['passwd'] = '';
-                    }
+          /******** 验证登入 *********/
+          case 100:
+            $client = input('param.client');
+            if (!in_array($client, array('ios','android','h5','web','third'))) {
+                return  $this->jsonReturn(992, [], 'client error');
+            };
+            // collect user input data
+            $phoneUserData = UserModel::where([['phone','=',$phone]])->find();
+                if (!$phoneUserData) {
+                    $this->jsonReturn(10002, [], 'user does not exist');
                 }
-          $oAuthList = UserOauth::where('user_id', $phoneUserData['uid'])->select();
-          if ($oAuthList) {
-              foreach ($oAuthList as $key => $value) {
-                  $returnData['user']['open_id_type_'.$value['type']] = $value['identifier'];
-              }
-          }
-          if (isset($returnData['user'])) {
-              break;
-          } else {
-              $this->jsonReturn(-1, [], 'fail');
-          }
-          break;
+                if (!$phoneUserData['is_active']) {
+                    $this->jsonReturn(10003, [], 'user does not active');
+                }
 
-        /******** 重置密码 *********/
-        case 102:
-        $password = input('post.password');
-        if ($password) {
-            if (strlen($password) < 6) {
-                return $this->jsonReturn(992, [], lang('The new password should be no less than 6 characters'));
+            if ($phoneUserData['is_delete']) {
+                $this->jsonReturn(10003, [], 'user does not active');
             }
-            $hashPassword = md5($password); //加密后的密码
-            $status = UserModel::where([['phone','=',$phone],['is_delete','<>',1],['is_active','=',0]])->update(['md5password'=>$hashPassword]);
-            if ($status!==false) {
-                return $this->jsonReturn(0, [], "success");
+
+
+
+            $jwt = $this->createPassportJwt(['uid'=>$phoneUserData['uid'],'loginname'=>$phoneUserData['loginname'],'client' => $client]);
+            $returnData = array(
+                'user' => array(
+                    'uid'=> $phoneUserData['uid'],
+                    'loginname' => $phoneUserData['loginname'],
+                    'name'=> $phoneUserData['name'],
+                    'company_id'=>$phoneUserData['company_id'],
+                    'avatar' => $phoneUserData['imgpath'],
+                ),
+                'token'	=> $jwt
+            );
+
+
+            $isAllUserData = in_array($client, ['ios','android']) ? 1 : 0;
+                  if ($isAllUserData) {
+                      $returnData['user'] = $phoneUserData;
+                      if (isset($returnData['user']['md5password'])) {
+                          $returnData['user']['md5password'] = '';
+                      }
+                      if (isset($returnData['user']['passwd'])) {
+                          $returnData['user']['passwd'] = '';
+                      }
+                  }
+            $oAuthList = UserOauth::where('user_id', $phoneUserData['uid'])->select();
+            if ($oAuthList) {
+                foreach ($oAuthList as $key => $value) {
+                    $returnData['user']['open_id_type_'.$value['type']] = $value['identifier'];
+                }
+            }
+            if (isset($returnData['user'])) {
+                break;
             } else {
-                return $this->jsonReturn(-1, [], "fail");
+                $this->jsonReturn(-1, [], 'fail');
             }
+            break;
+
+          /******** 重置密码 *********/
+          case 102:
+            if (isset($_POST['password'])) {
+                $userData = $this->getUserData();
+                if($userData && $userData['phone'] != $phone){
+                  $this->jsonReturn(10001, [], lang('The phone number you entered is incorrect'));
+                }
+                $password = input('post.password');
+                if (strlen($password) < 6) {
+                    return $this->jsonReturn(992, [], lang('The new password should be no less than 6 characters'));
+                }
+                $hashPassword = md5($password); //加密后的密码
+                $status = UserModel::where([['phone','=',$phone],['is_delete','<>',1],['is_active','=',1]])->update(['md5password'=>$hashPassword]);
+                if ($status!==false) {
+                  break;
+                } else {
+                    return $this->jsonReturn(-1, [], "fail");
+                }
+            }
+            break;
+
+          /******** 绑定手机号 *********/
+          case 103:
+            if ($userData['phone'] == $phone) {
+                break;
+            }
+            $phoneUserData = UserModel::where([['loginname','=',$phone]])->find();
+            if ($phoneUserData) {
+                $this->jsonReturn(10006, [], lang('The phone number has been registered for another account'));
+            }
+            $phoneUserData2 = UserModel::where([['phone','=',$phone]])->find();
+            try {
+                if ($phoneUserData2) {
+                    UserModel::where([['phone','=',$phone],['loginname','<>',$phone]])->setField('phone', '');//解绑其它帐号
+                }
+                $update_count = UserModel::where('uid', $uid)->setField('phone', $phone);//绑定新号码
+                if (!$update_count) {
+                    throw new \Exception(lang('Fail'));
+                }
+                // 提交事务
+                Db::commit();
+            } catch (\Exception $e) {
+                // 回滚事务
+                Db::rollback();
+                $logMsg = '绑定手机号失败'.json_encode($this->request->post());
+                $this->log($logMsg, -1);
+                $this->codeCache($usage, $phone, null); //清除使用后的验证码缓存
+                $this->jsonReturn(-1, [], lang('Fail'));
+            }
+            break;
+
+
+          /******** 合并帐号 *********/
+          case 104:
+
+            // $phoneUserData = UserModel::where([['phone','=',$phone]])->find(); //取得要合并的手机号信息。
+            $phoneUserData = UserModel::where([['loginname','=',$phone]])->find();
+            if (!$phoneUserData) {
+                $this->jsonReturn(-1, [], lang('No need to merge'));
+            }
+            Db::connect('database_carpool')->startTrans();
+            try {
+                $nowTime = time();
+                $update_phoneUserData = [
+                  "loginname" => 'delete_'.$phoneUserData['loginname'].'_'.$nowTime,
+                  "phone" => 'delete_'.$phoneUserData['phone'],
+                  "is_active" => 0,
+                  "is_delete" => 1
+                ];
+                Db::connect('database_carpool')->table('user')->where('uid', $phoneUserData['uid'])->update($update_phoneUserData);//更改原手机账号状态为禁用。
+                $extra = $userData['extra_info'] ? json_decode($userData['extra_info'], true) : [];
+                $extra['merge_id'] = isset($extra['merge_id']) && is_array($extra['merge_id']) ? array_push($extra['merge_id'], $phoneUserData['uid']) : [$phoneUserData['uid']] ;
+                $update_userData = [
+                  "phone" => $phone,
+                  "extra_info" => json_encode($extra)
+                ];
+                Db::connect('database_carpool')->table('user')->where('uid', $uid)->update($update_userData); //工号账号绑定手机号
+                $this->mergeScore($userData['loginname'], $phoneUserData['loginname'], $nowTime);
+                // 提交事务
+                Db::connect('database_carpool')->commit();
+            } catch (\Exception $e) {
+                // echo($e);
+                // 回滚事务
+                Db::connect('database_carpool')->rollback();
+                $logMsg = "合并账号失败:".json_encode($this->request->post());
+                $this->log($logMsg, -1);
+                if ($e->getMessage()=="10002") {
+                    $this->jsonReturn(10002, [], lang("Please log in directly to the employee number to perform the binding operation"), ['debug'=>$e->getMessage()]);
+                } else {
+                    $this->jsonReturn(-1, [], lang('Fail'), ['debug'=>$e->getMessage()]);
+                }
+            }
+            $this->log('合并账号成功', 0);
+            break;
+
+          default:
+            # code...
+            break;
         }
-        break;
-
-        /******** 绑定手机号 *********/
-        case 103:
-          if ($userData['phone'] == $phone) {
-              break;
-          }
-          $phoneUserData = UserModel::where([['loginname','=',$phone]])->find();
-          if ($phoneUserData) {
-              $this->jsonReturn(10006, [], lang('The phone number has been registered for another account'));
-          }
-          $phoneUserData2 = UserModel::where([['phone','=',$phone]])->find();
-          try {
-              if ($phoneUserData2) {
-                  UserModel::where([['phone','=',$phone],['loginname','<>',$phone]])->setField('phone', '');//解绑其它帐号
-              }
-              $update_count = UserModel::where('uid', $uid)->setField('phone', $phone);//绑定新号码
-              if (!$update_count) {
-                  throw new \Exception(lang('Fail'));
-              }
-              // 提交事务
-              Db::commit();
-          } catch (\Exception $e) {
-              // 回滚事务
-              Db::rollback();
-              $logMsg = '绑定手机号失败'.json_encode($this->request->post());
-              $this->log($logMsg, -1);
-              $this->jsonReturn(-1, [], lang('Fail'));
-          }
-          break;
-
-
-        /******** 合并帐号 *********/
-        case 104:
-
-          // $phoneUserData = UserModel::where([['phone','=',$phone]])->find(); //取得要合并的手机号信息。
-          $phoneUserData = UserModel::where([['loginname','=',$phone]])->find();
-          if (!$phoneUserData) {
-              $this->jsonReturn(-1, [], lang('No need to merge'));
-          }
-          Db::connect('database_carpool')->startTrans();
-          try {
-              $nowTime = time();
-              $update_phoneUserData = [
-                "loginname" => 'delete_'.$phoneUserData['loginname'].'_'.$nowTime,
-                "phone" => 'delete_'.$phoneUserData['phone'],
-                "is_active" => 0,
-                "is_delete" => 1
-              ];
-              Db::connect('database_carpool')->table('user')->where('uid', $phoneUserData['uid'])->update($update_phoneUserData);//更改原手机账号状态为禁用。
-              $extra = $userData['extra_info'] ? json_decode($userData['extra_info'], true) : [];
-              $extra['merge_id'] = isset($extra['merge_id']) && is_array($extra['merge_id']) ? array_push($extra['merge_id'], $phoneUserData['uid']) : [$phoneUserData['uid']] ;
-              $update_userData = [
-                "phone" => $phone,
-                "extra_info" => json_encode($extra)
-              ];
-              Db::connect('database_carpool')->table('user')->where('uid', $uid)->update($update_userData); //工号账号绑定手机号
-              $this->mergeScore($userData['loginname'], $phoneUserData['loginname'], $nowTime);
-              // 提交事务
-              Db::connect('database_carpool')->commit();
-          } catch (\Exception $e) {
-              // echo($e);
-              // 回滚事务
-              Db::connect('database_carpool')->rollback();
-              $logMsg = "合并账号失败:".json_encode($this->request->post());
-              $this->log($logMsg, -1);
-              if ($e->getMessage()=="10002") {
-                  $this->jsonReturn(10002, [], "目标账号未开通积分账号，请直接登入员工号进行绑定操作", ['debug'=>$e->getMessage()]);
-              } else {
-                  $this->jsonReturn(-1, [], lang('Fail'), ['debug'=>$e->getMessage()]);
-              }
-          }
-          $this->log('合并账号成功', 0);
-          break;
-
-        default:
-          # code...
-          break;
-      }
 
         if (!$step) {
             $this->codeCache($usage, $phone, null); //清除使用后的验证码缓存
@@ -468,9 +477,6 @@ class Sms extends ApiBase
         $this->jsonReturn(0, $returnData, 'success');
         exit;
     }
-
-
-
 
 
 
@@ -500,10 +506,10 @@ class Sms extends ApiBase
         $phone = preg_replace('# #', '', $phone);
         if ($dev) {
             $sendRes  = array( //test
-        'code'  => 200,
-        'msg'   => '',
-        'obj'   => 561111
-      );
+              'code'  => 200,
+              'msg'   => '',
+              'obj'   => 561111
+            );
         } else {
             $sendRes = $NIM->sendSmsCode($templateid, $phone, '', $codeLen);  //调用接口发送验证码
         }
@@ -528,8 +534,6 @@ class Sms extends ApiBase
         $templateid =   $templates['u_'.$usage] ; //短信验证码的模板ID
 
         $NIM = new NimServer($this->appKey, $this->appSecret, 'fsockopen');
-
-
         $userData = $this->getUserData(1);
 
 
