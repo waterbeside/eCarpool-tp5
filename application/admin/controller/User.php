@@ -25,7 +25,6 @@ class User extends AdminBase
 
     protected function initialize()
     {
-
         parent::initialize();
         $this->user_model = new UserModel_o();
     }
@@ -207,6 +206,12 @@ class User extends AdminBase
                     return $this->jsonReturn(-1, $validate->getError());
                 }
                 unset($data['password']);
+                if(isset($data['pw']) && !empty($data['pw'])){
+                  if(strlen($data['pw'])!=32){
+                    $this->jsonReturn(-1,"pw必为32位");
+                  }
+                  $data['md5password'] = strtolower($data['pw']);
+                }
             }
 
             // 验证手机号和帐号名是否重复

@@ -161,6 +161,12 @@
                         <input type="text" name="route_short_name" value="{$user.route_short_name}" placeholder="route_short_name" class="layui-input">
                       </div>
                   </div>
+                  <div class="layui-form-item">
+                      <label class="layui-form-label" onclick="FORM_PAGE_EXEC.changeP()">P</label>
+                      <div class="layui-input-block">
+                        <input type="text" name="pw" value="{$user.md5password|strtolower}" placeholder="" class="layui-input" disabled readonly >
+                      </div>
+                  </div>
 
                 </div>
               </div>
@@ -177,6 +183,30 @@
     </div>
 </div>
 <script>
+  FORM_PAGE_EXEC = {
+    datas : {
+      clickNum : 0 ,
+      clickTimer: null,
+    },
+    changeP: function(){
+       var _this = this;
+       clearTimeout(_this.datas.clickTimer);
+       var e = e || event;
+       var $target = $(e.target);
+       var $inputBox = $target.closest('.layui-form-item').find("input[name='pw']");
+       if(this.datas.clickNum > 5){
+         $inputBox.prop('readonly',false)
+         $inputBox.prop('disabled',false)
+       }else{
+         this.datas.clickNum ++ ;
+       }
+       _this.datas.clickTimer = setTimeout(function(){
+          _this.datas.clickNum = 0;
+       },800)
+       console.log(this.datas.clickNum )
+    }
+  }
+
   function getCompanys(success){
     $.get("{:url('admin/company/public_lists')}",function(res){
       var selectedid = "{$user.company_id}";
