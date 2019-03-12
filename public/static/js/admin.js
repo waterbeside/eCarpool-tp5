@@ -9,7 +9,6 @@ if(typeof(GV)=="undefined"){
 GV['config'] = {
   url : {
     amapScript : 'http://webapi.amap.com/maps?v=1.4.6&key=a9c78e8c6c702cc8ab4e17f5085ffd2a'
-
   }
 }
 
@@ -92,6 +91,10 @@ function initLayuiTable(options){
  * 通过layer的iframe打开
  */
 function openLayer(url,opt){
+  var e = e || event;
+  var openLength = 0
+  GV['lastOpenLayer'] = [];
+  GV['lastOpenLayer']['target'] = e.target;
   var defaults = {
     type: 2,
     area: ['700px', '90%'],
@@ -110,7 +113,7 @@ function openLayer(url,opt){
     defaults.content = url;
   }
   var options = $.extend(true, defaults, opt_s);
-  layer.open(options);
+  GV['lastOpenLayer']['layer'] = layer.open(options);
 }
 
 
@@ -204,6 +207,19 @@ function ajaxSubmit(setting){
 }
 
 function admin_init(){
+  $("[data-tips]").each(function(index, el) {
+    var $_this = $(this);
+    $(this).hover(function(){
+      var tips = $_this.attr('data-tips');
+      if(tips){
+        var tipsPosition = $_this.data('tips-position') ;
+        layer.tips(tips, this,{
+          time:1000,
+          tips:tipsPosition ? tipsPosition : 2,
+        })
+      }
+    })
+  });
   /**
    * 通用单图上传
    */
