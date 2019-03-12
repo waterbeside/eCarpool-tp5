@@ -99,8 +99,9 @@ class Address extends ApiBase
 
 
     /**
-     * GET 取得城市列表 group by
-     * @return \think\Response
+     *  GET 取得城市列表 group by
+     * @param  integer $type 0 ，所有，1 空坐位上的，2约车需求上的
+     * @return [type]        [description]
      */
     public function citys($type = 0){
 
@@ -148,7 +149,7 @@ class Address extends ApiBase
         $res = AddressModel::group('city')->order('city Desc')->cache(30)->column('city');
 
       }
-      dump($res);
+      $this->jsonReturn(0,$res);
 
 
     }

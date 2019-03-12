@@ -27,9 +27,22 @@ class ScoreGoods extends AdminBase
    * 商品列表
    * @return mixed
    */
-  public function index($type='2',$keyword="",$filter=['status'=>'','is_hidden'=>''],$page = 1,$pagesize = 20,$rule_number=NULL)
+  public function index($type='2',$keyword="",$filter=['status'=>'','is_hidden'=>''],$page = 1,$pagesize = 20,$region_id=0)
   {
     $map = [];
+    $fields = "t.*, d.fullname, d.path";
+    $join = [
+      ['carpool.t_department d','t.p_region_id = d.id','left']
+    ];
+    //地区排查
+    if($region_id){
+      if(is_numeric($region_id)){
+        $regionData = $this->getDepartmentById($region_id);
+      }
+      $region_map_sql = $this->buildRegionMapSql($region_id);
+      $map[] = ['','exp', Db::raw($region_map_sql)];
+    }
+
 
     if(isset($filter['status']) && is_numeric($filter['status'])){
       $map[] = ['status','=', $filter['status']];
@@ -41,10 +54,10 @@ class ScoreGoods extends AdminBase
     if ($keyword) {
         $map[] = ['name|desc','like', "%{$keyword}%"];
     }
-    if (is_numeric($rule_number)) {
-        $map[] = ['rule_number','=', $rule_number];
-    }
-    $lists = GoodsModel::where($map)->json(['images'])->order('id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+
+    $lists = GoodsModel::alias('t')->field($fields)->json(['images'])
+    ->join($join)->where($map)
+    ->order('t.id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
     foreach ($lists as $key => $value) {
       $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
     }
@@ -52,8 +65,8 @@ class ScoreGoods extends AdminBase
     $scoreConfigs = (new Configs())->getConfigs("score");
     $returnData = [
       'lists' => $lists,
-      'rule_number' => $rule_number,
-      'rule_number_lists' => config("score.rule_number"),
+      'regionData'=> isset($regionData) ? $regionData : NULL,
+      'region_id'=>$region_id,
       'keyword' => $keyword,
       'pagesize'=>$pagesize,
       'type'=>$type,
@@ -77,8 +90,11 @@ class ScoreGoods extends AdminBase
       if (!$validate->check($data)) {
         return $this->jsonReturn(-1,$validate->getError());
       }
-
+      if(!is_numeric($data['p_region_id'])){
+        $this->jsonReturn(-1,"error p_region_id");
+      }
       $upData = [
+        'p_region_id' => $data['p_region_id'],
         'name' => $data['name'],
         'desc' => $data['desc'],
         'price' => $data['price'],
@@ -88,7 +104,7 @@ class ScoreGoods extends AdminBase
         'is_delete'=> isset($data['is_show']) && $data['is_show'] ? 0 : 1,
         'operator' => $this->userBaseInfo['uid'],
         'update_time' => date('Y-m-d H:i:s'),
-        'rule_number' => $data['rule_number'],
+        // 'rule_number' => $data['rule_number'],
       ];
       if($data['thumb'] && trim($data['thumb'])){
         $upData['images'][0] =  $data['thumb'];
@@ -123,8 +139,13 @@ class ScoreGoods extends AdminBase
       if (!$validate->check($data)) {
         return $this->jsonReturn(-1,$validate->getError());
       }
+      if(!is_numeric($data['p_region_id'])){
+        $this->jsonReturn(-1,"error p_region_id");
+      }
+
 
       $upData = [
+        'p_region_id' => $data['p_region_id'],
         'name' => $data['name'],
         'desc' => $data['desc'],
         'price' => $data['price'],
@@ -138,7 +159,6 @@ class ScoreGoods extends AdminBase
       if($data['thumb'] && trim($data['thumb'])){
         $upData['images'][0] =  $data['thumb'];
       }
-
 
       if (GoodsModel::json(['images'])->where('id',$id)->update($upData) !== false) {
           $this->public_recache($id);
@@ -154,7 +174,11 @@ class ScoreGoods extends AdminBase
       if(!$id){
         $this->error("Lost id");
       }
-      $data = GoodsModel::where("id",$id)->json(['images'])->find();
+      $fields = "t.*, d.fullname";
+      $join = [
+        ['carpool.t_department d','t.p_region_id = d.id','left']
+      ];
+      $data = GoodsModel::alias('t')->field($fields)->json(['images'])->join($join)->where("t.id",$id)->find();
       if(!$data){
         $this->error("商品不存在");
       }else{
