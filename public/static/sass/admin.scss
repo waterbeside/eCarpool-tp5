@@ -431,6 +431,9 @@ body {background:#FFF; color:$color-black-l1}
 }
 
 .goods-item-edit #item-thumb { width: 120px}
+.goods-item-edit {
+  .J-dept-select-wrapper { margin-bottom: 12px}
+}
 
 /** 订单列表 **/
 .order-list {
