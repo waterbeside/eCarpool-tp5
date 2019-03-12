@@ -46,7 +46,7 @@ class ChangePassword extends AdminBase
 
 
             // $new_password = md5($data['password'] . Config::get('salt'));
-            $new_password  = password_hash($data['password'], PASSWORD_DEFAULT);
+            $new_password  = password_hash($data['password'], PASSWORD_BCRYPT);
             $res          = Db::name('admin_user')->where(['id' => $admin_id])->setField('password', $new_password);
 
             if ($res !== false) {
