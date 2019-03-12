@@ -62,8 +62,11 @@ class Attachment extends ApiBase
               $this->jsonReturn(-1,lang('Not image file format'));
             }
 
-            if($upInfo['size'] > 819200){
-              $this->jsonReturn(-1,lang('Images cannot be larger than 800K'));
+            // if($upInfo['size'] > 819200){
+            //   $this->jsonReturn(-1,lang('Images cannot be larger than 800K'));
+            // }
+            if($upInfo['size'] > 2048000){
+              $this->jsonReturn(-1,lang('Images cannot be larger than {:size}',["size"=>"2M"]));
             }
             $image = \think\Image::open(request()->file('file'));
             $extra = [
@@ -137,7 +140,6 @@ class Attachment extends ApiBase
             'times' => 1,
             'last_time' => time(),
             'extra_info' => json_encode($extra),
-
         ];
         if($img_id=AttachmentModel::insertGetId($data)){
             $returnData = [
