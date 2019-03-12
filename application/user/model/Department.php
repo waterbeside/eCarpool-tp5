@@ -88,7 +88,7 @@ class Department extends Model
    /**
     * 格式化部门
     * @param  [type]  $fullNameStr [description]
-    * @param  integer $type        0：返回数组， 1：返回分厂加公司名(string)，2：返回分厂加公司名缩写(string)
+    * @param  integer $type        0：返回数组， 1：返回分厂加公司名(string)，2：返回分厂加公司名缩写(string), 3: 返回分厂
     */
    public function formatFullName($fullNameStr,$type=0){
      if(!$fullNameStr){
@@ -148,6 +148,9 @@ class Department extends Model
 
      if($type == 2){
        return $returnData['branch'].','.$returnData['short_name'];
+     }
+     if($type == 3){
+       return $returnData['branch'];
      }
      return $returnData;
 
