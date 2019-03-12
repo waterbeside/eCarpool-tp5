@@ -84,7 +84,7 @@ class DeptGroup extends AdminBase
         $DepartmentModel = new Department();
         foreach ($deptsArray as $key => $value) {
           $deptsItemData = $DepartmentModel->field('id , path, fullname , name')->find($value);
-          $deptsData[$value] = $deptsItemData->toArray();
+          $deptsData[$value] = $deptsItemData ? $deptsItemData->toArray() : [];
         }
         return $this->fetch('edit', ['data' => $data,'deptsData'=>$deptsData]);
       }
