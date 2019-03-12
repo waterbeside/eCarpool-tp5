@@ -6,22 +6,18 @@
     <div class="layui-tab layui-tab-brief">
 
         <ul class="  amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/ScoreGoods/index',['rule_number'=>$rule_number])}"  >产品管理</a></li>
+            <li class="layui-this"><a href="{:url('admin/ScoreGoods/index')}"  >商品管理</a></li>
             <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ScoreGoods/add',['rule_number'=>$rule_number])}"  data-title="添加商品"  data-trigger="modal" >
+              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ScoreGoods/add')}"  data-title="添加商品"  data-trigger="modal" >
               <i class="fa fa-plus"></i> 添加商品</a>
-            </li>
-            <li class="btn-item btn-item-right ">
-              {include file="_components/select_ruleNumber" /}
             </li>
         </ul>
 
         <div class="layui-tab-content dark-grey-wrapper ">
 
 
-                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreGoods/index',['rule_number'=>$rule_number])}" method="get">
+                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreGoods/index')}" method="get">
                     <div class="layui-inline">
-                        <label class="layui-form-label">检索</label>
                         <div class="layui-input-inline">
                             <input type="text" name="keyword" value="{$keyword}" placeholder="请输入关键词" class="layui-input">
                         </div>
@@ -38,8 +34,13 @@
                             <option value="" >是否显示 - 不限</option>
                             <option value="1" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "1" ? 'selected' : ''; {/php}>不显示</option>
                             <option value="0" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "0" ? 'selected' : ''; {/php}>显示</option>
-
                           </select>
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
+                            <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择显示区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="选择显示区域" data-title="选择显示区域" data-tips-position="3" >
+                              {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择显示区域"}
+                            </a>
                         </div>
                     </div>
                     <div class="layui-inline">
@@ -63,18 +64,20 @@
                           </h5>
                           <span class="id">#{$vo.id}</span>
                           <p class="am-card-text">{$vo.desc|iconv_substr=0,80}...</p>
+                          <div class="depts_bar">
+                            <div class="item my-tag-item" data-id="{$vo.p_region_id}" title="{$vo.fullname}">{$vo.fullname|str_replace=","," / ",###}</span></div>
+                          </div>
                           <div class="info-bar">
                             <span class="info-item price"> 兑换价：<b >{$vo.price}</b></span>
                             <span class="info-item  amount"> 采购价：<b >{$vo.amount}</b></span>
                             <span class="info-item  inventory">库存：<b>{$vo.inventory >-1 ?$vo.inventory : '无限'}</b></span>
                             <span class="info-item  status">状态：<b><?php echo $statusList[$vo['status']] ;?> / <small><?php echo $vo['is_delete'] ? "不显示" : "显示" ;?></small></b></span>
                           </div>
+
                           <div class="btns-wrapper">
                             <a href="javascript:void(0);" onclick="refreshGoodCache(this)" data-id="{$vo.id}"  data-disabled="0" class="ibtn layui-btn layui-btn-primary    layui-btn-radius   "><i class="fa fa-refresh"></i> 刷新</a>
-
                             <!-- <input type="checkbox" name="is_delete" value="1" lay-skin="switch" lay-text="显示|隐藏" {if condition="$vo.is_delete!=1"} checked="checked"{/if}> -->
                             <a href="{:url('admin/ScoreGoods/edit',['id'=>$vo['id']])}"  data-title="編輯商品 #{$vo.id}"  data-trigger="modal" title="編輯商品 #{$vo.id}" class="ibtn layui-btn    layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a>
-
                           </div>
                         </div>
                       </div>
@@ -113,18 +116,15 @@ function refreshGoodCache(obj){
     url:"<?php echo url('admin/ScoreGoods/public_recache');?>",
     data:{id:id},
     success:function(res){
-
       if (res.code === 0) {
         layer.msg("刷新成功");
       }else{
         layer.msg("刷新失败");
-
       }
       setTimeout(function(){
         $btn.data("disabled",0);
         $btn.find(".fa").removeClass('fa-spin');
       },800)
-
     },
   })
   // console.log(id)

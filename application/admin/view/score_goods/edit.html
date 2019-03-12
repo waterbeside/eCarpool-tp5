@@ -1,7 +1,16 @@
 <div class="layui-tab-content goods-item-edit">
     <div class="layui-tab-item layui-show">
         <form class="layui-form form-container" action="{:url('admin/ScoreGoods/edit')}" method="post">
-
+              <div class="layui-form-item">
+                  <label class="layui-form-label">区域/部门</label>
+                  <div class="layui-input-block">
+                    <div class="J-dept-select-wrapper"></div>
+                    <input type="hidden" name="p_region_id" value="{$data.p_region_id}"  class="layui-input layui-input-inline " readonly  >
+                    <a onclick="FORM_PAGE_EXEC.openDeptDialog()" href="javascript:void(0);"  class="layui-btn  layui-btn-primary layui-btn-sm"   >
+                      <i class="fa fa-book"></i> <span >选择区域/部门</span>
+                    </a>
+                  </div>
+              </div>
               <div class="layui-form-item">
                   <label class="layui-form-label">商品名</label>
                   <div class="layui-input-block">
@@ -80,10 +89,17 @@
 </div>
 <script>
 
-RESOLVE_INIT = {
-
+FORM_PAGE_EXEC = {
+  datas : {
+    depts: {
+      'fullname': "{$data.fullname}",
+      'id'      : "{$data.p_region_id}",
+    }
+  },
   upload : layui.upload,
   init: function(){
+
+    this.setDeptItem();
     var $thumbInput = $('.goods-item-edit').find("input[name=thumb]");
     //普通图片上传
      var uploadInst = this.upload.render({
@@ -129,10 +145,50 @@ RESOLVE_INIT = {
      });
      form.render();
   },
+  /**
+   * 关闭已选项功作
+   */
+  closeItem: function(){
+    var e = e || event
+    var $target = $(e.target);
+    var $item = $target.closest('.item');
+    var id = $item.data('id');
+    this.datas.depts = null;
+    $("input[name='p_region_id']").val('');
+    $item.addClass('delete');
+    setTimeout(function(){
+      $item.remove();
+    },400);
+  },
+  /**
+   * 已选项item模板
+   */
+  deptItemTemplate: function(data){
+    var title = data.fullname.replace(/\,/g,' / ');
+    var html = '<div class="item my-tag-item" data-id="'+data.id+'" title="'+data.fullname+'"><a class="close" onclick="FORM_PAGE_EXEC.closeItem()"><i class="fa fa-close"></i></a><span>'+title+'</span></div>';
+    return html;
+  },
+  setDeptItem:function(){
+    if(this.datas.depts){
+      var deptsData = this.datas.depts;
+      var itemHtml = this.deptItemTemplate(deptsData);
+      $('.J-dept-select-wrapper').html(itemHtml);
+    }
+  },
+  openDeptDialog: function(){
+    openLayer('{:url('admin/Department/list_dialog')}','选择区域/部门');
+  },
+  select_dept: function(data){
+    var $input = $("input[name='p_region_id']");
+    this.datas.depts = data;
+    this.setDeptItem();
+    $input.val(data.id);
+  }
+
 }
 
 
-RESOLVE_INIT.init();
+FORM_PAGE_EXEC.init();
 
 
 </script>
