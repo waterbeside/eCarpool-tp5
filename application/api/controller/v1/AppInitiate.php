@@ -70,8 +70,8 @@ class AppInitiate extends ApiBase
     $map[] = ['type','=',1];
 
     $whereExp = '';
-    $whereExp .= $app_id ." in(app_ids)";
-    $whereExp .= "And ".$platform ." in(platforms)";
+    $whereExp .= " FIND_IN_SET($app_id,app_ids) ";
+    $whereExp .= " AND FIND_IN_SET($platform,platforms) ";
 
     $adsData  = AdsModel::where($map)->where($whereExp)->json(['images'])->order(['sort' => 'DESC', 'id' => 'DESC'])->select();
     foreach ($adsData as $key => $value) {
