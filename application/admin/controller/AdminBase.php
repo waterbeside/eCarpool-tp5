@@ -11,6 +11,7 @@ use think\Db;
 use think\facade\Session;
 use my\RedisData;
 use Firebase\JWT\JWT;
+use app\user\model\Department;
 
 
 /**
@@ -84,7 +85,8 @@ class AdminBase extends Base
      * 验证验入session
      * @return [type] [description]
      */
-    public function checkAuthSession(){
+    public function checkAuthSession()
+    {
 
       if (!Session::has('admin_id')) {
         if($this->request->isAjax()){
@@ -117,7 +119,8 @@ class AdminBase extends Base
     /**
      * 验证jwt
      */
-    public function checkToken(){
+    public function checkToken()
+    {
         $Authorization = request()->header('Authorization');
         $temp_array    = explode('Bearer ',$Authorization);
 		    $Authorization = count($temp_array)>1 ? $temp_array[1] : '';
@@ -188,7 +191,8 @@ class AdminBase extends Base
 
     }
 
-    public function log($desc='',$status=2){
+    public function log($desc='',$status=2)
+    {
       $request = request();
       $data['uid'] = $this->userBaseInfo['uid'];
       $data['ip'] = $request->ip();
@@ -208,7 +212,8 @@ class AdminBase extends Base
      * @param  要更新的redis的key；
      * @return 返回最新版本；
      */
-    public function updateDataVersion($cacheVersionKey){
+    public function updateDataVersion($cacheVersionKey)
+    {
       $redisObj = $this->redis();
       $cacheVersion = $redisObj->get($cacheVersionKey);
       $newVersion = $cacheVersion ? intval($cacheVersion) + 1 : 1;
@@ -220,14 +225,52 @@ class AdminBase extends Base
      * 创建redis对像
      * @return redis
      */
-    public function redis(){
+    public function redis()
+    {
       if(!$this->redisObj){
           $this->redisObj = new RedisData();
       }
       return $this->redisObj;
     }
 
+    /**
+     * 取得子部门id
+     * @param  integer $pid 父id
+     */
+    public function getDepartmentChildrenIds($pid)
+    {
+      $DepartmentModel = new Department();
+      return $DepartmentModel->getChildrenIds($pid);
+    }
 
+    /**
+     * 构造"有权查看的区域的sql"
+     * @param  integer $region_id
+     * @param  string $as     关联的部门表别名
+     */
+    public function buildRegionMapSql($region_id,$as = 'd')
+    {
+      $region_id_array = explode(",",$region_id);
+      $region_id_array = $this->arrayUniq($region_id_array);
+      $region_map_sql = "";
+      foreach ($region_id_array as   $value) {
+        if(is_numeric($value) && $value > 0){
+          $or = $region_map_sql ? " OR " : "";
+          $region_map_sql .= $or." ( FIND_IN_SET($value,{$as}.path) OR {$as}.id = $value ) ";
+        }
+      }
+      return $region_map_sql;
+    }
+
+    /**
+     * 通过id取部门信息
+     * @param  integer $id;
+     */
+    public function getDepartmentById($id)
+    {
+      $DepartmentModel = new Department();
+      return $DepartmentModel->getItem($id);
+    }
 
 
 
