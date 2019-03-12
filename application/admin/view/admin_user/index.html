@@ -16,7 +16,8 @@
                         <th>用户名</th>
                         <th>CA</th>
                         <th>状态</th>
-                        <th>组</th>
+                        <th>菜单组</th>
+                        <th>区域组</th>
                         <th>创建时间</th>
                         <th>最后登录时间</th>
                         <th>最后登录IP</th>
@@ -24,13 +25,14 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {foreach name="admin_user_list" item="vo"}
+                    {foreach name="lists" item="vo"}
                     <tr>
                         <td>{$vo.id}</td>
                         <td>{$vo.username}</td>
                         <td>{$vo.carpool_account}</td>
                         <td>{php}echo $vo['status']==1 ? '启用' : '禁用';{/php}</td>
-                        <td>{$vo.group_name}</td>
+                        <td><?php echo isset($groups[$vo['group_id']]) ? $groups[$vo['group_id']]['title'] : $vo['group_id']; ?></td>
+                        <td><?php echo isset($dept_groups[$vo['dept_group_id']]) ? $dept_groups[$vo['dept_group_id']]['title'] : $vo['dept_group_id']; ?></td>
                         <td>{$vo.create_time|date="Y-m-d"}</td>
                         <td>{$vo.last_login_time|date="Y-m-d H:i"}</td>
                         <td>{$vo.last_login_ip}</td>
@@ -42,6 +44,7 @@
                     {/foreach}
                     </tbody>
                 </table>
+                {$lists|raw}
             </div>
         </div>
     </div>

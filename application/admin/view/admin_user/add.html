@@ -45,10 +45,22 @@
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">所属权限组</label>
+                <label class="layui-form-label">菜单权限组</label>
                 <div class="layui-input-block">
                     <select name="group_id" lay-verify="required">
+                        <option value="0">请选择</option>
                         {foreach name="auth_group_list" item="vo"}
+                        <option value="{$vo.id}">{$vo.title}</option>
+                        {/foreach}
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">地区权限组</label>
+                <div class="layui-input-block">
+                    <select name="dept_group_id" lay-verify="required">
+                        <option value="0">请选择</option>
+                        {foreach name="dept_group_list" item="vo"}
                         <option value="{$vo.id}">{$vo.title}</option>
                         {/foreach}
                     </select>

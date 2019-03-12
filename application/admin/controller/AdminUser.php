@@ -4,6 +4,7 @@ namespace app\admin\controller;
 use app\common\model\AdminUser as AdminUserModel;
 use app\common\model\AuthGroup as AuthGroupModel;
 use app\common\model\AuthGroupAccess as AuthGroupAccessModel;
+use app\common\model\DeptGroup as DeptGroupModel;
 use app\admin\controller\AdminBase;
 use think\facade\Config;
 use think\Db;
@@ -31,21 +32,32 @@ class AdminUser extends AdminBase
      * 管理员管理
      * @return mixed
      */
-    public function index()
+    public function index($filter = [],$pagesize=50)
     {
-
         $auth_group_list = $this->auth_group_model->select();
-        $admin_user_list = $this->admin_user_model->select();
+        $dept_group_list = DeptGroupModel::select();
         $groups = [];
         foreach ($auth_group_list as $key => $value) {
           $groups[$value['id']] = $value;
         }
-        foreach ($admin_user_list as $key => $value) {
-          $group_id = $this->auth_group_access_model->where('uid',$value['id'])->value('group_id');
-          $admin_user_list[$key]['group_name'] = isset($groups[$group_id]) ? $groups[$group_id]['title'] : $group_id;
+        $dept_groups = [];
+        foreach ($dept_group_list as $key => $value) {
+          $dept_groups[$value['id']] = $value;
         }
 
-        return $this->fetch('index', ['admin_user_list' => $admin_user_list]);
+        $map = [];
+        //筛选用户信息
+        if (isset($filter['keyword']) && $filter['keyword']) {
+            $map[] = ['u.username|real_name|nickname','like', "%{$filter['keyword']}%"];
+        }
+        $lists = $this->admin_user_model->alias('u')->where($map)->order('id ASC')->paginate($pagesize, false, ['query'=>request()->param()])
+        ->each(function($item, $key){
+            $groupData = $this->auth_group_access_model->where('uid',$item->id)->find();
+            $item->group_id = $groupData['group_id'] ;
+            $item->dept_group_id =  $groupData['dept_group_id'];
+        });
+
+        return $this->fetch('index', ['lists' => $lists,'groups'=>$groups,'dept_groups'=>$dept_groups]);
     }
 
     /**
@@ -62,10 +74,11 @@ class AdminUser extends AdminBase
               $this->jsonReturn(1,$validate_result);
           } else {
               // $data['password'] = md5($data['password'] . Config::get('salt'));
-              $data['password']  = password_hash($data['password'], PASSWORD_DEFAULT);
+              $data['password']  = password_hash($data['password'], PASSWORD_BCRYPT);
               if ($this->admin_user_model->allowField(true)->save($data)) {
                   $auth_group_access['uid']      = $this->admin_user_model->id;
                   $auth_group_access['group_id'] = $data['group_id'];
+                  $auth_group_access['dept_group_id'] = $data['dept_group_id'];
                   $this->auth_group_access_model->save($auth_group_access);
                   $pk = $this->admin_user_model->id; //插入成功后取得id
                   $this->log('添加后台用户成功，id='.$pk,0);
@@ -77,7 +90,8 @@ class AdminUser extends AdminBase
           }
       }else{
         $auth_group_list = $this->auth_group_model->select();
-        return $this->fetch('add', ['auth_group_list' => $auth_group_list]);
+        $dept_group_list = DeptGroupModel::select();
+        return $this->fetch('add', ['auth_group_list' => $auth_group_list,'dept_group_list'=>$dept_group_list]);
       }
 
     }
@@ -113,12 +127,13 @@ class AdminUser extends AdminBase
 
               if (!empty($data['password']) && !empty($data['confirm_password'])) {
                   // $admin_user->password = md5($data['password'] . Config::get('salt'));
-                  $updateData['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+                  $updateData['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
               }
               $res = $this->admin_user_model->where('id',$id)->update($updateData);
               if ($res !== false) {
                   $auth_group_access['uid']      = $id;
                   $auth_group_access['group_id'] = $data['group_id'];;
+                  $auth_group_access['dept_group_id'] = $data['dept_group_id'];
                   $this->auth_group_access_model->where('uid', $id)->update($auth_group_access);
                   $this->log('更新后台用户成功，id='.$id,0);
                   $this->jsonReturn(0,'更新成功');
@@ -128,11 +143,13 @@ class AdminUser extends AdminBase
               }
           }
       }else{
-        $admin_user             = $this->admin_user_model->find($id);
+        $data                   = $this->admin_user_model->find($id);
         $auth_group_list        = $this->auth_group_model->select();
         $auth_group_access      = $this->auth_group_access_model->where('uid', $id)->find();
-        $admin_user['group_id'] = $auth_group_access['group_id'];
-        return $this->fetch('edit', ['admin_user' => $admin_user, 'auth_group_list' => $auth_group_list]);
+        $data['group_id'] = $auth_group_access['group_id'];
+        $data['dept_group_id'] = $auth_group_access['dept_group_id'];
+        $dept_group_list = DeptGroupModel::select();
+        return $this->fetch('edit', ['data' => $data, 'auth_group_list' => $auth_group_list,'dept_group_list'=>$dept_group_list]);
       }
 
     }
