@@ -43,6 +43,7 @@ class Nim extends AdminBase
       $imid       = $user->im_id ? $user->im_id : $user->loginname  ;
       $icon       = $user->imgpath ? config('secret.avatarBasePath').$user->imgpath : config('secret.avatarBasePath')."im/default.png";
       $rs         = $this->NIM->createUserId($imid,$user->name,'',$icon);
+
       if($isUpdate && $rs['code']==200){
         $user->im_md5password     = $rs['info']['token'];
         $user->im_id              = $imid;
@@ -70,6 +71,7 @@ class Nim extends AdminBase
       $upDateSuccess = 0;
       if($isUpdate && $rs['code']==200){
         $user->im_md5password     = $rs['info']['token'];
+        $user->im_id              = $rs['info']['accid'];
         $res = $user->save();
         if($res){
           $this->log('更新云信帐号成功，id='.$uid.',im_id='.$imid,0);
@@ -100,6 +102,7 @@ class Nim extends AdminBase
       if(!$user){
         return false;
       }
+
       // var_dump($user->im_id);exit;
       $isCreateSuccess = 0;
       if($user->im_id && $user->im_md5password){
