@@ -48,15 +48,15 @@ class Trips extends ApiBase
 
         if ($type==1) {
             $map = [
-          ["t.time","<",date('YmdHi', strtotime('+15 minute'))],
-          // ["t.go_time","<",strtotime('+15 minute')],
-        ];
+              ["t.time","<",date('YmdHi', strtotime('+15 minute'))],
+              // ["t.go_time","<",strtotime('+15 minute')],
+            ];
             $orderby = 't.time DESC, t.infoid DESC, t.love_wall_id DESC';
         } else {
             $map = [
-          ["t.time",">",date('YmdHi', strtotime("-1 hour"))],
-          // ["t.go_time",">",strtotime("-1 hour")],
-        ];
+              ["t.time",">",date('YmdHi', strtotime("-1 hour"))],
+              // ["t.go_time",">",strtotime("-1 hour")],
+            ];
             $orderby = 't.time ASC, t.infoid ASC, t.love_wall_id ASC';
         }
 
@@ -87,7 +87,6 @@ class Trips extends ApiBase
               'currentPage'=>1,
             ];
         }
-
         foreach ($datas as $key => $value) {
             $value['trip_type'] = intval($value['trip_type']);
             $value['infoid'] = intval($value['infoid']);
@@ -97,13 +96,14 @@ class Trips extends ApiBase
             $datas[$key] = $fullData ? $this->formatResultValue($value) : $this->unsetResultValue($this->formatResultValue($value), "list");
             // $datas[$key] = $this->formatResultValue($value,$merge_ids);
             $datas[$key]['show_owner']  = $value['trip_type'] ||  ($value['infoid']>0 && $uid == $value['passengerid']  &&  $value['carownid'] > 0)  ?  1 : 0;
+            $datas[$key]['is_driver']   =  $uid == $value['carownid']  ?  1 : 0;
             $datas[$key]['status'] = intval($value['status']);
-            $data[$key]['took_count']   = $value['infoid'] > 0 ? 0 : InfoModel::where([['love_wall_ID','=',$value['love_wall_ID']],['status','<>',2]])->count() ; //取已坐数
+            $datas[$key]['took_count']  = $value['infoid'] > 0 ? ($datas[$key]['is_driver'] ? 1 : 0) : InfoModel::where([['love_wall_ID','=',$value['love_wall_ID']],['status','<>',2]])->count() ; //取已坐数
         }
         $returnData = [
-        'lists'=>$datas,
-        'page' =>$pageData
-      ];
+          'lists'=>$datas,
+          'page' =>$pageData
+        ];
 
         $this->jsonReturn(0, $returnData, "success");
     }
@@ -120,7 +120,7 @@ class Trips extends ApiBase
     /**
      * 墙上空座位
      */
-    public function wall_list($pagesize=20, $keyword="",  $map_type=NULL)
+    public function wall_list($pagesize=20, $keyword="", $city=null, $map_type=NULL)
     {
         $userData = $this->getUserData(1);
         $company_id = $userData['company_id'];
@@ -973,11 +973,23 @@ class Trips extends ApiBase
     protected function formatResultValue($value, $merge_ids = [], $unDo = [])
     {
         $value_format = $value;
-        $value_format['subtime'] = strtotime($value['subtime']);
+        $value_format['subtime'] = intval(strtotime($value['subtime'])) ;
         // $value_format['go_time'] = $value['go_time'] ?  $value['go_time'] : strtotime($value['time']."00");
         // $value_format['time'] = date('Y-m-d H:i',strtotime($value['time'].'00'));
         // $value_format['time'] = $value_format['go_time'];
-        $value_format['time'] = strtotime($value['time'].'00');
+        $value_format['time'] = intval(strtotime($value['time'].'00')) ;
+        //整理指定字段为整型
+        $int_field_array = [
+          'p_uid','p_sex','p_company_id','p_department_id',
+          'd_uid','d_sex','d_company_id','d_department_id',
+          'infoid','love_wall_ID',
+          'startpid','endpid'
+        ];
+        foreach ($value as $key => $v) {
+           if(in_array($key,$int_field_array)){
+             $value_format[$key] = intval($v);
+           }
+        }
         if (!empty($merge_ids)) {
             if (!in_array('p', $unDo) && isset($value['p_uid']) &&  in_array($value['p_uid'], $merge_ids)) {
                 $value_format['p_uid'] = $uid;
@@ -990,6 +1002,7 @@ class Trips extends ApiBase
                 $value_format['d_name'] = $userData['name'];
             }
         }
+
         if (!is_numeric($value['startpid']) || $value['startpid'] < 1) {
             $value_format['start_addressid'] = $value['startpid'];
             $value_format['start_addressname'] = $value['startname'];
@@ -1002,26 +1015,21 @@ class Trips extends ApiBase
             $value_format['end_longitude'] = $value['end_lng'];
             $value_format['end_latitude'] = $value['end_lat'];
         }
-        if (isset($value['p_sex'])) {
-            $value_format['p_sex'] = intval($value['p_sex']);
-        }
-        if (isset($value['p_company_id'])) {
-            $value_format['p_company_id'] = intval($value['p_company_id']);
-        }
-        if (isset($value['d_sex'])) {
-            $value_format['d_sex'] = intval($value['d_sex']);
-        }
-        if (isset($value['d_company_id'])) {
-            $value_format['d_company_id'] = intval($value['d_company_id']);
-        }
-        if (isset($value['d_full_department']) || isset($value['p_full_department'])) {
+
+        if (isset($value['d_full_department']) || isset($value['p_full_department']) ) {
             $DepartmentModel = new DepartmentModel;
         }
         if (isset($value['d_full_department'])) {
-            $value_format['d_department'] = $DepartmentModel->formatFullName($value['d_full_department'], 1);
+            $value_format['d_department'] = $DepartmentModel->formatFullName($value['d_full_department'], 3);
         }
         if (isset($value['p_full_department'])) {
-            $value_format['p_department'] = $DepartmentModel->formatFullName($value['p_full_department'], 1);
+            $value_format['p_department'] = $DepartmentModel->formatFullName($value['p_full_department'], 3);
+        }
+        if (isset($value['d_imgpath']) && trim($value['d_imgpath'])=="") {
+            $value_format['d_imgpath'] = 'default/avatar.png';
+        }
+        if (isset($value['p_imgpath']) && trim($value['p_imgpath'])=="") {
+            $value_format['p_imgpath'] = 'default/avatar.png';
         }
         return $value_format;
     }
