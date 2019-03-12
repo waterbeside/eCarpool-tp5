@@ -5,9 +5,9 @@
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief" style="margin:0 0 30px ">
         <ul class="amain-tool-bar" >
-            <li {php} echo !$deep ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog')}"  >部门管理</a></li>
-            <li {php} echo $deep ==1 ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['pid'=>'p_1'])}"  >地区列表</a></li>
-            <li {php} echo $deep ==3 ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['pid'=>'p_3'])}"  >分公司列表</a></li>
+            <li {php} echo !$deep ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun])}"  >部门管理</a></li>
+            <li {php} echo $deep ==1 ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>'p_1'])}"  >地区列表</a></li>
+            <li {php} echo $deep ==3 ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>'p_3'])}"  >分公司列表</a></li>
         </ul>
 
         <div class="layui-tab-content">
@@ -15,9 +15,12 @@
             <div class="layui-tab-item layui-show">
               {php} if(!$deep){ {/php}
                 <form class="layui-form layui-form-pane" action="{:url('admin/department/list_dialog')}" method="get">
+
                   <input type="hidden" name ="pid" value={$pid} />
+                  <input type="hidden" name ="fun" value={$fun} />
+                  <input type="hidden" name ="multi" value={$multi} />
                   <div class="my-input-prebox" style="width:100px">
-                    <select name="filter[is_all]"  >
+                    <select name="filter[is_all]" >
                       <option value="0" {php}echo isset($filter['is_all']) &&  $filter['is_all'] == 0  ? 'selected' : ''; {/php}>检索当前</option>
                       <option value="1" {php}echo !isset($filter['is_all']) ||  $filter['is_all'] ? 'selected' : ''; {/php}>检索全部</option>
                     </select>
@@ -38,7 +41,7 @@
                 <div class="layui-breadcrumb">
                   <?php if(count($path) >1){ foreach($path as $value){
                     if($pid != $value['id']){ ?>
-                      <a href="{:url('list_dialog',['pid'=>$value['id']])}">{$value['name']}</a>
+                      <a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>$value['id']])}">{$value['name']}</a>
                   <?php  }else{ ?>
                     <a ><cite>{$value['name']}</cite></a>
                   <?php }}} ?>
@@ -66,26 +69,25 @@
                     <tr>
                         <td>{$vo.id}</td>
                         <td>{$vo.pid}</td>
-                        <td><a href="{:url('list_dialog',['pid'=>$vo['id']])}">{$vo.name}</a></td>
+                        <td><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>$vo['id']])}">{$vo.name}</a></td>
                         <?php if($deep){ ?>
-                        <td class="layui-breadcrumb">
-                          <?php
-                          $item_full_array = explode(',',$vo['fullname']);
-                          $item_path_array = explode(',',$vo['path']);
-                          foreach($item_full_array as $k => $p ){
-                            $sep = $k ?  "/" : "";
-                            $pid = isset($item_path_array[$k+1]) ? $item_path_array[$k+1] : '';
-                            if($pid){
-                              echo '<a href="'.url('list_dialog',['pid'=>$pid]).'">'.$p.'</a>';
-                            }else{
-                              echo '<a href="'.url('list_dialog',['pid'=>$vo['id']]).'"><cite><b >'.$p.'</b></cite></a>';
+                          <td class="layui-breadcrumb">
+                            <?php
+                            $item_full_array = explode(',',$vo['fullname']);
+                            $item_path_array = explode(',',$vo['path']);
+                            foreach($item_full_array as $k => $p ){
+                              $sep = $k ?  "/" : "";
+                              $pid = isset($item_path_array[$k+1]) ? $item_path_array[$k+1] : '';
+                              if($pid){
+                                echo '<a href="'.url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>$pid]).'">'.$p.'</a>';
+                              }else{
+                                echo '<a href="'.url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>$vo['id']]).'"><cite><b >'.$p.'</b></cite></a>';
+                              }
                             }
-                          }
-                          ?>
-                        </td>
+                            ?>
+                          </td>
                         <?php } ?>
                         <td>
-
                           <?php
                             $returnItemData = [
                               'id'             => $vo['id'],
@@ -93,8 +95,10 @@
                               'fullname'     => $vo['fullname'],
                               'path'           => $vo['path'],
                             ];
+                            $btnStyleClass = $multi ? "layui-btn-primary" : ""
                           ?>
-                            <button href="javascript:void(0);"  class="layui-btn   layui-btn-xs layui-btn-primary btn-select J-btn-{$vo.id}" title="选择" onclick='DialogList_EXEC.deptClickItem(<?php echo json_encode($returnItemData) ?>)'>选择</button>
+                          <button href="javascript:void(0);"  class="layui-btn   layui-btn-xs  btn-select J-btn-{$vo.id} <?php echo $btnStyleClass; ?>" title="选择" onclick='DialogList_EXEC.deptClickItem(<?php echo json_encode($returnItemData) ?>)'>选择</button>
+
 
                         </td>
                     </tr>
@@ -108,15 +112,20 @@
             </div>
         </div>
     </div>
+
     <div class="am-bottom-tool-bar">
       <div class="J-selected-wrapper">
       </div>
       <div class="btns-wrapper">
         <a class="layui-btn layui-btn-primary layui-btn-sm" onclick="DialogList_EXEC.close()">取消</a>
-        <a class="layui-btn   layui-btn-sm" onclick="DialogList_EXEC.done()">完成</a>
+        <?php if($multi){ ?>
+          <a class="layui-btn layui-btn-sm" onclick="DialogList_EXEC.done()">完成</a>
+        <?php  }else{  ?>
+          <a class="layui-btn layui-btn-danger layui-btn-sm" onclick="DialogList_EXEC.cancelSelected()">取消选择</a>
+        <?php  } ?>
       </div>
-
     </div>
+
 </div>
 {/block}
 {block name="script"}
@@ -125,6 +134,7 @@
     datas : {
       depts: [],
       deptsData: {},
+      multi:<?php echo $multi ? 1 : 0; ?>
     },
     init : function(){
       var _this = this;
@@ -145,6 +155,8 @@
         }
       }
     },
+
+
     /**
      * 重建 datas里的id列表
      */
@@ -162,40 +174,53 @@
       var html = '<div class="item" data-id="'+data.id+'" title="'+data.fullname+'"><span>'+data.name+'</span><a class="close" onclick="DialogList_EXEC.closeItem()"><i class="fa fa-close"></i></a></div>';
       return html;
     },
+    cancelSelected: function(){
+        this.deptClickItem({
+          'id' : '',
+          'name' : '',
+          'fullname' : '',
+          'path' : '',
+          'cancelSelected':true
+        });
+    },
     /**
      * 点击选择时动作
      */
     deptClickItem : function(data){
-      var e = e || event
-      var $target = $(e.target);
-      if($target.hasClass('checked')){
-        return false;
-      }
-      var old_ids = this.datas.depts;
-      var pathArray = data.path.split(',');
-      var returnFalse = false;
-      $(old_ids).each(function(index,item){
-        if($.inArray(item,pathArray) >= 0){
-          returnFalse = true;
+      if(this.datas.multi){
+        var e = e || event
+        var $target = $(e.target);
+        if($target.hasClass('checked')){
           return false;
         }
-      })
-      if(returnFalse){
-        layer.msg('您已选择部门的父级，请勿再选');
-        return false;
-      }
-      $target.addClass('checked');
-      var id = data.id;
-      var deptsData = typeof(this.datas.deptsData) == "object"  ? this.datas.deptsData : {};
-      deptsData[data.id] = {"id":data.id,"name":data.name,"fullname":data.fullname};
-      //deptsData.push({"id":data.id,"name":data.name,"fullname":data.fullname});
-      this.datas.deptsData = deptsData;
-      this.rebuildDeptIds();
+        var old_ids = this.datas.depts;
+        var pathArray = data.path.split(',');
+        var returnFalse = false;
+        $(old_ids).each(function(index,item){
+          if($.inArray(item,pathArray) >= 0){
+            returnFalse = true;
+            return false;
+          }
+        })
+        if(returnFalse){
+          layer.msg('您已选择部门的父级，请勿再选');
+          return false;
+        }
+        $target.addClass('checked');
+        var id = data.id;
+        var deptsData = typeof(this.datas.deptsData) == "object"  ? this.datas.deptsData : {};
+        deptsData[data.id] = {"id":data.id,"name":data.name,"fullname":data.fullname};
+        //deptsData.push({"id":data.id,"name":data.name,"fullname":data.fullname});
+        this.datas.deptsData = deptsData;
+        this.rebuildDeptIds();
 
-      var newDataString = JSON.stringify(deptsData);
-      MyCookies.set('department_selected_list',newDataString);
-      var itemHtml = this.selectedTemplate(data);
-      $('.J-selected-wrapper').append(itemHtml);
+        var newDataString = JSON.stringify(deptsData);
+        MyCookies.set('department_selected_list',newDataString);
+        var itemHtml = this.selectedTemplate(data);
+        $('.J-selected-wrapper').append(itemHtml);
+      }else{
+        this.done(data);
+      }
     },
     /**
      * 关闭已选项功作
@@ -223,14 +248,42 @@
      * 点击完成按钮
      * @return {[type]} [description]
      */
-    done: function(){
-      var data = {
+    done: function(datas){
+      var data = datas || {
         'id_list': this.datas.depts,
         'list': this.datas.deptsData
       }
       if(typeof(window.parent.FORM_PAGE_EXEC)!='object' || typeof(window.parent.FORM_PAGE_EXEC.<?php echo $fun ?>)!="function"){
         if(typeof(window.parent.<?php echo $fun ?>)!="function"){
-          return false;
+          if(typeof(window.parent.GV.lastOpenLayer)=="object" && typeof(window.parent.GV.lastOpenLayer.target) == "object"){
+             var $target = $(window.parent.GV.lastOpenLayer.target);
+             var $targetWrapper = $target.attr('onclick') ? $target : $target.closest('[onclick]');
+             var targetString = $targetWrapper.data('target');
+             var $wrapper =  $targetWrapper.closest('form');
+             if(data['fullname']){
+               var showText = data['fullname'].replace(/\,/g,' / ');
+             }else if(data['cancelSelected']){
+               var showText = $targetWrapper.data('title') ? $targetWrapper.data('title') : "请选择区域";
+             }
+             $targetWrapper.attr('data-tips',showText).html(showText);
+             if($wrapper){
+               if(targetString){
+                 var targetInputArray = targetString.split(',');
+               }
+               $(targetInputArray).each(function(index, el) {
+                    var targetElArray = el.split(':');
+                    if(typeof(targetElArray[1])!="undefined" && typeof(datas[targetElArray[1]])!="undefined"){
+                      $wrapper.find('input[name="'+targetElArray[0]+'"]').val(datas[targetElArray[1]]);
+                    }
+               });
+             }
+
+
+
+          }else{
+            return false;
+
+          }
         }else{
           window.parent.<?php echo $fun."("; ?>data<?php echo ")"; ?>;
         }
