@@ -33,15 +33,18 @@
             页面自动 <a id="href"  >跳转</a> 等待时间： <b id="wait"><?php echo($wait);?></b>
         </p>
        <?php } ?>
-
     </div>
     <script type="text/javascript">
+
         (function(){
+            var waitTime = "<?php echo($wait);?>";
             var url = "<?php echo($url);?>"
+            if(waitTime<1){
+              return false;
+            }
             // url = url == "javascript:history.back(-1);" ? "" :url ;
             document.getElementById('href').href = url
-            var wait = "<?php echo($wait);?>";
-
+            var wait = document.getElementById('wait');
             var interval = setInterval(function(){
                 var time = --wait.innerHTML;
                 if(time <= 0) {
