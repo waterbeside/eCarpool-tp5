@@ -88,7 +88,11 @@
                     {foreach name="lists" item="vo"}
                     <tr>
                       <td>{$vo.uid}</td>
-                      <td>{$vo.loginname}</td>
+                      <td>
+                        <a href="{:url('admin/User/public_detail',['id'=>$vo['uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
+                        {$vo.loginname}
+                        </a>
+                      </td>
                       <td>{$vo.name}</td>
                       <td>{$vo.phone}</td>
                       <td>{$vo.Department}</td>
