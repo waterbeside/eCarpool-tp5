@@ -225,7 +225,7 @@ class Trips extends ApiBase
     /**
      * 约车需求
      */
-    public function info_list($keyword="", $status = 0, $pagesize=20, $wid = 0, $returnType = 1, $orderby = '',$city=NULL, $map_type=null)
+    public function info_list($keyword="", $status = 0, $pagesize=50, $wid = 0, $returnType = 1, $orderby = '',$city=NULL, $map_type=null)
     {
         $userData = $this->getUserData(1);
         $company_id = $userData['company_id'];
