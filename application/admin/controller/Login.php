@@ -64,9 +64,6 @@ class Login extends BaseController
 
 
             if($carpool_uid > 0 && $user['carpool_account']){
-
-              //从Hr接口验证是否离职
-              try {
                 $checkActiveUrl  = config('others.local_hr_sync_api.single');
                 $params = [
                   'code'=>$user['carpool_account'],
@@ -74,12 +71,12 @@ class Login extends BaseController
                 ];
                 $checkActiveRes = $this->clientRequest($checkActiveUrl,$params,'GET');
 
-                  // $res = json_decode($content, true);
-              } catch (Exception $e) {
-                  // $this->errorMsg ='拉取失败';
-                  $this->error("登入失败");
+              if(!$checkActiveRes){
+                $AdminLog->add('验证carpool账号时请求失败 username ='.$data['username'],-1);
+                $this->jsonReturn(-1,[],'登入失败',['error'=>$this->errorMsg]);
               }
-              if(!$checkActiveRes || $checkActiveRes['code'] !== 0 ){
+              // $checkActiveRes = ['code'=>0];
+              if($checkActiveRes['code'] !== 0 ){
                 $AdminLog->add('后台用户登入失败，用户关联的capool账号已离职 username ='.$data['username'],-1);
                 $this->jsonReturn(-1,'此帐号员工已离职');
               }

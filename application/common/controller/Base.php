@@ -274,9 +274,11 @@ class Base extends Controller
           $contents = json_decode($contents,true);
         }
         return $contents;
-      } catch (\GuzzleHttp\Exception\ClientException $exception) {
-        $responseBody = $exception->getResponse()->getBody()->getContents();
-        $this->errorMsg ='拉取失败';
+      } catch (\GuzzleHttp\Exception\RequestException $exception) {
+        if ($exception->hasResponse()) {
+          $responseBody = $exception->getResponse()->getBody()->getContents();
+        }
+        $this->errorMsg = $exception->getMessage();
         return false;
       }
     }
