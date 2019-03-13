@@ -61,6 +61,10 @@ Route::group([], function () {
   Route::rule('api/:version/address/citys','api/:version.address/citys','GET');
   Route::rule('api/:version/address','api/:version.address/save','POST');
 
+
+  Route::rule('api/:version/grade','api/:version.grade/index','GET');
+  Route::rule('api/:version/grade','api/:version.grade/save','POST');
+
   //用户相关
   Route::resource('api/:version/user','api/:version.user');
   Route::rule('api/:version/user/:id/position','api/:version.user_position/read','GET');
