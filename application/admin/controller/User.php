@@ -44,7 +44,7 @@ class User extends AdminBase
             $map[] = ['u.loginname|u.phone|u.name','like', "%{$filter['keyword']}%"];
         }
         //筛选部门
-        if (isset($filter['keyword_user']) && $filter['keyword_user']) {
+        if (isset($filter['keyword_dept']) && $filter['keyword_dept']) {
             $map[] = ['d.fullname|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
             // $map[] = ['u.Department|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
         }
@@ -83,7 +83,7 @@ class User extends AdminBase
             $map[] = ['u.loginname|u.phone|u.name','like', "%{$filter['keyword']}%"];
         }
         //筛选部门
-        if (isset($filter['keyword_user']) && $filter['keyword_user']) {
+        if (isset($filter['keyword_dept']) && $filter['keyword_dept']) {
             $map[] = ['d.fullname|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
             // $map[] = ['u.Department|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
         }
