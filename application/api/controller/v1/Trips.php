@@ -37,7 +37,7 @@ class Trips extends ApiBase
         $merge_ids = isset($extra_info['merge_id']) && is_array($extra_info['merge_id']) && $type ==1  ? $extra_info['merge_id'] : [];
 
         $InfoModel = new InfoModel();
-        $viewSql  =  $InfoModel->buildUnionSql($uid, $merge_ids);
+        $viewSql  =  $InfoModel->buildUnionSql($uid, $merge_ids ,($type ? "(0,1,3,4)" : "(0,1,4)"));
         $fields = 't.infoid , t.love_wall_ID , t.time, t.trip_type , t.time, t.status, t.passengerid, t.carownid , t.seat_count,  t.subtime, t.map_type ';
         $fields .= ','.$this->buildUserFields('d');
         $fields .= ', dd.fullname as d_full_department';
@@ -163,7 +163,7 @@ class Trips extends ApiBase
             $lists[$key] = $this->unsetResultValue($this->formatResultValue($value), "list");
 
             //取点赞数
-            $lists[$key]['like_count']    = WallLike::where('love_wall_ID', $value['id'])->count();
+            // $lists[$key]['like_count']    = WallLike::where('love_wall_ID', $value['id'])->count();
             //取已坐数
             $lists[$key]['took_count']    =  InfoModel::where([['love_wall_ID','=',$value['id']],["status","<>",2]])->count();
         }
@@ -214,9 +214,9 @@ class Trips extends ApiBase
         if (!$pb) {
             $data['uid']              = $uid;
             $data['take_status']      = InfoModel::where([$countBaseMap,['passengerid','=',$uid]])->order("subtime DESC , infoid DESC")->value('status'); //查看是否已搭过此车主的车
-            $data['take_status']      = intval($data['take_status']);
-            $data['hasTake']          = in_array($data['take_status'], [0,1,4]) ? 1 : InfoModel::where([$countBaseMap,["status","in",[0,1,4]],['passengerid','=',$uid]])->count(); //查看是否已搭过此车主的车
+            $data['hasTake']          = $data['take_status'] !== null && in_array($data['take_status'], [0,1,4]) ? 1 : InfoModel::where([$countBaseMap,["status","in",[0,1,4]],['passengerid','=',$uid]])->count(); //查看是否已搭过此车主的车
             $data['hasTake_finish']   = $data['take_status'] == 3 ? 1 : InfoModel::where([$countBaseMap,['status','=',3],['passengerid','=',$uid]])->count();  //查看是否已搭过此车主的车
+            $data['take_status']      = intval($data['take_status']);
         }
         // return $this->success('加载成功','',$data);
         return $returnType ?   $this->jsonReturn(0, $data, 'success') : $data;
@@ -1051,6 +1051,10 @@ class Trips extends ApiBase
         if (is_string($unsetFields) && $unsetFields=="list") {
             $unsetFields = [
               'p_companyname','d_companyname'
+              ,'p_company_id','d_company_id'
+              ,'p_department_id','d_department_id'
+              ,'p_sex','d_sex'
+              ,'like_count'
               // ,'d_im_id','p_im_id'
               // ,'start_longitude','start_latitude'
               ,'start_addressid'
