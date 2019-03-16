@@ -5,7 +5,7 @@
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief" style="margin:0 0 30px ">
         <ul class="amain-tool-bar" >
-            <li {php} echo !$deep ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun])}"  >部门管理</a></li>
+            <li {php} echo !$deep ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>0])}"  >部门管理</a></li>
             <li {php} echo $deep ==1 ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>'p_1'])}"  >地区列表</a></li>
             <li {php} echo $deep ==3 ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>'p_3'])}"  >分公司列表</a></li>
         </ul>
@@ -253,43 +253,55 @@
         'id_list': this.datas.depts,
         'list': this.datas.deptsData
       }
-      if(typeof(window.parent.FORM_PAGE_EXEC)!='object' || typeof(window.parent.FORM_PAGE_EXEC.<?php echo $fun ?>)!="function"){
-        if(typeof(window.parent.<?php echo $fun ?>)!="function"){
-          if(typeof(window.parent.GV.lastOpenLayer)=="object" && typeof(window.parent.GV.lastOpenLayer.target) == "object"){
-             var $target = $(window.parent.GV.lastOpenLayer.target);
-             var $targetWrapper = $target.attr('onclick') ? $target : $target.closest('[onclick]');
-             var targetString = $targetWrapper.data('target');
-             var $wrapper =  $targetWrapper.closest('form');
-             if(data['fullname']){
-               var showText = data['fullname'].replace(/\,/g,' / ');
-             }else if(data['cancelSelected']){
-               var showText = $targetWrapper.data('title') ? $targetWrapper.data('title') : "请选择区域";
-             }
-             $targetWrapper.attr('data-tips',showText).html(showText);
-             if($wrapper){
-               if(targetString){
-                 var targetInputArray = targetString.split(',');
-               }
-               $(targetInputArray).each(function(index, el) {
-                    var targetElArray = el.split(':');
-                    if(typeof(targetElArray[1])!="undefined" && typeof(datas[targetElArray[1]])!="undefined"){
-                      $wrapper.find('input[name="'+targetElArray[0]+'"]').val(datas[targetElArray[1]]);
-                    }
-               });
-             }
 
+      if(typeof(window.parent.GV.lastOpenLayer)=="object" && typeof(window.parent.GV.lastOpenLayer.target) == "object"){
+        var $target = $(window.parent.GV.lastOpenLayer.target);
+        var $targetWrapper = $target.attr('onclick') ? $target : $target.closest('[onclick]');
+        var targetString = $targetWrapper.data('target');
+        var $wrapper =  $targetWrapper.closest('form');
+        var page_exec_str = $targetWrapper.data("page-exec");
+      }
 
+      var page_exec = null;
 
-          }else{
-            return false;
-
+      if(typeof(page_exec_str) == "undefined" ){
+        page_exec = typeof(window.parent.FORM_PAGE_EXEC)=='object' ? window.parent.FORM_PAGE_EXEC : (typeof(window.parent.LIST_PAGE_EXEC)=='object' ? window.parent.LIST_PAGE_EXEC : window.parent);
+      }else if( typeof(window.parent[page_exec_str]) == "object" ){
+        page_exec = window.parent[page_exec_str] ;
+      }else{
+        page_exec =  window.parent;
+      }
+      if(typeof(page_exec.<?php echo $fun ?>)=="function"){
+        page_exec.<?php echo $fun."("; ?>data<?php echo ")"; ?>;
+      }else if(typeof($target)=="object"){
+        if(data['fullname']){
+          var showText = data['fullname'].replace(/\,/g,' / ');
+        }else if(data['cancelSelected']){
+          var showText = $targetWrapper.data('title') ? $targetWrapper.data('title') : "请选择区域";
+        }
+        $targetWrapper.attr('data-tips',showText).html(showText);
+        if($wrapper){
+          if(targetString){
+            var targetInputArray = targetString.split(',');
           }
-        }else{
-          window.parent.<?php echo $fun."("; ?>data<?php echo ")"; ?>;
+          $(targetInputArray).each(function(index, el) {
+            var targetElArray = el.split(':');
+            if(typeof(targetElArray[1])!="undefined" && typeof(datas[targetElArray[1]])!="undefined"){
+              $wrapper.find('input[name="'+targetElArray[0]+'"]').val(datas[targetElArray[1]]);
+            }
+          });
         }
       }else{
-        window.parent.FORM_PAGE_EXEC.<?php echo $fun."("; ?>data<?php echo ")"; ?>;
+        return false;
       }
+
+      if(typeof(page_exec.after_<?php echo $fun ?>)=="function"){
+         page_exec.after_<?php echo $fun."("; ?>data<?php echo ")"; ?>;
+      }
+      if(typeof($target)=="object" && $targetWrapper.data("auto-submit")){
+        $targetWrapper.closest('form').submit();
+      }
+
       this.close();
     },
     close: function(){
