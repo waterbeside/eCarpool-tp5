@@ -37,9 +37,8 @@ class Grade extends ApiBase
           if(!$oData){
             $this->jsonReturn(992,"Error object_id");
           }
-
-          if($action == "save" && $oData['passengerid'] != $uid){
-            $this->jsonReturn(30001,"您不是本次行程的乘客，无法对这次行程评分");
+          if($action == "save" && ($oData['passengerid'] != $uid || $oData['carownid'] != $uid) ){
+            $this->jsonReturn(30001,lang("You are not the driver or passenger of this trip").lang('.').lang("You can't rate this"));
           }
         case 2:
           $oData = WallModel::find($oid);
@@ -47,7 +46,7 @@ class Grade extends ApiBase
             $this->jsonReturn(992,"Error object_id");
           }
           if($action == "save" &&  $oData['carownid'] != $uid){
-            $this->jsonReturn(30001,"您不是本次行程的司机，无法对这次行程评分");
+            $this->jsonReturn(30001,lang("You are not the driver of this trip").lang('.').lang("You can't rate this"));
           }
           break;
         default:
@@ -67,7 +66,7 @@ class Grade extends ApiBase
       $this->checkPassport(1);
       $uid = $this->userBaseInfo['uid'];
       if( !is_numeric($oid)){
-        $this->jsonReturn(992,"Error Param");
+        $this->jsonReturn(992,lang('Parameter error'));
       }
       // $objectData = $this->typeCheck($oid,$type);
 
@@ -87,7 +86,7 @@ class Grade extends ApiBase
         ];
         $this->jsonReturn(0,$returnData,"Success");
       }else{
-        $this->jsonReturn(20002,"No Data");
+        $this->jsonReturn(20002,lang('No data'));
       }
     }
 
@@ -103,7 +102,7 @@ class Grade extends ApiBase
       $grade = input('post.grade');
       $remark = input('post.remark');
       if(!is_numeric($grade) || !is_numeric($oid)){
-        $this->jsonReturn(992,"Error Param");
+        $this->jsonReturn(992,lang('Parameter error'));
       }
       $objectData = $this->typeCheck($oid,$type,'save');
       $map = [
@@ -115,7 +114,7 @@ class Grade extends ApiBase
       $data = $GradeModel->field('type,uid,object_id,create_time,grade')->where($map)->find();
       if($data){
         $data['create_time'] = strtotime($data['create_time']) ? strtotime($data['create_time']) : 0;
-        $this->jsonReturn(30006,$data,"您已经对此行程评过分");
+        $this->jsonReturn(30006,$data,lang("You are not the driver of this trip"));
       }else{
         $setData = [
           'type' => intval($type),
@@ -130,12 +129,12 @@ class Grade extends ApiBase
 
         $res = $GradeModel->insertGetId($setData);
         if(!$res){
-          $this->jsonReturn(-1,"Failed");
+          $this->jsonReturn(-1,lang("Failed"));
         }
         $returnData = $setData;
         $returnData['id'] = $res;
         $returnData['create_time'] = strtotime($setData['create_time']) ? strtotime($setData['create_time']) : 0;
-        $this->jsonReturn(0,$returnData,"success");
+        $this->jsonReturn(0,$returnData,lang("Successfully"));
       }
 
 
