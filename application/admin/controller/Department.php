@@ -83,7 +83,7 @@ class Department extends AdminBase
      * 部门对话框
      * @return mixed
      */
-    public function list_dialog($pid=0,$filter = [], $page = 1,$fun = "select_dept",$multi = 0)
+    public function list_dialog($pid='p_1',$filter = [], $page = 1,$fun = "select_dept",$multi = 0)
     {
       $returnData = $this->index($pid,$filter,$page,10,0);
       $returnData['fun'] = $fun;
