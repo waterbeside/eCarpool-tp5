@@ -3,6 +3,8 @@ return [
   //通用
   '.' => '。',
   ',' => '，',
+  'Failed' => '失败',
+  'Successfully' => '成功',
   'Fail' => '失败',
   "Can not be empty" => '不能为空',
   "Illegal access" => '禁止非法访问',
@@ -31,7 +33,7 @@ return [
   'The phone number has been bound to this account, no need to merge.' => '该手机号已绑定本帐号,无须再合并',
   'The phone number has been registered for another account'=>'该手机号已被注册其它账号',
   'Please log in directly to the employee number to perform the binding operation' => '目标账号未开通积分账号，请直接登入员工号进行绑定操作',
-  
+
 
   //字段相关
   'Please select date and time' => '请选择日期时间',
@@ -54,6 +56,7 @@ return [
   'You have already taken this trip'=>'您已搭乘过本行程',
   'Failed, seat is full' => '搭车失败，座位已满',
   'You are not the driver or passenger of this trip'=>'你不是本行程的司机或乘客',
+  'You are not the driver of this trip'=>'你不是本行程的司机',
   'Not allowed to view other`s location information'=>'不允许查看对方的位置信息',
   'This user has not joined this trip or has cancelled the itinerary' => '该用户没有参与本次行程或已取消了行程',
 
@@ -77,4 +80,8 @@ return [
   'Images cannot be larger than {:size}' => '图片不能大于{:size}',
   "File not found"=>'找不到文件',
   "This attachment cannot be deleted" => '该附件不可以删除',
+
+  //评分
+  "You can't rate this"=> "你不能对此评分",
+  "You have already rated this" => "你已经对此评过分",
 ];

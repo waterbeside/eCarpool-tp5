@@ -2,6 +2,9 @@
 return [
   //通用
   '.' => '.',
+  ',' => ',',
+  'Failed' => 'Thất bại',
+  'Successfully' => 'Thành công',
   'Fail' => 'Thất bại',
   "Can not be empty" => 'không thể để trống',
   "Illegal access" => 'Truy cập bất hợp pháp',
@@ -51,6 +54,8 @@ return [
   'Failed, seat is full' => 'Thất bại, chỗ ngồi đã đầy',
   'You have already taken this trip'=>'Bạn không phải là tài xế hoặc hành khách của chuyến đi này',
   'You are not the driver or passenger of this trip'=>'Bạn không phải là tài xế hoặc hành khách của chuyến đi này',
+  'You are not the driver of this trip'=>'Bạn không phải là người lái xe của chuyến đi này',
+
   'Not allowed to view  other`s location information'=>'Không được phép xem thông tin vị trí của người khác',
   'This user has not joined this trip or has cancelled the itinerary' => 'Người dùng này chưa tham gia chuyến đi này hoặc đã hủy hành trình',
 
@@ -73,4 +78,8 @@ return [
   'Images cannot be larger than {:size}' => 'Hình ảnh không được lớn hơn {:size}',
   "File not found"=>'Không tìm thấy tệp',
   "This attachment cannot be deleted" => 'Không thể xóa tệp đính kèm này',
+
+  //评分
+  "You can't rate this"=> "Bạn không thể đánh giá điều này",
+  "You have already rated this" => "Bạn đã đánh giá điều này",
 ];
