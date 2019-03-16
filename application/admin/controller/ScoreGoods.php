@@ -45,14 +45,14 @@ class ScoreGoods extends AdminBase
 
 
     if(isset($filter['status']) && is_numeric($filter['status'])){
-      $map[] = ['status','=', $filter['status']];
+      $map[] = ['t.status','=', $filter['status']];
     }
     if(isset($filter['is_hidden']) && is_numeric($filter['is_hidden']) && $filter['is_hidden']!==0){
       $is_delete = $filter['is_hidden'] ? 1 : 0 ;
-      $map[] = ['is_delete','=', $filter['is_hidden']] ;
+      $map[] = ['t.is_delete','=', $filter['is_hidden']] ;
     }
     if ($keyword) {
-        $map[] = ['name|desc','like', "%{$keyword}%"];
+        $map[] = ['t.name|t.desc','like', "%{$keyword}%"];
     }
 
     $lists = GoodsModel::alias('t')->field($fields)->json(['images'])
@@ -64,9 +64,9 @@ class ScoreGoods extends AdminBase
     $statusList = $this->goods_status;
     $scoreConfigs = (new Configs())->getConfigs("score");
     $returnData = [
-      'lists' => $lists,
       'regionData'=> isset($regionData) ? $regionData : NULL,
       'region_id'=>$region_id,
+      'lists' => $lists,
       'keyword' => $keyword,
       'pagesize'=>$pagesize,
       'type'=>$type,
@@ -121,8 +121,70 @@ class ScoreGoods extends AdminBase
       }
     }else{
       $rule_number               = $this->request->param('rule_number');
-      return $this->fetch('add', ['goods_status' => $this->goods_status,'rule_number'=>$rule_number]);
+      return $this->fetch('add', ['goods_status' => $this->goods_status]);
     }
+  }
+
+  /**
+   * 复制发布
+   */
+  public function duplication(){
+    if ($this->request->isPost()) {
+      $data               = $this->request->post();
+      //开始验证字段
+      $validate = new \app\score\validate\Goods;
+      if (!$validate->check($data)) {
+        return $this->jsonReturn(-1,$validate->getError());
+      }
+      if(!is_numeric($data['p_region_id'])){
+        $this->jsonReturn(-1,"error p_region_id");
+      }
+      $upData = [
+        'p_region_id' => $data['p_region_id'],
+        'name' => $data['name'],
+        'desc' => $data['desc'],
+        'price' => $data['price'],
+        'amount' => $data['amount'],
+        'inventory' => $data['inventory'],
+        'status' => $data['status'],
+        'is_delete'=> isset($data['is_show']) && $data['is_show'] ? 0 : 1,
+        'operator' => $this->userBaseInfo['uid'],
+        'update_time' => date('Y-m-d H:i:s'),
+        // 'rule_number' => $data['rule_number'],
+      ];
+      if($data['thumb'] && trim($data['thumb'])){
+        $upData['images'][0] =  $data['thumb'];
+      }
+
+      $id = GoodsModel::json(['images'])->insertGetId($upData);
+      if ( $id ) {
+          $this->public_recache($id);
+          $this->log('添加商品成功，id='.$id,0);
+          return $this->jsonReturn(0,'保存成功');
+      } else {
+          $this->log('添加商品失败',-1);
+          return $this->jsonReturn(-1,'保存失败');
+      }
+
+    }else{
+      $id = input("param.id/d",0);
+      if(!$id){
+        $this->error("Lost id");
+      }
+      $fields = "t.*, d.fullname";
+      $join = [
+        ['carpool.t_department d','t.p_region_id = d.id','left']
+      ];
+      $data = GoodsModel::alias('t')->field($fields)->json(['images'])->join($join)->where("t.id",$id)->find();
+      if(!$data){
+        $this->error("商品不存在");
+      }else{
+        $data['is_show'] = $data['is_delete'] ? 0 : 1 ;
+        $data['thumb'] = is_array($data["images"]) ? $data["images"][0] : "" ;
+      }
+      return $this->fetch('duplication', ['data' => $data,'goods_status' => $this->goods_status]);
+    }
+
   }
 
 
@@ -142,7 +204,6 @@ class ScoreGoods extends AdminBase
       if(!is_numeric($data['p_region_id'])){
         $this->jsonReturn(-1,"error p_region_id");
       }
-
 
       $upData = [
         'p_region_id' => $data['p_region_id'],
