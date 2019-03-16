@@ -14,14 +14,25 @@ use think\Db;
  */
 class ScorePrize extends AdminBase
 {
-
   /**
    * 抽奖列表
    * @return mixed
    */
-  public function index($keyword="",$filter=['status'=>'0,1,2','is_hidden'=>''],$page = 1,$pagesize = 20, $rule_number= NULL)
+  public function index($keyword="",$filter=['status'=>'0,1,2','is_hidden'=>''],$page = 1,$pagesize = 20, $region_id=0)
   {
     $map = [];
+    $fields = "t.*, d.fullname, d.path";
+    $join = [
+      ['carpool.t_department d','t.p_region_id = d.id','left']
+    ];
+    //地区排查
+    if($region_id){
+      if(is_numeric($region_id)){
+        $regionData = $this->getDepartmentById($region_id);
+      }
+      $region_map_sql = $this->buildRegionMapSql($region_id);
+      $map[] = ['','exp', Db::raw($region_map_sql)];
+    }
 
     $status = input("param.status");
     if($status!==null){
@@ -29,24 +40,25 @@ class ScorePrize extends AdminBase
     }
 
     if(isset($filter['status']) && is_numeric($filter['status'])){
-      $map[] = ['status','=', $filter['status']];
+      $map[] = ['t.status','=', $filter['status']];
     }else{
       if(strpos($filter['status'],',')>0){
-        $map[] = ['status','in', $filter['status']];
+        $map[] = ['t.status','in', $filter['status']];
       }
     }
     if(  is_numeric($filter['is_hidden']) && $filter['is_hidden']!==0){
       $is_delete = $filter['is_hidden'] ? 1 : 0 ;
       $map[] = ['is_delete','=', $filter['is_hidden']] ;
     }
-    if (is_numeric($rule_number)) {
-        $map[] = ['rule_number','=', $rule_number];
-    }
+
     if ($keyword) {
         $map[] = ['name|desc','like', "%{$keyword}%"];
     }
 
-    $lists = PrizeModel::where($map)->json(['images'])->order('id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+    $lists = PrizeModel::alias('t')->field($fields)->json(['images'])
+    ->join($join)->where($map)
+    ->order('id DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+
     // $lists = PrizeModel::where($map)->json(['images'])->order('id DESC')->fetchSql()->select();
     // dump($lists);exit;
     foreach ($lists as $key => $value) {
@@ -57,9 +69,9 @@ class ScorePrize extends AdminBase
     $statusList = config('score.prize_status');
     $auth['admin/ScorePrize/add'] = $this->checkActionAuth('admin/ScorePrize/add');
     $returnData =  [
+      'regionData'=> isset($regionData) ? $regionData : NULL,
+      'region_id'=>$region_id,
       'lists' => $lists,
-      'rule_number' => $rule_number,
-      'rule_number_lists' => config("score.rule_number"),
       'keyword' => $keyword,
       'pagesize'=>$pagesize,
       'statusList'=>$statusList,
@@ -95,8 +107,11 @@ class ScorePrize extends AdminBase
       }else{
         $data['identity'] = uuid_create();
       }
-
+      if(!is_numeric($data['p_region_id'])){
+        $this->jsonReturn(-1,"error p_region_id");
+      }
       $upData = [
+        'p_region_id' => $data['p_region_id'],
         'name' => $data['name'],
         'desc' => $data['desc'],
         'price' => $data['price'],
@@ -107,11 +122,8 @@ class ScorePrize extends AdminBase
         'real_count' => 0,
         'total_count' => $data['total_count'],
         'is_shelves' => isset($data['un_shelves']) &&  isset($data['un_shelves']) == 1 ? 0 : 1,
-
         'status' =>  in_array($data['status'],[-1,0,1,2]) ? $data['status'] : -1 ,
         'is_delete'=> 0,
-
-        'rule_number' => $data['rule_number'],
         'update_time' => date('Y-m-d H:i:s'),
       ];
       if($data['thumb'] && trim($data['thumb'])){
@@ -120,11 +132,11 @@ class ScorePrize extends AdminBase
       $id = PrizeModel::json(['images'])->insertGetId($upData);
       if ( $id ) {
           $this->log('添加抽奖成功，id='.$id,0);
-          $url =url('admin/ScorePrize/index',['status'=>'all','rule_number'=>$data['rule_number']]);
+          $url =url('admin/ScorePrize/index',['status'=>'all']);
           if($data['status'] > -1){
-            $url = url('admin/ScorePrize/index',['status'=>'0,1,2','rule_number'=>$data['rule_number']]);
+            $url = url('admin/ScorePrize/index',['status'=>'0,1,2']);
           }else if($data['status'] == -1){
-            $url = url('admin/ScorePrize/index',['status'=>-1,'rule_number'=>$data['rule_number']]);
+            $url = url('admin/ScorePrize/index',['status'=>-1]);
           }
           return $this->success('添加成功',$url);
       } else {
@@ -132,7 +144,6 @@ class ScorePrize extends AdminBase
           return $this->jsonReturn(-1,'添加失败');
       }
     }else{
-      $rule_number =  $this->request->param('rule_number');
       $prize_status = config('score.prize_status');
       $id           = $this->request->param('id/d',0);
       $data = [];
@@ -144,7 +155,7 @@ class ScorePrize extends AdminBase
         $data['publication_number'] = $maxData['max(publication_number)'] ? $maxData['max(publication_number)'] + 1 : 1 ;
         // $data['publication_number'] = (PrizeModel::where('identity',$data['identity'])->max('publication_number')) + 1  ;
       }
-      return $this->fetch('add', ['data'=>$data,'id'=>$id,'prize_status' => $prize_status,'rule_number'=>$rule_number]);
+      return $this->fetch('add', ['data'=>$data,'id'=>$id,'prize_status' => $prize_status]);
 
     }
   }
@@ -161,13 +172,17 @@ class ScorePrize extends AdminBase
     if(!$id){
       $this->error("Lost id");
     }
-    $prize_data = PrizeModel::where("id",$id)->json(['images'])->find();
-    if(!$prize_data){
-      $this->error("抽奖不存在");
-    }
+
 
     if ($this->request->isPost()) {
+      $prize_data = PrizeModel::where("id",$id)->json(['images'])->find();
+      if(!$prize_data){
+        $this->error("抽奖不存在");
+      }
       $data               = $this->request->post();
+      if(!is_numeric($data['p_region_id'])){
+        $this->jsonReturn(-1,"error p_region_id");
+      }
       if($prize_data['status']<-1){
         $this->error('该次抽奖已结束或下架，无法修改');
       }
@@ -180,6 +195,7 @@ class ScorePrize extends AdminBase
       }
 
       $upData = [
+        'p_region_id' => $data['p_region_id'],
         'desc' => $data['desc'],
         'amount' => $data['amount'],
         'level' => $data['level'] ,
@@ -222,14 +238,21 @@ class ScorePrize extends AdminBase
       }
 
     }else{
-
-     $prize_data['is_show'] = $prize_data['is_delete'] ? 0 : 1 ;
-     $prize_data['thumb'] = is_array($prize_data["images"]) ? $prize_data["images"][0] : "" ;
+      $fields = "t.*, d.fullname";
+      $join = [
+        ['carpool.t_department d','t.p_region_id = d.id','left']
+      ];
+      $data = PrizeModel::alias('t')->field($fields)->json(['images'])->join($join)->where("t.id",$id)->find();
+      if(!$data){
+        $this->error("抽奖不存在");
+      }
+      $data['is_show'] = $data['is_delete'] ? 0 : 1 ;
+      $data['thumb'] = is_array($data["images"]) ? $data["images"][0] : "" ;
 
       // $auth['admin/ScorePrize/edit'] = $this->checkActionAuth('admin/ScorePrize/edit');
       $prize_status = config('score.prize_status');
 
-      return $this->fetch('edit', ['data' => $prize_data,'prize_status' => $prize_status]);
+      return $this->fetch('edit', ['data' => $data,'prize_status' => $prize_status]);
     }
   }
 

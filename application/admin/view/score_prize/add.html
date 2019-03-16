@@ -2,97 +2,100 @@
 <div class="layui-tab-content goods-item-edit prize-item-edit ">
 
     <div>
-        <form class="layui-form form-container" action="{:url('admin/ScorePrize/add')}" method="post" onsubmit="return RESOLVE_INIT.submitForm(this);">
-          <input type="hidden" name="rule_number" value="{$rule_number}" />
+        <form class="layui-form form-container" action="{:url('admin/ScorePrize/add')}" method="post" onsubmit="return FORM_PAGE_EXEC.submitForm(this);">
+            <div class="layui-form-item">
+                <label class="layui-form-label">区域/部门</label>
+                <div class="layui-input-block">
+                  <div class="J-dept-select-wrapper"></div>
+                  <input type="hidden" name="p_region_id" value=""  class="layui-input layui-input-inline " readonly  >
+                  <a onclick="FORM_PAGE_EXEC.openDeptDialog()" href="javascript:void(0);"  class="layui-btn  layui-btn-primary layui-btn-sm"   >
+                    <i class="fa fa-book"></i> <span>选择区域/部门</span>
+                  </a>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">奖品名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" value="{$data.name ? $data.name : ''}" required  lay-verify="required" placeholder="请输入商品名" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">期数</label>
+                <div class="layui-input-block">
+                    <input type="number"  value="{$data.publication_number ? $data.publication_number : 1 }"  placeholder="期数" class="layui-input" readonly disabled>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">描述</label>
+                <div class="layui-input-block">
+                   <textarea name="desc" placeholder="请输入描述" class="layui-textarea">{$data.desc ? $data.desc :''}</textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">缩略图</label>
+                <div class="layui-input-block">
+                  <input type="text" name="thumb" value="{$data.thumb ? $data.thumb  : ''}" class="layui-input">
+                  <a   class="amain-uploadImgBtn" id="upload-btn">
+                     <img class="layui-upload-img" id="item-thumb" src="{$data.thumb ? $data.thumb  : ''}" >
+                     <div class="text">
+                       <i class="fa fa-upload"></i>上传图片
+                     </div>
+                  </a>
+                  <p id="uploadText"></p>
 
+                </div>
+            </div>
+             <div class="layui-form-item">
+                <label class="layui-form-label">采购价</label>
+                <div class="layui-input-block">
+                    <input type="text" name="amount" value="{$data.amount ? $data.amount : 0}"  required  lay-verify="required" placeholder="请输入奖品采购价" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">抽奖单价</label>
+                <div class="layui-input-block">
+                    <input type="text" name="price" value="{$data.price ? $data.price : 100}"  required  lay-verify="required" placeholder="抽奖所需积分" class="layui-input" >
+                    <div class="layui-form-mid layui-word-aux"  >每次抽奖所消耗积分</div>
+                </div>
+            </div>
 
-              <div class="layui-form-item">
-                  <label class="layui-form-label">奖品名</label>
-                  <div class="layui-input-block">
-                      <input type="text" name="name" value="{$data.name ? $data.name : ''}" required  lay-verify="required" placeholder="请输入商品名" class="layui-input">
-                  </div>
-              </div>
-              <div class="layui-form-item">
-                  <label class="layui-form-label">期数</label>
-                  <div class="layui-input-block">
-                      <input type="number"  value="{$data.publication_number ? $data.publication_number : 1 }"  placeholder="期数" class="layui-input" readonly disabled>
-                  </div>
-              </div>
-              <div class="layui-form-item">
-                  <label class="layui-form-label">描述</label>
-                  <div class="layui-input-block">
-                     <textarea name="desc" placeholder="请输入描述" class="layui-textarea">{$data.desc ? $data.desc :''}</textarea>
-                  </div>
-              </div>
-              <div class="layui-form-item">
-                  <label class="layui-form-label">缩略图</label>
-                  <div class="layui-input-block">
-                    <input type="text" name="thumb" value="{$data.thumb ? $data.thumb  : ''}" class="layui-input">
-                    <a   class="amain-uploadImgBtn" id="upload-btn">
-                       <img class="layui-upload-img" id="item-thumb" src="{$data.thumb ? $data.thumb  : ''}" >
-                       <div class="text">
-                         <i class="fa fa-upload"></i>上传图片
-                       </div>
-                    </a>
-                    <p id="uploadText"></p>
+            <div class="layui-form-item">
+                <label class="layui-form-label">期望总数</label>
+                <div class="layui-input-block">
+                    <input type="number" name="total_count"  value="{$data.total_count ? $data.total_count : 1000}"  required  lay-verify="required" placeholder="开奖阈值" class="layui-input" >
+                    <div class="layui-form-mid layui-word-aux"    >当购买票数达到该数量时开奖</div>
+                </div>
+            </div>
 
-                  </div>
-              </div>
-               <div class="layui-form-item">
-                  <label class="layui-form-label">采购价</label>
-                  <div class="layui-input-block">
-                      <input type="text" name="amount" value="{$data.amount ? $data.amount : 0}"  required  lay-verify="required" placeholder="请输入奖品采购价" class="layui-input">
-                  </div>
-              </div>
-              <div class="layui-form-item">
-                  <label class="layui-form-label">抽奖单价</label>
-                  <div class="layui-input-block">
-                      <input type="text" name="price" value="{$data.price ? $data.price : 100}"  required  lay-verify="required" placeholder="抽奖所需积分" class="layui-input" >
-                      <div class="layui-form-mid layui-word-aux"  >每次抽奖所消耗积分</div>
-                  </div>
-              </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">级别</label>
+                <div class="layui-input-block">
+                    <input type="number" name="level" min="-1" value="{$data.level ? $data.level : 3}"  required  lay-verify="required" placeholder="奖品级别" class="layui-input">
+                    <div class="layui-form-mid layui-word-aux">奖品级别(第几等奖)</div>
+                </div>
+            </div>
 
-              <div class="layui-form-item">
-                  <label class="layui-form-label">期望总数</label>
-                  <div class="layui-input-block">
-                      <input type="number" name="total_count"  value="{$data.total_count ? $data.total_count : 1000}"  required  lay-verify="required" placeholder="开奖阈值" class="layui-input" >
-                      <div class="layui-form-mid layui-word-aux"    >当购买票数达到该数量时开奖</div>
-                  </div>
-              </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">状态</label>
+                <div class="layui-input-block">
+                  <select name="status"  >
+                      <option value="-1" selected >准备开始</option>
+                    <option value="0" >进行中（正常）</option>
+                    <option value="1">进行中（推荐）</option>
+                     <option value="2" >进行中（置顶）</option>
+                   </select>
+                   <div class="layui-form-mid layui-word-aux">默认为“准备开始”，抽奖一但进行，则不允许再对奖品信息进行修改，请三思而行。</div>
 
-              <div class="layui-form-item">
-                  <label class="layui-form-label">级别</label>
-                  <div class="layui-input-block">
-                      <input type="number" name="level" min="-1" value="{$data.level ? $data.level : 3}"  required  lay-verify="required" placeholder="奖品级别" class="layui-input">
-                      <div class="layui-form-mid layui-word-aux">奖品级别(第几等奖)</div>
-                  </div>
-              </div>
+                </div>
+            </div>
 
-              <div class="layui-form-item">
-                  <label class="layui-form-label">状态</label>
-                  <div class="layui-input-block">
-                    <select name="status"  >
-                        <option value="-1" selected >准备开始</option>
-                      <option value="0" >进行中（正常）</option>
-                      <option value="1">进行中（推荐）</option>
-                       <option value="2" >进行中（置顶）</option>
-                     </select>
-                     <div class="layui-form-mid layui-word-aux">默认为“准备开始”，抽奖一但进行，则不允许再对奖品信息进行修改，请三思而行。</div>
-
-                  </div>
-              </div>
-
-              <div class="layui-form-item">
-                  <label class="layui-form-label">自动续期</label>
-                  <div class="layui-input-block">
-                      <input type="checkbox" name="un_shelves" value="1" lay-skin="switch" lay-text="是|否" checked>
-                      <div class="layui-form-mid layui-word-aux" >开奖后，是否自动生成并开始下一期抽奖。</div>
-                  </div>
-              </div>
-
-
-
-
+            <div class="layui-form-item">
+                <label class="layui-form-label">自动续期</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="un_shelves" value="1" lay-skin="switch" lay-text="是|否" checked>
+                    <div class="layui-form-mid layui-word-aux" >开奖后，是否自动生成并开始下一期抽奖。</div>
+                </div>
+            </div>
 
             <div class="blank20"></div>
 
@@ -106,8 +109,10 @@
 </div>
 <script>
 
-RESOLVE_INIT = {
-
+FORM_PAGE_EXEC = {
+  datas : {
+    depts: null
+  },
   upload : layui.upload,
   init: function(){
     var $thumbInput = $('.goods-item-edit').find("input[name=thumb]");
@@ -158,7 +163,6 @@ RESOLVE_INIT = {
 
   submitForm(form){
     var $form = $(form);
-
     ajaxSubmit({
       data: $form.serialize(),
       url:$form.attr('action'),
@@ -168,11 +172,51 @@ RESOLVE_INIT = {
 
     })
     return false;
+  },
+
+  /**
+   * 关闭已选项功作
+   */
+  closeItem: function(){
+    var e = e || event
+    var $target = $(e.target);
+    var $item = $target.closest('.item');
+    var id = $item.data('id');
+    this.datas.depts = null;
+    $("input[name='p_region_id']").val('');
+    $item.addClass('delete');
+    setTimeout(function(){
+      $item.remove();
+    },400);
+  },
+  /**
+   * 已选项item模板
+   */
+  deptItemTemplate: function(data){
+    var title = data.fullname.replace(/\,/g,' / ');
+    var html = '<div class="item my-tag-item" data-id="'+data.id+'" title="'+data.fullname+'"><a class="close" onclick="FORM_PAGE_EXEC.closeItem()"><i class="fa fa-close"></i></a><span>'+title+'</span></div>';
+    return html;
+  },
+  setDeptItem:function(){
+    if(this.datas.depts){
+      var deptsData = this.datas.depts;
+      var itemHtml = this.deptItemTemplate(deptsData);
+      $('.J-dept-select-wrapper').html(itemHtml);
+    }
+  },
+  openDeptDialog: function(){
+    openLayer('{:url('admin/Department/list_dialog')}','选择区域/部门');
+  },
+  select_dept: function(data){
+    var $input = $("input[name='p_region_id']");
+    this.datas.depts = data;
+    this.setDeptItem();
+    $input.val(data.id);
   }
 }
 
 
-RESOLVE_INIT.init();
+FORM_PAGE_EXEC.init();
 
 
 </script>

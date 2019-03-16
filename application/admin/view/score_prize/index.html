@@ -6,18 +6,16 @@
     <div class="layui-tab layui-tab-brief">
 
         <ul class="  amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/ScorePrize/index',['rule_number'=>$rule_number])}"  >抽奖管理</a></li>
+            <li class="layui-this"><a href="{:url('admin/ScorePrize/index')}"  >抽奖管理</a></li>
             <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ScorePrize/add',['rule_number'=>$rule_number])}"  data-title="添加商品"  data-trigger="modal" >
+              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ScorePrize/add')}"  data-title="添加商品"  data-trigger="modal" >
               <i class="fa fa-plus"></i> 添加抽奖</a>
             </li>
-            <li class="btn-item btn-item-right ">
-              {include file="_components/select_ruleNumber" /}
-            </li>
+
 
         </ul>
         <div class="amain-content">
-          <form id="filter-form"  class="layui-form layui-form-pane" action="{:url('admin/ScorePrize/index',['rule_number'=>$rule_number])}" method="get">
+          <form id="filter-form"  class="layui-form layui-form-pane" action="{:url('admin/ScorePrize/index')}" method="get">
               <div class="layui-inline">
                   <label class="layui-form-label">检索</label>
                   <div class="layui-input-inline">
@@ -29,6 +27,12 @@
                       <option value="1" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "1" ? 'selected' : ''; {/php}>不显示</option>
                       <option value="0" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "0" ? 'selected' : ''; {/php}>显示</option>
                     </select>
+                  </div>
+                  <div class="layui-input-inline">
+                      <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
+                      <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择显示区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="选择显示区域" data-title="选择显示区域" data-tips-position="3" >
+                        {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择显示区域"}
+                      </a>
                   </div>
               </div>
               <div class="layui-inline">
@@ -95,7 +99,9 @@
                         <div class="progress layui-progress" lay-showPercent="true">
                           <div class="layui-progress-bar" lay-percent="{$vo.real_count} /{$vo.total_count}"></div>
                         </div>
-
+                        <div class="depts_bar">
+                          <div class="item my-tag-item" data-id="{$vo.p_region_id}" title="{$vo.fullname}">{$vo.fullname|str_replace=","," / ",###}</span></div>
+                        </div>
                         <div class="info-bar">
                           <span class="info-item price"> 消耗积分：<b >{$vo.price}</b></span>
                           <span class="info-item amount"> 采购价：<b >{$vo.amount}</b></span>
