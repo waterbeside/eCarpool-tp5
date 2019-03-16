@@ -41,7 +41,26 @@ select.my-select {
   &-input:disabled { background: #f0f0f0; color:#888}
   &-btn:disabled {  @include colorBtn($color-silver-l2,0,0);}
   &-input-sm {  height: 30px;}
-  &-elem-quote { border:1px solid lighten($color-silver-l2,10%); border-left:4px solid  $color-primary; background-color: $color-gray-l2; color:$color-silver-d3}
+  &-elem-quote {
+    border:1px solid lighten($color-silver-l2,10%); border-left:4px solid  $color-primary; background-color: $color-gray-l2; color:$color-silver-d3;
+    &-danger {
+      $baseColor: $color-red;
+      border-color: lighten($baseColor,50%); border-left-color: $baseColor; background-color: lighten($baseColor,55%); color:mix($color-text-main,$baseColor,50);
+    }
+    &-warning {
+      $baseColor: $color-orange;
+      border-color: lighten($baseColor,35%); border-left-color: $baseColor; background-color: lighten($baseColor,40%); color:mix($color-text-main,$baseColor,50);
+    }
+    &-success {
+      $baseColor: $color-success;
+      border-color: lighten($baseColor,50%); border-left-color: $baseColor; background-color: lighten($baseColor,55%); color:mix($color-text-main,$baseColor,50);
+    }
+    &-gray {
+      $baseColor: $color-silver;
+      border-color: lighten($baseColor,50%); border-left-color: $baseColor; background-color: lighten($baseColor,55%); color:mix($color-text-main,$baseColor,50);
+    }
+
+  }
   &-layout-admin .layui-body { top:0}
   &-table {
     color:$color-silver-d3;

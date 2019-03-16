@@ -90,8 +90,8 @@ function initLayuiTable(options){
 /**
  * 通过layer的iframe打开
  */
-function openLayer(url,opt){
-  var e = e || event;
+function openLayer(url,opt,oe){
+  var e = oe || e || event;
   var openLength = 0
   GV['lastOpenLayer'] = [];
   GV['lastOpenLayer']['target'] = e.target;
