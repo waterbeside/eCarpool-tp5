@@ -50,14 +50,13 @@ class AdminBase extends Base
         $module     = strtolower($this->request->module());
         $controller = strtolower($this->request->controller());
         $action     = strtolower($this->request->action());
-
         // dump($this->request);exit;
 
         // 排除权限
-        $un_check = ['admin/Index/index', 'admin/AuthGroup/getjson', 'admin/System/clear','admin/Index/main'];
+        $un_check = ['admin/index/index', 'admin/authgroup/getjson', 'admin/system/clear','admin/index/main'];
         $un_check = array_merge($un_check,$this->un_check);
         $un_check = array_map('strtolower', $un_check);
-        $un_check_controller = ['Publics','Uploader'];
+        $un_check_controller = ['publics','uploader'];
 
         if (!in_array($module . '/' . $controller . '/' . $action, $un_check) && !in_array($controller,$un_check_controller) && strpos($action,'public_' ) === false) {
             $auth     = new Auth();
