@@ -77,6 +77,7 @@
                           <div class="btns-wrapper">
                             <a href="javascript:void(0);" onclick="refreshGoodCache(this)" data-id="{$vo.id}"  data-disabled="0" class="ibtn layui-btn layui-btn-primary    layui-btn-radius   "><i class="fa fa-refresh"></i> 刷新</a>
                             <!-- <input type="checkbox" name="is_delete" value="1" lay-skin="switch" lay-text="显示|隐藏" {if condition="$vo.is_delete!=1"} checked="checked"{/if}> -->
+                            <a href="{:url('admin/ScoreGoods/duplication',['id'=>$vo['id']])}"  data-title="复制发布"  data-trigger="modal" title="編輯商品 #{$vo.id}" class="ibtn layui-btn layui-btn-success    layui-btn-radius   "><i class="fa fa-copy"></i> 复制</a>
                             <a href="{:url('admin/ScoreGoods/edit',['id'=>$vo['id']])}"  data-title="編輯商品 #{$vo.id}"  data-trigger="modal" title="編輯商品 #{$vo.id}" class="ibtn layui-btn    layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a>
                           </div>
                         </div>
