@@ -2,6 +2,7 @@
 namespace app\admin\controller;
 
 use app\score\model\History as HistoryModel;
+use app\score\model\Configs as ScoreConfigsModel;
 use app\score\model\AccountMix as AccountMixModel;
 use app\score\model\Account as ScoreAccountModel;
 use app\common\model\Docs as DocsModel;
@@ -178,18 +179,14 @@ class Score extends AdminBase
                 // "lottery_material_switch" : 1,
 
       $configs = $this->systemConfig;
-      $redis = new RedisData();
-      $rule_number =  $this->request->param('rule_number',0);
-      $cacheKey = "CONFIG_SETTING:".$rule_number;
 
-      $soreSettingData=json_decode($redis->get($cacheKey),true);
-      // dump($soreSettingData);
       if ($this->request->isPost()){
+        $region_id =  $this->request->param('region_id');
         $datas          = $this->request->post('');
         $order_date     = explode(',',$datas['order_date']);
         $exchange_date  = explode(',',$datas['exchange_date']);
-        $rule_number =  isset($datas['rule_number']) ? $datas['rule_number'] : false;
-        if(!is_numeric($rule_number)){
+
+        if(!is_numeric($region_id)){
           $this->error("请选择地区");
         }
 
@@ -204,6 +201,8 @@ class Score extends AdminBase
             }
           }
         }
+
+
 
         $data['exchange_date'] = $exchange_date;
         if($datas['exchange_date'] == "*"){
@@ -226,26 +225,73 @@ class Score extends AdminBase
         }
         $soreSettingData['lottery_integral_price']    = $datas['lottery_integral_price'];
 
+
+        $map = [
+          'p_region_id' => $region_id,
+          'name' => 'integral_config'
+        ];
+        $ScoreConfigsModel = new ScoreConfigsModel();
+        $res = $ScoreConfigsModel->where($map)->find();
+        $data = null;
+        if($res){
+          $res = $res->toArray();
+          $data = json_decode($res['value'],true);
+        }
+        $soreSettingData = is_array($data) ? array_merge($data,$soreSettingData) : $soreSettingData;
         $soreSettingDataStr = json_encode($soreSettingData);
-        $redis->set($cacheKey, $soreSettingDataStr);
+
+        $updataData = [
+          'p_region_id' => $region_id,
+          'name' => 'integral_config',
+          'value'=> $soreSettingDataStr,
+          'title'=> '积分配置',
+        ];
+        if( $res && $res['id'] ){
+          $map[] = ['id',"=",$res['id']];
+          $updateRes = $ScoreConfigsModel->where($map)->update($updataData);
+          $updateid =  $updateRes !== false ? $res['id'] :false;
+        }else{
+          $updateid = $ScoreConfigsModel->insertGetId($updataData);
+
+        }
+        if(!$updateid){
+          return $this->jsonReturn(-1,'更新失败');
+        }
+
+        $redis = new RedisData();
+        $redis->delete("CONFIG_SETTING:".$region_id);
+
+
         $this->log('修改积分配置成功',0);
         $this->success("修改成功");
 
-
       }else{
-
-        $data = $soreSettingData;
-        $data['order_date_str']           =  !isset($data['order_date'])  ? '' : (is_array($data['order_date']) ? join(",",$data['order_date']) : $data['order_date']);
-        $data['exchange_date_str']        =  !isset($data['exchange_date'])  ? '' : (is_array($data['exchange_date']) ? join(",",$data['exchange_date']) : $data['exchange_date']);
+        $region_id =  $this->request->param('region_id',1);
+        if(is_numeric($region_id)){
+          $regionData = $this->getDepartmentById($region_id);
+        }
+        $map = [
+          'p_region_id' => $region_id,
+          'name' => 'integral_config'
+        ];
+        $res = ScoreConfigsModel::where($map)->find();
+        $data = null;
+        if($res){
+          $res = $res->toArray();
+          $data = json_decode($res['value'],true);
+          $data['order_date_str'] =  is_array($data['order_date']) ? implode(',',$data['order_date']) : $data['order_date'] ;
+          $data['exchange_date_str'] = is_array($data['exchange_date']) ? implode(',',$data['exchange_date']) : $data['exchange_date'];
+        }
+        //
         /*$data['(order_switch)']             =  isset($data['order_switch'])             ? $data['order_switch']            : 0  ;
         $data['lottery_integral_switch']  =  isset($data['lottery_integral_switch'])  ? $data['lottery_integral_switch'] : 0  ;
         $data['lottery_material_switch']  =  isset($data['lottery_material_switch'])  ? $data['lottery_material_switch'] : 0  ;
         $data['lottery_integral_price']   =  isset($data['lottery_integral_price'])   ? $data['lottery_integral_price']  : 0  ;*/
 
         $returnData = [
-          'rule_number' => $rule_number,
-          'rule_number_lists'=> config("score.rule_number"),
-          'configs'=>$configs,
+          'regionData'=> isset($regionData) ? $regionData : NULL,
+          'region_id'=>$region_id,
+          'res'=>$res,
           'data'=>$data
         ];
         return $this->fetch('config',$returnData);
