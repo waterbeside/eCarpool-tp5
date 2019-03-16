@@ -114,6 +114,8 @@ class Base extends Controller
         $message = $data;
         $data = [];
       }
+      $data = empty($data) ? (object)array() : $data;
+      $extra = empty($extra) ? (object)array() : $extra;
   		$data = array(
   			'code'=>$code,
   			'desc'=>$message,
