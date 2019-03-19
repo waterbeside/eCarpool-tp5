@@ -147,6 +147,8 @@ class Trips extends ApiBase
 
 
         $GradeModel =  new GradeModel();
+        $isGrade = $GradeModel->isGrade('trips');
+        $grade_start_date = config('trips.grade_start_date');
         foreach ($datas as $key => $value) {
             $datas[$key] =  $this->formatResultValue($value);
             // $datas[$key] = $this->formatResultValue($value,$merge_ids);
@@ -159,7 +161,8 @@ class Trips extends ApiBase
               ['object_id','=',($value['trip_type'] ? $value['love_wall_ID'] : $value['infoid'])],
               ['uid','=',$uid]
             ];
-            $datas[$key]['already_rated'] =   $GradeModel->where($ratedMap)->count() ? 1 : 0;
+
+            $datas[$key]['already_rated'] =   !$isGrade || !$datas[$key]['d_uid'] || $datas[$key]['time'] < strtotime($grade_start_date) || $GradeModel->where($ratedMap)->count() ? 1 : 0;
 
         }
         $returnData = [
@@ -276,8 +279,9 @@ class Trips extends ApiBase
               ['object_id','=', $id],
               ['uid','=',$uid]
             ];
-            $data['already_rated'] =   GradeModel::where($ratedMap)->count() ? 1 : 0;
-
+            $grade_start_date = strtotime(config('trips.grade_start_date'));
+            $grade_end_date   = strtotime(config('trips.grade_end_date'));
+            $data['already_rated'] =  $data['time'] < $grade_start_date || $data['time'] > $grade_end_date ||  GradeModel::where($ratedMap)->count() ? 1 : 0;
         }
         // return $this->success('加载成功','',$data);
         return $returnType ?   $this->jsonReturn(0, $data, 'success') : $data;
@@ -402,6 +406,8 @@ class Trips extends ApiBase
         if (!$data) {
             return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
         }
+
+
         $data = $this->unsetResultValue($this->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
         if (!$pb) {
             $data['uid']          = $uid;
@@ -410,7 +416,9 @@ class Trips extends ApiBase
               ['object_id','=', $id],
               ['uid','=',$uid]
             ];
-            $data['already_rated'] =   GradeModel::where($ratedMap)->count() ? 1 : 0;
+            $grade_start_date = strtotime(config('trips.grade_start_date'));
+            $grade_end_date   = strtotime(config('trips.grade_end_date'));
+            $data['already_rated'] =  !$data['d_uid'] || $data['time'] < $grade_start_date || $data['time'] > $grade_end_date ||  GradeModel::where($ratedMap)->count() ? 1 : 0;
         }
 
         // return $this->success('加载成功','',$data);
@@ -1109,6 +1117,7 @@ class Trips extends ApiBase
           'startpid','endpid',
           'seat_count','trip_type'
         ];
+        $value = json_decode(json_encode($value),true);
         foreach ($value as $key => $v) {
            if(in_array($key,$int_field_array)){
              $value_format[$key] = intval($v);

@@ -19,5 +19,16 @@ class Grade extends Model
   protected $pk = 'id';
 
 
+  public  function isGrade($type){
+    if($type=='trips'){
+      $grade_start_date = config('trips.grade_start_date');
+      $grade_end_date = config('trips.grade_end_date');
+      $isGrade = time() >= strtotime($grade_start_date)  && time() < strtotime($grade_end_date) ? true : false;
+      return $isGrade;
+    }else{
+      return false;
+    }
+  }
+
 
 }

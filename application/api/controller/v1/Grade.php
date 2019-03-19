@@ -46,14 +46,26 @@ class Grade extends ApiBase
             $this->jsonReturn(992,"Error object_id");
           }
           if($action == "save" &&  $oData['carownid'] != $uid){
-            $this->jsonReturn(30001,lang("You are not the driver of this trip").lang('.').lang("You can't rate this"));
+            $infoData = InfoModel::where([["love_wall_ID",'=',$oid],['passengerid',"=",$uid],['status','in',[0,1,3,4]]])->order("status")->find();
+            if(!$infoData){
+              $this->jsonReturn(30001,lang("You are not the driver or passenger of this trip").lang('.').lang("You can't rate this"));
+            }
+            $oData = $infoData;
+            $type = 0;
+            $oid = $infoData['infoid'];
           }
           break;
         default:
           $this->jsonReturn(992,"Error type");
           break;
       }
-      return $oData;
+      $returnData = [
+        'type' => $type,
+        'oid'  => $oid,
+        'data' => $oData
+      ];
+
+      return $returnData;
     }
 
     /**
@@ -104,10 +116,11 @@ class Grade extends ApiBase
       if(!is_numeric($grade) || !is_numeric($oid)){
         $this->jsonReturn(992,lang('Parameter error'));
       }
-      $objectData = $this->typeCheck($oid,$type,'save');
+      $checkData = $this->typeCheck($oid,$type,'save');
+
       $map = [
-        'object_id' =>$oid,
-        'type' => $type,
+        'object_id' =>$checkData['oid'],
+        'type' => $checkData['type'],
         'uid' => $uid,
       ];
       $GradeModel = new GradeModel();
@@ -117,8 +130,8 @@ class Grade extends ApiBase
         $this->jsonReturn(30006,$data,lang("You have already rated this"));
       }else{
         $setData = [
-          'type' => intval($type),
-          'object_id' => intval($oid),
+          'type' => intval($checkData['type']),
+          'object_id' => intval($checkData['oid']),
           'uid' => intval($uid),
           'grade' => intval($grade),
           'create_time'=> date('Y-m-d H:i:s'),
