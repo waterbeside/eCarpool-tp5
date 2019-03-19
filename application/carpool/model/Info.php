@@ -53,7 +53,7 @@ class Info extends Model
 
 
    //取得合并的info和wall表
-   public function buildUnionSql($uid,$merge_ids=[]){
+   public function buildUnionSql($uid,$merge_ids=[],$statusSet = "(0,1,4)"){
      $whereUser = " a.carownid=$uid OR a.passengerid=$uid ";
      $whereUser2 = " a.carownid=$uid  ";
      $whereUser_lw = " lw.carownid=$uid  ";
@@ -81,7 +81,7 @@ class Info extends Model
        info AS a
      WHERE
        ( $whereUser )
-       AND a.status in (0,1,4)
+       AND a.status in $statusSet
        AND (a.love_wall_ID is null OR  a.love_wall_ID not in (select lw.love_wall_ID  from love_wall AS lw where $whereUser_lw and lw.status<>2 ) )
        ORDER BY a.time desc";
 
@@ -99,7 +99,7 @@ class Info extends Model
      FROM
        love_wall as a
      WHERE
-       a.status in (0,1,4)
+       a.status in $statusSet
        AND ($whereUser2)
      ORDER BY  a.time desc";
 
