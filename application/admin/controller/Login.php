@@ -65,9 +65,12 @@ class Login extends BaseController
 
             if($carpool_uid > 0 && $user['carpool_account']){
                 $checkActiveUrl  = config('others.local_hr_sync_api.single');
+
                 $params = [
-                  'code'=>$user['carpool_account'],
-                  'is_sync'=>0,
+                  'query' => [
+                    'code'=>$user['carpool_account'],
+                    'is_sync'=>0,
+                  ]
                 ];
                 $checkActiveRes = $this->clientRequest($checkActiveUrl,$params,'GET');
 

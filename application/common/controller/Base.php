@@ -265,12 +265,14 @@ class Base extends Controller
     public function clientRequest($url,$data=[],$type='POST',$dataType="json"){
       try {
         $client = new \GuzzleHttp\Client(['verify'=>false]);
-        $params = strtolower($type) == 'get' ? [
-          'query' => $data
-        ] : [
-          'form_params' => $data
-        ];
+        // $params = strtolower($type) == 'get' ? [
+        //   'query' => $data
+        // ] : [
+        //   'form_params' => $data
+        // ];
+        $params = $data;
         $response = $client->request($type, $url, $params);
+
         $contents = $response->getBody()->getContents();
         if(mb_strtolower($dataType)=="json"){
           $contents = json_decode($contents,true);
@@ -279,10 +281,15 @@ class Base extends Controller
       } catch (\GuzzleHttp\Exception\RequestException $exception) {
         if ($exception->hasResponse()) {
           $responseBody = $exception->getResponse()->getBody()->getContents();
+          dump($responseBody);
+          $AES = new AES();
         }
-        $this->errorMsg = $exception->getMessage();
+        $this->errorMsg = $exception->getMessage() ? $exception->getMessage()  :(isset($responseBody) ? $responseBody : '')  ;
         return false;
       }
+
     }
+
+
 
 }
