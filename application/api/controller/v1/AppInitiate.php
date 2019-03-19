@@ -7,6 +7,7 @@ use app\carpool\model\UpdateVersion as VersionModel;
 use app\carpool\model\VersionDetails as VersionDetailsModel;
 use app\content\model\Ads as AdsModel;
 use app\common\model\Apps as AppsModel;
+use app\carpool\model\Grade as GradeModel;
 use my\RedisData;
 
 use app\common\model\I18nLang as I18nLangModel;
@@ -151,15 +152,17 @@ class AppInitiate extends ApiBase
       //     $ip_data['country_id'] = $ip_res['data']['country_id'];
       //   }
       // }
+      $GradeModel = new GradeModel();
+      $isGrade = $GradeModel;
       $returnData = [
         'notices' => $notices,
         'ads' =>  $adsData,
         'version' => $returnVersionData,
         'ip' => $ip,
-        'grade_switch' =>1, //是否使用评分系统
+        'grade_switch' => $isGrade ? 1 : 0, //是否使用评分系统
       ];
       // dump($lists);
-      return $this->jsonReturn(0,$returnData,'success');
+      return $this->jsonReturn(0,$returnData,lang('Successfully'));
     }
 
 
