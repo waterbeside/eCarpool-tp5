@@ -156,6 +156,7 @@ class AppInitiate extends ApiBase
         'ads' =>  $adsData,
         'version' => $returnVersionData,
         'ip' => $ip,
+        'grade_switch' =>1, //是否使用评分系统
       ];
       // dump($lists);
       return $this->jsonReturn(0,$returnData,'success');
