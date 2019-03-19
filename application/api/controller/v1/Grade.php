@@ -5,6 +5,7 @@ use app\api\controller\ApiBase;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
 use app\carpool\model\Grade as GradeModel;
+use my\RedisData;
 
 
 use think\Db;
@@ -29,18 +30,17 @@ class Grade extends ApiBase
       $uid = $this->userBaseInfo['uid'];
       $type = intval($type);
       switch ($type) {
+
         case 0:
-          $this->jsonReturn(992,"Error type");
-          break;
-        case 1:
           $oData = InfoModel::find($oid);
           if(!$oData){
             $this->jsonReturn(992,"Error object_id");
           }
-          if($action == "save" && ($oData['passengerid'] != $uid || $oData['carownid'] != $uid) ){
+          if($action == "save" && ($oData['passengerid'] != $uid && $oData['carownid'] != $uid) ){
             $this->jsonReturn(30001,lang("You are not the driver or passenger of this trip").lang('.').lang("You can't rate this"));
           }
-        case 2:
+          break;
+        case 1:
           $oData = WallModel::find($oid);
           if(!$oData){
             $this->jsonReturn(992,"Error object_id");
@@ -50,7 +50,7 @@ class Grade extends ApiBase
           }
           break;
         default:
-          // code...
+          $this->jsonReturn(992,"Error type");
           break;
       }
       return $oData;
@@ -96,7 +96,7 @@ class Grade extends ApiBase
      * @param  integer $type [description]
      * @return [type]        [description]
      */
-    public function save($oid=0,$type=0){
+    public function save($oid=0,$type=-1){
       $this->checkPassport(1);
       $uid = $this->userBaseInfo['uid'];
       $grade = input('post.grade');
@@ -114,7 +114,7 @@ class Grade extends ApiBase
       $data = $GradeModel->field('type,uid,object_id,create_time,grade')->where($map)->find();
       if($data){
         $data['create_time'] = strtotime($data['create_time']) ? strtotime($data['create_time']) : 0;
-        $this->jsonReturn(30006,$data,lang("You are not the driver of this trip"));
+        $this->jsonReturn(30006,$data,lang("You have already rated this"));
       }else{
         $setData = [
           'type' => intval($type),
@@ -134,6 +134,10 @@ class Grade extends ApiBase
         $returnData = $setData;
         $returnData['id'] = $res;
         $returnData['create_time'] = strtotime($setData['create_time']) ? strtotime($setData['create_time']) : 0;
+        if(in_array($type,[0,1])){
+          $redis = new RedisData();
+          $redis->delete("carpool:trips:check_my_status:not_rated:".$uid);
+        }
         $this->jsonReturn(0,$returnData,lang("Successfully"));
       }
 
