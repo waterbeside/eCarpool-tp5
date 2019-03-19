@@ -11,6 +11,8 @@ use app\carpool\model\user as UserModel;
 use app\user\model\Department as DepartmentModel;
 use app\common\model\PushMessage;
 use app\carpool\model\UserPosition as UserPositionModel;
+use app\carpool\model\Grade as GradeModel;
+use my\RedisData;
 
 use think\Db;
 
@@ -46,6 +48,7 @@ class Trips extends ApiBase
         $fields .=  $this->buildAddressFields();
         $join = $this->buildTripJoins();
 
+
         if ($type==1) {
             $map = [
               ["t.time","<",date('YmdHi', strtotime('+15 minute'))],
@@ -65,8 +68,9 @@ class Trips extends ApiBase
         if ($pagesize > 0 || $type > 0) {
             $results =    $modelObj->paginate($pagesize, false, ['query'=>request()->param()])->toArray();
             if (!$results['data']) {
-                return $this->jsonReturn(20002, $results, lang('No data'));
+                return $this->jsonReturn(20002, lang('No data'));
             }
+
             $datas = $results['data'];
             $pageData = [
               'total'=>$results['total'],
@@ -77,7 +81,7 @@ class Trips extends ApiBase
         } else {
             $datas =    $modelObj->select();
             if (!$datas) {
-                return $this->jsonReturn(20002, $datas, lang('No data'));
+                return $this->jsonReturn(20002, lang('No data'));
             }
             $total = count($datas);
             $pageData = [
@@ -88,11 +92,6 @@ class Trips extends ApiBase
             ];
         }
         foreach ($datas as $key => $value) {
-            $value['trip_type'] = intval($value['trip_type']);
-            $value['infoid'] = intval($value['infoid']);
-            $value['love_wall_ID'] = intval($value['love_wall_ID']);
-            $value['seat_count'] = intval($value['seat_count']);
-
             $datas[$key] = $fullData ? $this->formatResultValue($value) : $this->unsetResultValue($this->formatResultValue($value), "list");
             // $datas[$key] = $this->formatResultValue($value,$merge_ids);
             $datas[$key]['show_owner']  = $value['trip_type'] ||  ($value['infoid']>0 && $uid == $value['passengerid']  &&  $value['carownid'] > 0)  ?  1 : 0;
@@ -114,7 +113,62 @@ class Trips extends ApiBase
      */
     public function history($pagesize =20)
     {
-        $this->unsetResultValue($this->index($pagesize, 1, 1));
+        $userData = $this->getUserData(1);
+        $uid = $userData['uid'];
+        $extra_info = json_decode($userData['extra_info'], true);
+        $merge_ids = isset($extra_info['merge_id']) && is_array($extra_info['merge_id'])  ? $extra_info['merge_id'] : [];
+
+        $InfoModel = new InfoModel();
+        $viewSql  =  $InfoModel->buildUnionSql($uid, $merge_ids ,"(0,1,3,4)");
+        $fields = 't.infoid , t.love_wall_ID , t.time, t.trip_type , t.time, t.status, t.passengerid, t.carownid , t.seat_count,  t.subtime, t.map_type ';
+        $fields .= ','.$this->buildUserFields('d');
+        $fields .= ', dd.fullname as d_full_department';
+        $fields .= ','.$this->buildUserFields('p');
+        $fields .= ', pd.fullname as p_full_department';
+        $fields .=  $this->buildAddressFields();
+        $join = $this->buildTripJoins();
+        $map = [
+          ["t.time","<",date('YmdHi', strtotime('+15 minute'))],
+          // ["t.go_time","<",strtotime('+15 minute')],
+        ];
+        $orderby = 't.time DESC, t.infoid DESC, t.love_wall_id DESC';
+        $modelObj =  Db::connect('database_carpool')->table("($viewSql)" . ' t')->field($fields)->where($map)->join($join)->order($orderby);
+        $results =    $modelObj->paginate($pagesize, false, ['query'=>request()->param()])->toArray();
+        if (!$results['data']) {
+            return $this->jsonReturn(20002, lang('No data'));
+        }
+        $datas = $results['data'];
+        $pageData = [
+          'total'=>$results['total'],
+          'pageSize'=>$results['per_page'],
+          'lastPage'=>$results['last_page'],
+          'currentPage'=>intval($results['current_page']),
+        ];
+
+
+        $GradeModel =  new GradeModel();
+        foreach ($datas as $key => $value) {
+            $datas[$key] =  $this->formatResultValue($value);
+            // $datas[$key] = $this->formatResultValue($value,$merge_ids);
+            $datas[$key]['show_owner']    = $value['trip_type'] ||  ($value['infoid']>0 && $uid == $value['passengerid']  &&  $value['carownid'] > 0)  ?  1 : 0;
+            $datas[$key]['is_driver']     =  $uid == $value['carownid']  ?  1 : 0;
+            $datas[$key]['status']        = intval($value['status']);
+            $datas[$key]['took_count']    = $value['infoid'] > 0 ? ($datas[$key]['is_driver'] ? 1 : 0) : InfoModel::where([['love_wall_ID','=',$value['love_wall_ID']],['status','<>',2]])->count() ; //取已坐数
+            $ratedMap = [
+              ['type','=',$value['trip_type']],
+              ['object_id','=',($value['trip_type'] ? $value['love_wall_ID'] : $value['infoid'])],
+              ['uid','=',$uid]
+            ];
+            $datas[$key]['already_rated'] =   $GradeModel->where($ratedMap)->count() ? 1 : 0;
+
+        }
+        $returnData = [
+          'lists'=>$datas,
+          'page' =>$pageData
+        ];
+
+        $this->jsonReturn(0, $returnData, "success");
+        // $this->unsetResultValue($this->index($pagesize, 1, 1));
     }
 
     /**
@@ -156,7 +210,7 @@ class Trips extends ApiBase
         $results = WallModel::alias('t')->field($fields)->join($join)->where($map)->order(' time ASC, t.love_wall_ID ASC  ')
         ->paginate($pagesize, false, ['query'=>request()->param()])->toArray();
         if (!$results['data']) {
-            return $this->jsonReturn(20002, $results, lang('No data'));
+            return $this->jsonReturn(20002, lang('No data'));
         }
         $lists = [];
         foreach ($results['data'] as $key => $value) {
@@ -202,7 +256,7 @@ class Trips extends ApiBase
         $join = $this->buildTripJoins("s,e,d,department");
         $data = WallModel::alias('t')->field($fields)->join($join)->where("t.love_wall_ID", $id)->find();
         if (!$data) {
-            return $returnType ? $this->jsonReturn(20002, $data, lang('No data')) : [];
+            return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
         }
 
         $data = $this->unsetResultValue($this->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
@@ -217,6 +271,13 @@ class Trips extends ApiBase
             $data['hasTake']          = $data['take_status'] !== null && in_array($data['take_status'], [0,1,4]) ? 1 : InfoModel::where([$countBaseMap,["status","in",[0,1,4]],['passengerid','=',$uid]])->count(); //查看是否已搭过此车主的车
             $data['hasTake_finish']   = $data['take_status'] == 3 ? 1 : InfoModel::where([$countBaseMap,['status','=',3],['passengerid','=',$uid]])->count();  //查看是否已搭过此车主的车
             $data['take_status']      = intval($data['take_status']);
+            $ratedMap = [
+              ['type','=',1],
+              ['object_id','=', $id],
+              ['uid','=',$uid]
+            ];
+            $data['already_rated'] =   GradeModel::where($ratedMap)->count() ? 1 : 0;
+
         }
         // return $this->success('加载成功','',$data);
         return $returnType ?   $this->jsonReturn(0, $data, 'success') : $data;
@@ -280,7 +341,7 @@ class Trips extends ApiBase
             $results =    $modelObj->paginate($pagesize, false, ['query'=>request()->param()])->toArray();
 
             if (!$results['data']) {
-                return $this->jsonReturn(20002, $results, lang('No data'));
+                return $this->jsonReturn(20002, lang('No data'));
             }
             $datas = $results['data'];
             $pageData = [
@@ -292,7 +353,7 @@ class Trips extends ApiBase
         } else {
             $datas =    $modelObj->select();
             if (!$datas) {
-                return $this->jsonReturn(20002, $datas, lang('No data'));
+                return $this->jsonReturn(20002, lang('No data'));
             }
             $total = count($datas);
             $pageData = [
@@ -339,11 +400,17 @@ class Trips extends ApiBase
         $join = $this->buildTripJoins();
         $data = InfoModel::alias('t')->field($fields)->join($join)->where("t.infoid", $id)->find();
         if (!$data) {
-            return $returnType ? $this->jsonReturn(20002, $data, lang('No data')) : [];
+            return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
         }
         $data = $this->unsetResultValue($this->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
         if (!$pb) {
             $data['uid']          = $uid;
+            $ratedMap = [
+              ['type','=',0],
+              ['object_id','=', $id],
+              ['uid','=',$uid]
+            ];
+            $data['already_rated'] =   GradeModel::where($ratedMap)->count() ? 1 : 0;
         }
 
         // return $this->success('加载成功','',$data);
@@ -367,13 +434,14 @@ class Trips extends ApiBase
         $userData = $this->getUserData(1);
         $uid = $userData['uid']; //取得用户id
 
-
         $time                 = input('post.time');
         $map_type             = input('post.map_type');
         // $datas['startpid']    = input('post.startpid');
         // $datas['endpid']      = input('post.endpid');
         $datas['start']       = input('post.start');
+        $datas['start']       = is_array($datas['start']) ? $datas['start'] : json_decode($datas['start'],true);
         $datas['end']         = input('post.end');
+        $datas['end']         = is_array($datas['end']) ? $datas['end'] : json_decode($datas['end'],true);
         $datas['seat_count']  = input('post.seat_count');
         $datas['distance']    = input('post.distance', 0);
         $datas['time']        = is_numeric($time) ? date('YmdHi', $time) : date('YmdHi', strtotime($time.":00"));
@@ -400,13 +468,13 @@ class Trips extends ApiBase
             $this->jsonReturn(-1, [], $WallModel->errorMsg);
         }
 
+
         $createAddress = array();
         //处理起点
-        if ((!isset($datas['start']['addressid']) || !$datas['start']['addressid'] || !is_numeric($datas['start']['addressid'])) && !$map_type) {
+        if ((!isset($datas['start']['addressid']) || !(is_numeric($datas['start']['addressid']) && $datas['start']['addressid'] >0)) && !$map_type) {
             $startDatas = $datas['start'];
             $startDatas['company_id'] = $userData['company_id'];
             $startRes = $AddressModel->addFromTrips($startDatas);
-
             if (!$startRes) {
                 $this->jsonReturn(-1, [], lang("The point of departure must not be empty"));
             }
@@ -415,7 +483,7 @@ class Trips extends ApiBase
         }
 
         //处理终点
-        if ((!isset($datas['end']['addressid']) || !$datas['end']['addressid']  || !is_numeric($datas['end']['addressid'])) && !$map_type) {
+        if ((!isset($datas['end']['addressid']) || !(is_numeric($datas['end']['addressid']) && $datas['end']['addressid'] >0)) && !$map_type) {
             $endDatas = $datas['end'];
             $endDatas['company_id'] = $userData['company_id'];
             $endRes = $AddressModel->addFromTrips($endDatas);
@@ -531,7 +599,7 @@ class Trips extends ApiBase
         $datas = $Model->field($fields)->get($id);
 
         if (!$datas) {
-            return $this->jsonReturn(20002, [], lang('No data'));
+            return $this->jsonReturn(20002, lang('No data'));
         }
         $map_type = $datas['map_type'];
         $appid = $map_type ? 2 : 1;
@@ -760,6 +828,61 @@ class Trips extends ApiBase
     }
 
 
+    /**
+     * 检查是否有未评分行程
+     */
+    public function check_my_status(){
+      $userData = $this->getUserData(1);
+      $uid = $userData['uid'];
+      $redis = new RedisData();
+      $exp = "60";   //缓存过期时间
+      $cacheKey = [];
+      $cacheKey['not_rated'] = "carpool:trips:check_my_status:not_rated:".$uid;
+      $cacheData = $redis->get($cacheKey['not_rated']);
+      if($cacheData){
+        $res = json_decode($cacheData,true);
+        $res = $res ? $res : [];
+      }
+      if(!isset($res)){
+        $grade_start_date = config('trips.grade_start_date');
+        $gradeBaseSql = GradeModel::where("uid",$uid)->buildSql();
+        $InfoModel = new InfoModel();
+        $baseSql  =  $InfoModel->buildUnionSql($uid, [] , "(3)" );
+        $fields = 't.infoid , t.love_wall_ID , t.time, t.trip_type ,  t.status, t.passengerid, t.carownid , t.seat_count,  t.subtime, t.map_type
+            ,(case when t.trip_type = 1  then t.love_wall_ID else t.infoid end) as  object_id
+        ';
+        $map = [];
+        $orderby = 't.time Desc, t.infoid Desc, t.love_wall_id Desc';
+        // buildSql
+        $baseSql2 =  Db::connect('database_carpool')->table("($baseSql)" . ' t')->field($fields)->where($map)->order($orderby)
+        // ->select();
+        ->buildSql();
+        // dump($baseSql2);exit;
+
+        $map2 = [];
+        $fields2 = 'tt.trip_type as type, tt.object_id as id, tt.time ';
+        $join2 = [
+          ["t_grade g"," g.object_id = tt.object_id AND g.type=tt.trip_type AND g.uid = $uid",'left'],
+        ];
+        $map2 = [
+          ["tt.time","<",date('YmdHi', strtotime("-1 hour"))],
+          ['tt.time',">",date('YmdHi',strtotime($grade_start_date))],
+          ['',"EXP",Db::raw('g.grade is null')]
+        ];
+        $res = Db::connect('database_carpool')->table("($baseSql2)" . ' tt')->field($fields2)->where($map2)->join($join2)->select();
+        foreach ($res as $key => $value) {
+          $formatTime  = strtotime($value['time'].'00');
+          $res[$key]['time'] = $formatTime ? $formatTime : 0 ;
+        }
+        $redis->setex($cacheKey['not_rated'], $exp, json_encode($res));
+      }
+
+      $returnData = [
+        "not_rated" => $res ? $res : [] ,
+      ];
+      $this->jsonReturn(0,$returnData,lang('Successfully'));
+    }
+
 
     /**
      * 用户位置
@@ -983,7 +1106,8 @@ class Trips extends ApiBase
           'p_uid','p_sex','p_company_id','p_department_id',
           'd_uid','d_sex','d_company_id','d_department_id',
           'infoid','love_wall_ID',
-          'startpid','endpid'
+          'startpid','endpid',
+          'seat_count','trip_type'
         ];
         foreach ($value as $key => $v) {
            if(in_array($key,$int_field_array)){

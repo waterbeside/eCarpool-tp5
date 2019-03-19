@@ -49,6 +49,7 @@ Route::group([], function () {
   Route::rule('api/:version/trips/wall','api/:version.trips/wall_list','GET');
   Route::rule('api/:version/trips/info','api/:version.trips/info_list','GET');
   Route::rule('api/:version/trips/history','api/:version.trips/history','GET');
+  Route::rule('api/:version/trips/check_my_status','api/:version.trips/check_my_status','GET');
   Route::rule('api/:version/trips','api/:version.trips/index','GET');
   Route::rule('api/:version/trips/:from','api/:version.trips/add','POST');
   Route::rule('api/:version/trips/:from/:id','api/:version.trips/change','PATCH');
