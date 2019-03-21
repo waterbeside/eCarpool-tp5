@@ -281,8 +281,6 @@ class Base extends Controller
       } catch (\GuzzleHttp\Exception\RequestException $exception) {
         if ($exception->hasResponse()) {
           $responseBody = $exception->getResponse()->getBody()->getContents();
-          dump($responseBody);
-          $AES = new AES();
         }
         $this->errorMsg = $exception->getMessage() ? $exception->getMessage()  :(isset($responseBody) ? $responseBody : '')  ;
         return false;
