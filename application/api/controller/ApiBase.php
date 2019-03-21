@@ -148,15 +148,32 @@ class ApiBase extends Base
 
     }
 
+    /**
+     * 验证是否本地请求
+     * @param  integer $returnType 0返回true or false，其它当false时，返json
+     * @return boolean
+     */
+    public function check_localhost($returnType = 0)
+    {
+        $host = $this->request->host();
+        // dump($this->request->port());exit;
+        // && !in_array($host,["gitsite.net:8082","admin.carpoolchina.test"])
+        if (strpos($host, '127.0.0.1') === false && strpos($host, 'localhost') === false) {
+            return $returnType ?  $this->error(lang('Illegal access')) : false ;
+        } else {
+            return true;
+        }
+    }
+
 
     /**
      * 接口日圮
      * @param  string  $desc   描述
      * @param  integer $status 状态 -1失败，1成功
      */
-    public function log($desc='',$status=0){
+    public function log($desc='',$status=0,$uid = null){
       $request = request();
-      $data['uid'] = $this->userBaseInfo['uid'];
+      $data['uid'] = is_numeric($uid) ? $uid : ($this->userBaseInfo['uid'] ? $this->userBaseInfo['uid'] : 0);
       $data['ip'] = $request->ip();
       $isAjaxShow =  $request->isAjax() ? " (Ajax)" : "";
       $data['type'] = $request->method()."$isAjaxShow";
