@@ -52,7 +52,7 @@ class Department extends Model
           'status'=>1,
           'path'=>'0',
           'fullname'=> $value,
-          'integral_number'=> $integral_number,
+          // 'integral_number'=> $integral_number,
           'deep'=> $key,
         ];
         $data_p = [];
@@ -61,15 +61,15 @@ class Department extends Model
           $data['pid']  = $data_p['id'];
           $data['path'] = $data_p['path'].','.$data_p['id'];
           $data['fullname'] = $data_p['fullname'].','.$value;
-          if($key === 1){
-            foreach ($rule_number_list as $k => $v) {
-              if(isset($v['region']) && $v['region'] && $v['region'] === $value){
-                $integral_number = $k;
-                break;
-              }
-            }
-          }
-          $data['integral_number'] = $integral_number;
+          // if($key === 1){
+          //   foreach ($rule_number_list as $k => $v) {
+          //     if(isset($v['region']) && $v['region'] && $v['region'] === $value){
+          //       $integral_number = $k;
+          //       break;
+          //     }
+          //   }
+          // }
+          // $data['integral_number'] = $integral_number;
         }
         $check  = $this->where([['name','=',$value],["pid","=",$data['pid']]])->find();
         if(!$check){
