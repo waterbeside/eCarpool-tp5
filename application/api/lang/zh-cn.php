@@ -34,6 +34,10 @@ return [
   'The phone number has been registered for another account'=>'该手机号已被注册其它账号',
   'Please log in directly to the employee number to perform the binding operation' => '目标账号未开通积分账号，请直接登入员工号进行绑定操作',
 
+  //短信
+  'Verification code cannot be empty' => '验证码不能为空',
+  'Verification code error' => '验证码错误',
+
 
   //字段相关
   'Please select date and time' => '请选择日期时间',

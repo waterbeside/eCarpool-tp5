@@ -33,6 +33,11 @@ return [
   'The phone number has been registered for another account'=>'Số điện thoại đã được đăng ký một tài khoản khác',
   'Please log in directly to the employee number to perform the binding operation' => 'Vui lòng đăng nhập trực tiếp vào số nhân viên để ràng buộc',
 
+  //短信
+  'Verification code cannot be empty' => 'Mã xác minh không thể để trống',
+  'Verification code error' => 'Lỗi mã xác minh',
+
+
   //字段相关
   'Please select date and time' => 'Vui lòng chọn ngày và giờ',
   'Please enter content' => 'Vui lòng nhập nội dung',
