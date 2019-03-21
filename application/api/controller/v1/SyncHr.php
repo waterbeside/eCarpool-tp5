@@ -23,23 +23,6 @@ class SyncHr extends ApiBase
     }
 
 
-    /**
-     * 验证是否本地请求
-     * @param  integer $returnType 0返回true or false，其它当false时，返json
-     * @return boolean
-     */
-    protected function check_localhost($returnType = 0)
-    {
-        $host = $this->request->host();
-        // dump($this->request->port());exit;
-        // && !in_array($host,["gitsite.net:8082","admin.carpoolchina.test"])
-        if (strpos($host, '127.0.0.1') === false && strpos($host, 'localhost') === false) {
-            return $returnType ?  $this->error(lang('Illegal access')) : false ;
-        } else {
-            return true;
-        }
-    }
-
 
     /**
      * 同步全部
