@@ -4,6 +4,7 @@ namespace app\api\controller\v2;
 use app\api\controller\ApiBase;
 use app\carpool\model\User as UserModel;
 use app\user\model\UserOauth;
+use app\score\model\Account as ScoreAccountModel;
 use think\facade\Cache;
 use my\RedisData;
 use com\Nim as NimServer;
@@ -87,55 +88,6 @@ class Sms extends ApiBase
     }
 
 
-    /**
-     * 合并积分
-     * tAccount  目标账号
-     * $oAccount 被删账号
-     */
-    protected function mergeScore($tAccount, $oAccount, $nowTime)
-    {
-        Db::connect('database_score')->startTrans();
-        try {
-            $scoreAccount_t = Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$tAccount],['is_delete','<>', 1]])->find();//取出目标员工号的积分账号信息
-        $scoreAccount_o = Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$oAccount],['is_delete','<>', 1]])->find();//取出手机号的积分账号信息
-        if (!$scoreAccount_t) {
-            throw new \Exception('10002');
-        } else {
-            $score_t = $scoreAccount_t['balance'];
-            $score_o = $scoreAccount_o['balance'];
-            $score_new = $score_t + $score_o; //合并积分
-            $historyData = [
-              "account_id" => $scoreAccount_t['id'],
-              "operand" => abs($score_o),
-              "reason" => $score_o > 0 ? 301 : -301,
-              "result" => $score_new,
-              "extra_info" => '{}',
-              "is_delete" => 0,
-              "time" => date('Y-m-d H:i:s'),
-            ];
-            Db::connect('database_score')->table('t_history')->insert($historyData); //插入因合并
-            Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$tAccount]])->setField('balance', $score_new); //员工账号加到手号账的积分
-            $historyData_o = [
-              "account_id" => $scoreAccount_o['id'],
-              "operand" => abs($score_o),
-              "reason" => -301,
-              "result" => 0,
-              "extra_info" => '{}',
-              "is_delete" => 0,
-              "time" => date('Y-m-d H:i:s'),
-            ];
-            Db::connect('database_score')->table('t_history')->insert($historyData_o); //旧账号添加一条扣分的历史
-            Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$oAccount]])->update(['carpool_account'=>'delete_'.$oAccount.'_'.$nowTime,'is_delete'=> 0,'balance'=>0]); //删除手机账号的积分账号
-              // 提交事务
-            Db::connect('database_score')->commit();
-          }
-        } catch (\Exception $e) {
-            // echo($e);
-            Db::connect('database_score')->rollback();
-            throw new \Exception($e->getMessage());
-        }
-    }
-
 
 
 
@@ -176,7 +128,8 @@ class Sms extends ApiBase
      */
     public function send($usage = 0, $phone = null)
     {
-        $dev = input('param.dev');
+        // $dev = input('param.dev',0);
+        $dev = 0;
         if (!$usage) {
             $this->jsonReturn(992, [], 'usage empty');
             exit;
@@ -195,7 +148,7 @@ class Sms extends ApiBase
         if (in_array($usage, array(100,101,102,103,104,201,200))) {
             $phoneUserData = UserModel::where([['phone','=',$phone]])->find();
 
-            if (in_array($usage, array(103,104,200,201))) { // 验证是否登入
+            if (in_array($usage, array(103,200,201))) { // 验证是否登入
                 $userData = $this->getUserData(1);
             }
 
@@ -232,9 +185,14 @@ class Sms extends ApiBase
                 }*/
                 break;
               case 104: //合并账号
-                if ($userData['phone'] == $phone) {
-                    $this->jsonReturn(10100, [], lang('The phone number has been bound to this account, no need to merge.'));
+                $type = input('param.type',0);
+                if(!$type){ // 默认必先做jwt验证
+                  $userData = $this->getUserData(1);
+                  if ($userData['phone'] == $phone) {
+                      $this->jsonReturn(10100, [], lang('The phone number has been bound to this account, no need to merge.'));
+                  }
                 }
+
                 $phoneUserData2 = UserModel::where([['loginname','=',$phone]])->find();
                 if (!$phoneUserData2) {
                     $this->jsonReturn(10006, [], lang('No need to merge'));
@@ -298,13 +256,17 @@ class Sms extends ApiBase
      */
     public function verify($usage = 0, $code = null, $phone = null, $step = 0)
     {
+        if(!$code){
+          $this->jsonReturn(992,lang('Verification code cannot be empty'));
+        }
         if (!$this->checkSMSCode($phone, $code, $usage)) {
-            $this->jsonReturn(10101, [], 'fail (code error)');
+            $this->jsonReturn(10101, lang('Verification code error'));
             exit;
         }
 
+
         $returnData =  [];
-        if (in_array($usage, array(103,104,200,201))) { // 验证是否登入
+        if (in_array($usage, array(103,200,201))) { // 验证是否登入
             $userData = $this->getUserData(1);
             $uid = $this->userBaseInfo['uid'];
         }
@@ -318,7 +280,7 @@ class Sms extends ApiBase
             };
             ////////////////////
             $scoreConfigs = (new Configs())->getConfigs("score");
-            $url = config("secret.inner_api.capool_login");
+            $url = config("secret.inner_api.capool.login");
             $token =  $scoreConfigs['score_token'];
             $postData = [
               'phone' =>$phone,
@@ -342,7 +304,7 @@ class Sms extends ApiBase
               return json($res);
             }else{
 
-              $this->jsonReturn(-1, [], 'fail',['errorMsg'=>$this->errorMsg]);
+              $this->jsonReturn(-1, [], 'Failed',['errorMsg'=>$this->errorMsg]);
             }
 
             break;
@@ -401,12 +363,44 @@ class Sms extends ApiBase
 
           /******** 合并帐号 *********/
           case 104:
+            $type = input('param.type',0);
+
+            $UserModel = new UserModel();
+
+            if(!$type){ // 默认必先做jwt验证
+              $userData = $this->getUserData(1);
+            }else{ //没有jwt，则使用账号密码登入验证
+              $username = input('post.username');
+
+              $pw_m = input('post.pw_m');
+              $password = input('post.password');
+
+              $userData = $UserModel->checkedPassword($username,$password);
+              if(!$userData){
+                $errorCode = $UserModel->errorCode ? $UserModel->errorCode : -1;
+                $this->jsonReturn($errorCode,[],$UserModel->errorMsg);
+              }
+
+            }
+            $uid = $userData['uid'];
+            if ($userData['phone'] == $phone) {
+                $this->jsonReturn(10100, [], lang('The phone number has been bound to this account, no need to merge.'));
+            }
+
 
             // $phoneUserData = UserModel::where([['phone','=',$phone]])->find(); //取得要合并的手机号信息。
-            $phoneUserData = UserModel::where([['loginname','=',$phone]])->find();
+            $phoneUserData = $UserModel->where([['loginname','=',$phone]])->find();
+
             if (!$phoneUserData) {
-                $this->jsonReturn(-1, [], lang('No need to merge'));
+                $this->jsonReturn(-1, lang('No need to merge'));
             }
+
+            $AccountModel = new ScoreAccountModel();
+            $checkScoreAccount = $AccountModel->registerAccount($userData['loginname']);
+            if(!$checkScoreAccount || (isset($checkScoreAccount['code']) && $checkScoreAccount['code'] !==0)){
+              $this->jsonReturn(-1,lang('Failed'));
+            }
+
             Db::connect('database_carpool')->startTrans();
             try {
                 $nowTime = time();
@@ -424,7 +418,7 @@ class Sms extends ApiBase
                   "extra_info" => json_encode($extra)
                 ];
                 Db::connect('database_carpool')->table('user')->where('uid', $uid)->update($update_userData); //工号账号绑定手机号
-                $this->mergeScore($userData['loginname'], $phoneUserData['loginname'], $nowTime);
+                $AccountModel->mergeScore($userData['loginname'], $phoneUserData['loginname'], $nowTime);
                 // 提交事务
                 Db::connect('database_carpool')->commit();
             } catch (\Exception $e) {
@@ -514,22 +508,22 @@ class Sms extends ApiBase
 
 
         switch ($usage) {
-      case 300:
-        $params = [$userData['name']];
-        break;
-      case 302:
-        $param  = input('param.param');
-        $link_code  = input('param.link_code');
-        if (!$param) {
-            $this->jsonReturn(992, [], 'param empty');
-        }
-        $params = [$userData['name'],$link_code];
-        break;
+          case 300:
+            $params = [$userData['name']];
+            break;
+          case 302:
+            $param  = input('param.param');
+            $link_code  = input('param.link_code');
+            if (!$param) {
+                $this->jsonReturn(992, [], 'param empty');
+            }
+            $params = [$userData['name'],$link_code];
+            break;
 
-      default:
-        # code...
-        break;
-    }
+          default:
+            # code...
+            break;
+        }
 
         foreach ($phone as $key => $value) {
             $phone[$key] = preg_replace('# #', '', $value);
