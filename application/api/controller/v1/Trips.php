@@ -269,19 +269,40 @@ class Trips extends ApiBase
         $data['took_count_all']   = InfoModel::where([$countBaseMap,['status','<>',2]])->count() ; //取已坐数
 
         if (!$pb) {
+
             $data['uid']              = $uid;
-            $data['take_status']      = InfoModel::where([$countBaseMap,['passengerid','=',$uid]])->order("subtime DESC , infoid DESC")->value('status'); //查看是否已搭过此车主的车
-            $data['hasTake']          = $data['take_status'] !== null && in_array($data['take_status'], [0,1,4]) ? 1 : InfoModel::where([$countBaseMap,["status","in",[0,1,4]],['passengerid','=',$uid]])->count(); //查看是否已搭过此车主的车
-            $data['hasTake_finish']   = $data['take_status'] == 3 ? 1 : InfoModel::where([$countBaseMap,['status','=',3],['passengerid','=',$uid]])->count();  //查看是否已搭过此车主的车
-            $data['take_status']      = intval($data['take_status']);
-            $ratedMap = [
-              ['type','=',1],
-              ['object_id','=', $id],
-              ['uid','=',$uid]
-            ];
             $grade_start_date = strtotime(config('trips.grade_start_date'));
             $grade_end_date   = strtotime(config('trips.grade_end_date'));
-            $data['already_rated'] =  $data['time'] < $grade_start_date || $data['time'] > $grade_end_date ||  GradeModel::where($ratedMap)->count() ? 1 : 0;
+            $grade_allow      = $data['time'] > $grade_start_date && $data['time'] < $grade_end_date  ? 1 : 0;
+            if($data['d_uid'] == $uid){
+              $data['take_status']      = null;
+              $data['hasTake']          = 0;
+              $data['hasTake_finish']   = 0;
+              $ratedMap = [
+                ['type','=',1],
+                ['object_id','=', $id],
+                ['uid','=',$uid]
+              ];
+              $checkHasGrade = GradeModel::where($ratedMap)->count();
+              $data['already_rated'] = !$grade_allow || $checkHasGrade ? 1 : 0;
+            }else{
+              $infoData                 = InfoModel::where([$countBaseMap,['passengerid','=',$uid]])->order("subtime DESC , infoid DESC")->find();
+              $data['take_status']      = $infoData['status']; //查看是否已搭过此车主的车
+              $data['hasTake']          = $data['take_status'] !== null && in_array($data['take_status'], [0,1,4]) ? 1 : InfoModel::where([$countBaseMap,["status","in",[0,1,4]],['passengerid','=',$uid]])->count(); //查看是否已搭过此车主的车
+              $data['hasTake_finish']   = $data['take_status'] == 3 ? 1 : InfoModel::where([$countBaseMap,['status','=',3],['passengerid','=',$uid]])->count();  //查看是否已搭过此行程评分
+              if($infoData){
+                $ratedMap = [
+                  ['type','=',0],
+                  ['object_id','=', $infoData['infoid']],
+                  ['uid','=',$uid]
+                ];
+                $checkHasGrade = GradeModel::where($ratedMap)->count();
+                $data['already_rated'] = !$grade_allow || $checkHasGrade ? 1 : 0;
+              }else{
+                $data['already_rated'] = 1 ;
+              }
+            }
+            $data['take_status']      = intval($data['take_status']);
         }
         // return $this->success('加载成功','',$data);
         return $returnType ?   $this->jsonReturn(0, $data, 'success') : $data;
@@ -653,7 +674,7 @@ class Trips extends ApiBase
             //处理要更新的数据
             if ($type == "cancel") { //如果是取消
               $datas->cancel_user_id = $uid;
-                $datas->cancel_time    = date('YmdHi', time());
+                $datas->cancel_time    = date('YmdHis', time());
                 $datas->status         = 2;
                 if ($from == "info" && $isDriver) {
                     $datas->status          = 0;
@@ -661,8 +682,10 @@ class Trips extends ApiBase
                     $datas->carownid        = null;
                 }
             } elseif ($type == "finish") { //如果是完结
+                $datas->cancel_time    = date('YmdHis', time());
                 $datas->status         = 3;
             } elseif ($type == "get_on") {
+                $datas->geton_time    = date('Y-m-d H:i:s');
                 $datas->status         = 4;
             }
 
