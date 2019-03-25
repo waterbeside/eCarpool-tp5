@@ -21,7 +21,7 @@ class ScoreAccount extends AdminBase
      * 积分帐号
      * @return mixed
      */
-    public function index($type='2',$filter=[],$page = 1,$pagesize = 20,$export=0)
+    public function index($type='2',$filter=[],$page = 1,$pagesize = 20,$region_id=0,$export=0)
     {
       if($export){
         ini_set ('memory_limit', '128M');
@@ -29,13 +29,31 @@ class ScoreAccount extends AdminBase
           $this->error('数据量过大，请筛选后再导出');
         }
       }
+
       // $type = strval($type);
       if( $type=='0'|| $type=="score"){  //积分帐号列表
-        $fields = 'ac.carpool_account , ac.id as account_id, ac.account, ac.balance, ac.identifier, ac.platform,ac.register_date, ac.status ';
+        $fields = 'ac.carpool_account , ac.id as account_id, ac.account, ac.balance, ac.identifier, ac.platform,ac.register_date, ac.status,
+        d.fullname as full_department, d.path ';
         $map = [];
         $join = [];
 
         $map[] = ['ac.is_delete','<>', 1];
+
+        $fields .=' ,cu.uid ,cu.name as name , cu.phone as phone , cu.company_id ,cu.loginname, cu.Department, cu.sex , cu.companyname, d.fullname as full_department';
+        $fields .=' ,c.company_name ';
+        $join[] =  ['carpool.user cu','cu.loginname = ac.carpool_account', 'left'];
+        $join[] =  ['carpool.company c','cu.company_id = c.company_id','left'];
+        $join[] =  ['carpool.t_department d','cu.department_id = d.id','left'];
+
+
+        //地区排查
+        if($region_id){
+          if(is_numeric($region_id)){
+            $regionData = $this->getDepartmentById($region_id);
+          }
+          $region_map_sql = $this->buildRegionMapSql($region_id);
+          $map[] = ['','exp', Db::raw($region_map_sql)];
+        }
 
         //筛选分数范围 - 下限
         if (isset($filter['floor']) && is_numeric($filter['floor']) && $filter['floor']>0 ){
@@ -64,13 +82,6 @@ class ScoreAccount extends AdminBase
         }
 
 
-        if($isJoinUser){
-          $fields .=' ,cu.uid ,cu.name as name , cu.phone as phone , cu.company_id ,cu.loginname, cu.Department, cu.sex , cu.companyname, d.fullname as full_department';
-          $fields .=' ,c.company_name ';
-          $join[] =  ['carpool.user cu','cu.loginname = ac.carpool_account', 'left'];
-          $join[] =  ['carpool.company c','cu.company_id = c.company_id','left'];
-          $join[] =  ['carpool.t_department d','cu.department_id = d.id','left'];
-        }
 
         if($export){
           $lists = ScoreAccountModel::alias('ac')->field($fields)->join($join)->where($map)->order('ac.id DESC')->select();
@@ -81,24 +92,6 @@ class ScoreAccount extends AdminBase
           // dump($lists);exit;
         }
 
-        foreach ($lists as $key => $value) {
-          if(!$isJoinUser){
-            $userInfo = CarpoolUserModel::field('*')
-            ->view('company','company_name','company.company_id=user.company_id')
-            ->view('t_department','fullname as full_department','t_department.id=user.department_id')
-            ->where(['loginname'=>$value['carpool_account']])->find();
-            $lists[$key]['uid'] = $userInfo['uid'] ? $userInfo['uid'] : '';
-            $lists[$key]['loginname'] = $userInfo['loginname'] ? $userInfo['loginname'] : '';
-            $lists[$key]['name'] = $userInfo['name'] ? $userInfo['name'] : '';
-            $lists[$key]['phone'] = $userInfo['phone'] ? $userInfo['phone'] : '';
-            $lists[$key]['Department'] = $userInfo['Department'] ? $userInfo['Department'] : '';
-            $lists[$key]['sex'] = $userInfo['sex'] ? $userInfo['sex'] : '';
-            $lists[$key]['company_id'] = $userInfo['company_id'] ? $userInfo['company_id'] : '';
-            $lists[$key]['companyname'] = $userInfo['companyname'] ? $userInfo['companyname'] : '';
-            $lists[$key]['company_name'] = $userInfo['company_name'] ? $userInfo['company_name'] : '';
-            $lists[$key]['full_department'] = $userInfo['full_department'] ? $userInfo['full_department'] : '';
-          }
-        }
         if(!$export){
           return $this->fetch('index', ['lists' => $lists, 'filter' => $filter,'pagesize'=>$pagesize,'type'=>$type]);
         }

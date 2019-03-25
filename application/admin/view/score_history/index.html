@@ -6,12 +6,10 @@
     <div class="layui-tab layui-tab-brief">
         <ul class="  amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/ScoreHistory/index')}"  >积分历史</a></li>
-            <li class="btn-item btn-item-right ">
-              {include file="_components/select_ruleNumber" /}
-            </li>
+
         </ul>
         <div class="layui-tab-content">
-                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreHistory/index',['rule_number'=>$rule_number])}" method="get">
+                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreHistory/index')}" method="get">
                     <div class="layui-inline">
                         <input type="hidden" name="pagesize" value="{$pagesize}">
                         <div class="layui-input-inline">
@@ -26,6 +24,12 @@
                     <div class="layui-input-inline">
                       <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter.time}"  style="width:200px">
                     </div>
+                    <div class="layui-input-inline">
+                        <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
+                        <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择显示区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="选择商品区域" data-title="选择商品区域" data-tips-position="3" >
+                          {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择用户区域/部门"}
+                        </a>
+                    </div>
                     <div class="layui-inline">
                         <button class="layui-btn"><i class="fa fa-search"></i></button>
                     </div>
@@ -38,6 +42,7 @@
                         <th >#</th>
                         <th>用户</th>
                         <th>原因</th>
+                        <th>部门</th>
                         <th class="t-number">变动</th>
                         <th class="t-number">余额</th>
                         <th>时间</th>
@@ -62,6 +67,9 @@
                         </td>
                         <!-- <td>{php}echo $vo['reason'] > 0 ? '收入' : '支出' ;{/php}</td> -->
                         <td>{php}echo isset($reasons[$vo['reason']]) ? $reasons[$vo['reason']] : $vo['reason'] ; {/php}</td>
+                        <td>{$vo.full_department|str_replace=","," / ",###}</td>
+
+
 
                         <td class="t-number">{php}echo $vo['reason']>=0 ? "<b class='text-green'>+ ".$vo['operand']."</b>" : "<b  class='text-red'>- ".$vo['operand']."</b>"; {/php}</td>
                         <td class="t-number">{php}echo $vo['result'] ?  $vo['result'] : '-';{/php}  </td>

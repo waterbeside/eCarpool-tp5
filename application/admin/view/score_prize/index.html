@@ -109,8 +109,7 @@
                           <span class="info-item status"> 状态：<b><span class="layui-badge prize-status_b prize-status_{$vo.status}"><?php echo $statusList[$vo['status']] ;?></span> / <small><?php echo $vo['is_delete'] ? "不显示" : "显示" ;?></small></b></span>
                         </div>
                         <div class="btns-wrapper">
-
-                          <?php  if($auth['admin/ScorePrize/add']   ){ ?>
+                          <?php  if($auth['admin/ScorePrize/add'] ){ ?>
                           <a href="{:url('admin/ScorePrize/add',['id'=>$vo['id']])}"  data-title="复制添加抽奖 "  data-trigger="modal" title="复制添加抽奖" class="ibtn layui-btn  layui-btn-success layui-btn-radius   "><i class="fa fa-copy"></i> 新建下期</a>
                           <?php  } ?>
                           <a href="{:url('admin/ScorePrize/edit',['id'=>$vo['id']])}"  data-title="編輯抽奖 #{$vo.id}"  data-trigger="modal" title="編輯抽奖 #{$vo.id}" class="ibtn layui-btn  layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a>

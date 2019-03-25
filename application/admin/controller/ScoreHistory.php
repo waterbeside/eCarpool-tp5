@@ -20,28 +20,38 @@ class ScoreHistory extends AdminBase
      * 积分历史（所有用户）
      * @return mixed
      */
-    public function index($filter=null, $page = 1, $pagesize = 20, $rule_number=null)
+    public function index($filter=null, $page = 1, $pagesize = 20, $region_id=0)
     {
+        $fields = 't.* ,d.fullname as full_department';
+        $join = [
+          ['carpool.t_department d','t.region_id = d.id','left'],
+        ];
         $map = [];
-        $map[] = ['is_delete','<>', 1];
-        //地区区分
-        if (is_numeric($rule_number)) {
-            $map[] = ['rule_number','=', $rule_number];
+        $map[] = ['t.is_delete','<>', 1];
+        //地区排查
+        if($region_id){
+          if(is_numeric($region_id)){
+            $regionData = $this->getDepartmentById($region_id);
+          }
+          $region_map_sql = $this->buildRegionMapSql($region_id);
+          $map[] = ['','exp', Db::raw($region_map_sql)];
         }
+
         // dump($filter);
         if ($filter['reason']) {
-            $map[] = ['reason','=', $filter['reason']];
+            $map[] = ['t.reason','=', $filter['reason']];
         }
         if ($filter['time']) {
             $time_arr = explode(' ~ ', $filter['time']);
             if (is_array($time_arr)) {
                 $time_s = date('Y-m-d H:i:s', strtotime($time_arr[0]));
                 $time_e = date('Y-m-d H:i:s', strtotime($time_arr[1]) + 24*60*60);
-                $map[] = ['time', 'between time', [$time_s, $time_e]];
+                $map[] = ['t.time', 'between time', [$time_s, $time_e]];
             }
         }
 
-        $lists = HistoryModel::where($map)->order('time DESC, id DESC')->paginate($pagesize, false, ['query'=>request()->param()]);
+        $lists = HistoryModel::alias('t')->field($fields)->where($map)->join($join)
+        ->order('t.time DESC, t.id DESC')->paginate($pagesize, false, ['query'=>request()->param()]);
         foreach ($lists as $key => $value) {
             if ($value['account_id']) {
                 $userInfo = ScoreAccountModel::where(['id'=>$value['account_id']])->find();
@@ -56,7 +66,8 @@ class ScoreHistory extends AdminBase
         $reasons = config('score.reason');
 
         $returnData = [
-          'rule_number' => $rule_number,
+          'regionData'=> isset($regionData) ? $regionData : NULL,
+          'region_id' => $region_id,
           'lists' => $lists,
           'filter' => $filter,
           'pagesize'=>$pagesize,

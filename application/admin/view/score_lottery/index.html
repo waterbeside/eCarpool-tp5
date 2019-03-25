@@ -7,9 +7,6 @@
 
         <ul class="  amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/ScoreLottery/index')}"  showloading >抽奖情况</a></li>
-            <li class="btn-item btn-item-right ">
-              {include file="_components/select_ruleNumber" /}
-            </li>
         </ul>
 
         <div class="amain-content">
@@ -22,9 +19,9 @@
                   <div class="layui-input-inline">
                       <input type="text" name="filter[keyword_user]" value="{$filter['keyword_user'] ? $filter['keyword_user'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
                   </div>
-                  <div class="layui-input-inline">
+                  <!-- <div class="layui-input-inline">
                       <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
-                  </div>
+                  </div> -->
                   <div class="layui-input-inline">
                   <select name="result"  >
                     <option value="all" >状态 - 不限</option>
@@ -32,6 +29,12 @@
                     <option value="-1" {php}echo is_numeric($result) &&  $result==1 ? 'selected' : ''; {/php}>未中奖</option>
                     <option value="gt_0" {php}echo $result=='gt_0' ? 'selected' : ''; {/php}>中奖</option>
                   </select>
+                  </div>
+                  <div class="layui-input-inline">
+                      <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
+                      <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择显示区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="选择商品区域" data-title="选择商品区域" data-tips-position="3" >
+                        {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择用户区域/部门"}
+                      </a>
                   </div>
 
               </div>

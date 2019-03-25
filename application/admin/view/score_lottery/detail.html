@@ -57,12 +57,6 @@
         </tr>
       <?php }else{ ?>
         <tr>
-          <td class="label" >抽奖类型</td>
-          <td>
-            <span class="layui-elip">转盘抽奖 </span>
-          </td>
-        </tr>
-        <tr>
           <td class="label">抽奖时间</td>
           <td>
             {$data.buy_time}
@@ -72,6 +66,13 @@
           </td>
         </tr>
         <tr>
+          <td class="label">开奖时间</td>
+          <td>
+            {$data.end_time}
+          </td>
+        </tr>
+
+        <tr>
           <td class="label" >结果</td>
           <td>
             <span class="layui-elip">{$data.result_str} </span>
@@ -80,6 +81,10 @@
         <tr>
           <td class="label">是否已兑</td>
           <td>{$data.result < -99 && $data.winnersInfo.exchange_time ? "是，兑换时间：".$data.winnersInfo.exchange_time : "否"}</td>
+        </tr>
+        <tr>
+          <td class="label">下单部门</td>
+          <td>{$data.region_id ? $data.full_department|str_replace=","," / ",### : $data.region_id}</td>
         </tr>
 
       <?php } ?>
