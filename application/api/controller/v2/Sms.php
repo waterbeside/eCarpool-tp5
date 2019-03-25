@@ -4,7 +4,7 @@ namespace app\api\controller\v2;
 use app\api\controller\ApiBase;
 use app\carpool\model\User as UserModel;
 use app\user\model\UserOauth;
-use app\score\model\Account as ScoreAccountModel;
+use app\score\model\AccountMix as ScoreAccountModel;
 use think\facade\Cache;
 use my\RedisData;
 use com\Nim as NimServer;

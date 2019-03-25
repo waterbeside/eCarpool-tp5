@@ -1,13 +1,13 @@
 <?php
 namespace app\score\model;
 
-use think\Model;
+use app\score\model\Account as AccountModel;
 use app\carpool\model\User as CarpoolUserModel;
 use app\user\model\Department as DepartmentModel;
 use app\score\model\History as HistoryModel;
 use think\Db;
 
-class AccountMix extends Model
+class AccountMix extends AccountModel
 {
     // protected $insert = ['create_time'];
 
@@ -24,7 +24,7 @@ class AccountMix extends Model
     protected $connection = 'database_score';
     protected $table = 't_account';
     protected $pk = 'id';
-    public $errorMsg = NULL;
+    // public $errorMsg = NULL;
 
 
     /**
@@ -80,7 +80,10 @@ class AccountMix extends Model
       return $accountInfo;
     }
 
-    //取得拼车帐号
+    /**
+     * 取得拼车账号详情
+     * @param  string $account carpool loginname
+     */
     public function getCarpoolAccount($account)
     {
       $carpool_user_model = new CarpoolUserModel();
@@ -89,10 +92,24 @@ class AccountMix extends Model
 
 
 
-    //**更新积分**//
+    /**
+     * 取得carpool账号的department_id
+     * @param  string $account carpool loginname
+     */
+    public function getCarpoolDepartmentID($account)
+    {
+      $department_id    = CarpoolUserModel::where([['loginname','=',$account]])->value('department_id');
+      $department_id    = $department_id ? $department_id : 0;
+      return $department_id;
+    }
+
+
+    /**
+     * 更新积分
+     * @param  array $params  $params = []
+     */
     public function  updateScore($params)
     {
-
       $account_id   = isset($params['account_id']) ? $params['account_id'] : NULL;
       $account  = NULL;
       $accountField = 'carpool_account';
@@ -128,6 +145,7 @@ class AccountMix extends Model
         $accountDetial = null ;
 
         $accountDetial = $this->where($map)->lock(true)->find();
+
         if($accountDetial && $accountDetial['id']){
           $data['account_id'] = $accountDetial['id'];
           $updateAccountMap = [
@@ -153,6 +171,7 @@ class AccountMix extends Model
             throw new \Exception("更新分数失败");
           }
         }
+        $data['region_id']  = $this->getCarpoolDepartmentID($accountDetial['carpool_account']);
         $data['extra_info'] = '{}';
         $data['is_delete'] = 0;
         $data['time'] =  date('Y-m-d H:i:s');
@@ -177,6 +196,80 @@ class AccountMix extends Model
 
   }
 
+
+
+     /**
+      * 合并积分
+      * tAccount  目标账号
+      * $oAccount 被删账号
+      */
+     public function mergeScore($tAccount, $oAccount, $nowTime){
+       Db::connect('database_score')->startTrans();
+       try {
+           $scoreAccount_t = Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$tAccount],['is_delete','<>', 1]])->find();//取出目标员工号的积分账号信息
+           $scoreAccount_o = Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$oAccount],['is_delete','<>', 1]])->find();//取出手机号的积分账号信息
+           $region_id_t  = $this->getCarpoolDepartmentID($tAccount);
+           $region_id_o  = $this->getCarpoolDepartmentID($oAccount);
+
+           if (!$scoreAccount_t) {
+               throw new \Exception('10002');
+           } else {
+             $score_t = $scoreAccount_t['balance'];
+             $score_o = $scoreAccount_o['balance'];
+             $score_new = $score_t + $score_o; //合并积分
+             $historyData = [
+               "account_id" => $scoreAccount_t['id'],
+               "operand" => $score_o == 0 ? 0 : abs($score_o),
+               "reason" => $score_o >= 0 ? 301 : -301,
+               "result" => $score_new,
+               "extra_info" => '{}',
+               "is_delete" => 0,
+               "time" => date('Y-m-d H:i:s'),
+               "region_id" => $region_id_t,
+             ];
+             Db::connect('database_score')->table('t_history')->insert($historyData); //插入因合并
+             Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$tAccount]])->setField('balance', $score_new); //员工账号加到手号账的积分
+             $historyData_o = [
+               "account_id" => $scoreAccount_o['id'],
+               "operand" => $score_o == 0 ? 0 : abs($score_o),
+               "reason" => -301,
+               "result" => 0,
+               "extra_info" => '{}',
+               "is_delete" => 0,
+               "time" => date('Y-m-d H:i:s'),
+               "region_id" => $region_id_o,
+             ];
+             Db::connect('database_score')->table('t_history')->insert($historyData_o); //旧账号添加一条扣分的历史
+             Db::connect('database_score')->table('t_account')->where([['carpool_account','=',$oAccount]])->update(['carpool_account'=>'delete_'.$oAccount.'_'.$nowTime,'is_delete'=> 1,'balance'=>0]); //删除手机账号的积分账号
+               // 提交事务
+             Db::connect('database_score')->commit();
+           }
+       } catch (\Exception $e) {
+           // echo($e);
+           Db::connect('database_score')->rollback();
+           throw new \Exception($e->getMessage());
+       }
+     }
+
+     /**
+      * 注册除分账号
+      * $loginname  capool账号的loginname
+      */
+     public function registerAccount($loginname){
+       $scoreConfigs = (new Configs())->getConfigs("score");
+       $url = config("secret.inner_api.score.register");
+       $token =  $scoreConfigs['score_token'];
+       $postData = [
+         'account' =>$loginname,
+         'token' => $token,
+       ];
+       $scoreAccountRes = $this->clientRequest($url,['json'=>$postData],'POST');
+       if(!$scoreAccountRes){
+         return false;
+       }else{
+         return $scoreAccountRes;
+       }
+     }
 
 
 }
