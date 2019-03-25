@@ -34,6 +34,7 @@ class AppInitiate extends ApiBase
   public function index($app_id = 0,$platform = 0,$version_code = 0)
   {
     $lang = (new I18nLangModel())->formatLangCode($this->language);
+    $lang = $lang ? $lang : "en";
     $platform_list = config('others.platform_list');
 
     /**
@@ -47,12 +48,9 @@ class AppInitiate extends ApiBase
     $map[] = ['end_time','>=',date("Y-m-d H:i:s")];
     $map[] = ['start_time','<',date("Y-m-d H:i:s")];
     $whereExp = '';
-    if (isset($filter['app_id']) && $filter['app_id'] ){
-      $whereExp .= $filter['app_id'] ." in(app_ids)";
-    }
-    if (isset($filter['platform']) && $filter['platform'] ){
-      $whereExp .= $filter['platform'] ." in(platforms)";
-    }
+    $whereExp .= " FIND_IN_SET($app_id,app_ids) ";
+    $whereExp .= " AND FIND_IN_SET($platform,platforms) ";
+
     $notices  = NoticeModel::field($field)->alias('t')->where($map)->where($whereExp)->order('t.sort DESC , t.id DESC')
     // ->fetchSql(true)
     ->select();
@@ -153,7 +151,7 @@ class AppInitiate extends ApiBase
       //   }
       // }
       $GradeModel = new GradeModel();
-      $isGrade = $GradeModel;
+      $isGrade = $GradeModel->isGrade('trips',$app_id);
       $returnData = [
         'notices' => $notices,
         'ads' =>  $adsData,
