@@ -42,10 +42,17 @@
         </tr>
         <tr>
           <td class="label">下单时间</td>
-          <td>{$data.creation_time}
+          <td>
+            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.creation_time|strtotime}000</span>
             <span style=" color: #ccc; margin-left:5px">
               <?php echo  $data['platform']===1 ? '<i class="fa fa-android"></i>' : ($data['platform']===0 ? '<i class="fa fa-apple"></i>':''); ?>
             </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="label">最后操作时间</td>
+          <td>
+            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.operation_time|strtotime}000</span>
           </td>
         </tr>
         <tr>
@@ -55,6 +62,10 @@
         <tr>
           <td class="label">消耗积分</td>
           <td>{$data.total}</td>
+        </tr>
+        <tr>
+          <td class="label">订单部门</td>
+          <td>{$data.region_id ? $data.full_department|str_replace=","," / ",### : $data.region_id}</td>
         </tr>
 
       </tbody>
@@ -96,7 +107,7 @@
       <!--<div class="layui-input-inline">
           <input type="text" name="order_no" value="" placeholder="请输入订单号确认" class="layui-input">
       </div>-->
-        <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="RESOLVE_INIT.finish({$data.id})">完结兑换订单</a>
+        <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="DETAIL_PAGE_EXEC.finish({$data.id})">完结兑换订单</a>
 
     </div>
     <div class="blank10"></div>
@@ -107,10 +118,13 @@
 
 
 <script>
-var RESOLVE_INIT = {
+var DETAIL_PAGE_EXEC = {
 
   data : {
 
+  },
+  init : function(){
+    cRenderTimes();
   },
   finish : function(id){
     // var order_no = $("input[name=order_no]").val();
@@ -135,5 +149,5 @@ var RESOLVE_INIT = {
 
 }
 
-
+DETAIL_PAGE_EXEC.init();
 </script>
