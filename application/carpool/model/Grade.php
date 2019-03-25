@@ -19,11 +19,13 @@ class Grade extends Model
   protected $pk = 'id';
 
 
-  public  function isGrade($type){
+  public  function isGrade($type,$app_id=1,$time=false){
+    $time = $time ? $time :time();
     if($type=='trips'){
-      $grade_start_date = config('trips.grade_start_date');
-      $grade_end_date = config('trips.grade_end_date');
-      $isGrade = time() >= strtotime($grade_start_date)  && time() < strtotime($grade_end_date) ? true : false;
+      $configData = config('trips.grade_switch');
+      $grade_start_date = $configData[$app_id]['start_date'];
+      $grade_end_date = $configData[$app_id]['end_date'];
+      $isGrade =$time >= strtotime($grade_start_date)  && $time < strtotime($grade_end_date) ? true : false;
       return $isGrade;
     }else{
       return false;

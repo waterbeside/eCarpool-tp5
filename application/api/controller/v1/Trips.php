@@ -119,7 +119,7 @@ class Trips extends ApiBase
         $merge_ids = isset($extra_info['merge_id']) && is_array($extra_info['merge_id'])  ? $extra_info['merge_id'] : [];
 
         $InfoModel = new InfoModel();
-        $viewSql  =  $InfoModel->buildUnionSql($uid, $merge_ids ,"(0,1,3,4)");
+        $viewSql  =  $InfoModel->buildUnionSql($uid, $merge_ids ,"(3)");
         $fields = 't.infoid , t.love_wall_ID , t.time, t.trip_type , t.time, t.status, t.passengerid, t.carownid , t.seat_count,  t.subtime, t.map_type ';
         $fields .= ','.$this->buildUserFields('d');
         $fields .= ', dd.fullname as d_full_department';
@@ -128,7 +128,7 @@ class Trips extends ApiBase
         $fields .=  $this->buildAddressFields();
         $join = $this->buildTripJoins();
         $map = [
-          ["t.time","<",date('YmdHi', strtotime('+15 minute'))],
+          // ["t.time","<",date('YmdHi', strtotime('+15 minute'))],
           // ["t.go_time","<",strtotime('+15 minute')],
         ];
         $orderby = 't.time DESC, t.infoid DESC, t.love_wall_id DESC';
@@ -137,6 +137,7 @@ class Trips extends ApiBase
         if (!$results['data']) {
             return $this->jsonReturn(20002, lang('No data'));
         }
+
         $datas = $results['data'];
         $pageData = [
           'total'=>$results['total'],
@@ -146,24 +147,26 @@ class Trips extends ApiBase
         ];
 
 
+
         $GradeModel =  new GradeModel();
-        $isGrade = $GradeModel->isGrade('trips');
-        $grade_start_date = config('trips.grade_start_date');
+
         foreach ($datas as $key => $value) {
+            $app_id  = $value['map_type'] ? 2 : 1 ;
             $datas[$key] =  $this->formatResultValue($value);
             // $datas[$key] = $this->formatResultValue($value,$merge_ids);
             $datas[$key]['show_owner']    = $value['trip_type'] ||  ($value['infoid']>0 && $uid == $value['passengerid']  &&  $value['carownid'] > 0)  ?  1 : 0;
             $datas[$key]['is_driver']     =  $uid == $value['carownid']  ?  1 : 0;
             $datas[$key]['status']        = intval($value['status']);
             $datas[$key]['took_count']    = $value['infoid'] > 0 ? ($datas[$key]['is_driver'] ? 1 : 0) : InfoModel::where([['love_wall_ID','=',$value['love_wall_ID']],['status','<>',2]])->count() ; //取已坐数
+
+            $grade_type = $datas[$key]['is_driver'] && $value['love_wall_ID'] > 0 ? 1 : 0;
             $ratedMap = [
-              ['type','=',$value['trip_type']],
-              ['object_id','=',($value['trip_type'] ? $value['love_wall_ID'] : $value['infoid'])],
+              ['type','=',$grade_type],
+              ['object_id','=',($grade_type ? $value['love_wall_ID'] : $value['infoid'])],
               ['uid','=',$uid]
             ];
-
-            $datas[$key]['already_rated'] =   !$isGrade || !$datas[$key]['d_uid'] || $datas[$key]['time'] < strtotime($grade_start_date) || $GradeModel->where($ratedMap)->count() ? 1 : 0;
-
+            $isGrade = $GradeModel->isGrade('trips',$app_id,$datas[$key]['time']);
+            $datas[$key]['already_rated'] =   !$isGrade   ||$GradeModel->where($ratedMap)->count() ? 1 : 0;
         }
         $returnData = [
           'lists'=>$datas,
@@ -261,7 +264,7 @@ class Trips extends ApiBase
         if (!$data) {
             return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
         }
-
+        $app_id  = $data['map_type'] ? 2 : 1 ;
         $data = $this->unsetResultValue($this->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
 
         $countBaseMap = ['love_wall_ID','=',$data['love_wall_ID']];
@@ -270,10 +273,11 @@ class Trips extends ApiBase
 
         if (!$pb) {
 
-            $data['uid']              = $uid;
-            $grade_start_date = strtotime(config('trips.grade_start_date'));
-            $grade_end_date   = strtotime(config('trips.grade_end_date'));
-            $grade_allow      = $data['time'] > $grade_start_date && $data['time'] < $grade_end_date  ? 1 : 0;
+            $data['uid']        = $uid;
+            $GradeModel         = new GradeModel();
+            $grade_allow = $GradeModel->isGrade('trips',$app_id,$data['time']);
+
+
             if($data['d_uid'] == $uid){
               $data['take_status']      = null;
               $data['hasTake']          = 0;
@@ -284,7 +288,7 @@ class Trips extends ApiBase
                 ['uid','=',$uid]
               ];
               $checkHasGrade = GradeModel::where($ratedMap)->count();
-              $data['already_rated'] = !$grade_allow || $checkHasGrade ? 1 : 0;
+              $data['already_rated'] =  !$grade_allow || $checkHasGrade ? 1 : 0;
             }else{
               $infoData                 = InfoModel::where([$countBaseMap,['passengerid','=',$uid]])->order("subtime DESC , infoid DESC")->find();
               $data['take_status']      = $infoData['status']; //查看是否已搭过此车主的车
@@ -428,18 +432,19 @@ class Trips extends ApiBase
             return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
         }
 
-
+        $app_id  = $data['map_type'] ? 2 : 1 ;
         $data = $this->unsetResultValue($this->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
         if (!$pb) {
             $data['uid']          = $uid;
+            $GradeModel         = new GradeModel();
+            $grade_allow = $GradeModel->isGrade('trips',$app_id,$data['time']);
             $ratedMap = [
               ['type','=',0],
               ['object_id','=', $id],
               ['uid','=',$uid]
             ];
-            $grade_start_date = strtotime(config('trips.grade_start_date'));
-            $grade_end_date   = strtotime(config('trips.grade_end_date'));
-            $data['already_rated'] =  !$data['d_uid'] || $data['time'] < $grade_start_date || $data['time'] > $grade_end_date ||  GradeModel::where($ratedMap)->count() ? 1 : 0;
+
+            $data['already_rated'] =  !$data['d_uid'] || !$grade_allow ||  GradeModel::where($ratedMap)->count() ? 1 : 0;
         }
 
         // return $this->success('加载成功','',$data);
@@ -866,21 +871,27 @@ class Trips extends ApiBase
       $userData = $this->getUserData(1);
       $uid = $userData['uid'];
       $redis = new RedisData();
-      $exp = "60";   //缓存过期时间
+      $exp = "30";   //缓存过期时间
       $cacheKey = [];
       $cacheKey['not_rated'] = "carpool:trips:check_my_status:not_rated:".$uid;
       $cacheData = $redis->get($cacheKey['not_rated']);
       if($cacheData){
-        $res = json_decode($cacheData,true);
-        $res = $res ? $res : [];
+        $returnList = json_decode($cacheData,true);
+        $returnList = $returnList ? $returnList : [];
       }
-      if(!isset($res)){
-        $grade_start_date = config('trips.grade_start_date');
+      if(!isset($returnList)){
+        $GradeModel =  new GradeModel();
+        // $isGrade = $GradeModel->isGrade('trips',$app_id,$datas[$key]['time']);
+
+        $gradeConfigData = config('trips.grade');
+
         $gradeBaseSql = GradeModel::where("uid",$uid)->buildSql();
+
         $InfoModel = new InfoModel();
         $baseSql  =  $InfoModel->buildUnionSql($uid, [] , "(3)" );
         $fields = 't.infoid , t.love_wall_ID , t.time, t.trip_type ,  t.status, t.passengerid, t.carownid , t.seat_count,  t.subtime, t.map_type
-            ,(case when t.trip_type = 1  then t.love_wall_ID else t.infoid end) as  object_id
+            ,(case when t.love_wall_ID > 0 AND t.carownid = '.$uid.'  then t.love_wall_ID else t.infoid end) as  object_id
+            , (case when t.love_wall_ID > 0 AND t.carownid = '.$uid.' then 1 else 0 end) as  grade_type
         ';
         $map = [];
         $orderby = 't.time Desc, t.infoid Desc, t.love_wall_id Desc';
@@ -891,25 +902,38 @@ class Trips extends ApiBase
         // dump($baseSql2);exit;
 
         $map2 = [];
-        $fields2 = 'tt.trip_type as type, tt.object_id as id, tt.time ';
+        $fields2 = 'tt.trip_type as type, tt.object_id as id, tt.time, tt.status, tt.map_type, tt.grade_type ';
         $join2 = [
           ["t_grade g"," g.object_id = tt.object_id AND g.type=tt.trip_type AND g.uid = $uid",'left'],
         ];
         $map2 = [
           ["tt.time","<",date('YmdHi', strtotime("-1 hour"))],
-          ['tt.time',">",date('YmdHi',strtotime($grade_start_date))],
+          ["tt.status","=",3],
           ['',"EXP",Db::raw('g.grade is null')]
         ];
         $res = Db::connect('database_carpool')->table("($baseSql2)" . ' tt')->field($fields2)->where($map2)->join($join2)->select();
+
+        $returnList = [];
         foreach ($res as $key => $value) {
           $formatTime  = strtotime($value['time'].'00');
-          $res[$key]['time'] = $formatTime ? $formatTime : 0 ;
+          $returnValue = [
+            "time" =>  $formatTime ? $formatTime : 0 ,
+            "type" =>  intval($value['grade_type']),
+            "id" =>  intval($value['id']),
+          ];
+          $returnValue['time'] = $formatTime ? $formatTime : 0 ;
+          $app_id = $value['map_type'] == 1 ? 2 : 1;
+          $isGrade = $GradeModel->isGrade('trips',$app_id,$returnValue['time']);
+          if($isGrade){
+            $returnList[] = $returnValue;
+          }
+
         }
-        $redis->setex($cacheKey['not_rated'], $exp, json_encode($res));
+        $redis->setex($cacheKey['not_rated'], $exp, json_encode($returnList));
       }
 
       $returnData = [
-        "not_rated" => $res ? $res : [] ,
+        "not_rated" => $returnList ? $returnList : [] ,
       ];
       $this->jsonReturn(0,$returnData,lang('Successfully'));
     }
