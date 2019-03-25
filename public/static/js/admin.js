@@ -6,10 +6,52 @@ if(typeof(GV)=="undefined"){
   var GV = {};
 }
 
+GV['timezoneOffset'] = new Date().getTimezoneOffset();
 GV['config'] = {
   url : {
     amapScript : 'http://webapi.amap.com/maps?v=1.4.6&key=a9c78e8c6c702cc8ab4e17f5085ffd2a'
   }
+}
+
+
+function cFormatDate(date,fmt){
+	var o = {
+			 "m+": date.getMonth() + 1, //月份
+			 "d+": date.getDate(), //日
+			 "h+": date.getHours(), //小时
+			 "i+": date.getMinutes(), //分
+			 "s+": date.getSeconds(), //秒
+			 "q+": Math.floor((date.getMonth() + 3) / 3), //季度
+			 "S": date.getMilliseconds() //毫秒
+	 };
+	 if (/(y+)/.test(fmt)) {
+			 fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
+	 }
+	 for (var k in o)
+			 if (new RegExp("(" + k + ")").test(fmt))
+					 fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+	 return fmt;
+
+}
+
+function cRenderTimes(wrapper){
+  wrapper = wrapper || null;
+  if(wrapper){
+    var $timesBoxs = $(wrapper).find(".J-times-format").not(".J-format-ok");
+  }else{
+    var $timesBoxs = $(".J-times-format").not(".J-format-ok");
+  }
+  $timesBoxs.each(function(index, el) {
+    var formatStr = $(el).data('format');
+        formatStr = formatStr ? formatStr : 'yyyy-mm-dd hh:ii:ss';
+    var timestamp = parseInt($.trim($(el).text()));
+
+    var  dateObject = new Date(timestamp);
+    if(dateObject){
+      var frm_time = cFormatDate(dateObject,formatStr);
+      $(el).addClass('J-format-ok').html(frm_time);
+    }
+  });
 }
 
 /**
@@ -205,6 +247,43 @@ function ajaxSubmit(setting){
       }
   });
 }
+
+
+
+var MyCookies = {
+  //写cookies
+  set: function(name, value, time = 0) {
+    let days = 30
+    let exp = new Date()
+    if(time){
+      exp.setTime(exp.getTime() + time*1000)
+    }else{
+      exp.setTime(exp.getTime() + days*24*60*60*1000)
+    }
+    document.cookie = name + '=' + escape (value) + ';expires=' + exp.toGMTString()+';path=/'
+  },
+  //读取cookies
+  get: function (name) {
+    let arr = null
+    let reg = new RegExp('(^| )'+name+'=([^;]*)(;|$)')
+    if (document.cookie && (arr = document.cookie.match(reg))) {
+      return unescape(arr[2])
+    } else {
+      return null;
+    }
+  },
+  //删除cookies
+  delete: function (name) {
+    let cval = this.get(name)
+    if (cval!=null) {
+      document.cookie = name + '=' + cval + ';expires=' + (new Date(0)).toGMTString()+';path=/'
+    }
+  }
+}
+
+
+
+////////////////////////////////////////////////////////
 
 function admin_init(){
   $("[data-tips]").each(function(index, el) {
@@ -445,38 +524,15 @@ function admin_init(){
         return false;
       }
   });
+
+
+  cRenderTimes();
+  var timezoneOffset  = new Date().getTimezoneOffset();
+  MyCookies.set('timezoneOffset',timezoneOffset);
+  $("input[name='timezone_offset'].J-local-timezoneOffset").val(GV['timezoneOffset']);
+
 }  //end of admin_init
 
-var MyCookies = {
-  //写cookies
-  set: function(name, value, time = 0) {
-    let days = 30
-    let exp = new Date()
-    if(time){
-      exp.setTime(exp.getTime() + time*1000)
-    }else{
-      exp.setTime(exp.getTime() + days*24*60*60*1000)
-    }
-    document.cookie = name + '=' + escape (value) + ';expires=' + exp.toGMTString()+';path=/'
-  },
-  //读取cookies
-  get: function (name) {
-    let arr = null
-    let reg = new RegExp('(^| )'+name+'=([^;]*)(;|$)')
-    if (document.cookie && (arr = document.cookie.match(reg))) {
-      return unescape(arr[2])
-    } else {
-      return null;
-    }
-  },
-  //删除cookies
-  delete: function (name) {
-    let cval = this.get(name)
-    if (cval!=null) {
-      document.cookie = name + '=' + cval + ';expires=' + (new Date(0)).toGMTString()+';path=/'
-    }
-  }
-}
 
 admin_init();
 // })
