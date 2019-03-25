@@ -67,8 +67,10 @@
         if(typeof(data.list)=="object"){
           $('.J-dept-select-wrapper').html('')
           for(id in data.list){
-            var itemHtml = _this.deptItemTemplate(data.list[id]);
-            $('.J-dept-select-wrapper').append(itemHtml);
+            if(id){
+              var itemHtml = _this.deptItemTemplate(data.list[id]);
+              $('.J-dept-select-wrapper').append(itemHtml);
+            }
           }
         }
       }
@@ -110,7 +112,9 @@
       var deptsData = this.datas.deptsData;
       this.datas.depts = [];
       for(var id in deptsData){
-        this.datas.depts.push(id);
+        if(id){
+          this.datas.depts.push(id);
+        }
       }
       $(".P-deptGroup-form input[name='depts']").val(this.datas.depts.join(','));
     },
