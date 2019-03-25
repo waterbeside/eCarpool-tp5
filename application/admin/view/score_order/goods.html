@@ -15,10 +15,16 @@
 
           <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreOrder/goods')}" method="get" >
               <div class="layui-inline">
-                  <label class="layui-form-label">检索</label>
+                  <label class="layui-form-label">下单时间</label>
                   <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
               </div>
               <input type="hidden" name="filter[status]" value="{$filter.status}">
+              <div class="layui-input-inline">
+                  <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
+                  <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择商品区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="选择商品区域" data-title="选择商品区域" data-tips-position="3" data-auto-submit="true"  >
+                    {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择商品区域"}
+                  </a>
+              </div>
           </form>
           <hr>
 
@@ -42,6 +48,7 @@
                   <tr >
                       <th width="40">编号</th>
                       <th>商品</th>
+                      <th>显示区域</th>
                       <th width="40">库存</th>
                       <th width="50">兑换价</th>
                       <th width="50">采购价</th>
@@ -56,9 +63,10 @@
                       <td>
                         <div  class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
                         <span class="layui-elip">
-                          <a onclick="openLayer('{:url('admin/ScoreOrder/good_owners',['gid'=>$good['id'],'time'=>$filter['time'],'status'=>$filter['status']])}',{area: ['800px', '90%'], title:'{$good.name}'});" href="javascript:void(0);"    >{$good.name}</a>
+                          <a onclick="openLayer('{:url('admin/ScoreOrder/good_owners',['gid'=>$good['id'],'time'=>$filter['time'],'status'=>$filter['status']])}',{area: ['800px', '90%'], title:'{$good.name}'});" href="javascript:void(0);">{$good.name}</a>
                         </span>
                       </td>
+                      <td>{$good.fullname|str_replace=","," / ",###}</td>
                       <td>{$good.inventory == -1 ? '不限' : $good.inventory }</td>
                       <td><b class="price">{$good.price}</b></td>
                       <td><b class="amount">{$good.amount}</b></td>

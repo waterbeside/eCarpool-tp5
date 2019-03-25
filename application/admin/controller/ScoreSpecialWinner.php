@@ -28,14 +28,33 @@ class ScoreSpecialWinner extends AdminBase
    * 中奖列表
    * @return mixed
    */
-  public function index($filter=[],$page = 1,$pagesize = 20,$export=0,$rule_number=NULL)
+  public function index($filter=[],$page = 1,$pagesize = 20,$region_id=0,$export=0)
   {
+
+    $fields = 't.*
+      ,lo.uuid as lottery_uuid, lo.buy_time , lo.result_str
+      ,ac.id as account_id , ac.carpool_account, ac.balance
+      ,u.name as user_name , u.phone as user_phone , u.company_id ,u.loginname, u.Department, u.sex , u.companyname
+    ';
+    $join = [
+      ['lottery lo', 'lo.id = t.lottery_id','left'],
+      ['account ac','ac.id = lo.account_id','left'],
+      ['carpool.user u','u.loginname = ac.carpool_account','left'],
+      ['carpool.t_department d','lo.region_id = d.id','left'],
+    ];
+
+    //地区排查
+    if($region_id){
+      if(is_numeric($region_id)){
+        $regionData = $this->getDepartmentById($region_id);
+      }
+      $region_map_sql = $this->buildRegionMapSql($region_id);
+      $map[] = ['','exp', Db::raw($region_map_sql)];
+    }
+
     $map = [];
     $map[] = ['t.is_delete','<>', 1];
-    //地区区分
-    if (is_numeric($rule_number)) {
-      $map[] = ['lo.rule_number','=', $rule_number];
-    }
+
     //筛选奖品信息
     if (isset($filter['keyword_prize']) && $filter['keyword_prize'] ){
       $map[] = ['lo.result_str','like', "%{$filter['keyword_prize']}%"];
@@ -68,17 +87,7 @@ class ScoreSpecialWinner extends AdminBase
     $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
     $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
     $map[] = ['buy_time', 'between time', [$time_s, $time_e]];
-    //构建sql
-    $fields = 't.*
-      ,lo.uuid as lottery_uuid, lo.buy_time , lo.result_str
-      ,ac.id as account_id , ac.carpool_account, ac.balance
-      ,u.name as user_name , u.phone as user_phone , u.company_id ,u.loginname, u.Department, u.sex , u.companyname
-    ';
-    $join = [
-      ['lottery lo', 'lo.id = t.lottery_id','left'],
-      ['account ac','ac.id = lo.account_id','left'],
-      ['carpool.user u','u.loginname = ac.carpool_account','left'],
-    ];
+
     // $lists = WinnersModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC')->paginate($pagesize, false,  ['query'=>request()->param()]);
 
     $lists = SpecialWinnerModel::alias('t')->field($fields)
@@ -97,7 +106,8 @@ class ScoreSpecialWinner extends AdminBase
     }
     // dump($lists);
     $returnData =  [
-      'rule_number' => $rule_number,
+      'regionData'=> isset($regionData) ? $regionData : NULL,
+      'region_id' => $region_id,
       'lists' => $lists,
       'pagesize'=>$pagesize,
       'filter'=>$filter,

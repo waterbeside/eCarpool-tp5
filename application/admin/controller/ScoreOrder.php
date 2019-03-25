@@ -30,20 +30,35 @@ class ScoreOrder extends AdminBase
    * 订单列表
    * @return mixed
    */
-  public function index($filter=[],$status="0",$page = 1,$pagesize = 15,$export=0,$rule_number=NULL)
+  public function index($filter=[],$status="0",$page = 1,$pagesize = 15,$region_id=0,$export=0)
   {
+    //构建sql
+    $fields = 't.*, ac.carpool_account, ac.balance    ';
+    $fields .= ',cu.uid, cu.loginname,cu.name, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname, d.fullname as full_department';
+
+    $join = [
+      ['account ac','t.creator = ac.id', 'left'],
+    ];
+    $join[] = ['carpool.user cu','cu.loginname = ac.carpool_account', 'left'];
+    // $join[] = ['carpool.t_department d','cu.department_id = d.id','left'];
+    $join[] = ['carpool.t_department d','t.region_id = d.id','left'];
+
+
     $map = [];
     $map[] = ['t.is_delete','<>', 1];
-
-    //地区区分
-    if (is_numeric($rule_number)) {
-      $map[] = ['t.rule_number','=', $rule_number];
-    }
-
     //筛选状态
     if(is_numeric($status)){
       $map[] = ['t.status','=', $status];
     }
+    //地区排查
+    if($region_id){
+      if(is_numeric($region_id)){
+        $regionData = $this->getDepartmentById($region_id);
+      }
+      $region_map_sql = $this->buildRegionMapSql($region_id);
+      $map[] = ['','exp', Db::raw($region_map_sql)];
+    }
+
 
     //筛选时间
     if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
@@ -52,10 +67,8 @@ class ScoreOrder extends AdminBase
       $time_e_o = date("Y-m-d",strtotime($time_e)- 24*60*60);
       $filter['time'] = $time_s." ~ ".$time_e_o;
     }
-    $time_arr = explode(' ~ ',$filter['time']);
-    $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
-    $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
-    $map[] = ['creation_time', 'between time', [$time_s, $time_e]];
+    $time_arr = $this->formatFilterTimeRange($filter['time'],'Y-m-d H:i:s','m');
+    $map[] = ['creation_time', 'between time', $time_arr];
 
     //筛选单号
     $mapOrderRaw = '';
@@ -90,17 +103,8 @@ class ScoreOrder extends AdminBase
       }
     }
 
-    //构建sql
-    $fields = 't.*, ac.carpool_account, ac.balance    ';
-    $join = [
-      ['account ac','t.creator = ac.id', 'left'],
-    ];
-    if( (isset($filter['keyword']) && $filter['keyword']) || (isset($filter['keyword_dept']) && $filter['keyword_dept'])){
-      $fields .= ',cu.uid, cu.loginname,cu.name, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname, d.fullname as full_department';
-      $join[] = ['carpool.user cu','cu.loginname = ac.carpool_account', 'left'];
-      $join[] = ['carpool.t_department d','cu.department_id = d.id','left'];
 
-    }
+
 
     $ModelBase = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC');
     if(!empty($mapOrderRaw)){
@@ -118,23 +122,9 @@ class ScoreOrder extends AdminBase
     $GoodsModel = new GoodsModel();
     $DepartmentModel = new DepartmentModel();
     foreach($lists as $key => $value) {
-      if( !(isset($filter['keyword']) && $filter['keyword']) && !(isset($filter['keyword_dept']) && $filter['keyword_dept'])){
-        $userInfo = CarpoolUserModel::where(['loginname'=>$value['carpool_account']])->find();
-        $lists[$key]['uid'] = $userInfo['uid'] ;
-        $lists[$key]['loginname'] = $userInfo['loginname'] ;
-        $lists[$key]['name'] = $userInfo['name'] ;
-        $lists[$key]['phone'] = $userInfo['phone'] ;
-        $lists[$key]['sex'] = $userInfo['sex'] ;
-        $lists[$key]['company_id'] = $userInfo['company_id'] ;
-        $lists[$key]['companyname'] = $userInfo['companyname'] ;
-        //部门
-        $lists[$key]['Department'] =  $userInfo['Department'];
-        $lists[$key]['full_department'] =  $userInfo['department_id'] ? $DepartmentModel->where('id',$userInfo['department_id'])->value('fullname') : "";
-      }
+
       $lists[$key]['Department'] = $lists[$key]['full_department'] ? $DepartmentModel->formatFullName($lists[$key]['full_department'],1) : $lists[$key]['Department']  ;
 
-
-      //
       $goods = []; //商品
       foreach ($value['content'] as $gid => $num) {
         if(isset($goodList[$gid])){
@@ -224,7 +214,8 @@ class ScoreOrder extends AdminBase
       // dump($lists);
       $statusList = config('score.order_status');
       $returnData = [
-        'rule_number' => $rule_number,
+        'regionData'=> isset($regionData) ? $regionData : NULL,
+        'region_id' => $region_id,
         'lists' => $lists,
         'pagesize'=>$pagesize,
         'statusList'=>$statusList,
@@ -249,9 +240,10 @@ class ScoreOrder extends AdminBase
       $this->error("Lost id");
     }
 
-    $fields = 't.*, ac.carpool_account, ac.balance ';
+    $fields = 't.*, ac.carpool_account, ac.balance , d.fullname as full_department';
     $join = [
       ['account ac','t.creator = ac.id', 'left'],
+      ['carpool.t_department d','t.region_id = d.id', 'left'],
     ];
     $data = OrderModel::alias('t')->field($fields)->join($join)->where('t.id',$id)->json(['content'])->find();
     if(!$data){
@@ -303,7 +295,7 @@ class ScoreOrder extends AdminBase
    * 商品兑换数统计
    * @return mixed
    */
-  public function goods($filter=['status'=>0]){
+  public function goods($filter=['status'=>0],$region_id=0){
     $map = [];
     $map[] = ['o.is_delete','<>', 1];
     //筛选状态
@@ -312,6 +304,20 @@ class ScoreOrder extends AdminBase
     }elseif($filter['status']=="all_01"){
       $map[] = ['o.status','in', [0,1]];
     }
+    $fields = "g.*, sum(t.count) as num, d.fullname, g.p_region_id ";
+    $join = [
+      ['order o','o.id = t.oid', 'left'],
+      ['goods g','g.id = t.gid', 'left'],
+      ['carpool.t_department d','g.p_region_id = d.id','left']
+    ];
+    if($region_id){
+      if(is_numeric($region_id)){
+        $regionData = $this->getDepartmentById($region_id);
+      }
+      $region_map_sql = $this->buildRegionMapSql($region_id);
+      $map[] = ['','exp', Db::raw($region_map_sql)];
+    }
+
 
     //筛选时间
     if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
@@ -326,19 +332,22 @@ class ScoreOrder extends AdminBase
     $map[] = ['o.creation_time', '>=', $time_s];
     $map[] = ['o.creation_time', '<', $time_e];
 
-    $join = [
-      ['order o','o.id = t.oid', 'left'],
-      ['goods g','g.id = t.gid', 'left'],
-    ];
-    $lists = OrderGoodsModel::alias('t')->field("g.*, sum(t.count) as num ")->json(['images'])->join($join)->where($map)->group('t.gid')->order('t.gid DESC')->select();
+
+    $lists = OrderGoodsModel::alias('t')->field($fields)->json(['images'])->join($join)->where($map)->group('t.gid')->order('t.gid DESC')->select();
     foreach ($lists as $key => $value) {
       $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
     }
 
     $statusList = config('score.order_status');
 
-
-    return $this->fetch('goods', ['lists' => $lists,'filter'=>$filter,'statusList'=>$statusList]);
+    $returnData = [
+      'regionData'=> isset($regionData) ? $regionData : NULL,
+      'region_id' => $region_id,
+      'lists' => $lists,
+      'filter'=>$filter,
+      'statusList'=>$statusList
+    ];
+    return $this->fetch('goods', $returnData);
 
   }
 
@@ -395,7 +404,10 @@ class ScoreOrder extends AdminBase
     if(!$gid){
       $this->error('Lost id');
     }
-    $good = GoodsModel::where("id",$gid)->json(['images'])->find();
+    $join = [
+      ['carpool.t_department d','t.p_region_id = d.id','left'],
+    ];
+    $good = GoodsModel::alias('t')->field('t.*, d.fullname as full_department')->where("t.id",$gid)->json(['images'])->join($join)->find();
     if(!$good){
       $this->error("商品不存在");
     }
