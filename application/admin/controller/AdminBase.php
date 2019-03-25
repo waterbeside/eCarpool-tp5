@@ -10,6 +10,8 @@ use app\common\controller\Base;
 use think\Db;
 use think\facade\Session;
 use my\RedisData;
+use my\DeptAuth;
+
 use Firebase\JWT\JWT;
 use app\user\model\Department;
 
@@ -25,12 +27,18 @@ class AdminBase extends Base
     protected $jwtInfo ;
     public $userBaseInfo;
     protected $redisObj = NULL;
+    public $server_timezone_offset = 0;
+    public $request_timezone_offset = 0;
+    public $timezone_offset_diff = 0;
+
     public $un_check = [];
 
     protected function initialize()
     {
         parent::initialize();
         $this->checkAuth();
+        $this->getTimezoneOffset();
+
         // 输出当前请求控制器（配合后台侧边菜单选中状态）
         $this->assign('controller', Loader::parseName($this->request->controller()));
 
@@ -42,7 +50,6 @@ class AdminBase extends Base
      */
     protected function checkAuth()
     {
-
 
        // $this->checkToken(); //如果使用jwt验证
         $this->checkAuthSession(); //如果使用Session验证
@@ -78,6 +85,13 @@ class AdminBase extends Base
                 }
             }
         }
+
+
+        $auth_dept_data = $this->getAuthDepartments( $this->userBaseInfo['uid']);
+        $this->userBaseInfo['auth_depts_str']  = $auth_dept_data['depts'];
+        $this->userBaseInfo['auth_depts']  = explode(',',$auth_dept_data['depts']);
+        $this->userBaseInfo['auth_depts_isAll']  = in_array(0,$this->userBaseInfo['auth_depts']) ? 1 : 0;
+        // var_dump($this->userBaseInfo);
     }
 
     /**
@@ -99,6 +113,7 @@ class AdminBase extends Base
         'username'=>Session::get('admin_name')
       ];
     }
+
 
     /**
      * 验证验入session
@@ -158,6 +173,14 @@ class AdminBase extends Base
           }
         }
 
+    }
+
+    /**
+     *
+     */
+    public function getAuthDepartments($uid){
+      $DeptAuth     = new DeptAuth();
+      return $DeptAuth->getGroup($uid);
     }
 
     /**
@@ -270,6 +293,91 @@ class AdminBase extends Base
       $DepartmentModel = new Department();
       return $DepartmentModel->getItem($id);
     }
+
+
+    /**
+     * 格式化筛选的时间范围
+     * @param  string||array $data     输入的时间 以 "2019-01-01 ~ 2019-01-02" 格式传入，或以数组格式["2019-01-01", "2019-01-02"]
+     * @param  string $formater 输出的格式
+     * @param  string $accuracy 精度范围
+     * @return array          输出数组 [start time,end time];
+     */
+    public function formatFilterTimeRange($data,$formater = "Y-m-d H:i:s",$accuracy = "d",$timezone_offset_switch = 1)
+    {
+      if(is_string($data)){
+        $time = $data;
+        $time_arr = explode(' ~ ',$data);
+      }
+      if(is_array($data) && is_string($data[0]) && is_string($data[1])){
+        $time_arr = $data;
+      }
+      switch ($accuracy) {
+        case 'Y':
+          $endAdd = 24*60*60;
+          break;
+        case 'm':
+          $endAdd = "first day of next month";
+          break;
+        case 'd':
+          $endAdd = "+1 day";
+          break;
+        case 'H':
+          $endAdd = "+1 hour";
+          break;
+        case 'i':
+          $endAdd = "+60 seconds";
+          break;
+        case 's':
+          $endAdd = "+1 second";
+          break;
+        default:
+          $endAdd = '';
+          break;
+      }
+      $timezone_offset_d = $timezone_offset_switch ? $this->timezone_offset_diff : 0;
+      $time_s_timestamp = strtotime($time_arr[0]) - $timezone_offset_d;
+      $time_e_timestamp = strtotime($time_arr[1].$endAdd) - $timezone_offset_d;
+      $time_s = date($formater,$time_s_timestamp);
+      $time_e = date($formater,$time_e_timestamp);
+      return [$time_s,$time_e];
+    }
+
+
+    /**
+     * getFormatOffsetTime
+     * @param  string||array $data     输入的时间 以 "2019-01-01 ~ 2019-01-02" 格式传入，或以数组格式["2019-01-01", "2019-01-02"]
+     * @param  string $formater 输出的格式
+     * @param  string $accuracy 精度范围
+     * @return array          输出数组 [start time,end time];
+     */
+    public function getFormatOffsetTime($dateStr,$formater = "Y-m-d H:i:s"){
+      $timestamp = strtotime($dateStr);
+      $timezone_offset_d = $this->timezone_offset_diff ? $this->timezone_offset_diff : 0;
+      return date($formater,$timestamp - $timezone_offset_d);
+    }
+
+    /**
+     * getDetail
+     * @param  integer  $type  0:date('Z') ;  1: request_timezone_offset; false: both (0,1) ;
+     */
+    public function getTimezoneOffset($type = false)
+    {
+      $this->server_timezone_offset = intval(date('Z'));
+
+      $request_timezone_offset_string = isset($_COOKIE["timezoneOffset"]) && is_numeric($_COOKIE["timezoneOffset"])? intval($_COOKIE["timezoneOffset"]) : false;
+      $this->request_timezone_offset  =  $request_timezone_offset_string  !== false ? $request_timezone_offset_string * 60 * (-1) : intval(date('Z'));
+      $this->timezone_offset_diff     = $this->server_timezone_offset -  $this->request_timezone_offset;
+      $this->timezone_offset_diff     = intval($this->timezone_offset_diff);
+      if($type === 1){
+        return $this->request_timezone_offset;
+      }
+      if($type === 0){
+        return $this->server_timezone_offset;
+      }
+      return [$this->server_timezone_offset,$this->request_timezone_offset];
+
+    }
+
 
 
 
