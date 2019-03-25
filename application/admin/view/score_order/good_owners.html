@@ -27,6 +27,10 @@
               </div>
             </div>
             <hr />
+            <div>
+              商品区域：{$good.full_department|str_replace=","," / ",###}
+            </div>
+            <hr />
             <div class="layui-row ">
               <div class="layui-col-sm2">
                 兑换价： <b class="layui-badge-rim" > {$good.price} </b>
@@ -56,14 +60,6 @@
                     <div class="layui-input-inline">
                       <input type="text" name="filter[keyword]" class="layui-input"  placeholder="查找用户" value="{$filter.keyword}"  >
                     </div>
-                    <div class="layui-input-inline">
-                      <select name="filter[company_id]" lay-verify="required" lay-filter="company_id">
-                         <option value="0">公司</option>
-                         <?php foreach($companys as $key=>$value){ ?>
-                           <option value="{$key}" <?php echo isset($filter['company_id']) && $filter['company_id'] == $key ? 'selected':''; ?> >{$value}</option>
-                         <?php } ?>
-                       </select>
-                    </div>
                     <div class="layui-inline">
                         <button class="layui-btn"><i class="fa fa-search"></i></button>
                     </div>
@@ -81,7 +77,6 @@
                       <th lay-data="{field:'company_name', width:110}">公司</th>
                       <!-- <th lay-data="{field:'companyname', width:100}">分厂</th> -->
                       <th lay-data="{field:'num', width:100, fixed:'right'}">数目</th>
-
                     </tr>
                     </thead>
                     <tbody>
@@ -99,7 +94,6 @@
                       <td><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></td>
                       <!-- <td>{$vo.companyname}</td> -->
                       <td  ><b style="font-size:14px; color:#943e3e">{$vo.num}</b></td>
-
                     </tr>
                     {/foreach}
                     </tbody>
