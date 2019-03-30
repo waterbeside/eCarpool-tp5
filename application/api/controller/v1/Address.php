@@ -5,6 +5,7 @@ use app\api\controller\ApiBase;
 use app\carpool\model\Address as AddressModel;
 use think\facade\Cache;
 use think\Db;
+use my\RedisData;
 
 /**
  * 地址相关
@@ -104,13 +105,17 @@ class Address extends ApiBase
      * @return [type]        [description]
      */
     public function citys($type = 0){
-
+      $userData = $this->getUserData(1);
+      $company_id = $userData['company_id'];
       if($type){
         if(!in_array($type,[1,2,'wall','info'])){
           return $this->jsonReturn(992,'error type');
         }
-        $cacheKey = "carpool:citys:type:$type";
-        $res = Cache::get($cacheKey);
+        $cacheKey = "carpool:citys:company_id_$company_id:type_$type";
+        $redis = new RedisData();
+        $res_str =  $redis->get($cacheKey);
+        $res =  $res_str ? json_decode($res_str,true) : false;
+        // $res = Cache::get($cacheKey);
         if(!$res){
           $join = [];
           if($type == 1 || $type == "wall"){
@@ -120,7 +125,8 @@ class Address extends ApiBase
           }
           $map = [
             ["s.time",">",date('YmdHi')],
-            ["s.status","<>",'2']
+            ["s.status","<>",'2'],
+            ["t.company_id","=",$company_id]
           ];
 
             $resList = AddressModel::alias('t')->field('t.city , count(t.city) as num')->join($join)->where($map)->group('t.city')->order('num DESC')->select();
@@ -142,14 +148,19 @@ class Address extends ApiBase
             if($hasNull){
               $res[] = "(null)";
             }
-            Cache::set($cacheKey,$res,30);
+            // Cache::set($cacheKey,$res,300);
+            $redis->setex($cacheKey, 300, json_encode($res));
+
         }
 
       }else{
         $res = AddressModel::group('city')->order('city Desc')->cache(30)->column('city');
-
       }
-      $this->jsonReturn(0,$res);
+      if($res){
+        $this->jsonReturn(0,$res,lang('Successfully'));
+      }else{
+        $this->jsonReturn(20002,$res,lang('No data'));
+      }
 
 
     }
