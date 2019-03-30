@@ -1,5 +1,5 @@
 
-<div class="layui-tab-content goods-item-edit prize-item-edit ">
+<div class="layui-tab-content goods-item-edit P-prize-detail-form ">
   <div class="progress layui-progress layui-progress-big" lay-showPercent="true">
     <div class="layui-progress-bar " lay-percent="{$data.real_count} /{$data.total_count}"></div>
   </div>
@@ -219,7 +219,7 @@ FORM_PAGE_EXEC = {
     var $item = $target.closest('.item');
     var id = $item.data('id');
     this.datas.depts = null;
-    $("input[name='p_region_id']").val('');
+    $(".P-prize-detail-form input[name='p_region_id']").val('');
     $item.addClass('delete');
     setTimeout(function(){
       $item.remove();
@@ -237,17 +237,25 @@ FORM_PAGE_EXEC = {
     if(this.datas.depts){
       var deptsData = this.datas.depts;
       var itemHtml = this.deptItemTemplate(deptsData);
-      $('.J-dept-select-wrapper').html(itemHtml);
+      $('.P-prize-detail-form .J-dept-select-wrapper').html(itemHtml);
     }
   },
   openDeptDialog: function(){
     openLayer('{:url('admin/Department/list_dialog')}','选择区域/部门');
   },
+  clearDept: function(){
+    $(".P-prize-detail-form input[name='p_region_id']").val('');
+    $('.P-prize-detail-form .J-dept-select-wrapper').html('');
+  },
   select_dept: function(data){
-    var $input = $("input[name='p_region_id']");
+    var $input = $(".P-prize-detail-form input[name='p_region_id']");
     this.datas.depts = data;
-    this.setDeptItem();
-    $input.val(data.id);
+    if(typeof(data.cancelSelected)!="undefined" && data.cancelSelected){
+      this.clearDept();
+    }else{
+      this.setDeptItem();
+      $input.val(data.id);
+    }
   }
 }
 

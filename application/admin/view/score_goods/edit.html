@@ -1,4 +1,4 @@
-<div class="layui-tab-content goods-item-edit">
+<div class="layui-tab-content goods-item-edit P-goods-detail-form">
     <div class="layui-tab-item layui-show">
         <form class="layui-form form-container" action="{:url('admin/ScoreGoods/edit')}" method="post">
               <div class="layui-form-item">
@@ -90,6 +90,7 @@
 <script>
 
 FORM_PAGE_EXEC = {
+
   datas : {
     depts: {
       'fullname': "{$data.fullname}",
@@ -100,7 +101,7 @@ FORM_PAGE_EXEC = {
   init: function(){
 
     this.setDeptItem();
-    var $thumbInput = $('.goods-item-edit').find("input[name=thumb]");
+    var $thumbInput = $('.P-goods-detail-form').find("input[name=thumb]");
     //普通图片上传
      var uploadInst = this.upload.render({
        elem: '#upload-btn'
@@ -154,7 +155,7 @@ FORM_PAGE_EXEC = {
     var $item = $target.closest('.item');
     var id = $item.data('id');
     this.datas.depts = null;
-    $("input[name='p_region_id']").val('');
+    $(".P-goods-detail-form input[name='p_region_id']").val('');
     $item.addClass('delete');
     setTimeout(function(){
       $item.remove();
@@ -172,17 +173,25 @@ FORM_PAGE_EXEC = {
     if(this.datas.depts){
       var deptsData = this.datas.depts;
       var itemHtml = this.deptItemTemplate(deptsData);
-      $('.J-dept-select-wrapper').html(itemHtml);
+      $('.P-goods-detail-form .J-dept-select-wrapper').html(itemHtml);
     }
   },
   openDeptDialog: function(){
     openLayer('{:url('admin/Department/list_dialog')}','选择区域/部门');
   },
+  clearDept: function(){
+    $(".P-goods-detail-form input[name='p_region_id']").val('');
+    $('.P-goods-detail-form .J-dept-select-wrapper').html('');
+  },
   select_dept: function(data){
-    var $input = $("input[name='p_region_id']");
+    var $input = $(".P-goods-detail-form input[name='p_region_id']");
     this.datas.depts = data;
-    this.setDeptItem();
-    $input.val(data.id);
+    if(typeof(data.cancelSelected)!="undefined" && data.cancelSelected){
+      this.clearDept();
+    }else{
+      this.setDeptItem();
+      $input.val(data.id);
+    }
   }
 
 }
