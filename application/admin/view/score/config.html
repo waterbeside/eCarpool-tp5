@@ -6,9 +6,8 @@
     <div class="layui-tab layui-tab-brief">
 
         <ul class=" amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/Score/config',['region_id'=>$region_id])}"  >积分配置</a></li>
-            <li ><a href="{:url('admin/Score/doc',['cate'=>'score'])}"  >积分文档</a></li>
-            <li ><a href="{:url('admin/Score/doc',['cate'=>'lottery'])}"  >抽奖文档</a></li>
+            <li class="layui-this"><a href="{:url('admin/Score/config')}"  >积分配置</a></li>
+        
         </ul>
         <div class="layui-tab-content">
           <form class="layui-form layui-form-pane" action="{:url('admin/Score/config')}" method="get">
@@ -31,7 +30,7 @@
                <p> 点击保存即生成. </p>
              </blockquote>
           <?php } ?>
-          <form class="layui-form form-container" action="{:url('admin/Score/config',['region_id'=>$region_id])}" method="post">
+          <form class="layui-form form-container" action="{:url('admin/Score/config')}" method="post">
             <input type="hidden" name="region_id" value="{$region_id}" />
             <input type="hidden" name="id" value="{$res.id}" />
             <table class="layui-table">
