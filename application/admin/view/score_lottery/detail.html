@@ -28,12 +28,13 @@
         <tr>
           <td class="label">抽奖时间</td>
           <td>
-            {$data.buy_time}
+            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.buy_time|strtotime}000</span>
             <span style=" color: #ccc; margin-left:5px">
               <?php echo  $data['platform']===2 ? '<i class="fa fa-android"></i>' : ($data['platform']===1 ? '<i class="fa fa-apple"></i>':''); ?>
             </span>
           </td>
         </tr>
+
         <tr>
           <td class="label" >是否中奖</td>
           <td>
@@ -51,26 +52,30 @@
 
           </td>
         </tr>
-        <tr>
+        <!-- <tr>
           <td class="label">是否已兑</td>
-          <td>{$data.result > 0 && $data.winnersInfo.exchange_time ? "是，兑换时间：".$data.winnersInfo.exchange_time : "否"}</td>
-        </tr>
+          <td>
+            {$data.result > 0 && $data.winnersInfo.exchange_time ? "是，兑换时间：" : "否"}
+            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.exchange_time ? strtotime($data.exchange_time)*1000 : '-'}</span>
+          </td>
+        </tr> -->
       <?php }else{ ?>
+        <tr>
+          <td class="label">奖品名称</td>
+          <td>
+              转盘抽奖: {$data.result_str}
+          </td>
+        </tr>
         <tr>
           <td class="label">抽奖时间</td>
           <td>
-            {$data.buy_time}
+            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.buy_time|strtotime}000</span>
             <span style=" color: #ccc; margin-left:5px">
               <?php echo  $data['platform']===2 ? '<i class="fa fa-android"></i>' : ($data['platform']===1 ? '<i class="fa fa-apple"></i>':''); ?>
             </span>
           </td>
         </tr>
-        <tr>
-          <td class="label">开奖时间</td>
-          <td>
-            {$data.end_time}
-          </td>
-        </tr>
+
 
         <tr>
           <td class="label" >结果</td>
@@ -78,16 +83,13 @@
             <span class="layui-elip">{$data.result_str} </span>
           </td>
         </tr>
-        <tr>
-          <td class="label">是否已兑</td>
-          <td>{$data.result < -99 && $data.winnersInfo.exchange_time ? "是，兑换时间：".$data.winnersInfo.exchange_time : "否"}</td>
-        </tr>
-        <tr>
-          <td class="label">下单部门</td>
-          <td>{$data.region_id ? $data.full_department|str_replace=","," / ",### : $data.region_id}</td>
-        </tr>
+
 
       <?php } ?>
+      <tr>
+        <td class="label">下单部门</td>
+        <td>{$data.region_id ? $data.full_department|str_replace=","," / ",### : $data.region_id}</td>
+      </tr>
 
 
       </tbody>
@@ -153,9 +155,11 @@ var RESOLVE_INIT = {
   data : {
 
   },
+  init : function(){
+    cRenderTimes();
+  },
   finish : function(type,id){
-    alert(type);
-    alert(id);
+
     var url = type === 1 ? "<?php echo url('admin/ScoreWinners/finish');?>" : (type === 0 ? "<?php echo url('admin/ScoreSpecialWinner/finish');?>": '');
 
     if(url == ''){
@@ -183,6 +187,6 @@ var RESOLVE_INIT = {
 
 
 }
-
+RESOLVE_INIT.init();
 
 </script>

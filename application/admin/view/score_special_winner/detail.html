@@ -17,7 +17,7 @@
         <tr>
           <td class="label">抽奖时间</td>
           <td>
-            {$data.buy_time}
+            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.buy_time|strtotime}000</span>
             <span style=" color: #ccc; margin-left:5px">
               <?php echo  $data['platform']===2 ? '<i class="fa fa-android"></i>' : ($data['platform']===1 ? '<i class="fa fa-apple"></i>':''); ?>
             </span>
@@ -25,9 +25,12 @@
         </tr>
         <tr>
           <td class="label">是否已兑</td>
-          <td>{$data.exchange_time ? "是，兑换时间：".$data.exchange_time : "否" }</td>
+          <td>
+            {$data.exchange_time ? "是，兑换时间：" : "否" }
+            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.exchange_time ? strtotime($data.exchange_time)*1000 : '-'}</span>
+          </td>
         </tr>
-      
+
 
       </tbody>
     </table>
@@ -84,6 +87,9 @@ var RESOLVE_INIT = {
   data : {
 
   },
+  init : function(){
+    cRenderTimes();
+  },
   finish : function(id){
     // var order_no = $("input[name=order_no]").val();
     // console.log(order_no)
@@ -106,6 +112,7 @@ var RESOLVE_INIT = {
 
 
 }
+RESOLVE_INIT.init();
 
 
 </script>

@@ -101,9 +101,9 @@
                           <td>{$vo.Department}</td>
                           <td><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></td>
 
-                          <td >{$vo.buy_time ? $vo.buy_time : '--' }</td>
-                          <td >{$vo.lottery_time ? $vo.lottery_time : '--' }</td>
-                          <td >{$vo.exchange_time ? $vo.exchange_time : '--' }</td>
+                          <td ><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{$vo.buy_time ? strtotime($vo.buy_time)*1000 : '-'}</span></td>
+                          <td ><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{$vo.lottery_time ? strtotime($vo.lottery_time)*1000 : '-'}</span></td>
+                          <td ><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{$vo.exchange_time ? strtotime($vo.exchange_time)*1000 : '-'}</span></td>
                           <td >
                             <a href="{:url('admin/ScoreWinners/detail',['id'=>$vo['id']])}"  data-title="中奖详情 #{$vo.id}"  data-trigger="modal" title="中奖详情 #{$vo.id}" class="ibtn layui-btn layui-btn-xs  {php}if($vo['exchange_time']){ echo
                               'layui-btn-success';}{/php}  ">  详情</a>

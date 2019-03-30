@@ -36,7 +36,10 @@
         </tr>
         <tr>
           <td class="label">是否已兑</td>
-          <td>{$data.exchange_time ? "是，兑换时间：".$data.exchange_time : "否" }</td>
+          <td>
+            {$data.exchange_time ? "是，兑换时间：" : "否" }
+            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.exchange_time ? strtotime($data.exchange_time)*1000 : '-'}</span>
+          </td>
         </tr>
         <tr>
           <td class="label">采购价</td>
@@ -99,6 +102,9 @@ var RESOLVE_INIT = {
   data : {
 
   },
+  init : function(){
+    cRenderTimes();
+  },
   finish : function(id){
     // var order_no = $("input[name=order_no]").val();
     // console.log(order_no)
@@ -121,6 +127,7 @@ var RESOLVE_INIT = {
 
 
 }
+RESOLVE_INIT.init();
 
 
 </script>

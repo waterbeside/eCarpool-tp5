@@ -71,7 +71,7 @@
                           <th lay-data="{field:'Department', width:120}" >部门</th>
                           <th lay-data="{field:'company', width:90}" >公司</th>
                           <th lay-data="{field:'buy_time', width:180}" >抽奖时间</th>
-                          <th lay-data="{field:'exchange_time', width:100}"  width="60">已兑</th>
+                          <th lay-data="{field:'exchange_time', width:120}"  width="60">已兑</th>
                           <th lay-data="{field:'options', width:70, fixed:'right'}"  width="60">操作</th>
                       </tr>
                       </thead>
@@ -86,8 +86,8 @@
                           <td>{$vo.user_phone}</td>
                           <td>{$vo.Department}</td>
                           <td><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></td>
-                          <td>{$vo.buy_time}</td>
-                          <td >{$vo.exchange_time ? $vo.exchange_time : '--' }</td>
+                          <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{$vo.buy_time|strtotime}000</span></td>
+                          <td ><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{$vo.exchange_time ? strtotime($vo.exchange_time)*1000 : '-'}</span></td>
                           <td >
                             <a href="{:url('admin/ScoreSpecialWinner/detail',['id'=>$vo['id']])}"  data-title="中奖详情 #{$vo.id}"  data-trigger="modal" title="中奖详情 #{$vo.id}" class="ibtn layui-btn layui-btn-xs  {php}if($vo['exchange_time']){ echo
                               'layui-btn-success';}{/php}  ">  详情</a>

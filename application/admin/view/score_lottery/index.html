@@ -86,6 +86,7 @@
                           <th lay-data="{field:'user_phone', width:120}"  >电话</th>
                           <th lay-data="{field:'Department', width:120}" >部门</th>
                           <th lay-data="{field:'company', width:90}" >公司</th>
+                          <th lay-data="{field:'full_department', width:160}" >PATH</th>
                           <th lay-data="{field:'options', width:70, fixed:'right'}"  width="60">操作</th>
                       </tr>
                       </thead>
@@ -122,13 +123,14 @@
                           </td>
                           <td>{$vo.user_name}</td>
                           <td>{$vo.loginname}</td>
-                          <td >{$vo.buy_time}</td>
+                          <td ><span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$vo.buy_time|strtotime}000</span></td>
                           <td>{$vo.user_phone}</td>
                           <td>{$vo.Department}</td>
                           <td><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></td>
+                          <td>{$vo.full_department|str_replace=","," / ",###}</td>
 
                           <td >
-                            <a href="{:url('admin/ScoreLottery/detail',['id'=>$vo['id']])}"  data-title="中奖详情 #{$vo.id}"  data-trigger="modal" title="中奖详情 #{$vo.id}" class="ibtn layui-btn layui-btn-xs  ">  详情</a>
+                            <a href="{:url('admin/ScoreLottery/detail',['id'=>$vo['id']])}"  data-title="中奖详情 #{$vo.id}"  data-trigger="modal" title="抽奖详情 #{$vo.id}" class="ibtn layui-btn layui-btn-xs  ">  详情</a>
                           </td>
 
                         </tr>
