@@ -134,6 +134,9 @@ class AccountMix extends AccountModel
       }
       $data['operand']      = $params['operand'];
       $data['reason']       = $params['reason'];
+      if(isset($params['region_id']) && $params['region_id']){
+        $data['region_id']    = $params['region_id'];
+      }
       if(!$account_id && !$account){
         $this->errorMsg = "lost account or account_id";
         return false;
@@ -143,7 +146,6 @@ class AccountMix extends AccountModel
       try{
         //查找是否已开通拼车帐号，拼整理data
         $accountDetial = null ;
-
         $accountDetial = $this->where($map)->lock(true)->find();
 
         if($accountDetial && $accountDetial['id']){
@@ -161,31 +163,34 @@ class AccountMix extends AccountModel
             $upAccountStatus = $this->where($updateAccountMap)->setDec('balance', $data['operand']);
           }
           if(!$upAccountStatus){
-            throw new \Exception("更新分数失败");
+            throw new \Exception("更新分数失败,1");
           }
         }else{
           if($account){
             $data[$accountField] = $account;
             $data['result'] = 0;
           }else{
-            throw new \Exception("更新分数失败");
+            throw new \Exception("更新分数失败,2");
           }
         }
-        $data['region_id']  = $this->getCarpoolDepartmentID($accountDetial['carpool_account']);
+        if($accountField == 'carpool_account' && !isset($data['region_id'])){
+          $account = $account ? $account : $accountDetial['carpool_account'] ;
+          $data['region_id']  =   $this->getCarpoolDepartmentID($account);
+        }
         $data['extra_info'] = '{}';
         $data['is_delete'] = 0;
         $data['time'] =  date('Y-m-d H:i:s');
         $historyModel =   new HistoryModel;
         $upHistoryStatus = $historyModel->save($data);
         if(!$upHistoryStatus){
-          throw new \Exception("更新分数失败");
+          throw new \Exception("更新分数失败,3");
         }
         // 提交事务
         Db::connect('database_score')->commit();
       } catch (\Exception $e) {
           // 回滚事务
           Db::connect('database_score')->rollback();
-          $this->errorMsg = "改分失败，请稍候再试";
+          $this->errorMsg = $e->getMessage();;
 
           // $this->log($logMsg,-1);
           return false;
