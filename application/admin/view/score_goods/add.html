@@ -1,15 +1,19 @@
-<div class="layui-tab-content goods-item-edit">
+<div class="layui-tab-content goods-item-edit P-goods-detail-form">
     <div class="layui-tab-item layui-show">
         <form class="layui-form form-container" action="{:url('admin/ScoreGoods/add')}" method="post">
+
               <div class="layui-form-item">
                   <label class="layui-form-label">区域/部门</label>
                   <div class="layui-input-block">
                     <div class="J-dept-select-wrapper"></div>
-                    <input type="hidden" name="p_region_id" value=""  class="layui-input layui-input-inline " readonly  >
-                    <a onclick="FORM_PAGE_EXEC.openDeptDialog()" href="javascript:void(0);"  class="layui-btn  layui-btn-primary layui-btn-sm"   >
+                    <input type="hidden" name="p_region_id" value="{$department_default_selected.id}"  class="layui-input layui-input-inline " readonly  >
+                    <a onclick="FORM_PAGE_EXEC.openDeptDialog()" href="javascript:void(0);"  class="layui-btn  layui-btn-primary layui-btn-xs"   >
                       <i class="fa fa-book"></i> <span>选择区域/部门</span>
                     </a>
+                    <div class="layui-form-mid layui-word-aux"> 选择区域/部门，选择后，只有该区域或部门下的用户才能看到该商品</div>
+
                   </div>
+
               </div>
 
               <div class="layui-form-item">
@@ -43,12 +47,14 @@
                   <label class="layui-form-label">兑换价</label>
                   <div class="layui-input-block">
                       <input type="text" name="price" value=""  required  lay-verify="required" placeholder="请输入商品兑换价" class="layui-input">
+                      <div class="layui-form-mid layui-word-aux">兑换商品所需要的积分</div>
                   </div>
               </div>
               <div class="layui-form-item">
                   <label class="layui-form-label">采购价</label>
                   <div class="layui-input-block">
                       <input type="text" name="amount" value=""  required  lay-verify="required" placeholder="请输入商品采购价" class="layui-input">
+                      <div class="layui-form-mid layui-word-aux">采购商品的价格，用于后台记录</div>
                   </div>
               </div>
               <div class="layui-form-item">
@@ -91,11 +97,17 @@
 
 FORM_PAGE_EXEC = {
   datas : {
-    depts: null
+    depts: <?php echo $department_default_selected ? '{fullname:"'.$department_default_selected['fullname'].'",id:"'.$department_default_selected['id'].'"}' : 'null'; ?>,
   },
+
   upload : layui.upload,
   init: function(){
-    var $thumbInput = $('.goods-item-edit').find("input[name=thumb]");
+    this.setDeptItem();
+    if(this.datas.depts && typeof(this.datas.depts.id) !="undefined" ){
+      // $(".P-goods-detail-form input[name='p_region_id']").val(this.datas.depts.id);
+    }
+
+    var $thumbInput = $('.P-goods-detail-form').find("input[name=thumb]");
     //普通图片上传
      var uploadInst = this.upload.render({
        elem: '#upload-btn'
@@ -149,7 +161,7 @@ FORM_PAGE_EXEC = {
     var $item = $target.closest('.item');
     var id = $item.data('id');
     this.datas.depts = null;
-    $("input[name='p_region_id']").val('');
+    $(".P-goods-detail-form input[name='p_region_id']").val('');
     $item.addClass('delete');
     setTimeout(function(){
       $item.remove();
@@ -167,17 +179,25 @@ FORM_PAGE_EXEC = {
     if(this.datas.depts){
       var deptsData = this.datas.depts;
       var itemHtml = this.deptItemTemplate(deptsData);
-      $('.J-dept-select-wrapper').html(itemHtml);
+      $('.P-goods-detail-form .J-dept-select-wrapper').html(itemHtml);
     }
   },
   openDeptDialog: function(){
     openLayer('{:url('admin/Department/list_dialog')}','选择区域/部门');
   },
+  clearDept: function(){
+    $(".P-goods-detail-form input[name='p_region_id']").val('');
+    $('.P-goods-detail-form .J-dept-select-wrapper').html('');
+  },
   select_dept: function(data){
-    var $input = $("input[name='p_region_id']");
+    var $input = $(".P-goods-detail-form input[name='p_region_id']");
     this.datas.depts = data;
-    this.setDeptItem();
-    $input.val(data.id);
+    if(typeof(data.cancelSelected)!="undefined" && data.cancelSelected){
+      this.clearDept();
+    }else{
+      this.setDeptItem();
+      $input.val(data.id);
+    }
   }
 }
 
