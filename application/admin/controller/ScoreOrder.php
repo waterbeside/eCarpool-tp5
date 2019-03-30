@@ -26,11 +26,15 @@ use think\Db;
 class ScoreOrder extends AdminBase
 {
 
+  public $check_dept_setting = [
+    "action" => ['index','goods']
+  ];
+
   /**
    * 订单列表
    * @return mixed
    */
-  public function index($filter=[],$status="0",$page = 1,$pagesize = 15,$region_id=0,$export=0)
+  public function index($filter=[],$status="0",$page = 1,$pagesize = 15, $export=0)
   {
     //构建sql
     $fields = 't.*, ac.carpool_account, ac.balance    ';
@@ -50,25 +54,23 @@ class ScoreOrder extends AdminBase
     if(is_numeric($status)){
       $map[] = ['t.status','=', $status];
     }
-    //地区排查
-    if($region_id){
-      if(is_numeric($region_id)){
-        $regionData = $this->getDepartmentById($region_id);
-      }
-      $region_map_sql = $this->buildRegionMapSql($region_id);
-      $map[] = ['','exp', Db::raw($region_map_sql)];
+    //地区排查 检查管理员管辖的地区部门
+    $authDeptData = $this->authDeptData;
+    if(isset($authDeptData['region_map'])){
+      $map[] = $authDeptData['region_map'];
     }
 
 
     //筛选时间
-    if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
-      $time_s = date("Y-m-01");
-      $time_e = date("Y-m-d",strtotime("$time_s +1 month"));
-      $time_e_o = date("Y-m-d",strtotime($time_e)- 24*60*60);
-      $filter['time'] = $time_s." ~ ".$time_e_o;
+    if(!isset($filter['time']) || !$filter['time']){
+      $filter['time'] =  $this->getFilterTimeRangeDefault('Y-m-d','m');
     }
-    $time_arr = $this->formatFilterTimeRange($filter['time'],'Y-m-d H:i:s','m');
-    $map[] = ['creation_time', 'between time', $time_arr];
+    $time_arr = $this->formatFilterTimeRange($filter['time'],'Y-m-d H:i:s','d');
+    if(count($time_arr)>1){
+      $map[] = ['t.creation_time', '>=', $time_arr[0]];
+      $map[] = ['t.creation_time', '<', $time_arr[1]];
+    }
+
 
     //筛选单号
     $mapOrderRaw = '';
@@ -214,8 +216,6 @@ class ScoreOrder extends AdminBase
       // dump($lists);
       $statusList = config('score.order_status');
       $returnData = [
-        'regionData'=> isset($regionData) ? $regionData : NULL,
-        'region_id' => $region_id,
         'lists' => $lists,
         'pagesize'=>$pagesize,
         'statusList'=>$statusList,
@@ -249,6 +249,8 @@ class ScoreOrder extends AdminBase
     if(!$data){
       $this->error("订单不存在");
     }else{
+      $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
+
       $data['userInfo'] = CarpoolUserModel::alias('t')
                           ->field('t.*, d.fullname as full_department')
                           ->join([['t_department d','t.department_id = d.id','left']])
@@ -295,7 +297,7 @@ class ScoreOrder extends AdminBase
    * 商品兑换数统计
    * @return mixed
    */
-  public function goods($filter=['status'=>0],$region_id=0){
+  public function goods($filter=['status'=>0]){
     $map = [];
     $map[] = ['o.is_delete','<>', 1];
     //筛选状态
@@ -310,28 +312,25 @@ class ScoreOrder extends AdminBase
       ['goods g','g.id = t.gid', 'left'],
       ['carpool.t_department d','g.p_region_id = d.id','left']
     ];
-    if($region_id){
-      if(is_numeric($region_id)){
-        $regionData = $this->getDepartmentById($region_id);
-      }
-      $region_map_sql = $this->buildRegionMapSql($region_id);
-      $map[] = ['','exp', Db::raw($region_map_sql)];
+
+    //地区排查 检查管理员管辖的地区部门
+    $authDeptData = $this->authDeptData;
+
+    if(isset($authDeptData['region_map'])){
+      $map[] = $authDeptData['region_map'];
     }
+
 
 
     //筛选时间
-    if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
-      $time_s = date("Y-m-01");
-      $time_e = date("Y-m-d",strtotime("$time_s +1 month"));
-      $time_e_o = date("Y-m-d",strtotime($time_e)- 24*60*60);
-      $filter['time'] = $time_s." ~ ".$time_e_o;
+    if(!isset($filter['time']) || !$filter['time']){
+      $filter['time'] =  $this->getFilterTimeRangeDefault('Y-m-d','m');
     }
-    $time_arr = explode(' ~ ',$filter['time']);
-    $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
-    $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
-    $map[] = ['o.creation_time', '>=', $time_s];
-    $map[] = ['o.creation_time', '<', $time_e];
-
+    $time_arr = $this->formatFilterTimeRange($filter['time'],'Y-m-d H:i:s','d');
+    if(count($time_arr)>1){
+      $map[] = ['o.creation_time', '>=', $time_arr[0]];
+      $map[] = ['o.creation_time', '<', $time_arr[1]];
+    }
 
     $lists = OrderGoodsModel::alias('t')->field($fields)->json(['images'])->join($join)->where($map)->group('t.gid')->order('t.gid DESC')->select();
     foreach ($lists as $key => $value) {
@@ -341,8 +340,6 @@ class ScoreOrder extends AdminBase
     $statusList = config('score.order_status');
 
     $returnData = [
-      'regionData'=> isset($regionData) ? $regionData : NULL,
-      'region_id' => $region_id,
       'lists' => $lists,
       'filter'=>$filter,
       'statusList'=>$statusList
@@ -376,6 +373,7 @@ class ScoreOrder extends AdminBase
       if(!$data || $data['is_delete']==1){
         $this->error("订单不存在");
       }
+      $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
 
       if(intval($data['status'])!==0){
         $statusMsg = isset($statusList[$data['status']]) ? $statusList[$data['status']] : $data['status'];
@@ -425,18 +423,11 @@ class ScoreOrder extends AdminBase
       $map[] = ['o.status','in', [0,1]];
     }
 
-
-    $time_arr = explode(' ~ ',$time);
-    $time_arr = count($time_arr) > 1 ? $time_arr : explode('+~+',$time);
-
-    if(is_array($time_arr)){
-      $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
-      $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
-      // $map[] = ['o.creation_time', 'between', [$time_s, $time_e]];
-      $map[] = ['o.creation_time', '>=', $time_s];
-      $map[] = ['o.creation_time', '<', $time_e];
+    $time_arr = $this->formatFilterTimeRange($time,'Y-m-d H:i:s','d');
+    if(count($time_arr)>1){
+      $map[] = ['o.creation_time', '>=', $time_arr[0]];
+      $map[] = ['o.creation_time', '<', $time_arr[1]];
     }
-
 
 
 

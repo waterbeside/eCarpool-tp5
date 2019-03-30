@@ -34,14 +34,20 @@ class ScoreGoods extends AdminBase
     $join = [
       ['carpool.t_department d','t.p_region_id = d.id','left']
     ];
-    //地区排查
-    if($region_id){
-      if(is_numeric($region_id)){
-        $regionData = $this->getDepartmentById($region_id);
-      }
-      $region_map_sql = $this->buildRegionMapSql($region_id);
-      $map[] = ['','exp', Db::raw($region_map_sql)];
+
+    //地区排查 检查管理员管辖的地区部门
+    $authDeptData = $this->authDeptData;
+    if(isset($authDeptData['region_map'])){
+      $map[] = $authDeptData['region_map'];
     }
+
+    // if($region_id){
+    //   if(is_numeric($region_id)){
+    //     $regionData = $this->getDepartmentById($region_id);
+    //   }
+    //   $region_map_sql = $this->buildRegionMapSql($region_id);
+    //   $map[] = ['','exp', Db::raw($region_map_sql)];
+    // }
 
 
     if(isset($filter['status']) && is_numeric($filter['status'])){
@@ -64,8 +70,6 @@ class ScoreGoods extends AdminBase
     $statusList = $this->goods_status;
     $scoreConfigs = (new Configs())->getConfigs("score");
     $returnData = [
-      'regionData'=> isset($regionData) ? $regionData : NULL,
-      'region_id'=>$region_id,
       'lists' => $lists,
       'keyword' => $keyword,
       'pagesize'=>$pagesize,
@@ -93,6 +97,7 @@ class ScoreGoods extends AdminBase
       if(!is_numeric($data['p_region_id'])){
         $this->jsonReturn(-1,"error p_region_id");
       }
+
       $upData = [
         'p_region_id' => $data['p_region_id'],
         'name' => $data['name'],
@@ -120,7 +125,7 @@ class ScoreGoods extends AdminBase
           return $this->jsonReturn(-1,'保存失败');
       }
     }else{
-      $rule_number               = $this->request->param('rule_number');
+
       return $this->fetch('add', ['goods_status' => $this->goods_status]);
     }
   }
@@ -139,6 +144,7 @@ class ScoreGoods extends AdminBase
       if(!is_numeric($data['p_region_id'])){
         $this->jsonReturn(-1,"error p_region_id");
       }
+
       $upData = [
         'p_region_id' => $data['p_region_id'],
         'name' => $data['name'],
@@ -204,7 +210,6 @@ class ScoreGoods extends AdminBase
       if(!is_numeric($data['p_region_id'])){
         $this->jsonReturn(-1,"error p_region_id");
       }
-
       $upData = [
         'p_region_id' => $data['p_region_id'],
         'name' => $data['name'],
@@ -240,9 +245,12 @@ class ScoreGoods extends AdminBase
         ['carpool.t_department d','t.p_region_id = d.id','left']
       ];
       $data = GoodsModel::alias('t')->field($fields)->json(['images'])->join($join)->where("t.id",$id)->find();
+
       if(!$data){
         $this->error("商品不存在");
       }else{
+        $this->checkDeptAuthByDid($data['p_region_id'],1); //检查地区权限
+
         $data['is_show'] = $data['is_delete'] ? 0 : 1 ;
         $data['thumb'] = is_array($data["images"]) ? $data["images"][0] : "" ;
       }

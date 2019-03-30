@@ -21,13 +21,16 @@ class ScoreAccount extends AdminBase
      * 积分帐号
      * @return mixed
      */
-    public function index($type='2',$filter=[],$page = 1,$pagesize = 20,$region_id=0,$export=0)
+    public function index($type='2',$filter=[],$page = 1,$pagesize = 20,$export=0)
     {
       if($export){
         ini_set ('memory_limit', '128M');
         if( !$filter['floor'] &&  !$filter['ceiling'] && !$filter['keyword'] && !$filter['keyword_dept']){
           $this->error('数据量过大，请筛选后再导出');
         }
+      }else{
+        $this->assign('hasAuth_changeScore', $this->checkActionAuth('admin/Score/change') );
+
       }
 
       // $type = strval($type);
@@ -46,13 +49,10 @@ class ScoreAccount extends AdminBase
         $join[] =  ['carpool.t_department d','cu.department_id = d.id','left'];
 
 
-        //地区排查
-        if($region_id){
-          if(is_numeric($region_id)){
-            $regionData = $this->getDepartmentById($region_id);
-          }
-          $region_map_sql = $this->buildRegionMapSql($region_id);
-          $map[] = ['','exp', Db::raw($region_map_sql)];
+        //地区排查 检查管理员管辖的地区部门
+        $authDeptData = $this->authDeptData;
+        if(isset($authDeptData['region_map'])){
+          $map[] = $authDeptData['region_map'];
         }
 
         //筛选分数范围 - 下限
@@ -78,7 +78,6 @@ class ScoreAccount extends AdminBase
         if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
           $map[] = ['d.fullname|cu.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
           // $map[] = ['u.Department|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
-          $isJoinUser = true;
         }
 
 
@@ -102,17 +101,31 @@ class ScoreAccount extends AdminBase
 
         $fields  ='cu.uid ,cu.name as name , cu.phone as phone , cu.company_id ,cu.loginname, cu.Department, cu.sex , cu.companyname, cu.is_active, d.fullname as full_department';
         $fields .=' ,c.company_name ';
+        $fields .=' ,ac.carpool_account ,ac.id as account_id  , ac.account , ac.balance ,ac.identifier, ac.platform, ac.register_date';
+
+        $join = [
+          ['company c','cu.company_id = c.company_id','left'],
+        ];
+        $join[] =  ['t_department d','cu.department_id = d.id','left'];
+        $join[] =  ['carpool_score.t_account ac','cu.loginname = ac.carpool_account', 'left'];
+
         $map = [];
-        $isJoinAccount = $export ? true : false;
+
+        //地区排查 检查管理员管辖的地区部门
+        $authDeptData = $this->authDeptData;
+        if(isset($authDeptData['region_map'])){
+          $map[] = $authDeptData['region_map'];
+        }
+
+
+
         //筛选分数范围 - 下限
         if (isset($filter['floor']) && is_numeric($filter['floor']) && $filter['floor']>0 ){
           $map[] = ['ac.balance','EGT', $filter['floor']];
-          $isJoinAccount = true;
         }
         //筛选分数范围 - 上限
         if (isset($filter['ceiling']) && is_numeric($filter['ceiling']) && $filter['ceiling']>0 ){
           $map[] = ['ac.balance','ELT', $filter['ceiling']];
-          $isJoinAccount = true;
         }
         //筛选用户信息
         if (isset($filter['keyword']) && $filter['keyword'] ){
@@ -123,34 +136,16 @@ class ScoreAccount extends AdminBase
           // $map[] = ['cu.Department|cu.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
           $map[] = ['d.fullname|cu.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
         }
-        $join = [
-          ['company c','cu.company_id = c.company_id','left'],
-        ];
-        $join[] =  ['t_department d','cu.department_id = d.id','left'];
 
-        if($isJoinAccount){
-          $fields .=' ,ac.carpool_account ,ac.id as account_id  , ac.account , ac.balance ,ac.identifier, ac.platform, ac.register_date';
-          $join[] =  ['carpool_score.t_account ac','cu.loginname = ac.carpool_account', 'left'];
-        }
+
         if($export){
           $lists = CarpoolUserModel::alias('cu')->field($fields)->join($join)->where($map)->order('uid DESC')->select();
         }else{
-          $lists = CarpoolUserModel::alias('cu')->field($fields)->join($join)->where($map)->order('uid DESC')->paginate($pagesize, false,  ['query'=>request()->param()]);
+          $lists = CarpoolUserModel::alias('cu')->field($fields)->join($join)->where($map)->order('uid DESC')
+          ->paginate($pagesize, false,  ['query'=>request()->param()]);
         }
 
-        foreach ($lists as $key => $value) {
-          if(!$isJoinAccount){
-            $accountInfo = ScoreAccountModel::where(['carpool_account'=>$value['loginname']])->find();
-            $lists[$key]['carpool_account'] = $accountInfo['carpool_account'] ? $accountInfo['carpool_account'] : '';
-            $lists[$key]['account_id'] = $accountInfo['id'] ? $accountInfo['id'] : '';
-            $lists[$key]['account'] = $accountInfo['account'] ? $accountInfo['account'] : '';
-            $lists[$key]['balance'] = $accountInfo['balance'] ? $accountInfo['balance'] : '';
-            $lists[$key]['identifier'] = $accountInfo['identifier'] ? $accountInfo['identifier'] : '';
-            $lists[$key]['platform'] = $accountInfo['platform'] ? $accountInfo['platform'] : '';
-            $lists[$key]['register_date'] = $accountInfo['register_date'] ? $accountInfo['register_date'] : '';
-          }
 
-        }
         if(!$export){
           return $this->fetch('index_carpool', ['lists' => $lists, 'filter' => $filter,'pagesize'=>$pagesize,'type'=>$type]);
         }

@@ -20,12 +20,33 @@ use think\Db;
 class Score extends AdminBase
 {
 
+
+  public $check_dept_setting = [
+    "action" => ['config']
+  ];
+
+
   /**
    * 变更积分
    * @return mixed
    */
   public function change()
   {
+    $type         = input('param.type/s');
+    $account      = input('param.account/s');
+    $account_id   = input('param.account_id/d',0);
+    $accountModel = new AccountMixModel();
+    if( ($type=='0' || $type=="score") && $account_id ){ //直接从积分帐号取
+      $accountInfo = $accountModel->getDetailById($account_id);
+    }else{
+      $accountInfo = $accountModel->getDetailByAccount($type,$account);
+    }
+    if(!$accountInfo){
+      $this->jsonReturn(-1,'查找不到该账号信息');
+    }
+    $department_id = $accountInfo['carpool']['department_id'];
+    $this->checkDeptAuthByDid($department_id,1); //检查地区权限
+
     if ($this->request->isPost()) {
       $datas         = $this->request->post('');
       if($datas['operand'] == 0){
@@ -40,26 +61,17 @@ class Score extends AdminBase
       if( ($datas['isadd'] && $datas['reason'] < 0 ) || (!$datas['isadd'] && $datas['reason'] > 0)  ){
         $datas['reason']  = - $datas['reason'];
       }
-      //根据accountType查出account字段
-      $accountModel = new AccountMixModel();
+      $datas['region_id'] = $department_id;
       if($accountModel->updateScore($datas)){
         $this->log('改分成功',0);
         $this->jsonReturn(0,'改分成功');
       }else{
+        $errorMsg = $accountModel->errorMsg ?  $accountModel->errorMsg : '改分失败';
         $this->log('改分失败'.json_encode($this->request->post()),-1);
-        $this->jsonReturn(-1,'改分失败');
+        $this->jsonReturn(-1,$errorMsg);
       }
 
     }else{
-      $type         = input('param.type/s');
-      $account      = input('param.account/s');
-      $account_id   = input('param.account_id/d',0);
-      $accountModel = new AccountMixModel();
-      if( ($type=='0' || $type=="score") && $account_id ){ //直接从积分帐号取
-        $accountInfo = $accountModel->getDetailById($account_id);
-      }else{
-        $accountInfo = $accountModel->getDetailByAccount($type,$account);
-      }
 
       $reasons = config('score.reason');
       $reasons_operable = config('score.reason_operable');
@@ -185,7 +197,6 @@ class Score extends AdminBase
         $datas          = $this->request->post('');
         $order_date     = explode(',',$datas['order_date']);
         $exchange_date  = explode(',',$datas['exchange_date']);
-
         if(!is_numeric($region_id)){
           $this->error("请选择地区");
         }
@@ -227,11 +238,12 @@ class Score extends AdminBase
 
 
         $map = [
-          'p_region_id' => $region_id,
-          'name' => 'integral_config'
+          ['p_region_id','=',$region_id] ,
+          ['name','=','integral_config'] ,
         ];
         $ScoreConfigsModel = new ScoreConfigsModel();
         $res = $ScoreConfigsModel->where($map)->find();
+
         $data = null;
         if($res){
           $res = $res->toArray();
@@ -246,6 +258,7 @@ class Score extends AdminBase
           'value'=> $soreSettingDataStr,
           'title'=> '积分配置',
         ];
+
         if( $res && $res['id'] ){
           $map[] = ['id',"=",$res['id']];
           $updateRes = $ScoreConfigsModel->where($map)->update($updataData);
@@ -267,9 +280,15 @@ class Score extends AdminBase
 
       }else{
         $region_id =  $this->request->param('region_id',1);
-        if(is_numeric($region_id)){
-          $regionData = $this->getDepartmentById($region_id);
+
+        //地区排查 检查管理员管辖的地区部门
+        $authDeptData = $this->authDeptData;
+        // dump($authDeptData);exit;
+        if(empty($authDeptData['allow_region_ids']) && !$this->userBaseInfo['auth_depts_isAll'] ){
+           $region_id = $authDeptData['filter_region_ids'][0];
         }
+        $regionData = isset($authDeptData['filter_region_datas'][0]) ? $authDeptData['filter_region_datas'][0] : null;
+
         $map = [
           'p_region_id' => $region_id,
           'name' => 'integral_config'

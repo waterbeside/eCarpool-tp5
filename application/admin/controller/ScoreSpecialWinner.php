@@ -28,7 +28,7 @@ class ScoreSpecialWinner extends AdminBase
    * 中奖列表
    * @return mixed
    */
-  public function index($filter=[],$page = 1,$pagesize = 20,$region_id=0,$export=0)
+  public function index($filter=[],$page = 1,$pagesize = 20,$export=0)
   {
 
     $fields = 't.*
@@ -42,17 +42,14 @@ class ScoreSpecialWinner extends AdminBase
       ['carpool.user u','u.loginname = ac.carpool_account','left'],
       ['carpool.t_department d','lo.region_id = d.id','left'],
     ];
+    $map = [];
 
-    //地区排查
-    if($region_id){
-      if(is_numeric($region_id)){
-        $regionData = $this->getDepartmentById($region_id);
-      }
-      $region_map_sql = $this->buildRegionMapSql($region_id);
-      $map[] = ['','exp', Db::raw($region_map_sql)];
+    //地区排查 检查管理员管辖的地区部门
+    $authDeptData = $this->authDeptData;
+    if(isset($authDeptData['region_map'])){
+      $map[] = $authDeptData['region_map'];
     }
 
-    $map = [];
     $map[] = ['t.is_delete','<>', 1];
 
     //筛选奖品信息
@@ -77,16 +74,14 @@ class ScoreSpecialWinner extends AdminBase
     }
 
     //筛选时间
-    if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
-      $time_s = date("Y-m-01");
-      $time_e = date("Y-m-d",strtotime("$time_s +1 month"));
-      $time_e_o = date("Y-m-d",strtotime($time_e)- 24*60*60);
-      $filter['time'] = $time_s." ~ ".$time_e_o;
+    if(!isset($filter['time']) || !$filter['time']){
+      $filter['time'] =  $this->getFilterTimeRangeDefault('Y-m-d','m');
     }
-    $time_arr = explode(' ~ ',$filter['time']);
-    $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
-    $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
-    $map[] = ['buy_time', 'between time', [$time_s, $time_e]];
+    $time_arr = $this->formatFilterTimeRange($filter['time'],'Y-m-d H:i:s','d');
+    if(count($time_arr)>1){
+      $map[] = ['lo.buy_time', '>=', $time_arr[0]];
+      $map[] = ['lo.buy_time', '<', $time_arr[1]];
+    }
 
     // $lists = WinnersModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC')->paginate($pagesize, false,  ['query'=>request()->param()]);
 
@@ -106,8 +101,6 @@ class ScoreSpecialWinner extends AdminBase
     }
     // dump($lists);
     $returnData =  [
-      'regionData'=> isset($regionData) ? $regionData : NULL,
-      'region_id' => $region_id,
       'lists' => $lists,
       'pagesize'=>$pagesize,
       'filter'=>$filter,
@@ -130,7 +123,7 @@ class ScoreSpecialWinner extends AdminBase
 
     //构建sql
     $fields = 't.*
-      ,lo.uuid as lottery_uuid, lo.publish_number, lo.buy_time, lo.platform, lo.result_str
+      ,lo.uuid as lottery_uuid, lo.publish_number, lo.buy_time, lo.platform, lo.result_str,lo.region_id
       ,ac.id as account_id , ac.carpool_account, ac.balance
     ';
     $join = [
@@ -146,6 +139,7 @@ class ScoreSpecialWinner extends AdminBase
     if(!$data){
       $this->error("数据不存在");
     }else{
+      $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
 
       $data['userInfo'] = CarpoolUserModel::where(['loginname'=>$data['carpool_account']])->find();
       if($data['userInfo']){
@@ -183,11 +177,19 @@ class ScoreSpecialWinner extends AdminBase
         /*if(!$order_no ){
           $this->error("Params error");
         }*/
+        //构建sql
+        $fields = 't.*
+          ,lo.region_id
+        ';
+        $join = [
+          ['lottery lo', 'lo.id = t.lottery_id','left'],
+        ];
 
-        $data = SpecialWinnerModel::alias('t')->find($id);
+        $data = SpecialWinnerModel::alias('t')->field($fields)->join($join)->find($id);
         if(!$data){
           $this->error("数据不存在");
         }
+        $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
 
         if($data['exchange_time']){
           $this->error("已兑换，不可操作。");

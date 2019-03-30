@@ -18,21 +18,26 @@ class ScorePrize extends AdminBase
    * 抽奖列表
    * @return mixed
    */
-  public function index($keyword="",$filter=['status'=>'0,1,2','is_hidden'=>''],$page = 1,$pagesize = 20, $region_id=0)
+  public function index($keyword="",$filter=['status'=>'0,1,2','is_hidden'=>''],$page = 1,$pagesize = 20)
   {
     $map = [];
     $fields = "t.*, d.fullname, d.path";
     $join = [
       ['carpool.t_department d','t.p_region_id = d.id','left']
     ];
-    //地区排查
-    if($region_id){
-      if(is_numeric($region_id)){
-        $regionData = $this->getDepartmentById($region_id);
-      }
-      $region_map_sql = $this->buildRegionMapSql($region_id);
-      $map[] = ['','exp', Db::raw($region_map_sql)];
+
+    //地区排查 检查管理员管辖的地区部门
+    $authDeptData = $this->authDeptData;
+    if(isset($authDeptData['region_map'])){
+      $map[] = $authDeptData['region_map'];
     }
+    // if($region_id){
+    //   if(is_numeric($region_id)){
+    //     $regionData = $this->getDepartmentById($region_id);
+    //   }
+    //   $region_map_sql = $this->buildRegionMapSql($region_id);
+    //   $map[] = ['','exp', Db::raw($region_map_sql)];
+    // }
 
     $status = input("param.status");
     if($status!==null){
@@ -69,8 +74,6 @@ class ScorePrize extends AdminBase
     $statusList = config('score.prize_status');
     $auth['admin/ScorePrize/add'] = $this->checkActionAuth('admin/ScorePrize/add');
     $returnData =  [
-      'regionData'=> isset($regionData) ? $regionData : NULL,
-      'region_id'=>$region_id,
       'lists' => $lists,
       'keyword' => $keyword,
       'pagesize'=>$pagesize,
@@ -148,7 +151,15 @@ class ScorePrize extends AdminBase
       $id           = $this->request->param('id/d',0);
       $data = [];
       if($id){
-        $data = PrizeModel::json(['images'])->find($id);
+        $fields = "t.*, d.fullname";
+        $join = [
+          ['carpool.t_department d','t.p_region_id = d.id','left']
+        ];
+        $data = PrizeModel::alias('t')->field($fields)->json(['images'])->join($join)->where("t.id",$id)->find();
+        if(!$data){
+          $this->error("抽奖不存在");
+        }
+        $this->checkDeptAuthByDid($data['p_region_id'],1); //检查地区权限
         $maxData = $this->checkMaxData($data['identity']);
         $data['thumb'] = is_array($data["images"]) ? $data["images"][0] : "" ;
 
@@ -246,6 +257,8 @@ class ScorePrize extends AdminBase
       if(!$data){
         $this->error("抽奖不存在");
       }
+      $this->checkDeptAuthByDid($data['p_region_id'],1); //检查地区权限
+
       $data['is_show'] = $data['is_delete'] ? 0 : 1 ;
       $data['thumb'] = is_array($data["images"]) ? $data["images"][0] : "" ;
 

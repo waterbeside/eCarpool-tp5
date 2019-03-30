@@ -20,7 +20,7 @@ class ScoreHistory extends AdminBase
      * 积分历史（所有用户）
      * @return mixed
      */
-    public function index($filter=null, $page = 1, $pagesize = 20, $region_id=0)
+    public function index($filter=null, $page = 1, $pagesize = 20)
     {
         $fields = 't.* ,d.fullname as full_department';
         $join = [
@@ -28,27 +28,26 @@ class ScoreHistory extends AdminBase
         ];
         $map = [];
         $map[] = ['t.is_delete','<>', 1];
-        //地区排查
-        if($region_id){
-          if(is_numeric($region_id)){
-            $regionData = $this->getDepartmentById($region_id);
-          }
-          $region_map_sql = $this->buildRegionMapSql($region_id);
-          $map[] = ['','exp', Db::raw($region_map_sql)];
+        //地区排查 检查管理员管辖的地区部门
+        $authDeptData = $this->authDeptData;
+        if(isset($authDeptData['region_map'])){
+          $map[] = $authDeptData['region_map'];
         }
 
         // dump($filter);
         if ($filter['reason']) {
             $map[] = ['t.reason','=', $filter['reason']];
         }
+
+        //筛选时间
         if ($filter['time']) {
-            $time_arr = explode(' ~ ', $filter['time']);
-            if (is_array($time_arr)) {
-                $time_s = date('Y-m-d H:i:s', strtotime($time_arr[0]));
-                $time_e = date('Y-m-d H:i:s', strtotime($time_arr[1]) + 24*60*60);
-                $map[] = ['t.time', 'between time', [$time_s, $time_e]];
-            }
+          $time_arr = $this->formatFilterTimeRange($filter['time'],'Y-m-d H:i:s','d');
+          if(count($time_arr)>1){
+            $map[] = ['t.time', '>=', $time_arr[0]];
+            $map[] = ['t.time', '<', $time_arr[1]];
+          }
         }
+
 
         $lists = HistoryModel::alias('t')->field($fields)->where($map)->join($join)
         ->order('t.time DESC, t.id DESC')->paginate($pagesize, false, ['query'=>request()->param()]);
@@ -66,8 +65,6 @@ class ScoreHistory extends AdminBase
         $reasons = config('score.reason');
 
         $returnData = [
-          'regionData'=> isset($regionData) ? $regionData : NULL,
-          'region_id' => $region_id,
           'lists' => $lists,
           'filter' => $filter,
           'pagesize'=>$pagesize,
@@ -80,13 +77,11 @@ class ScoreHistory extends AdminBase
      * 积分历史（指定用户）
      * @return mixed
      */
-    public function lists($type=1, $account=null, $account_id=null, $filter=null, $page = 1, $pagesize = 20, $rule_number=null)
+    public function lists($type=1, $account=null, $account_id=null, $filter=null, $page = 1, $pagesize = 20)
     {
         $map = [];
         $map[] = ['is_delete','<>', 1];
-        if (is_numeric($rule_number)) {
-            $map[] = ['rule_number','=', $rule_number];
-        }
+
         // dump($filter);
         if ($filter['reason']) {
             $map[] = ['reason','=', $filter['reason']];
@@ -129,6 +124,9 @@ class ScoreHistory extends AdminBase
                 $map[] = ['carpool_account','=', $account];
             }
         }
+        if(isset($userInfo) && $userInfo){
+          $this->checkDeptAuthByDid($userInfo['department_id'],1); //检查地区权限
+        }
 
         $lists = HistoryModel::where($map)->order('time DESC, id DESC')->paginate($pagesize, false, ['query'=>request()->param()]);
 
@@ -137,7 +135,6 @@ class ScoreHistory extends AdminBase
         $reasons = config('score.reason');
 
         $returnData = [
-          'rule_number' => $rule_number,
           'lists' => $lists,
           'filter' => $filter,
           'pagesize'=>$pagesize,

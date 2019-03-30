@@ -17,26 +17,27 @@ use think\Db;
 class ScoreConfigs extends AdminBase
 {
 
+  public $check_dept_setting = [
+    "action" => ['index','awards']
+  ];
+
 /**
  *
  */
 
- public function index($filter=null,$region_id=0)
+ public function index($filter=null)
  {
    $map = [];
    $fields = "t.*, d.fullname, d.path";
    $join = [
      ['carpool.t_department d','t.p_region_id = d.id','left']
    ];
-   //地区排查
-   $regionData = null;
-   if($region_id){
-     if(is_numeric($region_id)){
-       $regionData = $this->getDepartmentById($region_id);
-     }
-     $region_map_sql = $this->buildRegionMapSql($region_id);
-     $map[] = ['','exp', Db::raw($region_map_sql)];
+   //地区排查 检查管理员管辖的地区部门
+   $authDeptData = $this->authDeptData;
+   if(isset($authDeptData['region_map'])){
+     $map[] = $authDeptData['region_map'];
    }
+
 
    if(isset($filter['name']) && $filter['name']){
      $map[] = ['t.name','=', $filter['name']];
@@ -51,8 +52,7 @@ class ScoreConfigs extends AdminBase
    $returnData =  [
      'lists' => $resList,
      'filter'=>$filter,
-     'regionData' => $regionData,
-     'region_id'=> $region_id
+     'authDoc'=>$this->checkActionAuth('admin/Score/doc')
    ];
 
    return $this->fetch('index',$returnData);
@@ -71,14 +71,10 @@ class ScoreConfigs extends AdminBase
         $this->error("请选择地区");
       }
 
-      $rule_number = $this->request->post('rule_number');
       $data_used  = [];
       $data_used_count = 0;
       $data_used_keys = [];
       $total_rate = 0;
-
-
-
 
 
       foreach ($value_array as $key => $v) {
@@ -163,9 +159,17 @@ class ScoreConfigs extends AdminBase
     }else{
 
       $region_id =  $this->request->param('region_id',1);
-      if(is_numeric($region_id)){
-        $regionData = $this->getDepartmentById($region_id);
+
+      //地区排查 检查管理员管辖的地区部门
+      $authDeptData = $this->authDeptData;
+      // dump($authDeptData);exit;
+      if(empty($authDeptData['allow_region_ids']) && !$this->userBaseInfo['auth_depts_isAll'] ){
+         $region_id = $authDeptData['filter_region_ids'][0];
       }
+      $regionData = isset($authDeptData['filter_region_datas'][0]) ? $authDeptData['filter_region_datas'][0] : null;
+      // if(is_numeric($region_id)){
+      //   $regionData = $this->getDepartmentById($region_id);
+      // }
       $map = [
         ['name','=','awards'],
         ['p_region_id','=',$region_id],
@@ -224,11 +228,14 @@ class ScoreConfigs extends AdminBase
       $res = $ScoreConfigsModel->find($id);
       if(!$res){
         return $this->jsonReturn(-1, '删除失败，数据不存在或已删除');
-
       }
+
       if(is_numeric($res['p_region_id'])  && in_array($res['p_region_id'],[0,1])){
         return $this->jsonReturn(-1, '总地区配置项不能被删除');
       }
+
+      $this->checkDeptAuthByDid($res['p_region_id'],1); //检查地区权限
+
 
       if ($ScoreConfigsModel->destroy($id)) {
           $this->log('删除积分配置成功，id='.$id, 0);
