@@ -146,8 +146,6 @@ class Trips extends ApiBase
           'currentPage'=>intval($results['current_page']),
         ];
 
-
-
         $GradeModel =  new GradeModel();
 
         foreach ($datas as $key => $value) {
@@ -166,7 +164,7 @@ class Trips extends ApiBase
               ['uid','=',$uid]
             ];
             $isGrade = $GradeModel->isGrade('trips',$app_id,$datas[$key]['time']);
-            $datas[$key]['already_rated'] =   !$isGrade   ||$GradeModel->where($ratedMap)->count() ? 1 : 0;
+            $datas[$key]['already_rated'] =   !$isGrade  || $GradeModel->where($ratedMap)->count() ? 1 : 0;
         }
         $returnData = [
           'lists'=>$datas,
@@ -902,9 +900,9 @@ class Trips extends ApiBase
         // dump($baseSql2);exit;
 
         $map2 = [];
-        $fields2 = 'tt.trip_type as type, tt.object_id as id, tt.time, tt.status, tt.map_type, tt.grade_type ';
+        $fields2 = 'tt.trip_type as type, tt.object_id as id, tt.time, tt.status, tt.map_type, tt.grade_type,tt.passengerid,tt.carownid, g.grade ';
         $join2 = [
-          ["t_grade g"," g.object_id = tt.object_id AND g.type=tt.trip_type AND g.uid = $uid",'left'],
+          ["t_grade g"," g.object_id = tt.object_id AND g.type=tt.grade_type AND g.uid = $uid",'left'],
         ];
         $map2 = [
           ["tt.time","<",date('YmdHi', strtotime("-1 hour"))],
@@ -924,7 +922,7 @@ class Trips extends ApiBase
           $returnValue['time'] = $formatTime ? $formatTime : 0 ;
           $app_id = $value['map_type'] == 1 ? 2 : 1;
           $isGrade = $GradeModel->isGrade('trips',$app_id,$returnValue['time']);
-          if($isGrade){
+          if($isGrade && $value['passengerid']){
             $returnList[] = $returnValue;
           }
 
