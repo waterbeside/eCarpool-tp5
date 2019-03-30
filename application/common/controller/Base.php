@@ -197,6 +197,10 @@ class Base extends Controller
 
     }
 
+    /**
+     * 从数据库最得系统配置
+     * @return [type] [description]
+     */
     public function getSystemConfigs()
     {
       $ConfigsModel = new Configs();
@@ -214,7 +218,7 @@ class Base extends Controller
      * @param  array     $header 发送的Header信息
      * @return void
      */
-    protected function success($msg = '', $url = null, $data = '', $wait = 3, array $header = [])
+    public function success($msg = '', $url = null, $data = '', $wait = 3, array $header = [])
     {
       if($this->request->isAjax()){
         $extra = is_array($wait) ? $wait :[];
@@ -239,7 +243,7 @@ class Base extends Controller
      * @param  array     $header 发送的Header信息
      * @return void
      */
-    protected function error($msg = '', $url = null, $data = '', $wait = 3, array $header = [])
+    public function error($msg = '', $url = null, $data = '', $wait = 3, array $header = [])
     {
       if($this->request->isAjax()){
         $extra = is_array($wait) ? $wait :[];
