@@ -11,7 +11,7 @@ use think\Db;
 use think\facade\Session;
 use my\RedisData;
 use my\DeptAuth;
-
+use think\facade\Hook;
 use Firebase\JWT\JWT;
 use app\user\model\Department;
 
@@ -30,18 +30,26 @@ class AdminBase extends Base
     public $server_timezone_offset = 0;
     public $request_timezone_offset = 0;
     public $timezone_offset_diff = 0;
-
     public $un_check = [];
+    public $check_dept_setting = [];
+    public $authDeptData = [];
+    protected $check_dept_setting_default = [
+      "action" => ['index','add','post.edit']
+    ];
+
 
     protected function initialize()
     {
         parent::initialize();
-        $this->checkAuth();
+        $this->checkAuthSession(); //如果使用Session验证 , 生成 $userBaseInfo
+        $this->checkAuth();   //验证菜单权限
+        $this->checkDeptAuth(); //取得权限部门
+
         $this->getTimezoneOffset();
+
 
         // 输出当前请求控制器（配合后台侧边菜单选中状态）
         $this->assign('controller', Loader::parseName($this->request->controller()));
-
     }
 
     /**
@@ -52,7 +60,6 @@ class AdminBase extends Base
     {
 
        // $this->checkToken(); //如果使用jwt验证
-        $this->checkAuthSession(); //如果使用Session验证
 
         $module     = strtolower($this->request->module());
         $controller = strtolower($this->request->controller());
@@ -87,16 +94,10 @@ class AdminBase extends Base
         }
 
 
-        $auth_dept_data = $this->getAuthDepartments( $this->userBaseInfo['uid']);
-        $this->userBaseInfo['auth_depts_str']  = $auth_dept_data['depts'];
-        $this->userBaseInfo['auth_depts']  = explode(',',$auth_dept_data['depts']);
-        $this->userBaseInfo['auth_depts_isAll']  = in_array(0,$this->userBaseInfo['auth_depts']) ? 1 : 0;
-        // var_dump($this->userBaseInfo);
     }
 
     /**
      * 验证验入session
-     * @return [type] [description]
      */
     public function checkAuthSession()
     {
@@ -114,10 +115,87 @@ class AdminBase extends Base
       ];
     }
 
+    /**
+     * 取得当前管理员的部门权限信息
+     */
+    public function getDeptAuth()
+    {
+      $auth_dept_data = $this->getAuthDepartments( $this->userBaseInfo['uid']);
+      $this->userBaseInfo['auth_depts_str']  =   $auth_dept_data ? $auth_dept_data['depts']: 0;
+      $this->userBaseInfo['auth_depts']  = $auth_dept_data ? explode(',',$auth_dept_data['depts']) : [];
+      $this->userBaseInfo['auth_depts_isAll']  = $auth_dept_data ? (in_array(0,$this->userBaseInfo['auth_depts']) ? 1 : 0) : 1;
+    }
 
     /**
-     * 验证验入session
-     * @return [type] [description]
+     * 检查部门权限
+     */
+    public function checkDeptAuth()
+    {
+      $this->getDeptAuth(); //取得权限部门
+      $check_dept_setting = array_merge($this->check_dept_setting_default,(is_array($this->check_dept_setting)?$this->check_dept_setting:[]));
+      $action     = strtolower($this->request->action());
+      $method     = strtolower($this->request->method());
+      if(in_array($action,$check_dept_setting['action']) || in_array($method.'.'.$action,$check_dept_setting['action'])){
+        $res = Hook::listen("check_dept_auth",$this,[],true);
+        $authDeptData = $this->authDeptData;
+        $region_id = $authDeptData['region_id'];
+        $regionData = $authDeptData['region_datas'] ? $authDeptData['region_datas'][0] : null;
+        $this->assign('region_id', $region_id);
+        $this->assign('region_datas', $authDeptData['region_datas'] );
+
+        if($action == 'index'){
+          $this->assign('regionData', $regionData );
+
+        }else if(in_array($action,['add','edit'])){
+          if(!$this->request->isPost()){
+            if(count($this->userBaseInfo['auth_depts']) > 0 || $this->userBaseInfo['auth_depts_isAll']){
+              $this->assign('showSelectDepartment', 1 );
+            }else{
+              $this->assign('showSelectDepartment', 0 );
+            }
+          }
+          if($action == 'add'){
+            $department_default_selected = !$this->userBaseInfo['auth_depts_isAll'] && isset($authDeptData['filter_region_datas'][0])  ? $authDeptData['filter_region_datas'][0] : null;
+            $this->assign('department_default_selected',  $department_default_selected  );
+          }
+        }
+      }
+    }
+
+    /**
+     * 检查该地区id有没有权限
+     */
+    public function checkDeptAuthByDid($did,$returnType=0)
+    {
+      $DepartmentModel = new Department;
+      $errorMsg = '你没有管理该地区或部门内容的权限';
+      if($this->userBaseInfo['auth_depts_isAll']){
+        return true;
+      }elseif(!$did ){
+        $this->errorMsg = $errorMsg;
+        return  $returnType ? $this->error($this->errorMsg) : false;
+      }
+      $department_data = $DepartmentModel->getItem($did);
+      if(!$department_data){
+        $this->errorMsg = $errorMsg;
+        return  $returnType ? $this->error($this->errorMsg) : false;
+      }
+      if(!$this->userBaseInfo['auth_depts']){
+        $this->errorMsg = $errorMsg;
+        return  $returnType ? $this->error($this->errorMsg) : false;
+      }
+      $check_res = array_intersect($this->userBaseInfo['auth_depts'], explode(',',($department_data['path'].','.$did)));
+      if(empty($check_res)){
+        $this->errorMsg = $errorMsg;
+        return  $returnType ? $this->error($this->errorMsg) : false;
+      }else{
+        return true;
+      }
+
+    }
+
+    /**
+     * 验证路由权限
      */
     public function checkActionAuth($r){
       $auth     = new Auth();
@@ -176,7 +254,7 @@ class AdminBase extends Base
     }
 
     /**
-     *
+     * 取得后台用户有权的部门
      */
     public function getAuthDepartments($uid){
       $DeptAuth     = new DeptAuth();
@@ -297,19 +375,20 @@ class AdminBase extends Base
 
     /**
      * 格式化筛选的时间范围
-     * @param  string||array $data     输入的时间 以 "2019-01-01 ~ 2019-01-02" 格式传入，或以数组格式["2019-01-01", "2019-01-02"]
+     * @param  string||array $date     输入的时间 以 "2019-01-01 ~ 2019-01-02" 格式传入，或以数组格式["2019-01-01", "2019-01-02"]
      * @param  string $formater 输出的格式
      * @param  string $accuracy 精度范围
      * @return array          输出数组 [start time,end time];
      */
-    public function formatFilterTimeRange($data,$formater = "Y-m-d H:i:s",$accuracy = "d",$timezone_offset_switch = 1)
+    public function formatFilterTimeRange($date,$formater = "Y-m-d H:i:s",$accuracy = "d",$timezone_offset_switch = 1)
     {
-      if(is_string($data)){
-        $time = $data;
-        $time_arr = explode(' ~ ',$data);
+      if(is_string($date)){
+        $time = $date;
+        $time_arr = explode(' ~ ',$date);
+        $time_arr = count($time_arr) > 1 ? $time_arr : explode('+~+',$time);
       }
-      if(is_array($data) && is_string($data[0]) && is_string($data[1])){
-        $time_arr = $data;
+      if(is_array($date) && is_string($date[0]) && is_string($date[1])){
+        $time_arr = $date;
       }
       switch ($accuracy) {
         case 'Y':
@@ -340,6 +419,41 @@ class AdminBase extends Base
       $time_s = date($formater,$time_s_timestamp);
       $time_e = date($formater,$time_e_timestamp);
       return [$time_s,$time_e];
+    }
+
+
+    public function getFilterTimeRangeDefault($formater = "Y-m-d H:i:s",$accuracy = "d")
+    {
+      switch ($accuracy) {
+        case 'Y':
+          $time_s =  date('Y');
+          $time_e = date('Y');
+          break;
+        case 'm':
+          $time_s = date('Y-m-d',strtotime("first day of this month"));
+          $time_e = date('Y-m-d',strtotime("last day of this month"));
+          break;
+        case 'w':
+          $time_s = date("Y-m-d",strtotime('-1 week last sunday'));
+          $time_e = date("Y-m-d",strtotime("$time_s +1 week")- 24*60*60);
+          break;
+        case 'd':
+          $time_s =  date('Y-m-d');
+          $time_e = date('Y-m-d');
+          break;
+        case 'H':
+          $time_s =  date('Y-m-d H');
+          $time_e = date('Y-m-d H');
+          break;
+        default:
+          $endAdd = '';
+          break;
+      }
+      $time_s_format =  date($formater,strtotime($time_s));
+      $time_e_format =  date($formater,strtotime($time_e));
+      $date = $time_s_format." ~ ".$time_e_format;
+
+      return $date;
     }
 
 
