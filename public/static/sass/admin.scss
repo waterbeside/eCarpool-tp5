@@ -203,14 +203,17 @@ body {background:#FFF; color:$color-black-l1}
 .p-login {
   $wrapper-width: 450px;
   $padding : 20px;
-  background: url(../images/login-bg.png) #4A5064;
-  .login-title {color: #fff;text-align: center;font-size: 20px; margin: 200px 0 $padding ;}
+  // background: url(../images/login-bg.png) #4A5064;
+  background: url(../images/login-bg.png) $color-black-l2;
+  .login-title {color: #fff;text-align: center;font-size: 20px; padding: 200px 0 $padding ;}
   .login-form-wrapper { background: #FFF; width: $wrapper-width; margin: 0 auto; padding:$padding 12px 8px  ; border-radius: 3px; box-shadow: 0 0 10px rgba(0,0,0,.2)}
   .login-form {position: relative; left:-40px; max-width: $wrapper-width; margin: 10px auto;  color:#888;
     .captcha {width: 140px;height: 38px;}
     input {  border-color:$color-border}
     button {width: 100%; }
+    .J-submit-btn.layui-disabled { color: #FFF!important;}
   }
+
 }
 
 
