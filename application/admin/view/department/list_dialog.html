@@ -56,10 +56,8 @@
                     <tr>
                         <th lay-data="{field:'id', width:80}">ID</th>
                         <th lay-data="{field:'pid', width:80}">PID</th>
-                        <th lay-data="{field:'name'}">名称</th>
-                        <?php if($deep){ ?>
-                        <th lay-data="{field:'fullname', width:120}">PATH</th>
-                        <?php } ?>
+                        <th lay-data="{field:'name', width:150}">名称</th>
+                        <th lay-data="{field:'fullname' }">PATH</th>
                         <th lay-data="{field:'options', width:80,fixed:'right'}">操作</th>
 
                     </tr>
@@ -70,13 +68,13 @@
                         <td>{$vo.id}</td>
                         <td>{$vo.pid}</td>
                         <td><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>$vo['id']])}">{$vo.name}</a></td>
-                        <?php if($deep){ ?>
+
                           <td class="layui-breadcrumb">
                             <?php
                             $item_full_array = explode(',',$vo['fullname']);
                             $item_path_array = explode(',',$vo['path']);
                             foreach($item_full_array as $k => $p ){
-                              $sep = $k ?  "/" : "";
+                              $sep = $k ?  " / " : "";
                               $pid = isset($item_path_array[$k+1]) ? $item_path_array[$k+1] : '';
                               if($pid){
                                 echo '<a href="'.url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>$pid]).'">'.$p.'</a>';
@@ -86,20 +84,23 @@
                             }
                             ?>
                           </td>
-                        <?php } ?>
+
                         <td>
                           <?php
-                            $returnItemData = [
-                              'id'             => $vo['id'],
-                              'name'           => $vo['name'],
-                              'fullname'     => $vo['fullname'],
-                              'path'           => $vo['path'],
-                            ];
-                            $btnStyleClass = $multi ? "layui-btn-primary" : ""
+                            if($vo['auth_allow_select']){
+                              $returnItemData = [
+                                'id'             => $vo['id'],
+                                'name'           => $vo['name'],
+                                'fullname'     => $vo['fullname'],
+                                'path'           => $vo['path'],
+                              ];
+                              $btnStyleClass = $multi ? "layui-btn-primary" : "";
+
                           ?>
                           <button href="javascript:void(0);"  class="layui-btn   layui-btn-xs  btn-select J-btn-{$vo.id} <?php echo $btnStyleClass; ?>" title="选择" onclick='DialogList_EXEC.deptClickItem(<?php echo json_encode($returnItemData) ?>)'>选择</button>
-
-
+                          <?php }else{
+                            echo '<button class="layui-btn   layui-btn-xs   layui-btn-disabled"   onclick="alert(\'你没有选择该地区或部门的权限\');">选择</button>';
+                          } ?>
                         </td>
                     </tr>
                     {/foreach}

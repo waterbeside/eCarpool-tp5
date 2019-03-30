@@ -20,6 +20,9 @@ class Department extends AdminBase
 {
 
     public  $un_check = ['admin/department/list_dialog'];
+    public $check_dept_setting = [
+      "action" => ['list_dialog']
+    ];
 
     protected function initialize()
     {
@@ -88,7 +91,15 @@ class Department extends AdminBase
       $returnData = $this->index($pid,$filter,$page,10,0);
       $returnData['fun'] = $fun;
       $returnData['multi'] = $multi;
+      $authDeptData = $this->authDeptData;
+      $auth_depts_isAll = $this->userBaseInfo['auth_depts_isAll'];
+      $auth_depts = $this->userBaseInfo['auth_depts'];
+       // var_dump($returnData['lists']);
+      foreach ($returnData['lists'] as $key => $value) {
+        $fullPathArray = explode(',',($value['path'].','.$value['id']));
+        $returnData['lists'][$key]['auth_allow_select'] = $auth_depts_isAll || array_intersect($auth_depts,$fullPathArray) ? 1 : 0;
 
+      }
       return $this->fetch('list_dialog',$returnData );
     }
 
