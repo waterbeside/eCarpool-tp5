@@ -45,9 +45,8 @@ function cRenderTimes(wrapper){
     var formatStr = $(el).data('format');
         formatStr = formatStr ? formatStr : 'yyyy-mm-dd hh:ii:ss';
     var timestamp = parseInt($.trim($(el).text()));
-
     var  dateObject = new Date(timestamp);
-    if(dateObject){
+    if(typeof(dateObject) == 'object' && !isNaN(dateObject.getDate())){
       var frm_time = cFormatDate(dateObject,formatStr);
       $(el).addClass('J-format-ok').html(frm_time);
     }
