@@ -22,7 +22,7 @@
               <div class="layui-input-inline">
                   <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
                   <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择商品区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="选择商品区域" data-title="选择商品区域" data-tips-position="3" data-auto-submit="true"  >
-                    {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择商品区域"}
+                    {$region_datas ? str_replace(',',' / ',$region_datas[0]['fullname']) : "选择商品区域"}
                   </a>
               </div>
           </form>
