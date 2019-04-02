@@ -61,7 +61,11 @@
                     {foreach name="lists" item="vo"}
                     <tr>
                         <td>
-                          <?php if($vo['is_image']){ ?>
+                          <?php if($vo['is_image']){
+                            if($vo['module'] == 'user/avatar'){
+                              $vo['filepath'] = (isset($systemConfig['site_host'])? "http://".$systemConfig['site_host']:'').$vo['filepath'];
+                            }
+                            ?>
                             <div class="cover-pic-wrapper" style=" float: left;width:30px;height:30px;background-image:url('{$vo.filepath}')"></div>
                           <?php }else{ ?>
                             -
