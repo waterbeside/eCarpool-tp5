@@ -22,7 +22,9 @@ class User extends AdminBase
 {
     protected $user_model;
     public    $un_check = ['admin/user/user_dialog'];
-
+    public $check_dept_setting = [
+      "action" => ['index','user_dialog']
+    ];
     protected function initialize()
     {
         parent::initialize();
@@ -38,7 +40,16 @@ class User extends AdminBase
     public function index($filter = [], $page = 1, $pagesize = 50)
     {
         $fields = "u.*,c.*, d.fullname as full_department";
+        $join = [
+          ['company c','u.company_id = c.company_id','left'],
+          ['t_department d','u.department_id = d.id','left'],
+        ];
         $map = [];
+        //地区排查 检查管理员管辖的地区部门
+        $authDeptData = $this->authDeptData;
+        if(isset($authDeptData['region_map'])){
+          $map[] = $authDeptData['region_map'];
+        }
         //筛选用户信息
         if (isset($filter['keyword']) && $filter['keyword']) {
             $map[] = ['u.loginname|u.phone|u.name','like', "%{$filter['keyword']}%"];
@@ -48,10 +59,8 @@ class User extends AdminBase
             $map[] = ['d.fullname|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
             // $map[] = ['u.Department|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
         }
-        $join = [
-          ['company c','u.company_id = c.company_id','left'],
-          ['t_department d','u.department_id = d.id','left'],
-        ];
+
+
         $user_list = $this->user_model->alias('u')->field($fields)->join($join)->where($map)->order('uid DESC')->paginate($pagesize, false, ['query'=>request()->param()]);
         $auth = [];
         $auth['admin/user/shift_delete'] = $this->checkActionAuth('admin/User/add');
@@ -77,7 +86,16 @@ class User extends AdminBase
     public function user_dialog($filter = [], $page = 1, $pagesize = 12,$fun = 'select_user')
     {
         $fields = "u.*,c.*, d.fullname as full_department";
+        $join = [
+          ['company c','u.company_id = c.company_id','left'],
+          ['t_department d','u.department_id = d.id','left'],
+        ];
         $map = [];
+        //地区排查 检查管理员管辖的地区部门
+        $authDeptData = $this->authDeptData;
+        if(isset($authDeptData['region_map'])){
+          $map[] = $authDeptData['region_map'];
+        }
         //筛选用户信息
         if (isset($filter['keyword']) && $filter['keyword']) {
             $map[] = ['u.loginname|u.phone|u.name','like', "%{$filter['keyword']}%"];
@@ -87,10 +105,7 @@ class User extends AdminBase
             $map[] = ['d.fullname|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
             // $map[] = ['u.Department|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
         }
-        $join = [
-          ['company c','u.company_id = c.company_id','left'],
-          ['t_department d','u.department_id = d.id','left'],
-        ];
+
         $lists = $this->user_model->alias('u')->field($fields)->join($join)->where($map)->order('uid DESC')->paginate($pagesize, false, ['query'=>request()->param()]);
 
 
@@ -244,6 +259,7 @@ class User extends AdminBase
         } else {
             $user = $this->user_model->find($id);
             $user->full_department = Department::where('id', $user->department_id)->value('fullname');
+            $this->checkDeptAuthByDid($user['department_id'],1); //检查地区权限
 
             $user->avatar = $user->imgpath ? config('secret.avatarBasePath').$user->imgpath : config('secret.avatarBasePath')."im/default.png";
 
@@ -259,6 +275,8 @@ class User extends AdminBase
      */
     public function delete($id)
     {
+        $user = $this->user_model->find($id);
+        $this->checkDeptAuthByDid($user['department_id'],1); //检查地区权限
         if ($this->user_model->where('uid', $id)->update(['is_delete' => 1])) {
             $this->log('删除用户成功，id='.$id, 0);
             return $this->jsonReturn(0, '删除成功');
@@ -274,6 +292,8 @@ class User extends AdminBase
      */
     public function shift_delete($id)
     {
+        $user = $this->user_model->find($id);
+        $this->checkDeptAuthByDid($user['department_id'],1); //检查地区权限
         // if($this->user_model->where('uid', $id)->update(['is_delete' => 1])){
         if ($this->user_model->destroy($id)) {
             $this->log('删除用户成功，id='.$id, 0);
