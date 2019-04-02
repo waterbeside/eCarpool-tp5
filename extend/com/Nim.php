@@ -420,6 +420,20 @@ class Nim {
     }
 
     /**
+     * 更新用户名片
+     */
+    public function updateUinfoByData($data){
+      $url = 'https://api.netease.im/nimserver/user/updateUinfo.action';
+      if($this->RequestType=='curl'){
+          $result = $this->postDataCurl($url,$data);
+      }else{
+          $result = $this->postDataFsockopen($url,$data);
+      }
+      return $result;
+
+    }
+
+    /**
      * 获取用户名片，可批量
      * @param  $accids    [用户帐号（例如：JSONArray对应的accid串，如："zhangsan"，如果解析出错，会报414）（一次查询最多为200）]
      * @return $result    [返回array数组对象]
