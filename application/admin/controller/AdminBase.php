@@ -47,6 +47,7 @@ class AdminBase extends Base
 
         $this->getTimezoneOffset();
 
+        $this->assign('systemConfig', $this->systemConfig);
 
         // 输出当前请求控制器（配合后台侧边菜单选中状态）
         $this->assign('controller', Loader::parseName($this->request->controller()));
@@ -350,7 +351,7 @@ class AdminBase extends Base
      */
     public function buildRegionMapSql($region_id,$as = 'd')
     {
-      $region_id_array = explode(",",$region_id);
+      $region_id_array = is_array($region_id) ? $region_id : explode(",",$region_id);
       $region_id_array = $this->arrayUniq($region_id_array);
       $region_map_sql = "";
       foreach ($region_id_array as   $value) {
