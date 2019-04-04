@@ -33,11 +33,13 @@ class Trips extends ApiBase
      */
     public function index($pagesize=20, $type=0, $fullData = 0)
     {
+        $page = input('param.page',1);
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
         $extra_info = json_decode($userData['extra_info'], true);
         $merge_ids = isset($extra_info['merge_id']) && is_array($extra_info['merge_id']) && $type ==1  ? $extra_info['merge_id'] : [];
 
+        $redis = new RedisData();
         $InfoModel = new InfoModel();
         $viewSql  =  $InfoModel->buildUnionSql($uid, $merge_ids ,($type ? "(0,1,3,4)" : "(0,1,4)"));
         $fields = 't.infoid , t.love_wall_ID , t.time, t.trip_type , t.time, t.status, t.passengerid, t.carownid , t.seat_count,  t.subtime, t.map_type ';
@@ -47,6 +49,7 @@ class Trips extends ApiBase
         $fields .= ', pd.fullname as p_full_department';
         $fields .=  $this->buildAddressFields();
         $join = $this->buildTripJoins();
+
 
 
         if ($type==1) {
@@ -61,6 +64,17 @@ class Trips extends ApiBase
               // ["t.go_time",">",strtotime("-1 hour")],
             ];
             $orderby = 't.time ASC, t.infoid ASC, t.love_wall_id ASC';
+            //如果$type !=1 则查缓存
+            $cacheKey = "carpool:trips:my:u{$uid}:pz{$pagesize}_p{$page}_fd{$fullData}";
+            $cacheExp = 20;
+            $cacheData = $redis->get($cacheKey);
+            if($cacheData){
+              if($cacheData == "-1"){
+                return $this->jsonReturn(20002, lang('No data'));
+              }
+              $returnData = json_decode($cacheData,true);
+              return $this->jsonReturn(0, $returnData, "success");
+            }
         }
 
 
@@ -81,6 +95,9 @@ class Trips extends ApiBase
         } else {
             $datas =    $modelObj->select();
             if (!$datas) {
+                if(!$type){
+                  $redis->setex($cacheKey, $cacheExp, -1);
+                }
                 return $this->jsonReturn(20002, lang('No data'));
             }
             $total = count($datas);
@@ -103,6 +120,9 @@ class Trips extends ApiBase
           'lists'=>$datas,
           'page' =>$pageData
         ];
+        if(!$type){
+          $redis->setex($cacheKey, $cacheExp, json_encode($returnData));
+        }
 
         $this->jsonReturn(0, $returnData, "success");
     }
@@ -115,6 +135,22 @@ class Trips extends ApiBase
     {
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
+        $page = input('param.page',1);
+
+
+        // 查缓存
+        $redis = new RedisData();
+        $cacheKey = "carpool:trips:history:u{$uid}:pz{$pagesize}_p{$page}";
+        $cacheExp = 20;
+        $cacheData = $redis->get($cacheKey);
+        if($cacheData){
+          if($cacheData == "-1"){
+            return $this->jsonReturn(20002, lang('No data'));
+          }
+          $returnData = json_decode($cacheData,true);
+          return $this->jsonReturn(0, $returnData, "success");
+        }
+
         $extra_info = json_decode($userData['extra_info'], true);
         $merge_ids = isset($extra_info['merge_id']) && is_array($extra_info['merge_id'])  ? $extra_info['merge_id'] : [];
 
@@ -135,6 +171,7 @@ class Trips extends ApiBase
         $modelObj =  Db::connect('database_carpool')->table("($viewSql)" . ' t')->field($fields)->where($map)->join($join)->order($orderby);
         $results =    $modelObj->paginate($pagesize, false, ['query'=>request()->param()])->toArray();
         if (!$results['data']) {
+            $redis->setex($cacheKey, $cacheExp, -1);
             return $this->jsonReturn(20002, lang('No data'));
         }
 
@@ -170,7 +207,7 @@ class Trips extends ApiBase
           'lists'=>$datas,
           'page' =>$pageData
         ];
-
+        $redis->setex($cacheKey, $cacheExp, json_encode($returnData));
         $this->jsonReturn(0, $returnData, "success");
         // $this->unsetResultValue($this->index($pagesize, 1, 1));
     }
@@ -252,22 +289,44 @@ class Trips extends ApiBase
             $this->jsonReturn(992, [], 'lost id');
             // return $this->error('lost id');
         }
-        $fields = 't.time, t.status,  t.seat_count, t.map_type, t.im_tid, t.im_chat_tid';
-        $fields .= ', t.love_wall_ID as id ,t.love_wall_ID , t.subtime , t.carownid as driver_id  ';
-        $fields .= ', dd.fullname as d_full_department  ';
-        $fields .= ','.$this->buildUserFields('d');
-        $fields .=  $this->buildAddressFields();
-        $join = $this->buildTripJoins("s,e,d,department");
-        $data = WallModel::alias('t')->field($fields)->join($join)->where("t.love_wall_ID", $id)->find();
-        if (!$data) {
-            return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
-        }
-        $app_id  = $data['map_type'] ? 2 : 1 ;
-        $data = $this->unsetResultValue($this->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
+        $data = null;
 
-        $countBaseMap = ['love_wall_ID','=',$data['love_wall_ID']];
-        $data['took_count']       = InfoModel::where([$countBaseMap,["status","in",[0,1,3,4]]])->count(); //取已坐数
-        $data['took_count_all']   = InfoModel::where([$countBaseMap,['status','<>',2]])->count() ; //取已坐数
+        // 查缓存
+        $redis = new RedisData();
+        $cacheKey = "carpool:trips:wall_detail:{$id}";
+        $cacheExp = 30;
+        $cacheData = $redis->get($cacheKey);
+        if($cacheData){
+          if($cacheData == "-1"){
+            return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
+          }
+          $data = $cacheData;
+        }
+
+
+        if(!$data || !is_array($data)){
+          $fields = 't.time, t.status,  t.seat_count, t.map_type, t.im_tid, t.im_chat_tid';
+          $fields .= ', t.love_wall_ID as id ,t.love_wall_ID , t.subtime , t.carownid as driver_id  ';
+          $fields .= ', dd.fullname as d_full_department  ';
+          $fields .= ','.$this->buildUserFields('d');
+          $fields .=  $this->buildAddressFields();
+          $join = $this->buildTripJoins("s,e,d,department");
+          $data = WallModel::alias('t')->field($fields)->join($join)->where("t.love_wall_ID", $id)->find();
+          if (!$data) {
+              $redis->setex($cacheKey, $cacheExp, -1);
+              return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
+          }
+          $app_id  = $data['map_type'] ? 2 : 1 ;
+          $data = $this->unsetResultValue($this->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
+
+          $countBaseMap = ['love_wall_ID','=',$data['love_wall_ID']];
+          $data['took_count']       = InfoModel::where([$countBaseMap,["status","in",[0,1,3,4]]])->count(); //取已坐数
+          $data['took_count_all']   = InfoModel::where([$countBaseMap,['status','<>',2]])->count() ; //取已坐数
+          $redis->setex($cacheKey, $cacheExp, json_encode($data));
+
+        }
+
+
 
         if (!$pb) {
 
@@ -416,22 +475,37 @@ class Trips extends ApiBase
             $this->jsonReturn(992, [], 'lost id');
             // return $this->error('lost id');
         }
-
-        $fields = 't.time, t.status, t.map_type';
-        $fields .= ',t.infoid as id, t.infoid , t.love_wall_ID , t.subtime , t.carownid as driver_id, t.passengerid as passenger_id  ';
-        $fields .= ','.$this->buildUserFields('d');
-        $fields .= ', dd.fullname as d_full_department  ';
-        $fields .= ','.$this->buildUserFields('p');
-        $fields .= ', pd.fullname as p_full_department  ';
-        $fields .=  $this->buildAddressFields();
-        $join = $this->buildTripJoins();
-        $data = InfoModel::alias('t')->field($fields)->join($join)->where("t.infoid", $id)->find();
-        if (!$data) {
+        $data = null;
+        // 查缓存
+        $redis = new RedisData();
+        $cacheKey = "carpool:trips:info_detail:{$id}";
+        $cacheExp = 30;
+        $cacheData = $redis->get($cacheKey);
+        if($cacheData){
+          if($cacheData == "-1"){
             return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
+          }
+          $data = $cacheData;
+        }
+        if(!$data || !is_array($data)){
+          $fields = 't.time, t.status, t.map_type';
+          $fields .= ',t.infoid as id, t.infoid , t.love_wall_ID , t.subtime , t.carownid as driver_id, t.passengerid as passenger_id  ';
+          $fields .= ','.$this->buildUserFields('d');
+          $fields .= ', dd.fullname as d_full_department  ';
+          $fields .= ','.$this->buildUserFields('p');
+          $fields .= ', pd.fullname as p_full_department  ';
+          $fields .=  $this->buildAddressFields();
+          $join = $this->buildTripJoins();
+          $data = InfoModel::alias('t')->field($fields)->join($join)->where("t.infoid", $id)->find();
+          if (!$data) {
+              $redis->setex($cacheKey, $cacheExp, -1);
+              return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
+          }
+          $app_id  = $data['map_type'] ? 2 : 1 ;
+          $data = $this->unsetResultValue($this->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
+          $redis->setex($cacheKey, $cacheExp, json_encode($data));
         }
 
-        $app_id  = $data['map_type'] ? 2 : 1 ;
-        $data = $this->unsetResultValue($this->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
         if (!$pb) {
             $data['uid']          = $uid;
             $GradeModel         = new GradeModel();
@@ -1306,7 +1380,6 @@ class Trips extends ApiBase
             $this->errorMsg = $e->getMessage();
             $pushRes =  $e->getMessage();
         }
-
         return $res;
     }
 }
