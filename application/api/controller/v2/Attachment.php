@@ -217,5 +217,97 @@ class Attachment extends ApiBase
 
     }
 
+    /**
+     * 取得文件[详情]
+     * @param  [type]  $id   id
+     * @param  integer $mode 模式 0|json:返回json; 1|file:直接返回文件路径；
+     */
+    public function read($id,$mode = 0){
+      if(!$id ){
+        $this->jsonReturn(992,'empty id');
+      }
+      $fileInfo = AttachmentModel::where('id',$id)->find();
+      if(!$fileInfo ){
+        $this->jsonReturn(20002,lang('File not found'));
+      }
+      $systemConfig = $this->systemConfig;
+
+      $site_domain  = trim($systemConfig['site_upload_domain']) ? trim($systemConfig['site_upload_domain']) : $this->request->root(true) ;
+      $returnData = [
+        'id'=>$fileInfo['id'],
+        'path'=>$site_domain.$fileInfo['filepath'],
+        'filepath'=>$fileInfo['filepath'],
+        'hash'=>[$fileInfo['md5_code'],$fileInfo['sha1_code']],
+        'filesize'=>$fileInfo['filesize'],
+        'create_time'=>$fileInfo['create_time'],
+        'last_time' => $fileInfo['last_time'],
+      ];
+
+      if( intval($mode) === 0 || $mode=='json'){
+        $this->jsonReturn(0,$returnData);
+      }
+      if($mode ==1 || $mode=='file'){
+        return redirect($fileInfo['filepath']);
+
+        // return download(str_replace('//','/', Env::get('root_path') . $fileInfo['filepath']));
+      }
+    }
+
+
+    /**
+     * 删除文件
+     * @param  [type]  $id   id or id|id|id...
+     * @param  integer $mode 模式 0:返回对应错误码，1：永远返0； 当批量时，mode设置不起作用
+     */
+      public function delete($id=0,$mode = 0){
+
+      $this->checkPassport(1);
+      $uid = $this->userBaseInfo['uid'];
+
+      if(strpos($id,',')>0){
+        $ids = explode(',',$id);
+
+        $tempData = [];
+        foreach ($ids as $iid) {
+          $fileInfo = AttachmentModel::where('id',$iid)->find();
+          $tempData[$iid] = [];
+          if(!$fileInfo){
+            $tempData[$iid]['code'] = 20002;
+            $tempData[$iid]['desc'] = lang('File not found');
+            continue;
+          }
+          if($fileInfo['userid']!=$uid || $fileInfo['times'] > 1 ){
+            $tempData[$iid]['code'] = 30002;
+            $tempData[$iid]['desc'] = lang('This attachment cannot be deleted');
+            continue;
+          }
+          AttachmentModel::where('id',$iid)->delete();
+          unlink( Env::get('root_path') .'public' . $fileInfo['filepath']);
+          $tempData[$iid]['code'] = 0;
+          $tempData[$iid]['desc'] = 'success';
+        }
+        $this->jsonReturn(0,$tempData,"success");
+
+      }else{
+        if(!$id ){
+          $this->jsonReturn($mode ? 0 : 992,'empty id');
+        }
+        $fileInfo = AttachmentModel::where('id',$id)->find();
+        if(!$fileInfo){
+          $this->jsonReturn($mode ? 0 : 20002, lang('File not found'));
+        }
+        if($fileInfo['userid']!=$uid || $fileInfo['times'] > 1  ){
+          $this->jsonReturn($mode ? 0 : 30002, lang('This attachment cannot be deleted'));
+        }
+        AttachmentModel::where('id',$id)->delete();
+        try{
+            unlink( Env::get('root_path') .'public' . $fileInfo['filepath']);
+        } catch (\Exception $e) {
+            // return false;
+        }
+      }
+      $this->jsonReturn(0,"success");
+    }
+
 
 }
