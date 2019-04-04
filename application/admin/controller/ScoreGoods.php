@@ -94,7 +94,7 @@ class ScoreGoods extends AdminBase
       if (!$validate->check($data)) {
         return $this->jsonReturn(-1,$validate->getError());
       }
-      if(!is_numeric($data['p_region_id'])){
+      if(!isset('p_region_id') || !is_numeric($data['p_region_id'])){
         $this->jsonReturn(-1,"error p_region_id");
       }
 
@@ -207,11 +207,11 @@ class ScoreGoods extends AdminBase
       if (!$validate->check($data)) {
         return $this->jsonReturn(-1,$validate->getError());
       }
-      if(!is_numeric($data['p_region_id'])){
+      if
+      if(isset($data['p_region_id']) && !is_numeric($data['p_region_id'])){
         $this->jsonReturn(-1,"error p_region_id");
       }
       $upData = [
-        'p_region_id' => $data['p_region_id'],
         'name' => $data['name'],
         'desc' => $data['desc'],
         'price' => $data['price'],
@@ -222,6 +222,9 @@ class ScoreGoods extends AdminBase
         'operator' => $this->userBaseInfo['uid'],
         'update_time' => date('Y-m-d H:i:s'),
       ];
+      if(isset($data['p_region_id'])){
+        $upData['p_region_id']  = $data['p_region_id'];
+      }
       if($data['thumb'] && trim($data['thumb'])){
         $upData['images'][0] =  $data['thumb'];
       }

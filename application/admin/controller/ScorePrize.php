@@ -110,7 +110,7 @@ class ScorePrize extends AdminBase
       }else{
         $data['identity'] = uuid_create();
       }
-      if(!is_numeric($data['p_region_id'])){
+      if(!isset($data['p_region_id']) || !is_numeric($data['p_region_id'])){
         $this->jsonReturn(-1,"error p_region_id");
       }
       $upData = [
@@ -191,7 +191,7 @@ class ScorePrize extends AdminBase
         $this->error("抽奖不存在");
       }
       $data               = $this->request->post();
-      if(!is_numeric($data['p_region_id'])){
+      if(isset($data['p_region_id']) && !is_numeric($data['p_region_id'])){
         $this->jsonReturn(-1,"error p_region_id");
       }
       if($prize_data['status']<-1){
@@ -206,14 +206,15 @@ class ScorePrize extends AdminBase
       }
 
       $upData = [
-        'p_region_id' => $data['p_region_id'],
         'desc' => $data['desc'],
         'amount' => $data['amount'],
         'level' => $data['level'] ,
         'update_time' => date('Y-m-d H:i:s'),
         'is_shelves' =>isset($data['un_shelves']) && $data['un_shelves'] == 1 ? 0 : 1,
-
       ];
+      if(isset($data['p_region_id'])){
+        $upData['p_region_id']  = $data['p_region_id'];
+      }
 
       if($prize_data['status'] > -1){
         $inArrayStatus = $prize_data['real_count'] > 0 ? [0,1,2] : [-1,0,1,2];
