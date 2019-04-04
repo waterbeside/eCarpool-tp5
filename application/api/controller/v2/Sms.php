@@ -280,7 +280,7 @@ class Sms extends ApiBase
             };
             ////////////////////
             $scoreConfigs = (new Configs())->getConfigs("score");
-            $url = config("secret.inner_api.capool.login");
+            $url = config("secret.inner_api.carpool.login");
             $token =  $scoreConfigs['score_token'];
             $postData = [
               'phone' =>$phone,
@@ -386,7 +386,6 @@ class Sms extends ApiBase
             if ($userData['phone'] == $phone) {
                 $this->jsonReturn(10100, [], lang('The phone number has been bound to this account, no need to merge.'));
             }
-
 
             // $phoneUserData = UserModel::where([['phone','=',$phone]])->find(); //取得要合并的手机号信息。
             $phoneUserData = $UserModel->where([['loginname','=',$phone]])->find();
