@@ -115,7 +115,7 @@
         </div>
         <div class="btns-wrapper">
             <div class="btn-drop">
-              <button type="button" class="layui-btn layui-btn-success" >审</button>
+              <button type="button" class="layui-btn layui-btn-success drop-btn" >审</button>
               <ul class="drop-box">
                 <?php foreach($showLevel_list as $key => $value){
                   if($key < 0 || $key > 0){
@@ -124,7 +124,7 @@
                 } ?>
             </div>
             <div class="btn-drop" style="margin-left:4px;">
-              <button type="button" class="layui-btn layui-btn-normal" >改变状态</button>
+              <button type="button" class="layui-btn layui-btn-normal drop-btn" >改变状态</button>
               <ul class="drop-box">
                 <?php foreach($status_list as $key => $value){
                     echo '<li class="" data-value = "'.$key.'"><a href="javascript:void(0);" onclick="PAGE_EXEC.status(\''.$key.'\')">'.$value.'</a></li>';

@@ -113,10 +113,16 @@ span.J-btn-checkall .fa {color: #aaa;font-size: 14px;cursor: no-drop}
 
 .btn-drop {
   position: relative;
+  .drop-btn {
+    .fa-caret-down {
+      transition: all .5s linear;
+    }
+  }
   .drop-box  {
-    // display: none;
+    display: none;
     position: absolute;
     background: $color-dark-white; border-radius: 3px; border:1px solid $color-border;
+    transition: all .5s linear;
     box-shadow: 0 0 10px rgba(0,0,0,.2);
     li {
        border-bottom: 1px solid $color-gray-l1;
@@ -126,6 +132,14 @@ span.J-btn-checkall .fa {color: #aaa;font-size: 14px;cursor: no-drop}
        }
     }
 
+  }
+  &.active {
+    .drop-btn {
+      .fa-caret-down {
+        transform: rotate(180deg);
+
+      }
+    }
   }
 }
 

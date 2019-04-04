@@ -481,14 +481,17 @@ function admin_init(){
   /**
    * 下拉按钮
    */
-  $(document).on('click',  '.btn-drop > a,.btn-drop >button', function() {
+  $(document).on('click',  '.btn-drop > .drop-btn', function() {
   // $('#clear-cache').on('click', function () {
-      var $dropBox = $(this).closest('.btn-drop').find('.drop-box');
+      var $wrapper = $(this).closest('.btn-drop');
+      var $dropBox = $wrapper.find('.drop-box');
+
       if($dropBox.hasClass('show')){
         $dropBox.removeClass('show');
+        $wrapper.removeClass('active');
       }else{
         $dropBox.addClass('show');
-
+        $wrapper.addClass('active');
       }
       $dropBox.click(function(e){
         e.stopPropagation();
