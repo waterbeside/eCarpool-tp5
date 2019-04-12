@@ -70,6 +70,7 @@ class Address extends ApiBase
       }
       $userData = $this->getUserData(1);
       $data['company_id'] = intval($userData['company_id']);
+      $data['create_uid'] = intval($userData['uid']);
       $AddressModel = new AddressModel();
       $res = $AddressModel->addFromTrips($data);
       if(!$res){
@@ -146,7 +147,7 @@ class Address extends ApiBase
               $res[] = "--";
             }
             if($hasNull){
-              $res[] = "(null)";
+              // $res[] = "(null)";
             }
             // Cache::set($cacheKey,$res,300);
             $redis->setex($cacheKey, 300, json_encode($res));
