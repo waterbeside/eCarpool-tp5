@@ -76,9 +76,10 @@ class Score extends AdminBase
       $reasons = config('score.reason');
       $reasons_operable = config('score.reason_operable');
       $reasonsArray=[];
+      $lang = $this->activeLang;
       foreach ($reasons as $key => $value) {
         if(in_array($key,$reasons_operable)){
-          $reasonsArray[] = ['code'=>$key,'title'=>$value];
+          $reasonsArray[] = ['code'=>$key,'title'=>lang("sl:{$value}")];
         }
       }
 

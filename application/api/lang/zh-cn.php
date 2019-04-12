@@ -12,6 +12,10 @@ return [
   "Parameter error"=>"参数错误",
   "No permission" => "无权操作",
 
+  //jwt 验证
+  'You are not logged in' =>'您尚未登入',
+  'Login status expired, please login again' =>'登录身份过期，请重新登入',
+
   //用户相关
   'Please enter user name'  => '请输入用户名',
   'Please enter your password' => '请输入密码',

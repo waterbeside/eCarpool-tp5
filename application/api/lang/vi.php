@@ -12,6 +12,11 @@ return [
   "Parameter error"=>"Lỗi tham số",
   "No permission" => "Không cho phép",
 
+
+  //jwt 验证
+  'You are not logged in' =>'Bạn chưa đăng nhập',
+  'Login status expired, please login again' =>'Tình trạng đăng nhập đã hết hạn, vui lòng đăng nhập lại',
+
   //用户相关
   'Please enter user name'  => 'Vui lòng nhập tên người dùng',
   'Please enter your password' => 'Vui lòng nhập mật khẩu của bạn',

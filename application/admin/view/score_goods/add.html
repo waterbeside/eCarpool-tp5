@@ -3,39 +3,39 @@
         <form class="layui-form form-container" action="{:url('admin/ScoreGoods/add')}" method="post">
 
               <div class="layui-form-item">
-                  <label class="layui-form-label">区域/部门</label>
+                  <label class="layui-form-label">{:lang('Region or department')}</label>
                   <div class="layui-input-block">
                     <div class="J-dept-select-wrapper"></div>
                     <input type="hidden" name="p_region_id" value="{$department_default_selected.id}"  class="layui-input layui-input-inline " readonly  >
                     <a onclick="FORM_PAGE_EXEC.openDeptDialog()" href="javascript:void(0);"  class="layui-btn  layui-btn-primary layui-btn-xs"   >
-                      <i class="fa fa-book"></i> <span>选择区域/部门</span>
+                      <i class="fa fa-book"></i> <span>{:lang('Region or department')}</span>
                     </a>
-                    <div class="layui-form-mid layui-word-aux"> 选择区域/部门，选择后，只有该区域或部门下的用户才能看到该商品</div>
+                    <div class="layui-form-mid layui-word-aux"> {:lang('Once selected, only users in that region or department can see the item')}</div>
 
                   </div>
 
               </div>
 
               <div class="layui-form-item">
-                  <label class="layui-form-label">商品名</label>
+                  <label class="layui-form-label">{:lang('Goods name')}</label>
                   <div class="layui-input-block">
-                      <input type="text" name="name" value="" required  lay-verify="required" placeholder="请输入商品名" class="layui-input">
+                      <input type="text" name="name" value="" required  lay-verify="required" placeholder="{:lang('Please enter Goods name')}" class="layui-input">
                   </div>
               </div>
               <div class="layui-form-item">
-                  <label class="layui-form-label">描述</label>
+                  <label class="layui-form-label">{:lang('Description')}</label>
                   <div class="layui-input-block">
-                     <textarea name="desc" placeholder="请输入描述" class="layui-textarea"></textarea>
+                     <textarea name="desc" placeholder="{:lang('Please enter a description')}" class="layui-textarea"></textarea>
                   </div>
               </div>
               <div class="layui-form-item">
-                  <label class="layui-form-label">缩略图</label>
+                  <label class="layui-form-label">{:lang('Image')}</label>
                   <div class="layui-input-block">
                     <input type="text" name="thumb" value="" class="layui-input">
                     <a   class="amain-uploadImgBtn" id="upload-btn">
                        <img class="layui-upload-img" id="item-thumb" src="" >
                        <div class="text">
-                         <i class="fa fa-upload"></i>上传图片
+                         <i class="fa fa-upload"></i>{:lang('Upload image')}
                        </div>
                     </a>
                     <p id="uploadText"></p>
@@ -44,40 +44,40 @@
               </div>
 
               <div class="layui-form-item">
-                  <label class="layui-form-label">兑换价</label>
+                  <label class="layui-form-label">{:lang('Redeem points')}</label>
                   <div class="layui-input-block">
-                      <input type="text" name="price" value=""  required  lay-verify="required" placeholder="请输入商品兑换价" class="layui-input">
-                      <div class="layui-form-mid layui-word-aux">兑换商品所需要的积分</div>
+                      <input type="text" name="price" value=""  required  lay-verify="required" placeholder="{:lang('Please enter the redeem points')}" class="layui-input">
+                      <div class="layui-form-mid layui-word-aux">{:lang('Points required to redeem goods')}</div>
                   </div>
               </div>
               <div class="layui-form-item">
-                  <label class="layui-form-label">采购价</label>
+                  <label class="layui-form-label">{:lang('Purchase price')}</label>
                   <div class="layui-input-block">
-                      <input type="text" name="amount" value=""  required  lay-verify="required" placeholder="请输入商品采购价" class="layui-input">
-                      <div class="layui-form-mid layui-word-aux">采购商品的价格，用于后台记录</div>
+                      <input type="text" name="amount" value=""  required  lay-verify="required" placeholder="{:lang('Please enter the Purchase price')}" class="layui-input">
+                      <div class="layui-form-mid layui-word-aux">{:lang('The price of the purchased item, used for background recording')}</div>
                   </div>
               </div>
               <div class="layui-form-item">
-                  <label class="layui-form-label">库存</label>
+                  <label class="layui-form-label">{:lang('Inventory')}</label>
                   <div class="layui-input-block">
-                      <input type="number" name="inventory" min="-1" value=""  required  lay-verify="required" placeholder="请输入商品库存" class="layui-input">
-                      <div class="layui-form-mid layui-word-aux"> 库存为-1时，即不限库存</div>
+                      <input type="number" name="inventory" min="-1" value=""  required  lay-verify="required" placeholder="{:lang('Please enter the goods inventory')}" class="layui-input">
+                      <div class="layui-form-mid layui-word-aux"> {:lang('When the inventory is -1, it is unlimited')}</div>
                   </div>
               </div>
               <div class="layui-form-item">
-                  <label class="layui-form-label">状态</label>
+                  <label class="layui-form-label">{:lang('Status')}</label>
                   <div class="layui-input-block">
                     <select name="status"  >
                       {foreach name="goods_status" item="vo" key="key"}
-                      <option value="{$key}" {php}echo $key === 0 ? 'selected' : ''; {/php}>{$vo}</option>
+                      <option value="{$key}" {php}echo $key === 0 ? 'selected' : ''; {/php}>{:lang("sl:".$vo)}</option>
                       {/foreach}
                      </select>
                   </div>
               </div>
               <div class="layui-form-item">
-                  <label class="layui-form-label">是否显示</label>
+                  <label class="layui-form-label">{:lang("Is visible?")}</label>
                   <div class="layui-input-block">
-                      <input type="checkbox" name="is_show" value="1" lay-skin="switch" lay-text="显示|不显示"  checked>
+                      <input type="checkbox" name="is_show" value="1" lay-skin="switch" lay-text="{:lang('Visible')}|{:lang('Not visible')}"  checked>
                   </div>
               </div>
 
@@ -87,7 +87,7 @@
             <div class="blank20"></div>
 
             <div class="layui-btn-container layui-row">
-                <button class="layui-btn layui-btn-lg layui-col-xs12" lay-submit lay-filter="*">提交</button>
+                <button class="layui-btn layui-btn-lg layui-col-xs12" lay-submit lay-filter="*">{:lang("SUBMIT")}</button>
             </div>
 
         </form>
@@ -123,10 +123,10 @@ FORM_PAGE_EXEC = {
          console.log(res);
          //如果上传失败
          if(res.code > 0){
-           return layer.msg('上传失败');
+           return layer.msg('{:lang("Upload failed")}');
          }
          if(res.code===0){
-           layer.msg('上传成功');
+           layer.msg('{:lang("Upload successful")}');
            $('#item-thumb').attr('src', res.data.img_url); //图片链接（base64）
            $thumbInput.val(res.data.img_url);
          }else{
@@ -137,7 +137,7 @@ FORM_PAGE_EXEC = {
        ,error: function(){
          //演示失败状态，并实现重传
          var $uploadText = $('#uploadText');
-         var html = '<span style="color: #FF5722;">上传失败,请稍候再试</span>';
+         var html = '<span style="color: #FF5722;">{:lang("Upload failed, please try again later")}</span>';
          // html += '<a class="layui-btn layui-btn-xs reUpload">重试</a>';
          $uploadText.html(html);
          /*$uploadText.find('.reUpload').on('click', function(){
@@ -183,7 +183,7 @@ FORM_PAGE_EXEC = {
     }
   },
   openDeptDialog: function(){
-    openLayer('{:url('admin/Department/list_dialog')}','选择区域/部门');
+    openLayer('{:url('admin/Department/list_dialog')}',"{:lang('Region or department')}");
   },
   clearDept: function(){
     $(".P-goods-detail-form input[name='p_region_id']").val('');

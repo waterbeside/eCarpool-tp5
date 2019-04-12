@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Carpool 管理后台</title>
+    <title>{:lang('Carpool Management')}</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="stylesheet" href="__JS__/layui/css/layui.css" media="all">
@@ -24,15 +24,35 @@
 <div class="layui-layout layui-layout-admin aframe">
     <!--头部-->
     <div class="layui-header header">
-        <a href=""><img class="logo" src="__STATIC__/images/admin_logo.png" alt=""></a>
+        <a href="">
+          <img class="logo" src="__STATIC__/images/admin_logo.png" alt="">
+          <!-- {:lang('Carpool Management')} -->
+        </a>
         <ul class="layui-nav" style="position: absolute;top: 0;right: 20px;background: none;">
             <!-- <li class="layui-nav-item"><a href="{:url('/')}" target="_blank">前台首页</a></li> -->
-            <li class="layui-nav-item"><a href="" data-url="{:url('admin/system/clear')}" id="clear-cache">清除缓存</a></li>
+            <li class="layui-nav-item"><a href="" data-url="{:url('admin/system/clear')}" id="clear-cache">{:lang('Clear cache')}</a></li>
+
+
             <li class="layui-nav-item">
                 <a href="javascript:;">{$admin_user['username']}</a>
                 <dl class="layui-nav-child"> <!-- 二级菜单 -->
-                    <dd><a href="{:url('admin/change_password/index')}"  data-title="修改密码"  data-trigger="modal">修改密码</a></dd>
-                    <dd><a href="{:url('admin/login/logout')}">退出登录</a></dd>
+                    <dd><a href="{:url('admin/change_password/index')}"  data-title="{:lang('Change password')}"  data-trigger="modal">{:lang('Change password')}</a></dd>
+                    <dd><a href="{:url('admin/login/logout')}">{:lang('Sign out')}</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item m-language-box">
+
+                <a href="javascript:;">
+                  <label><i class="fa fa-language"></i></label>
+                  <span>
+                    <?php echo $active_lang ? ( isset($langs_select_list[$active_lang]) ? "&nbsp;".$langs_select_list[$active_lang] : 'Language') : 'Language';?>
+                  </span>
+                </a>
+                <dl class="layui-nav-child"> <!-- 二级菜单 -->
+                  {foreach name="langs_select_list" item="v" key="k"}
+                    <dd><a href="?lang={$k}" >{$v}</a></dd>
+                  {/foreach}
+
                 </dl>
             </li>
         </ul>
@@ -44,9 +64,9 @@
         <div class="layui-side layui-bg-black">
             <div class="layui-side-scroll">
                 <ul class="layui-nav layui-nav-tree" lay-filter="aside">
-                    <li class="layui-nav-title" data-target="showFull"  ><span class="aframe-icon"><i class="fa fa-list"></i></span>菜单</li>
+                    <li class="layui-nav-title" data-target="showFull"  ><span class="aframe-icon"><i class="fa fa-list"></i></span>{:lang('Menu')}</li>
                     <li class="layui-nav-item">
-                        <a href="javascript:;" data-href="{:url('admin/index/main')}" data-id="000"><span class="aframe-icon"><i class="fa fa-home"></i></span>站点信息</a>
+                        <a href="javascript:;" data-href="{:url('admin/index/main')}" data-id="000"><span class="aframe-icon"><i class="fa fa-home"></i></span>{:lang('Welcome')}</a>
                     </li>
                     {foreach name="menu" item="vo"}
                     {if condition="isset($vo['children'])"}
@@ -79,21 +99,21 @@
         <div class="layui-tab" lay-allowClose="true" lay-filter="tab">
           <ul class="layui-tab-title">
               <li class="layui-this" lay-id="000">
-                  站点信息
+                  {:lang('Welcome')}
               </li>
           </ul>
-          <div class="aframe-tab-tool">操作&nbsp;<i class="fa fa-caret-down"></i></div>
+          <div class="aframe-tab-tool"><i class="fa fa-navicon"></i></div>
           <div class="aframe-tab-tool-options layui-anim layui-anim-upbit"  >
-            <ul  >
-              <li   data-target="refreshCurrent">刷新当前选项卡</li>
-              <li  data-target="closeCurrent">关闭当前选项卡</li>
-              <li   data-target="closeOther">关闭其他选项卡</li>
+            <ul>
+              <li   data-target="refreshCurrent">{:lang('Refresh current tab')}</li>
+              <li  data-target="closeCurrent">{:lang('Close current tab')}</li>
+              <li   data-target="closeOther">{:lang('Close other tabs')}</li>
               <!-- <li   data-target="closeAll">关闭所有选项卡</li> -->
             </ul>
           </div>
           <div class="layui-tab-content">
               <div class="layui-tab-item layui-show">
-                  <iframe src="{:url('admin/index/main')}" name="站点信息" index="0"></iframe>
+                  <iframe src="{:url('admin/index/main')}" name="{:lang('Welcome')}" index="0"></iframe>
               </div>
           </div>
 

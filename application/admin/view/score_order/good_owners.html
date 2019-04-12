@@ -1,6 +1,6 @@
 {extend name="base" /}
 {block name="body"}
-<div class="amain-body">
+<div class="amain-body P-good_owners">
 
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
@@ -10,11 +10,11 @@
             <div>
 
               <?php if(is_numeric($status)){ ?>
-                <h4 class="layui-badge goodOrder-status_{$status}"><?php echo $statusList[$status]; ?> </h4>
+                <h4 class="layui-badge goodOrder-status_{$status}"><?php echo $statusList[$status] ? lang("sl:".$statusList[$status]): $status; ?> </h4>
               <?php  }elseif($status == 'all_01' ){ ?>
-                <h4 class="layui-badge goodOrder-status_{$status}">未兑和已兑 </h4>
+                <h4 class="layui-badge goodOrder-status_{$status}">{:lang('Not redeemed or redeemed')} </h4>
               <?php  }else{ ?>
-                <h4 class="layui-badge goodOrder-status_{$status}">所有订单状态 </h4>
+                <h4 class="layui-badge goodOrder-status_{$status}">{:lang('All')} </h4>
               <?php  } ?>
               &nbsp;&nbsp;<?php echo str_replace("+"," ",$time) ; ?>
             </div>
@@ -28,24 +28,29 @@
             </div>
             <hr />
             <div>
-              商品区域：{$good.full_department|str_replace=","," / ",###}
+              <span class="label">{:lang('Region or department')}：</span>{$good.full_department|str_replace=","," / ",###}
             </div>
             <hr />
-            <div class="layui-row ">
-              <div class="layui-col-sm2">
-                兑换价： <b class="layui-badge-rim" > {$good.price} </b>
+            <div class="layui-row statistics-bar">
+              <div class="statistics-item">
+                <span class="label">{:lang('Redeem points')}</span>
+                <b> {$good.price} </b>
               </div>
-              <div class="layui-col-sm2">
-                采购价： <b class="layui-badge-rim" > {$good.amount} </b>
+              <div class="statistics-item">
+                <span class="label">{:lang('Purchase price')}</span>
+                <b> {$good.amount} </b>
               </div>
-              <div class="layui-col-sm2">
-                人数：<b class="layui-badge-rim"> {$total}</b>
+              <div class="statistics-item">
+                <span class="label">{:lang('Number of people')}</span>
+                <b> {$total}</b>
               </div>
-              <div class="layui-col-sm2">
-                数量：<b class="layui-badge-rim"> {$sum}</b>
+              <div class="statistics-item">
+                <span class="label">{:lang('Quantity')}</span>
+                <b> {$sum}</b>
               </div>
-              <div class="layui-col-sm2">
-                总价：<b class="layui-badge-rim"> {$sum*$good.amount}</b>
+              <div class="statistics-item">
+                <span class="label">{:lang('Total price')}</span>
+                <b> {$sum*$good.amount}</b>
               </div>
             </div>
           </blockquote>
@@ -58,7 +63,7 @@
           <div class="blank10"></div>
                 <form class="layui-form layui-form-pane" action="{:url('admin/ScoreOrder/good_owners',['gid'=>$good['id'],'time'=>$time])}" method="get">
                     <div class="layui-input-inline">
-                      <input type="text" name="filter[keyword]" class="layui-input"  placeholder="查找用户" value="{$filter.keyword}"  >
+                      <input type="text" name="filter[keyword]" class="layui-input"  placeholder="{:lang('User keyword')}" value="{$filter.keyword}"  >
                     </div>
                     <div class="layui-inline">
                         <button class="layui-btn"><i class="fa fa-search"></i></button>
@@ -70,13 +75,13 @@
                     <thead>
                     <tr >
                       <th lay-data="{field:'uid', width:70,fixed:'left'}" >#</th>
-                      <th lay-data="{field:'loginname',width:120,fixed:'left'}">用户名</th>
-                      <th lay-data="{field:'name', width:120}">姓名</th>
-                      <th lay-data="{field:'phone', width:130}">手机</th>
-                      <th lay-data="{field:'Department', width:120}">部门</th>
-                      <th lay-data="{field:'company_name', width:110}">公司</th>
+                      <th lay-data="{field:'loginname',width:120,fixed:'left'}">{:lang('Username')}</th>
+                      <th lay-data="{field:'name', width:120}">{:lang('Full name')}</th>
+                      <th lay-data="{field:'phone', width:130}">{:lang('Phone')}</th>
+                      <th lay-data="{field:'Department', width:120}">{:lang('Department')}</th>
+                      <th lay-data="{field:'company_name', width:110}">{:lang('Company')}</th>
                       <!-- <th lay-data="{field:'companyname', width:100}">分厂</th> -->
-                      <th lay-data="{field:'num', width:100, fixed:'right'}">数目</th>
+                      <th lay-data="{field:'num', width:100, fixed:'right'}">{:lang('m:s_o:Count')}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -84,7 +89,7 @@
                     <tr>
                       <td>{$vo.uid}</td>
                       <td>
-                        <a href="{:url('admin/User/public_detail',['id'=>$vo['uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
+                        <a href="{:url('admin/User/public_detail',['id'=>$vo['uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}">
                         {$vo.loginname}
                         </a>
                       </td>

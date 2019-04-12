@@ -18,5 +18,10 @@ return [
     'local_hr_sync_api'=> [
       'all' => 'http://127.0.0.1:8082/api/v1/sync_hr/all',
       'single' => 'http://127.0.0.1:8082/api/v1/sync_hr/single'
+    ],
+    'langs_select_list' =>[
+      'zh-cn' => '中文',
+      'en' => 'EN',
+      'vi' => 'Tiếng việt',
     ]
 ];

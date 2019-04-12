@@ -94,7 +94,7 @@ class ScoreGoods extends AdminBase
       if (!$validate->check($data)) {
         return $this->jsonReturn(-1,$validate->getError());
       }
-      if(!isset('p_region_id') || !is_numeric($data['p_region_id'])){
+      if(!isset($data['p_region_id']) || !is_numeric($data['p_region_id'])){
         $this->jsonReturn(-1,"error p_region_id");
       }
 
@@ -207,7 +207,6 @@ class ScoreGoods extends AdminBase
       if (!$validate->check($data)) {
         return $this->jsonReturn(-1,$validate->getError());
       }
-      if
       if(isset($data['p_region_id']) && !is_numeric($data['p_region_id'])){
         $this->jsonReturn(-1,"error p_region_id");
       }

@@ -6,10 +6,10 @@
     <div class="layui-tab layui-tab-brief">
 
         <ul class="  amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/ScorePrize/index')}"  >抽奖管理</a></li>
+            <li class="layui-this"><a href="{:url('admin/ScorePrize/index')}"  >{:lang('m:s_p:Prizes')}</a></li>
             <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ScorePrize/add')}"  data-title="添加商品"  data-trigger="modal" >
-              <i class="fa fa-plus"></i> 添加抽奖</a>
+              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ScorePrize/add')}"  data-title="{:lang('m:s_p:Add item')}"  data-trigger="modal" >
+              <i class="fa fa-plus"></i> {:lang("m:s_p:Add item")}</a>
             </li>
 
 
@@ -17,21 +17,20 @@
         <div class="amain-content">
           <form id="filter-form"  class="layui-form layui-form-pane" action="{:url('admin/ScorePrize/index')}" method="get">
               <div class="layui-inline">
-                  <label class="layui-form-label">检索</label>
                   <div class="layui-input-inline">
-                      <input type="text" name="keyword" value="{$keyword}" placeholder="请输入关键词" class="layui-input">
+                      <input type="text" name="keyword" value="{$keyword}" placeholder="{:lang('Keyword')}" class="layui-input">
                   </div>
                   <div class="layui-input-inline">
-                    <select name="filter[is_hidden]" lay-verify="required" >
-                      <option value="" >是否显示 - 不限</option>
-                      <option value="1" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "1" ? 'selected' : ''; {/php}>不显示</option>
-                      <option value="0" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "0" ? 'selected' : ''; {/php}>显示</option>
+                    <select name="filter[is_hidden]" >
+                      <option value="" >{:lang("Is visible?")} - {:lang('Unlimited')}</option>
+                      <option value="1" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "1" ? 'selected' : ''; {/php}>{:lang("Not visible")}</option>
+                      <option value="0" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "0" ? 'selected' : ''; {/php}>{:lang("Visible")}</option>
                     </select>
                   </div>
                   <div class="layui-input-inline">
                       <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
-                      <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择显示区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="选择显示区域" data-title="选择显示区域" data-tips-position="3" >
-                        {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择显示区域"}
+                      <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" >
+                        {$regionData ? str_replace(',',' / ',$regionData['fullname']) : lang("Region or department")}
                       </a>
                   </div>
               </div>
@@ -46,21 +45,21 @@
           <div class="layui-tab amain-content-tab">
             <div class="tab-title-wrapper">
               <ul class="layui-tab-title">
-                <li <?php echo !isset($filter['status']) || $filter['status']==="" || $filter['status']==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeStatus('all')" href="javascript:void(0);" >全部</a></li>
+                <li <?php echo !isset($filter['status']) || $filter['status']==="" || $filter['status']==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeStatus('all')" href="javascript:void(0);" >{:lang('All')}</a></li>
                 <li <?php echo  is_numeric($filter['status']) && intval($filter['status']) === -2 ? 'class="layui-this"' : '' ; ?> >
-                  <a onclick="changeStatus('-2')" href="javascript:void(0);">下架</a>
+                  <a onclick="changeStatus('-2')" href="javascript:void(0);">{:lang('sl:下架')}</a>
                 </li>
                 <li <?php echo  is_numeric($filter['status']) && intval($filter['status']) === -1 ? 'class="layui-this"' : '' ; ?> >
-                  <a onclick="changeStatus('-1')" href="javascript:void(0);">准备中</a>
+                  <a onclick="changeStatus('-1')" href="javascript:void(0);">{:lang('sl:准备中')}</a>
                 </li>
                 <li <?php echo  $filter['status'] == '0,1,2' ? 'class="layui-this"' : '' ; ?> >
-                  <a onclick="changeStatus('0,1,2')" href="javascript:void(0);">进行中</a>
+                  <a onclick="changeStatus('0,1,2')" href="javascript:void(0);">{:lang('sl:进行中')}</a>
                 </li>
                 <li <?php echo  is_numeric($filter['status']) && intval($filter['status']) === -3 ? 'class="layui-this"' : '' ; ?> >
-                  <a onclick="changeStatus('-3')" href="javascript:void(0);">开奖中</a>
+                  <a onclick="changeStatus('-3')" href="javascript:void(0);">{:lang('sl:开奖中')}</a>
                 </li>
                 <li <?php echo  is_numeric($filter['status']) && intval($filter['status']) === -4 ? 'class="layui-this"' : '' ; ?> >
-                  <a onclick="changeStatus('-4')" href="javascript:void(0);">已开奖</a>
+                  <a onclick="changeStatus('-4')" href="javascript:void(0);">{:lang('sl:已开奖')}</a>
                 </li>
                 <!--{foreach name="statusList" key="key" item="vo"}
                 <li <?php echo  is_numeric($filter['status']) && intval($filter['status']) === intval($key) ? 'a class="layui-this"' : 'b' ; ?> >
@@ -72,25 +71,24 @@
           </div>
 
           <div class="layui-tab-content dark-grey-wrapper ">
-
               <div class="card-list-01  prize-list">
                 <form class="layui-form">
-                  {if !count($lists)>0}无数据{/if}
+                  {if !count($lists)>0}{:lang('No Data')}{/if}
                   {foreach name="lists" item="vo"}
                   <div class="am-card  <?php echo $vo['is_delete'] ? 'unshow' : '' ;?>">
                     <div class="am-card-padding-inner">
                       <div class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>" title="{$vo.identity}">  </div>
                       <div class="am-card-body">
                         <h5 class="am-card-title layui-elip" >
-                          <a href="{:url('admin/ScorePrize/edit',['id'=>$vo['id']])}"   data-title="編輯商品 #{$vo.id}"  data-trigger="modal" title="編輯商品 #{$vo.id}">
+                          <a href="{:url('admin/ScorePrize/edit',['id'=>$vo['id']])}"   data-title="{:lang('Modify')} #{$vo.id}"  data-trigger="modal" title="{:lang('Modify')} #{$vo.id}">
                             {$vo.name}
-                            <small class="periods">【第{$vo.publication_number}期】</small>
+                            <small class="periods">【{:lang('Phase %d',[$vo['publication_number']])}】</small>
                           </a>
                         </h5>
 
                         <span class="id">
                           {php} if($vo['is_shelves'] === 0){
-                            echo '<i class="fa fa-rocket" title="自动续期"></i>';
+                            echo '<i class="fa fa-rocket" title="'.lang('Automatically release the next issue').'"></i>';
                           }
                           {/php}
                           #{$vo.id}
@@ -100,19 +98,23 @@
                           <div class="layui-progress-bar" lay-percent="{$vo.real_count} /{$vo.total_count}"></div>
                         </div>
                         <div class="depts_bar">
-                          <div class="item my-tag-item" data-id="{$vo.p_region_id}" title="{$vo.fullname}">{$vo.fullname|str_replace=","," / ",###}</span></div>
+                          <div class="item my-tag-item" data-id="{$vo.p_region_id}" title="{$vo.fullname}">{$vo.fullname|str_replace=","," / ",###}</div>
                         </div>
                         <div class="info-bar">
-                          <span class="info-item price"> 消耗积分：<b >{$vo.price}</b></span>
-                          <span class="info-item amount"> 采购价：<b >{$vo.amount}</b></span>
-                          <span class="info-item "> 奖品级数：<b>{$vo.level}</b></span>
-                          <span class="info-item status"> 状态：<b><span class="layui-badge prize-status_b prize-status_{$vo.status}"><?php echo $statusList[$vo['status']] ;?></span> / <small><?php echo $vo['is_delete'] ? "不显示" : "显示" ;?></small></b></span>
+                          <span class="info-item price"> {:lang('Consumption points')}：<b >{$vo.price}</b></span>
+                          <span class="info-item amount"> {:lang('Purchase price')}：<b >{$vo.amount}</b></span>
+                          <span class="info-item "> {:lang('Prize level')}：<b>{$vo.level}</b></span>
+                          <span class="info-item status"> {:lang('Status')}：
+                            <b>
+                              <span class="layui-badge prize-status_b prize-status_{$vo.status}"><?php echo isset($statusList[$vo['status']]) ? lang("sl:".$statusList[$vo['status']]) : $vo['status']  ;?></span> /
+                              <small><?php echo $vo['is_delete'] ? lang('Not visible') : lang("Visible") ;?></small></b>
+                          </span>
                         </div>
                         <div class="btns-wrapper">
                           <?php  if($auth['admin/ScorePrize/add'] ){ ?>
-                          <a href="{:url('admin/ScorePrize/add',['id'=>$vo['id']])}"  data-title="复制添加抽奖 "  data-trigger="modal" title="复制添加抽奖" class="ibtn layui-btn  layui-btn-success layui-btn-radius   "><i class="fa fa-copy"></i> 新建下期</a>
+                          <a href="{:url('admin/ScorePrize/add',['id'=>$vo['id']])}"  data-title="{:lang('Release the next issue')} "  data-trigger="modal" title="{:lang('Release the next issue')}" class="ibtn layui-btn  layui-btn-success layui-btn-radius   "><i class="fa fa-copy"></i> {:lang('Release the next issue')}</a>
                           <?php  } ?>
-                          <a href="{:url('admin/ScorePrize/edit',['id'=>$vo['id']])}"  data-title="編輯抽奖 #{$vo.id}"  data-trigger="modal" title="編輯抽奖 #{$vo.id}" class="ibtn layui-btn  layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a>
+                          <a href="{:url('admin/ScorePrize/edit',['id'=>$vo['id']])}"  data-title="{:lang('Modify')} #{$vo.id}"  data-trigger="modal" title="{:lang('Modify')} #{$vo.id}" class="ibtn layui-btn  layui-btn-radius   "><i class="layui-icon">&#xe642;</i> {:lang('Modify')}</a>
                         </div>
                       </div>
                     </div>

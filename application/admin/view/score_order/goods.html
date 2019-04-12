@@ -6,8 +6,8 @@
     <div class="layui-tab ">
 
         <ul class="  amain-tool-bar" >
-            <li ><a href="{:url('admin/ScoreOrder/index')}" showloading >订单查询</a></li>
-            <li class="layui-this"><a href="{:url('admin/ScoreOrder/goods')}" showloading >商品下单数查询</a></li>
+            <li ><a href="{:url('admin/ScoreOrder/index')}" showloading >{:lang('Order inquiry')}</a></li>
+            <li class="layui-this"><a href="{:url('admin/ScoreOrder/goods')}" showloading >{:lang('Goods order quantity statistics')}</a></li>
         </ul>
 
         <div class="amain-content">
@@ -15,14 +15,14 @@
 
           <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreOrder/goods')}" method="get" >
               <div class="layui-inline">
-                  <label class="layui-form-label">下单时间</label>
-                  <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
+                  <label class="layui-form-label">{:lang('Order time')}</label>
+                  <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="{:lang('Time range')}" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
               </div>
               <input type="hidden" name="filter[status]" value="{$filter.status}">
               <div class="layui-input-inline">
                   <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
-                  <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择商品区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="选择商品区域" data-title="选择商品区域" data-tips-position="3" data-auto-submit="true"  >
-                    {$region_datas ? str_replace(',',' / ',$region_datas[0]['fullname']) : "选择商品区域"}
+                  <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" data-auto-submit="true"  >
+                    {$region_datas ? str_replace(',',' / ',$region_datas[0]['fullname']) : lang('Region or department')}
                   </a>
               </div>
           </form>
@@ -31,11 +31,11 @@
           <div class="layui-tab amain-content-tab">
             <div class="tab-title-wrapper">
               <ul class="layui-tab-title">
-                <li <?php echo $filter['status']==="" || $filter['status']==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeStatus('all')" href="javascript:void(0);" >全部</a></li>
-                <li <?php echo $filter['status']==="all_01" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeStatus('all_01')" href="javascript:void(0);" >未兑和已兑</a></li>
+                <li <?php echo $filter['status']==="" || $filter['status']==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeStatus('all')" href="javascript:void(0);" >{:lang('All')}</a></li>
+                <li <?php echo $filter['status']==="all_01" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeStatus('all_01')" href="javascript:void(0);" >{:lang('Not redeemed or redeemed')}</a></li>
                 {foreach name="statusList" key="key" item="vo"}
                 <li <?php echo  is_numeric($filter['status']) && intval($filter['status']) === intval($key) ? 'class="layui-this"' : '' ; ?> >
-                  <a onclick="changeStatus('<?php echo $key;?>')" href="javascript:void(0);">{$vo}</a>
+                  <a onclick="changeStatus('<?php echo $key;?>')" href="javascript:void(0);">{:lang("sl:".$vo)}</a>
                 </li>
                 {/foreach}
               </ul>
@@ -46,14 +46,14 @@
                 <table class="layui-table">
                   <thead>
                   <tr >
-                      <th width="40">编号</th>
-                      <th>商品</th>
-                      <th>显示区域</th>
-                      <th width="40">库存</th>
-                      <th width="50">兑换价</th>
-                      <th width="50">采购价</th>
-                      <th width="100" >兑换数量</th>
-                      <th width="100" >总价</th>
+                      <th width="40">#</th>
+                      <th>{:lang('Goods')}</th>
+                      <th>{:lang('Region or department')}</th>
+                      <th width="40">{:lang('Inventory')}</th>
+                      <th width="50">{:lang('Redeem points')}</th>
+                      <th width="50">{:lang('Purchase price')}</th>
+                      <th width="100" >{:lang('Redemption quantity')}</th>
+                      <th width="100" >{:lang('Total price')}</th>
                   </tr>
                   </thead>
                   <tbody class="goods-table-list">
@@ -67,7 +67,7 @@
                         </span>
                       </td>
                       <td>{$good.fullname|str_replace=","," / ",###}</td>
-                      <td>{$good.inventory == -1 ? '不限' : $good.inventory }</td>
+                      <td>{$good.inventory == -1 ? lang('Unlimited') : $good.inventory }</td>
                       <td><b class="price">{$good.price}</b></td>
                       <td><b class="amount">{$good.amount}</b></td>
                       <td>&times; <b class="num">{$good.num}</b></td>
@@ -79,10 +79,10 @@
                   </tbody>
                 </table>
                 <blockquote class="layui-elem-quote layui-quote-nm" style="background:#FFF; text-align:right">
-                  总采购价:<b class="sumPrice"></b> &nbsp;&nbsp; <b  class="sumNum"></b>
+                  {:lang('Total purchase price')}:  <b class="sumPrice"></b> &nbsp;&nbsp; <b  class="sumNum"></b>
                 </blockquote>
               <?php }else{
-                echo isset($filter['time']) && $filter['time'] ? "暂无数据" : "请选择时间段";
+                echo isset($filter['time']) && $filter['time'] ? lang('No Data') : lang('Please select a time period') ;
               } ?>
               </div>
 
@@ -104,6 +104,7 @@ function changeStatus(status){
 laydate.render({
   elem: '#filter_time'
   ,range: '~' //或 range: '~' 来自定义分割字符
+  ,lang:'{$active_lang == "zh-cn" ? "cn" : "en"}'
   ,done: function(value, date, endDate){
     layer.load(2);
     setTimeout(function(){
@@ -114,15 +115,16 @@ laydate.render({
 
 var goodSum = {
   price:0,
-  num:0
+  num:0,
 }
 $('.goods-table-list .good-item').each(function(index, el) {
   var num =  parseFloat($(this).find('.num').text());
   var amount =  parseFloat($(this).find('.amount').text());
   goodSum['num'] += num;
-  goodSum['price'] += num * amount;
+  goodSum['price'] += parseFloat((num * amount).toFixed(2));
 });
-$('.sumPrice').text(goodSum.price);
+
+$('.sumPrice').text(goodSum.price.toFixed(2));
 // $('.sumNum').text(goodSum.num);
 console.log(goodSum);
 </script>

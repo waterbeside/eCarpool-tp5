@@ -21,8 +21,9 @@ class ApiBase extends Base
     protected function initialize()
     {
         // config('default_lang', 'zh-cn');
-        $this->loadLanguagePack();
         parent::initialize();
+        $this->loadLanguagePack();
+
     }
 
 
@@ -47,7 +48,7 @@ class ApiBase extends Base
         $Authorization = $Authorization ? $Authorization : cookie('admin_token');
         $Authorization = $Authorization ? $Authorization : input('request.admin_token');
         if(!$Authorization){
-          $this->passportError = [10004,'您尚未登入'];
+          $this->passportError = [10004,lang('You are not logged in')];
           return $returnType ? $this->jsonReturn(10004,$this->passportError[1]) : false;
         }else{
           try{
@@ -71,7 +72,7 @@ class ApiBase extends Base
           if(isset($jwtDecode->uid) && isset($jwtDecode->loginname) ){
             $now = time();
             if( $now  > $jwtDecode->exp){
-                $this->passportError = [10004,'登入超时，请重新登入'];
+                $this->passportError = [10004,lang('Login status expired, please login again')];
                 return $returnType ? $this->jsonReturn(10004,$this->passportError[1]) : false;
             }
             $this->userBaseInfo  = array(
@@ -80,7 +81,7 @@ class ApiBase extends Base
             );
             return true;
           }else{
-            $this->passportError = [10004,'您尚未登入'];
+            $this->passportError = [10004,lang('You are not logged in')];
             return $returnType ? $this->jsonReturn(10004,$this->passportError[1]) : false;
           }
         }
@@ -113,7 +114,7 @@ class ApiBase extends Base
      */
     public function loadLanguagePack($language = NULL,$formCommon = 0){
       $path = $formCommon ? Env::get('root_path') .'application/common/lang/' : Env::get('root_path') .'application/api/lang/';
-      $lang = $language ? $language  : $this->getLang();
+      $lang = $language ? $language  : $this->language;
       Lang::load( $path.$lang.'.php');
     }
 
@@ -135,7 +136,7 @@ class ApiBase extends Base
         $userData = UserModel::find($uid);
       }
       if(!$uid || !$userData){
-        return $returnType ? $this->jsonReturn(10004,'您尚未登入') : false;
+        return $returnType ? $this->jsonReturn(10004,lang('You are not logged in')) : false;
       }
       if(!$userData['is_active']){
         return $returnType ? $this->jsonReturn(10003,lang('The user is banned')) : false;

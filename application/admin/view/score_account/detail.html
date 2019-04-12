@@ -8,7 +8,7 @@
       <div class="cp-avatar" style="background-image:url('{$userInfo.avatar}')"></div>
     </div>
     {/if}
-    <h3>积分账号</h3>
+    <h3>{:lang('Point account')}</h3>
     {if $accountInfo}
     <table class="layui-table">
       <tbody>
@@ -16,64 +16,64 @@
           <td class="td-label" width="100">uuid</td>
           <td>{$accountInfo.identifier}</td>
         </tr>
-        <tr>
-          <td class="td-label" width="100">账号名</td>
+        <!-- <tr>
+          <td class="td-label" width="100">{:lang('Acount')}</td>
           <td>{$accountInfo.account&& trim($accountInfo.account)!=''?$accountInfo.account:'-'}</td>
-        </tr>
+        </tr> -->
         <tr>
-          <td class="td-label">拼车账号</td>
+          <td class="td-label">{:lang('Carpool account')}</td>
           <td>{$accountInfo.carpool_account}</td>
         </tr>
         <tr>
-          <td class="td-label">积分</td>
+          <td class="td-label">{:lang('Points')}</td>
           <td><b class="text-red">{$accountInfo.balance}</b></td>
         </tr>
         <tr>
-          <td class="td-label">电话</td>
+          <td class="td-label">{:lang('Phone')}</td>
           <td>{$accountInfo.phone?$accountInfo.phone:'-'}</td>
         </tr>
       </tbody>
     </table>
     {else}
     <div class="blank10"></div>
-    <blockquote class="layui-elem-quote">该账号未开通积分账号</blockquote>
+    <blockquote class="layui-elem-quote">{:lang('The user has not opened a credit account')}</blockquote>
     {/if}
 
     <div class="blank20"></div>
     {if $userInfo}
-    <h3>Carpool账号</h3>
+    <h3>{:lang('Carpool account')}</h3>
     <table class="layui-table">
       <tbody>
         <tr>
-          <td class="label" width="100">用户名</td>
+          <td class="label" width="100">{:lang('Username')}</td>
           <td>{$userInfo.loginname}</td>
         </tr>
         <tr>
-          <td class="label">手机</td>
+          <td class="label">{:lang('Phone')}</td>
           <td>{$userInfo.phone}</td>
         </tr>
         <tr>
-          <td class="label">姓名</td>
+          <td class="label">{:lang('Full name')}</td>
           <td>{$userInfo.name}</td>
         </tr>
         <tr>
-          <td class="label">性别</td>
+          <td class="label">{:lang('Sex')}</td>
           <td>
-            {if condition="$userInfo.sex==1"}男{/if}
-            {if condition="$userInfo.sex==2"}女{/if}
+            {if condition="$userInfo.sex==1"}{:lang('Male')}{/if}
+            {if condition="$userInfo.sex==2"}{:lang('Female')}{/if}
             {if condition="$userInfo.sex==0"}-{/if}
           </td>
         </tr>
         <tr>
-          <td class="label">所属公司</td>
+          <td class="label">{:lang('Company')}</td>
           <td>{$userInfo.company_name}</td>
         </tr>
         <tr>
-          <td class="label">部门</td>
+          <td class="label">{:lang('Department')}</td>
           <td>{$userInfo.Department}</td>
         </tr>
         <tr>
-          <td class="label">部门(HR)</td>
+          <td class="label">{:lang('Department')}(HR)</td>
           <td>{$userInfo.full_department}</td>
         </tr>
       </tbody>
@@ -88,7 +88,7 @@
             $h_url = url('admin/scoreHistory/lists',['type'=>2,'account'=>$userInfo['loginname']]);
           }
         {/php}
-        <a href="{$h_url}" class="layui-btn layui-btn-lg layui-col-xs12" >查看积分明细</a>
+        <a href="{$h_url}" class="layui-btn layui-btn-lg layui-col-xs12" >View points history</a>
       </div>
     </div>
   </div>

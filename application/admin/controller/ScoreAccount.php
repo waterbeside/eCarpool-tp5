@@ -30,8 +30,7 @@ class ScoreAccount extends AdminBase
         }
       }else{
         $this->assign('hasAuth_changeScore', $this->checkActionAuth('admin/Score/change') );
-
-      }
+      }      
 
       // $type = strval($type);
       if( $type=='0'|| $type=="score"){  //积分帐号列表
@@ -56,11 +55,11 @@ class ScoreAccount extends AdminBase
         }
 
         //筛选分数范围 - 下限
-        if (isset($filter['floor']) && is_numeric($filter['floor']) && $filter['floor']>0 ){
+        if (isset($filter['floor']) && is_numeric($filter['floor'])  ){
           $map[] = ['ac.balance','EGT', $filter['floor']];
         }
         //筛选分数范围 - 上限
-        if (isset($filter['ceiling']) && is_numeric($filter['ceiling']) && $filter['ceiling']>0 ){
+        if (isset($filter['ceiling']) && is_numeric($filter['ceiling']) ){
           $map[] = ['ac.balance','ELT', $filter['ceiling']];
         }
         $isJoinUser = $export ? true : false;
@@ -120,11 +119,11 @@ class ScoreAccount extends AdminBase
 
 
         //筛选分数范围 - 下限
-        if (isset($filter['floor']) && is_numeric($filter['floor']) && $filter['floor']>0 ){
+        if (isset($filter['floor']) && is_numeric($filter['floor'])  ){
           $map[] = ['ac.balance','EGT', $filter['floor']];
         }
         //筛选分数范围 - 上限
-        if (isset($filter['ceiling']) && is_numeric($filter['ceiling']) && $filter['ceiling']>0 ){
+        if (isset($filter['ceiling']) && is_numeric($filter['ceiling']) ){
           $map[] = ['ac.balance','ELT', $filter['ceiling']];
         }
         //筛选用户信息

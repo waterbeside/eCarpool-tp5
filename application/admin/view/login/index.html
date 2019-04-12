@@ -19,32 +19,40 @@
     <![endif]-->
 </head>
 <body class="p-login">
-<div class="login-title">Carpool Management</div>
+<div class="btn-drop m-language-box">
+    <a href="javascript:;" class="drop-btn"><i class="fa fa-language"></i> Language  <i class="fa fa-caret-down"></i></a>
+    <ul class="drop-box"> <!-- 二级菜单 -->
+      {foreach name="langs_select_list" item="v" key="k"}
+        <li><a href="?lang={$k}" >{$v}</a></li>
+      {/foreach}
+    </ul>
+</div>
+<div class="login-title">Carpool Management </div>
 <div class="login-form-wrapper">
   <form class="layui-form login-form" action="{:url('admin/login/login')}" method="post" data-unrefresh='1' data-jump="{:url('admin/index/index')}">
       <div class="layui-form-item">
-          <label class="layui-form-label">用户名</label>
+          <label class="layui-form-label"><i class="fa fa-user"></i></label>
           <div class="layui-input-block">
-              <input type="text" name="username" required lay-verify="required" autocomplete="off" class="layui-input">
+              <input type="text" name="username" required  autocomplete="off" class="layui-input" placeholder="{:lang('Username')}">
           </div>
       </div>
       <div class="layui-form-item">
-          <label class="layui-form-label">密码</label>
+          <label class="layui-form-label"><i class="fa fa-key"></i></label>
           <div class="layui-input-block">
-              <input type="password" name="password" required lay-verify="required" class="layui-input">
+              <input type="password" name="password" required  class="layui-input" placeholder="{:lang('Password')}">
           </div>
       </div>
       <div class="layui-form-item">
-          <label class="layui-form-label">验证码</label>
+          <label class="layui-form-label"><i class="fa fa-hand-peace-o"></i></label>
           <div class="layui-input-block">
-              <input type="text" name="verify" required lay-verify="required" class="layui-input layui-input-inline">
-              <img src="{:captcha_src()}" alt="点击更换" title="点击更换" onclick="this.src='{:captcha_src()}?time='+Math.random()" class="captcha">
+              <input type="text" name="verify" required  class="layui-input layui-input-inline" placeholder="{:lang('Captcha')}">
+              <img src="{:captcha_src()}" alt="{:lang('Click to change')}" title="{:lang('Click to change')}" onclick="this.src='{:captcha_src()}?time='+Math.random()" class="captcha">
           </div>
       </div>
       <div class="layui-form-item">
           <div class="layui-input-block">
             <!-- <button class="layui-btn J-submit-btn" lay-submit lay-filter="*.login">登 录</button> -->
-              <button class="layui-btn J-submit-btn" lay-submit lay-filter="*.login">登 录</button>
+              <button class="layui-btn J-submit-btn layui-btn-lg" lay-submit lay-filter="*.login">{:lang("Sign in")}</button>
           </div>
       </div>
   </form>
@@ -58,16 +66,35 @@
 </script>
 <script src="__JS__/jquery.min.js"></script>
 <script src="__JS__/layui/layui.all.js"></script>
-<script src="__JS__/admin.js"></script>
+<script src="__JS__/admin.js?v=1.2"></script>
 <script>
+
+var inputFiledTitle = {
+  "username" : "{:lang('Username')}",
+  "password" : "{:lang('Password')}",
+  "verify" : "{:lang('Captcha')}",
+}
 
 /**
  * 通用表单提交(AJAX方式)
  */
 form.on('submit(*.login)', function (data) {
+
+    var dataList =  $(data.form).serializeArray();
+    var checkOk = 1 ;
+    $(dataList).each(function(index, el) {
+
+      if($.trim(el.value)==""){
+        layer.msg( inputFiledTitle[el.name] + "{:lang("can not be empty")}");
+        checkOk = 0
+        return false;
+      }
+    });
+    if(!checkOk){
+      return false;
+    }
     $(".J-submit-btn").addClass('layui-disabled').prop('disabled',true).html('<i class="fa fa-spinner fa-spin"></i>');
     layer.msg("Loading");
-
     $.ajax({
         url: data.form.action,
         dataType:'json',
@@ -93,7 +120,7 @@ form.on('submit(*.login)', function (data) {
               $(".captcha").trigger('click');
             }
             layer.msg(res.desc);
-            $(".J-submit-btn").removeClass('layui-disabled').prop('disabled',false).html('登入');
+            $(".J-submit-btn").removeClass('layui-disabled').prop('disabled',false).html('{:lang("Sign in")}');
 
         }
     });

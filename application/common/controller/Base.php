@@ -6,6 +6,7 @@ use app\common\model\Configs;
 use think\Response;
 use think\exception\HttpResponseException;
 use think\facade\Cache;
+use think\facade\Hook;
 
 
 /**
@@ -23,8 +24,7 @@ class Base extends Controller
 
     protected function initialize()
     {
-        $this->language = $this->getLang();
-
+        $this->getLang();
         $this->systemConfig = $this->getSystemConfigs();
         parent::initialize();
     }
@@ -33,71 +33,23 @@ class Base extends Controller
      * 取得使用语言
      * @return [type] [description]
      */
-    public function getLang()
+    public function getLang($type = 0)
     {
-      if(!$this->language_l){
-        $lang_s =  input('request._language');
-        $lang_s = $lang_s ? $lang_s : input('request.lang');
-        $lang_s = $lang_s ? $lang_s : request()->header('Accept-Lang');
-        $lang_s = $lang_s ? $lang_s : request()->header('Accept-Language');
-        $lang_l = $this->formatAcceptLang($lang_s);
-        $this->language_l = $lang_l;
-        $this->language = $lang_l[0] == 'zh' ? ( isset($lang_l[1]) ? $this->formatZhLang($lang_l[1],'zh-cn') : 'zh-cn') : $this->formatZhLang($lang_l[0]);
-      }
-      return $this->language;
-
-    }
-
-
-    public function formatZhLang($language,$default = null)
-    {
-      if($language == 'zh-hant-hk'){
-        return 'zh-hk';
-      }
-      if($language == 'zh-hant-tw'){
-        return 'zh-tw';
-      }
-      if($language == 'zh-hans'){
-        return 'zh-cn';
-      }
-      if(strpos($language,'zh-hant') !== false  ){
-        return 'zh-hk';
-      }
-      if(strpos($language,'zh-hans') !== false  ){
-        return 'zh-cn';
-      }
-      return $default ? $default : $language  ;
+      $getLangRes =  Hook::exec('app\\common\\behavior\\GetLang', $this,[]);
+      return $getLangRes;
     }
 
     /**
-     * 格式化Accept-language得来的语言。
+     * 格式化最后要得到的语言码
      * @param  string $language
-     * @return array
+     * @return string
      */
-  	public function formatAcceptLang($language)
+    public function formatLangCode($language)
     {
-      $lang_l = explode(',',$language);
-      $lang_format_list = [];
-      $q_array = [];
+      $getLangRes =  Hook::exec(['app\\common\\behavior\\GetLang','formatLangCode'], $language);
+      return $getLangRes;
+    }
 
-      foreach ($lang_l as $key => $value) {
-        $temp_arr = explode(';',$value);
-        $q = isset($temp_arr[1]) ? $temp_arr[1] : 1;
-        $q_array[]  = $q;
-        $lang_format_list[$key] = ['lang'=>$temp_arr[0],'q'=>$q];
-      }
-
-      array_multisort($q_array, SORT_DESC,  $lang_format_list);
-      $lang = [];
-      foreach ($lang_format_list as $key => $value) {
-        $lang[] = strtolower(trim($value['lang']));
-      }
-      $baseLangArray = explode('-',$lang[0]);
-      $baseLang  = $baseLangArray[0];
-      $lang = array_merge([$baseLang],$lang);
-      $lang = array_unique($lang);
-      return $lang;
-  	}
 
 
 

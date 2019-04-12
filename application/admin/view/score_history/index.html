@@ -5,7 +5,7 @@
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
         <ul class="  amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/ScoreHistory/index')}"  >积分历史</a></li>
+            <li class="layui-this"><a href="{:url('admin/ScoreHistory/index')}" >{:lang('Points history')}</a></li>
 
         </ul>
         <div class="layui-tab-content">
@@ -14,20 +14,20 @@
                         <input type="hidden" name="pagesize" value="{$pagesize}">
                         <div class="layui-input-inline">
                           <select name="filter[reason]" lay-verify="required" lay-search>
-                            <option value="">原因</option>
+                            <option value="">{:lang('Reason')}</option>
                             {foreach name="reasons" key="key" item="vo"}
-                             <option value="{$key}" {php}echo $filter['reason']== "$key" ? 'selected' : ''; {/php} >{$key>0?'+':'-'} {$vo}</option>
+                             <option value="{$key}" {php}echo $filter['reason']== "$key" ? 'selected' : ''; {/php} ><?php echo $key > 0 ? "+" : "-" ; ?> {:lang("sl:".$vo)}</option>
                             {/foreach}
                            </select>
                         </div>
                     </div>
                     <div class="layui-input-inline">
-                      <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter.time}"  style="width:200px">
+                      <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="{:lang('Time range')}" value="{$filter.time}"  style="width:200px">
                     </div>
                     <div class="layui-input-inline">
                         <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
-                        <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择显示区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="选择商品区域" data-title="选择商品区域" data-tips-position="3" >
-                          {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择用户区域/部门"}
+                        <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" >
+                          {$regionData ? str_replace(',',' / ',$regionData['fullname']) : lang('Region or department')}
                         </a>
                     </div>
                     <div class="layui-inline">
@@ -40,12 +40,12 @@
                     <thead>
                     <tr >
                         <th >#</th>
-                        <th>用户</th>
-                        <th>原因</th>
-                        <th>部门</th>
-                        <th class="t-number">变动</th>
-                        <th class="t-number">余额</th>
-                        <th>时间</th>
+                        <th>{:lang('User')}</th>
+                        <th>{:lang('Reason')}</th>
+                        <th>{:lang('Department')}</th>
+                        <th class="t-number">{:lang('Points Change')}</th>
+                        <th class="t-number">{:lang('Balance')}</th>
+                        <th>{:lang('Time')}</th>
 
                     </tr>
                     </thead>
@@ -61,7 +61,7 @@
                               $ac_url = url('admin/ScoreAccount/detail',['type'=>2,'account'=>$vo['carpool_account']]) ;
                             }
                           {/php}
-                          <a onclick="openLayer('{$ac_url}','用户详情');" href="javascript:void(0);" >
+                          <a onclick="openLayer('{$ac_url}','{:lang('User detail')}');" href="javascript:void(0);" >
                           {$vo.account}{php}echo $vo['account_id'] ? ' <i class="text-red fa fa-id-card"></i>' : '';{/php}
                           </a>
                         </td>
@@ -94,6 +94,7 @@
   //执行一个laydate实例
   laydate.render({
     elem: '#filter_time'
+    ,lang:'{$active_lang == "zh-cn" ? "cn" : "en"}'
     ,range: '~' //或 range: '~' 来自定义分割字符
   });
 

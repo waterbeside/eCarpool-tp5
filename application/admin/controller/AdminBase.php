@@ -14,6 +14,9 @@ use my\DeptAuth;
 use think\facade\Hook;
 use Firebase\JWT\JWT;
 use app\user\model\Department;
+use think\facade\Env;
+use think\facade\Lang;
+use think\facade\Cookie;
 
 
 /**
@@ -33,6 +36,7 @@ class AdminBase extends Base
     public $un_check = [];
     public $check_dept_setting = [];
     public $authDeptData = [];
+    public $activeLang = NULL;
     protected $check_dept_setting_default = [
       "action" => ['index','add','post.edit']
     ];
@@ -41,13 +45,21 @@ class AdminBase extends Base
     protected function initialize()
     {
         parent::initialize();
-        $this->checkAuthSession(); //如果使用Session验证 , 生成 $userBaseInfo
-        $this->checkAuth();   //验证菜单权限
-        $this->checkDeptAuth(); //取得权限部门
-
+        $this->loadLanguagePack();
         $this->getTimezoneOffset();
 
+        $module     = strtolower($this->request->module());
+        $controller = strtolower($this->request->controller());
+        $action     = strtolower($this->request->action());
+        if(!in_array($module . '/' . $controller . '/' . $action, ['admin/login/index','admin/login/login','admin/login/logout'])){
+          $this->checkAuthSession(); //如果使用Session验证 , 生成 $userBaseInfo
+          $this->checkAuth();   //验证菜单权限
+          $this->checkDeptAuth(); //取得权限部门
+        }
+
         $this->assign('systemConfig', $this->systemConfig);
+        $this->assign('langs_select_list', config('others.langs_select_list'));
+
 
         // 输出当前请求控制器（配合后台侧边菜单选中状态）
         $this->assign('controller', Loader::parseName($this->request->controller()));
@@ -102,7 +114,6 @@ class AdminBase extends Base
      */
     public function checkAuthSession()
     {
-
       if (!Session::has('admin_id')) {
         if($this->request->isAjax()){
           $this->jsonReturn(10004,'您尚未登入');
@@ -274,8 +285,16 @@ class AdminBase extends Base
 
         $auth_rule_list = Db::name('auth_rule')->where('status', 1)->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
 
+        $activeLang  = $this->activeLang;
         foreach ($auth_rule_list as $value) {
             if ($auth->check($value['name'], $admin_id) || $admin_id == 1) {
+                $value['title_zh'] = $value['title'];
+                if($activeLang != 'zh-cn'){
+                  $value['title'] =  $value['title_en'] ? $value['title_en'] : $value['title'];
+                  if($activeLang == 'vi'){
+                    $value['title'] =  $value['title_vi'] ? $value['title_vi'] :   $value['title'];
+                  }
+                }
                 $menu[] = $value;
             }
         }
@@ -289,8 +308,8 @@ class AdminBase extends Base
         }
         array_multisort(array_column($menu,'sort'),SORT_DESC,$menu);
         $this->assign('menu', $menu);
-
     }
+
 
     public function log($desc='',$status=2)
     {
@@ -493,6 +512,34 @@ class AdminBase extends Base
 
     }
 
+
+    /**
+     * 加载语言包
+     * @param  string  $language   语言，当不设时，自动选择
+     * @param  integer $formCommon 语言包路径位置。
+     */
+    public function loadLanguagePack($language = NULL,$formCommon = 0){
+      $path = $formCommon ? Env::get('root_path') .'application/common/lang/' : Env::get('root_path') .'application/admin/lang/';
+
+      $lang_s =  input('request._language');
+      $lang_s = $lang_s ? $lang_s : input('request.lang');
+      if($lang_s){
+        $d_lang = $this->getLang();
+        Cookie::set('lang',$d_lang,60*60*24*30);
+      }else{
+        $d_lang = Cookie::get('lang');
+        if(!$d_lang){
+          $d_lang = $this->getLang();
+        }
+        $d_lang = $this->formatLangCode($d_lang);
+      }
+      $lang = $language ? $language  : $d_lang;
+      $langs_list =  config('others.langs_select_list');
+      $lang = isset($langs_list[$lang]) ? $lang : config('default_lang');
+      $this->activeLang = $lang;
+      $this->assign('active_lang', $lang);
+      return Lang::load( $path.$lang.'.php');
+    }
 
 
 

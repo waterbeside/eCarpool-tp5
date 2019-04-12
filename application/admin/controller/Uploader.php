@@ -24,10 +24,10 @@ class Uploader extends AdminBase
         $sha1= $images->hash('sha1');
         $upInfo = $images->getInfo();
         if(strpos($upInfo['type'],'image')===false){
-          $this->jsonReturn(-1,'请上传图片格式');
+          $this->jsonReturn(-1,lang('Not image file format'));
         }
         if($upInfo['size'] > 819200){
-          $this->jsonReturn(-1,'图片不能大于800K');
+          $this->jsonReturn(-1,lang('Images cannot be larger than {:size}',["size"=>"800K"]));
         }
         $image = \think\Image::open(request()->file('file'));
         $extra = [
@@ -41,15 +41,23 @@ class Uploader extends AdminBase
         $site_domain  = trim($systemConfig['site_upload_domain']) ? trim($systemConfig['site_upload_domain']) : $this->request->root(true) ;
         $upload_path  = trim($systemConfig['site_upload_path'])."/images" ;
         //判断图片文件是否已经上传
-        $img = Attachment::where(['md5_code'=>$md5,'sha1_code'=>$sha1])->find();//我这里是将图片存入数据库，防止重复上传
+        $checkHasMap = [
+          ['md5_code','=',$md5],
+          ['sha1_code','=',$sha1],
+          ['module','<>','user/avatar'],
+        ];
+        $img = Attachment::where($checkHasMap)->find();//我这里是将图片存入数据库，防止重复上传
+
+
+
         if(!empty($img)){
-          Attachment::where(['md5_code'=>$md5,'sha1_code'=>$sha1])->update([
+          Attachment::where($checkHasMap)->update([
             'status'	    => 1,
             'times'	      => Db::raw('times+1'),
             'last_userid'	=> $admin_id,
             'last_time'   => time(),
           ]);
-            $this->jsonReturn(0,['img_id'=>$img['id'],'img_url'=>$site_domain.$img['filepath']],'上传成功');
+            $this->jsonReturn(0,['img_id'=>$img['id'],'img_url'=>$site_domain.$img['filepath']],lang('upload successful'));
         }else{
             $module = input('param.module','admin');
             $request = request();
@@ -77,9 +85,9 @@ class Uploader extends AdminBase
             ];
 
             if($img_id=Attachment::insertGetId($data)){
-                $this->jsonReturn(0,['img_id'=>$img_id,'img_url'=>$site_domain.$path],'上传成功');
+                $this->jsonReturn(0,['img_id'=>$img_id,'img_url'=>$site_domain.$path],lang('upload successful'));
             }else{
-                $this->jsonReturn(-1,'图片入库失败');
+                $this->jsonReturn(-1,lang('Attachment information failed to be written'));
             }
         }
     }else{

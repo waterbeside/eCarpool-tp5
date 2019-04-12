@@ -4,15 +4,15 @@
     <div>
         <form class="layui-form form-container" action="{:url('admin/ScorePrize/add')}" method="post" onsubmit="return FORM_PAGE_EXEC.submitForm(this);">
             <div class="layui-form-item">
-                <label class="layui-form-label">区域/部门</label>
+                <label class="layui-form-label">{:lang('Region or department')}</label>
                 <div class="layui-input-block">
                   <?php if(!$id){ ?>
                     <div class="J-dept-select-wrapper"></div>
                       <input type="hidden" name="p_region_id" value="{$data.p_region_id ? $data.p_region_id : $department_default_selected.id}"  class="layui-input layui-input-inline " readonly  >
                       <a onclick="FORM_PAGE_EXEC.openDeptDialog()" href="javascript:void(0);"  class="layui-btn  layui-btn-primary layui-btn-sm"   >
-                        <i class="fa fa-book"></i> <span>选择区域/部门</span>
+                        <i class="fa fa-book"></i> <span>{:lang('Region or department')}</span>
                       </a>
-                      <div class="layui-form-mid layui-word-aux"> 选择区域/部门，选择后，只有该区域或部门下的用户才能看到该商品</div>
+                      <div class="layui-form-mid layui-word-aux"> {:lang('Once selected, only users in the region or department can see the prize')}</div>
                     </div>
                   <?php }else{ ?>
                     <input type="hidden" name="p_region_id" value="{$data.p_region_id ? $data.p_region_id : $department_default_selected.id}"  class="layui-input layui-input-inline " readonly  >
@@ -21,31 +21,31 @@
 
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">奖品名</label>
+                <label class="layui-form-label">{:lang('Prize name')}</label>
                 <div class="layui-input-block">
-                    <input type="text" name="name" value="{$data.name ? $data.name : ''}" required  lay-verify="required" placeholder="请输入商品名" class="layui-input">
+                    <input type="text" name="name" value="{$data.name ? $data.name : ''}" required  lay-verify="required" placeholder="{:lang('Please enter a prize name')}" class="layui-input">
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">期数</label>
+                <label class="layui-form-label">{:lang('Issue number')}</label>
                 <div class="layui-input-block">
-                    <input type="number"  value="{$data.publication_number ? $data.publication_number : 1 }"  placeholder="期数" class="layui-input" readonly disabled>
+                    <input type="number"  value="{$data.publication_number ? $data.publication_number : 1 }"  placeholder="{:lang('Issue number')}" class="layui-input" readonly disabled>
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">描述</label>
+                <label class="layui-form-label">{:lang('Description')}</label>
                 <div class="layui-input-block">
-                   <textarea name="desc" placeholder="请输入描述" class="layui-textarea">{$data.desc ? $data.desc :''}</textarea>
+                   <textarea name="desc" placeholder=":lang('Please enter a description')}" class="layui-textarea">{$data.desc ? $data.desc :''}</textarea>
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">缩略图</label>
+                <label class="layui-form-label">{:lang('Image')}</label>
                 <div class="layui-input-block">
                   <input type="text" name="thumb" value="{$data.thumb ? $data.thumb  : ''}" class="layui-input">
                   <a   class="amain-uploadImgBtn" id="upload-btn">
                      <img class="layui-upload-img" id="item-thumb" src="{$data.thumb ? $data.thumb  : ''}" >
                      <div class="text">
-                       <i class="fa fa-upload"></i>上传图片
+                       <i class="fa fa-upload"></i>{:lang('Upload image')}
                      </div>
                   </a>
                   <p id="uploadText"></p>
@@ -53,54 +53,53 @@
                 </div>
             </div>
              <div class="layui-form-item">
-                <label class="layui-form-label">采购价</label>
+                <label class="layui-form-label">{:lang('Purchase price')}</label>
                 <div class="layui-input-block">
-                    <input type="text" name="amount" value="{$data.amount ? $data.amount : 0}"  required  lay-verify="required" placeholder="请输入奖品采购价" class="layui-input">
+                    <input type="text" name="amount" value="{$data.amount ? $data.amount : 0}"  required  lay-verify="required" placeholder=":lang('Lottery unit price')}" class="layui-input">
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">抽奖单价</label>
+                <label class="layui-form-label">{:lang('Lottery unit price')}</label>
                 <div class="layui-input-block">
-                    <input type="text" name="price" value="{$data.price ? $data.price : 100}"  required  lay-verify="required" placeholder="抽奖所需积分" class="layui-input" >
-                    <div class="layui-form-mid layui-word-aux"  >每次抽奖所消耗积分</div>
-                </div>
-            </div>
-
-            <div class="layui-form-item">
-                <label class="layui-form-label">期望总数</label>
-                <div class="layui-input-block">
-                    <input type="number" name="total_count"  value="{$data.total_count ? $data.total_count : 1000}"  required  lay-verify="required" placeholder="开奖阈值" class="layui-input" >
-                    <div class="layui-form-mid layui-word-aux"    >当购买票数达到该数量时开奖</div>
+                    <input type="text" name="price" value="{$data.price ? $data.price : 100}"  required  lay-verify="required" placeholder="{:lang('Lottery unit price')}" class="layui-input" >
+                    <div class="layui-form-mid layui-word-aux"  >{:lang('Points consumed per draw')}</div>
                 </div>
             </div>
 
             <div class="layui-form-item">
-                <label class="layui-form-label">级别</label>
+                <label class="layui-form-label">{:lang('Expected number')}</label>
                 <div class="layui-input-block">
-                    <input type="number" name="level" min="-1" value="{$data.level ? $data.level : 3}"  required  lay-verify="required" placeholder="奖品级别" class="layui-input">
-                    <div class="layui-form-mid layui-word-aux">奖品级别(第几等奖)</div>
+                    <input type="number" name="total_count"  value="{$data.total_count ? $data.total_count : 1000}"  required  lay-verify="required" placeholder="{:lang('Expected number')}" class="layui-input" >
+                    <div class="layui-form-mid layui-word-aux"    >{:lang('Winning the prize when the number of participation is reached')}</div>
                 </div>
             </div>
 
             <div class="layui-form-item">
-                <label class="layui-form-label">状态</label>
+                <label class="layui-form-label">{:lang('Prize level')}</label>
+                <div class="layui-input-block">
+                    <input type="number" name="level" min="-1" value="{$data.level ? $data.level : 3}"  required  lay-verify="required" placeholder="{:lang('Prize level')}" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('Status')}</label>
                 <div class="layui-input-block">
                   <select name="status"  >
-                      <option value="-1" selected >准备开始</option>
-                    <option value="0" >进行中（正常）</option>
-                    <option value="1">进行中（推荐）</option>
-                     <option value="2" >进行中（置顶）</option>
+                      <option value="-1" selected >{:lang('sl:准备中')}</option>
+                    <option value="0" >{:lang('sl:进行中')}（{:lang('sl:正常')}）</option>
+                    <option value="1">{:lang('sl:进行中')}（{:lang('sl:推荐')}）</option>
+                     <option value="2" >{:lang('sl:进行中')}（{:lang('sl:置顶')}）</option>
                    </select>
-                   <div class="layui-form-mid layui-word-aux">默认为“准备开始”，抽奖一但进行，则不允许再对奖品信息进行修改，请三思而行。</div>
+                   <div class="layui-form-mid layui-word-aux">{:lang('The default is “Preparing”. Once the lucky draw is set to be in progress or off the shelf, it is not allowed to modify the prize information again. Please think twice.')}</div>
 
                 </div>
             </div>
 
             <div class="layui-form-item">
-                <label class="layui-form-label">自动续期</label>
+                <label class="layui-form-label">{:lang('Automatically release the next issue')}</label>
                 <div class="layui-input-block">
-                    <input type="checkbox" name="un_shelves" value="1" lay-skin="switch" lay-text="是|否" checked>
-                    <div class="layui-form-mid layui-word-aux" >开奖后，是否自动生成并开始下一期抽奖。</div>
+                    <input type="checkbox" name="un_shelves" value="1" lay-skin="switch" lay-text="{:lang('Yes')}|{:lang('No')}" checked>
+                    <div class="layui-form-mid layui-word-aux" >{:lang('After the lottery, and whether to automatically start the next issue of prize')}</div>
                 </div>
             </div>
 
@@ -108,7 +107,7 @@
 
             <div class="layui-btn-container layui-row">
                 <input type="hidden" name="identity" value="{$data.identity ? $data.identity : ''}">
-                <button class="layui-btn layui-btn-lg layui-col-xs12" >提交</button>
+                <button class="layui-btn layui-btn-lg layui-col-xs12" >{:lang('SUBMIT')}</button>
             </div>
 
         </form>
@@ -140,11 +139,10 @@ FORM_PAGE_EXEC = {
          console.log(res);
          //如果上传失败
          if(res.code > 0){
-           return layer.msg('上传失败');
+           return layer.msg('{:lang("Upload failed")}');
          }
          if(res.code===0){
-           layer.msg('上传成功');
-
+           layer.msg('{:lang("Upload successful")}');
            $('#item-thumb').attr('src', res.data.img_url); //图片链接（base64）
            $thumbInput.val(res.data.img_url);
          }else{
@@ -154,7 +152,7 @@ FORM_PAGE_EXEC = {
        ,error: function(){
          //演示失败状态，并实现重传
          var $uploadText = $('#uploadText');
-         var html = '<span style="color: #FF5722;">上传失败,请稍候再试</span>';
+         var html = '<span style="color: #FF5722;">{:lang("Upload failed, please try again later")}</span>';
          // html += '<a class="layui-btn layui-btn-xs reUpload">重试</a>';
          $uploadText.html(html);
          /*$uploadText.find('.reUpload').on('click', function(){
@@ -214,7 +212,7 @@ FORM_PAGE_EXEC = {
     }
   },
   openDeptDialog: function(){
-    openLayer('{:url('admin/Department/list_dialog')}','选择区域/部门');
+    openLayer('{:url('admin/Department/list_dialog')}','{:lang("Region or department")}');
   },
   clearDept: function(){
     $(".P-prize-detail-form input[name='p_region_id']").val('');

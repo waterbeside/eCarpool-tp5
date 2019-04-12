@@ -5,9 +5,9 @@
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief" style="margin:0 0 30px ">
         <ul class="amain-tool-bar" >
-            <li {php} echo !$deep ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>0])}"  >部门管理</a></li>
-            <li {php} echo $deep ==1 ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>'p_1'])}"  >地区列表</a></li>
-            <li {php} echo $deep ==3 ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>'p_3'])}"  >分公司列表</a></li>
+            <li {php} echo !$deep ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>0])}"  >{:lang('Department search')}</a></li>
+            <li {php} echo $deep ==1 ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>'p_1'])}"  >{:lang('Region list')}</a></li>
+            <li {php} echo $deep ==3 ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>'p_3'])}"  >{:lang('Branch list')}</a></li>
         </ul>
 
         <div class="layui-tab-content">
@@ -19,15 +19,15 @@
                   <input type="hidden" name ="pid" value={$pid} />
                   <input type="hidden" name ="fun" value={$fun} />
                   <input type="hidden" name ="multi" value={$multi} />
-                  <div class="my-input-prebox" style="width:100px">
+                  <div class="my-input-prebox" style="max-width:120px">
                     <select name="filter[is_all]" >
-                      <option value="0" {php}echo isset($filter['is_all']) &&  $filter['is_all'] == 0  ? 'selected' : ''; {/php}>检索当前</option>
-                      <option value="1" {php}echo !isset($filter['is_all']) ||  $filter['is_all'] ? 'selected' : ''; {/php}>检索全部</option>
+                      <option value="0" {php}echo isset($filter['is_all']) &&  $filter['is_all'] == 0  ? 'selected' : ''; {/php}>{:lang('Find from current')}</option>
+                      <option value="1" {php}echo !isset($filter['is_all']) ||  $filter['is_all'] ? 'selected' : ''; {/php}>{:lang('Find from all')}</option>
                     </select>
                   </div>
                     <div class="layui-inline">
                         <div class="layui-input-inline">
-                            <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="关键词" class="layui-input" style="width:130px" >
+                            <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="{:lang('keyword')}" class="layui-input" style="width:130px" >
                         </div>
                     </div>
                     <div class="layui-inline">
@@ -50,15 +50,15 @@
                 <!-- /面包屑导行 -->
 
 
-                <blockquote class="layui-elem-quote">共检得 <b>{$lists->total()}</b> 条数据</blockquote>
+                <blockquote class="layui-elem-quote"> {:lang('A total of %s data were found',['<b>'.$lists->total().'</b>'])}</blockquote>
                 <table lay-filter="listtable" class="layui-table">
                     <thead>
                     <tr>
                         <th lay-data="{field:'id', width:80}">ID</th>
                         <th lay-data="{field:'pid', width:80}">PID</th>
-                        <th lay-data="{field:'name', width:150}">名称</th>
+                        <th lay-data="{field:'name', width:150}">{:lang('name')}</th>
                         <th lay-data="{field:'fullname' }">PATH</th>
-                        <th lay-data="{field:'options', width:80,fixed:'right'}">操作</th>
+                        <th lay-data="{field:'options', width:80,fixed:'right'}">{:lang('Operate')}</th>
 
                     </tr>
                     </thead>
@@ -97,9 +97,9 @@
                               $btnStyleClass = $multi ? "layui-btn-primary" : "";
 
                           ?>
-                          <button href="javascript:void(0);"  class="layui-btn   layui-btn-xs  btn-select J-btn-{$vo.id} <?php echo $btnStyleClass; ?>" title="选择" onclick='DialogList_EXEC.deptClickItem(<?php echo json_encode($returnItemData) ?>)'>选择</button>
+                          <button href="javascript:void(0);"  class="layui-btn   layui-btn-xs  btn-select J-btn-{$vo.id} <?php echo $btnStyleClass; ?>" title="{:lang('Select')}" onclick='DialogList_EXEC.deptClickItem(<?php echo json_encode($returnItemData) ?>)'>{:lang('Select')}</button>
                           <?php }else{
-                            echo '<button class="layui-btn   layui-btn-xs   layui-btn-disabled"   onclick="alert(\'你没有选择该地区或部门的权限\');">选择</button>';
+                            echo '<button class="layui-btn   layui-btn-xs   layui-btn-disabled"   onclick="alert(\''.lang('You do not have permission to select the region or department').'\');">'.lang('Select').'</button>';
                           } ?>
                         </td>
                     </tr>
@@ -118,11 +118,11 @@
       <div class="J-selected-wrapper">
       </div>
       <div class="btns-wrapper">
-        <a class="layui-btn layui-btn-primary layui-btn-sm" onclick="DialogList_EXEC.close()">取消</a>
+        <a class="layui-btn layui-btn-primary layui-btn-sm" onclick="DialogList_EXEC.close()">{:lang('Cancel')}</a>
         <?php if($multi){ ?>
-          <a class="layui-btn layui-btn-sm" onclick="DialogList_EXEC.done()">完成</a>
+          <a class="layui-btn layui-btn-sm" onclick="DialogList_EXEC.done()">{:lang('Done')}</a>
         <?php  }else{  ?>
-          <a class="layui-btn layui-btn-danger layui-btn-sm" onclick="DialogList_EXEC.cancelSelected()">取消选择</a>
+          <a class="layui-btn layui-btn-danger layui-btn-sm" onclick="DialogList_EXEC.cancelSelected()">{:lang('Cancel selection')}</a>
         <?php  } ?>
       </div>
     </div>
@@ -209,7 +209,7 @@
           }
         })
         if(returnFalse){
-          layer.msg('您已选择部门的父级，请勿再选');
+          layer.msg("{:lang('You have selected the parent of the department, please do not select')}");
           return false;
         }
         $target.addClass('checked');
@@ -283,7 +283,7 @@
         if(data['fullname']){
           var showText = data['fullname'].replace(/\,/g,' / ');
         }else if(data['cancelSelected']){
-          var showText = $targetWrapper.data('title') ? $targetWrapper.data('title') : "请选择区域";
+          var showText = $targetWrapper.data('title') ? $targetWrapper.data('title') : "{:lang('Please select a region or department')}";
         }
         $targetWrapper.attr('data-tips',showText).html(showText);
         if($wrapper){
