@@ -146,4 +146,22 @@ class ScoreHistory extends AdminBase
         ];
         return $this->fetch('lists', $returnData);
     }
+
+
+    /**
+     * 删除记录
+     * @param $id
+     */
+    public function delete($id)
+    {
+        $data = HistoryModel::find($id);
+        $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
+        if (HistoryModel::where('id', $id)->update(['is_delete' => 1])) {
+            $this->log('删除积分记录成功，id='.$id, 0);
+            return $this->jsonReturn(0, '删除成功');
+        } else {
+            $this->log('删除积分记录失败，id='.$id, -1);
+            return $this->jsonReturn(-1, '删除失败');
+        }
+    }
 }
