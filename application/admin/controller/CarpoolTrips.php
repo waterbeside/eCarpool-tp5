@@ -68,7 +68,7 @@ class CarpoolTrips extends AdminBase
     if(!isset($filter['time']) || !$filter['time']){
       $filter['time'] =  $this->getFilterTimeRangeDefault('Y-m-d','m');
     }
-    $time_arr = $this->formatFilterTimeRange($filter['time'],'Y-m-d H:i:s','d');
+    $time_arr = $this->formatFilterTimeRange($filter['time'],'YmdHi','d');
     if(count($time_arr)>1){
       $map[] = ['t.time', '>=', $time_arr[0]];
       $map[] = ['t.time', '<', $time_arr[1]];
@@ -140,6 +140,7 @@ class CarpoolTrips extends AdminBase
         $lists = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('love_wall_ID DESC , t.time DESC')->select();
       }else{
         $lists = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('love_wall_ID DESC , t.time DESC')
+        // ->fetchSql()->select();dump($lists);exit;
         ->paginate($pagesize, false,  ['query'=>request()->param()]);
       }
       // dump($lists->toArray());exit;
@@ -200,10 +201,10 @@ class CarpoolTrips extends AdminBase
         $lists = WallModel::alias('t')->field($fields)->join($join)->where($map)->where($map_stauts)->order('t.time DESC')->select();
       }else{
         $lists = WallModel::alias('t')->field($fields)->join($join)->where($map)->where($map_stauts)->order('t.time DESC')
+        // ->fetchSql()->select();dump($lists);exit;
         ->paginate($pagesize, false,  ['query'=>request()->param()]);
       }
 
-      // ->fetchSql()->select();dump($lists);exit;
 
       foreach ($lists as $key => $value) {
          $value  = $this->formatResultValue($value);
