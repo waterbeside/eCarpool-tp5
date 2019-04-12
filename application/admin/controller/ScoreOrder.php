@@ -9,6 +9,7 @@ use app\carpool\model\User as CarpoolUserModel;
 use app\carpool\model\Company as CompanyModel;
 use app\user\model\Department as DepartmentModel;
 use app\score\model\Account as ScoreAccountModel;
+use app\score\model\AccountMix as AccountMixModel;
 use app\score\model\Order as OrderModel;
 use app\score\model\Goods as GoodsModel;
 use app\score\model\OrderGoods as OrderGoodsModel;
@@ -215,13 +216,18 @@ class ScoreOrder extends AdminBase
     }else{
       // dump($lists);
       $statusList = config('score.order_status');
+      $auth = [];
+      $auth['admin/ScoreOrder/finish'] = $this->checkActionAuth('admin/ScoreOrder/finish');
+      $auth['admin/ScoreOrder/cancel'] = $this->checkActionAuth('admin/ScoreOrder/cancel');
+      $auth['admin/ScoreOrder/delete'] = $this->checkActionAuth('admin/ScoreOrder/delete');
       $returnData = [
         'lists' => $lists,
         'pagesize'=>$pagesize,
         'statusList'=>$statusList,
         'filter'=>$filter,
         'status'=>$status,
-        'companys'=>$companys
+        'companys'=>$companys,
+        'auth' => $auth
       ];
       return $this->fetch('index', $returnData);
     }
@@ -287,6 +293,9 @@ class ScoreOrder extends AdminBase
     $statusList = config('score.order_status');
     $auth = [];
     $auth['admin/ScoreOrder/finish'] = $this->checkActionAuth('admin/ScoreOrder/finish');
+    $auth['admin/ScoreOrder/cancel'] = $this->checkActionAuth('admin/ScoreOrder/cancel');
+    $auth['admin/ScoreOrder/delete'] = $this->checkActionAuth('admin/ScoreOrder/delete');
+
 
     return $this->fetch('detail', ['data' => $data,'companys' => $companys,'statusList'=>$statusList,'auth'=>$auth]);
 
@@ -468,6 +477,71 @@ class ScoreOrder extends AdminBase
     $statusList = config('score.order_status');
 
     return $this->fetch('good_owners', ['good'=>$good,'lists' => $lists,'companys'=>$companys,'time'=>$time,'filter'=>$filter,'status'=>$status,'statusList'=>$statusList,'pagesize'=>$pagesize,'total'=>$total,'sum'=>$sum]);
+
+
+  }
+
+
+  /**
+   * 删除记录
+   * @param $id
+   */
+  public function delete($id)
+  {
+      $data = OrderModel::find($id);
+      $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
+      $admin_id = $this->userBaseInfo['uid'];
+
+      if (OrderModel::where('id', $id)->update(['is_delete' => 1,"handler"=> -1 * intval($admin_id)])) {
+          $this->log('删除订单记录成功，id='.$id, 0);
+          return $this->jsonReturn(0, '删除成功');
+      } else {
+          $this->log('删除订单记录失败，id='.$id, -1);
+          return $this->jsonReturn(-1, '删除失败');
+      }
+  }
+
+
+  /**
+   * 取消订单
+   * @param $id
+   */
+  public function cancel($id)
+  {
+      $orderData = OrderModel::find($id);
+      $this->checkDeptAuthByDid($orderData['region_id'],1); //检查地区权限
+      $admin_id = $this->userBaseInfo['uid'];
+
+      if(intval($orderData['status']) !== 0){
+        return $this->jsonReturn(-1, '只有等待兑换的订单才允许取消');
+      }
+      Db::connect('database_score')->startTrans();
+      try {
+        $upDataOrderRes = OrderModel::where('id', $id)->update(['status' => -1,"handler"=> -1 * intval($admin_id)]); //取消订单状态
+        if(!$upDataOrderRes){
+          throw new \Exception("取消失败");
+        }
+        $upScoredata = [
+          'reason' => 200,
+          'operand'=> $orderData['total'],
+          'account_id'=> $orderData['creator'],
+        ];
+        $AccountModel = new AccountMixModel();
+        $upScoreRes = $AccountModel->updateScore($upScoredata);  //更新订单分数
+        if(!$upScoreRes){
+          throw new \Exception($AccountModel->errorMsg);
+        }
+        // 提交事务
+        Db::connect('database_score')->commit();
+
+      } catch (\Exception $e) {
+         Db::connect('database_score')->rollback();
+         $this->log('取消订单失败，id='.$id, -1);
+         return $this->jsonReturn(-1, '删除订单失败',[],["errorMsg"=> $e->getMessage()]);
+      }
+
+      $this->log('取消订单记录成功，id='.$id, 0);
+      return $this->jsonReturn(0, '取消成功');
 
 
   }
