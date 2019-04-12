@@ -45,6 +45,9 @@ class Attachment extends ApiBase
           dump(isset($_FILES["file"])?$_FILES["file"]:"" );
           dump(isset($_REQUEST["file"])?$_REQUEST["file"]:"" );
         }
+        if($module == "user/avatar"){ //如果是头像上传
+          $this->jsonReturn(-1,lang('Please use v2 Api'));
+        }
         if(!$file){
           $this->jsonReturn(-1,lang('Please upload attachments'));
         }
