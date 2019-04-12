@@ -580,6 +580,7 @@ class Trips extends ApiBase
         if ((!isset($datas['start']['addressid']) || !(is_numeric($datas['start']['addressid']) && $datas['start']['addressid'] >0)) && !$map_type) {
             $startDatas = $datas['start'];
             $startDatas['company_id'] = $userData['company_id'];
+            $startDatas['create_uid'] = $userData['uid'];
             $startRes = $AddressModel->addFromTrips($startDatas);
             if (!$startRes) {
                 $this->jsonReturn(-1, [], lang("The point of departure must not be empty"));
@@ -592,6 +593,7 @@ class Trips extends ApiBase
         if ((!isset($datas['end']['addressid']) || !(is_numeric($datas['end']['addressid']) && $datas['end']['addressid'] >0)) && !$map_type) {
             $endDatas = $datas['end'];
             $endDatas['company_id'] = $userData['company_id'];
+            $endDatas['create_uid'] = $userData['uid'];
             $endRes = $AddressModel->addFromTrips($endDatas);
             if (!$endRes) {
                 $this->jsonReturn(-1, [], lang("The destination cannot be empty"));
@@ -898,6 +900,7 @@ class Trips extends ApiBase
             //处理起点
             if (!$addressDatas['addressid'] && !$map_type) {
                 $addressDatas['company_id'] = $userData['company_id'];
+                $addressDatas['create_uid'] = $userData['uid'];
                 $addressRes = $AddressModel->addFromTrips($addressDatas);
                 if (!$addressRes) {
                     $this->jsonReturn(-1, [], lang("The adress must not be empty"));
