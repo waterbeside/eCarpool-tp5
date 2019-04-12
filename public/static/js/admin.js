@@ -12,6 +12,63 @@ GV['config'] = {
     amapScript : 'http://webapi.amap.com/maps?v=1.4.6&key=a9c78e8c6c702cc8ab4e17f5085ffd2a'
   }
 }
+GV['lang'] = 'zh-cn';
+
+
+var myLang = {
+  langs : ['zh-cn','en','vi'],
+  lists : {
+    'zh-cn':{
+      'warning': '警告',
+      'tips': '提示',
+      'yes': '是',
+      'no': '否',
+      'cancel': '取消',
+      'confirm': '确认',
+      'are you sure you want to do this?' : '确定执行此操作？',
+      'please confirm whether to delete' : '请确定是否删除',
+      'a form is being submitted, please try again later':'有表单正在提交，请稍候再试',
+      'network error, please try again later':'网络出错，请稍候再试',
+    },
+    'en':{
+      'warning': 'Warning',
+      'tips': 'Tips',
+      'yes': 'Yes',
+      'no': 'No',
+      'cancel': 'Cancel',
+      'confirm': 'Confirm',
+      'are you sure you want to do this?' : 'Are you sure you want to do this?',
+      'please confirm whether to delete':'Please confirm whether to delete',
+      'a form is being submitted, please try again later':'A form is being submitted, please try again later',
+      'network error, please try again later':'Network error, please try again later',
+    },
+    'vi':{
+      'warning': 'Warning',
+      'tips': 'Tips',
+      'yes': 'Yes',
+      'no': 'No',
+      'cancel': 'Cancel',
+      'confirm': 'Confirm',
+      'are you sure you want to do this?' : 'Bạn có chắc chắn muốn làm điều này?',
+      'please confirm whether to delete':'Vui lòng xác nhận xem có nên xóa không',
+      'a form is being submitted, please try again later':'Một mẫu đơn đang được gửi, vui lòng thử lại sau',
+      'network error, please try again later':'Lỗi mạng, vui lòng thử lại sau',
+    },
+  },
+  init : function(){
+    var lang = getLangFromCookie();
+    GV['lang'] = $.inArray(lang, myLang.langs) == -1 ? GV['lang'] : lang;
+  },
+  r:function(str){
+    if(typeof(myLang.lists[GV['lang']][str.toLowerCase()]) !="undefined"){
+      str = myLang.lists[GV['lang']][str.toLowerCase()];
+    }
+
+    return str;
+  }
+
+
+}
 
 
 function cFormatDate(date,fmt){
@@ -52,6 +109,41 @@ function cRenderTimes(wrapper){
     }
   });
 }
+
+//自动格式化时间戳
+function cRenderTips(wrapper,type){
+  wrapper = wrapper || null;
+  type = type || 0;
+  if(wrapper){
+    var $tipsBoxs = $(wrapper).find("[data-tips]")
+  }else{
+    var $tipsBoxs = $("[data-tips]");
+  }
+  if(!type){
+    $tipsBoxs = $("[data-tips]").not(".J-render-ok");
+  }
+  $tipsBoxs.each(function(index, el) {
+    var $_this = $(this);
+    $(this).addClass('J-render-ok')
+    $(this).hover(function(){
+      var tips = $_this.attr('data-tips');
+      if(tips){
+        var tipsPosition = $_this.data('tips-position') ;
+        layer.tips(tips, this,{
+          time:1000,
+          tips:tipsPosition ? tipsPosition : 2,
+        })
+      }
+    })
+  });
+}
+
+//从cookie取得存储的过程
+function getLangFromCookie(){
+   var lang = MyCookies.get('lang');
+   return lang ? lang : 'zh-cn';
+}
+
 
 /**
  * 动态加载JS
@@ -158,6 +250,7 @@ function openLayer(url,opt,oe){
 }
 
 
+
 /**
  * 通过layer的iframe打开
  */
@@ -190,7 +283,7 @@ function openParentLayer(url,opt){
 
 function ajaxSubmit(setting){
   if(GV.lockForm){
-    layer.msg('有表单正在提交，请稍候再试');
+    layer.msg(myLang.r('a form is being submitted, please try again later'));
     return false;
   }
   GV.lockForm = true;
@@ -230,7 +323,7 @@ function ajaxSubmit(setting){
         }
       },
       error:function(jqXHR, textStatus, errorThrown){
-        layer.msg('网络出错，请稍候再试');
+        layer.msg(myLang.r('network error, please try again later'));
         if(typeof(opt.error)=="function"){
           opt.error(jqXHR, textStatus, errorThrown);
         }
@@ -285,19 +378,11 @@ var MyCookies = {
 ////////////////////////////////////////////////////////
 
 function admin_init(){
-  $("[data-tips]").each(function(index, el) {
-    var $_this = $(this);
-    $(this).hover(function(){
-      var tips = $_this.attr('data-tips');
-      if(tips){
-        var tipsPosition = $_this.data('tips-position') ;
-        layer.tips(tips, this,{
-          time:1000,
-          tips:tipsPosition ? tipsPosition : 2,
-        })
-      }
-    })
-  });
+
+
+
+  myLang.init(); //初始化语言
+  cRenderTips();
   /**
    * 通用单图上传
    */
@@ -338,6 +423,7 @@ function admin_init(){
     laydate.render({
       elem: this
       ,type: 'datetime'
+      // ,lang:'en'
       ,range: false //或 range: '~' 来自定义分割字符
     });
     /*  laydate({
@@ -379,8 +465,9 @@ function admin_init(){
       var _action = $(this).data('action');
       layer.open({
           shade: false,
-          content: '确定执行此操作？',
-          btn: ['确定', '取消'],
+          title:myLang.r('tips'),
+          content: myLang.r('are you sure you want to do this?'),
+          btn: [myLang.r('confirm'), myLang.r('cancel')],
           yes: function (index) {
               $.ajax({
                   url: _action,
@@ -420,11 +507,12 @@ function admin_init(){
   $(document).on('click',  '.ajax-delete', function() {
   // $('.ajax-delete').on('click', function () {
       var _href = $(this).attr('href');
-      var content = $(this).data('hint') || "确定删除？";
+      var content = $(this).data('hint') || myLang.r('please confirm whether to delete');
       layer.open({
           shade: false,
+          title:myLang.r('warning'),
           content: content,
-          btn: ['确定', '取消'],
+          btn: [myLang.r('yes'), myLang.r('no')],
           yes: function (index) {
               $.ajax({
                   url: _href,
