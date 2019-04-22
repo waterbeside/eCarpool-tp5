@@ -155,7 +155,7 @@ class Trips extends ApiBase
         $merge_ids = isset($extra_info['merge_id']) && is_array($extra_info['merge_id'])  ? $extra_info['merge_id'] : [];
 
         $InfoModel = new InfoModel();
-        $viewSql  =  $InfoModel->buildUnionSql($uid, $merge_ids ,"(3)");
+        $viewSql  =  $InfoModel->buildUnionSql($uid, $merge_ids ,"(0,1,2,3,4)");
         $fields = 't.infoid , t.love_wall_ID , t.time, t.trip_type , t.time, t.status, t.passengerid, t.carownid , t.seat_count,  t.subtime, t.map_type ';
         $fields .= ','.$this->buildUserFields('d');
         $fields .= ', dd.fullname as d_full_department';
@@ -164,7 +164,7 @@ class Trips extends ApiBase
         $fields .=  $this->buildAddressFields();
         $join = $this->buildTripJoins();
         $map = [
-          // ["t.time","<",date('YmdHi', strtotime('+15 minute'))],
+          ["t.time","<",date('YmdHi', strtotime('-30 minute'))],
           // ["t.go_time","<",strtotime('+15 minute')],
         ];
         $orderby = 't.time DESC, t.infoid DESC, t.love_wall_id DESC';
@@ -201,7 +201,7 @@ class Trips extends ApiBase
               ['uid','=',$uid]
             ];
             $isGrade = $GradeModel->isGrade('trips',$app_id,$datas[$key]['time']);
-            $datas[$key]['already_rated'] =   !$isGrade  || $GradeModel->where($ratedMap)->count() ? 1 : 0;
+            $datas[$key]['already_rated'] =    !$isGrade  || $value['status']==2 || $GradeModel->where($ratedMap)->count() ? 1 : 0;
         }
         $returnData = [
           'lists'=>$datas,
@@ -232,6 +232,7 @@ class Trips extends ApiBase
         if ($keyword) {
             $map[] = ['d.name|s.addressname|e.addressname|t.startname|t.endname','like',"%{$keyword}%"];
         }
+        
         if ($city) {
             $map[] = ['s.city','=',$city];
         }
