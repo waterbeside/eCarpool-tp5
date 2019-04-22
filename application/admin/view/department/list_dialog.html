@@ -5,9 +5,16 @@
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief" style="margin:0 0 30px ">
         <ul class="amain-tool-bar" >
-            <li {php} echo !$deep ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>0])}"  >{:lang('Department search')}</a></li>
-            <li {php} echo $deep ==1 ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>'p_1'])}"  >{:lang('Region list')}</a></li>
-            <li {php} echo $deep ==3 ?  'class="layui-this"' : '';{/php}><a href="{:url('list_dialog',['multi'=>$multi,'fun'=>$fun,'pid'=>'p_3'])}"  >{:lang('Branch list')}</a></li>
+          <form action="{:url('admin/department/list_dialog')}" method="get" class="J-nav-form">
+              <input type="hidden" name ="fun" value="{$fun}" />
+              <input type="hidden" name ="multi" value="{$multi}" />
+              <input type="hidden" name ="default_id" value="{$defaultID}" />
+              <input type="hidden" name ="pid" value="{$pid}" />
+          </form>
+            
+            <li {php} echo !$deep ?  'class="layui-this"' : '';{/php}><a onclick="DialogList_EXEC.navClick(this)" data-pid= '0'   >{:lang('Department search')}</a></li>
+            <li {php} echo $deep ==1 ?  'class="layui-this"' : '';{/php}><a onclick="DialogList_EXEC.navClick(this)" data-pid= 'p_1' >{:lang('Region list')}</a></li>
+            <li {php} echo $deep ==3 ?  'class="layui-this"' : '';{/php}><a onclick="DialogList_EXEC.navClick(this)" data-pid= 'p_3' >{:lang('Branch list')}</a></li>
         </ul>
 
         <div class="layui-tab-content">
@@ -16,9 +23,10 @@
               {php} if(!$deep){ {/php}
                 <form class="layui-form layui-form-pane" action="{:url('admin/department/list_dialog')}" method="get">
 
-                  <input type="hidden" name ="pid" value={$pid} />
-                  <input type="hidden" name ="fun" value={$fun} />
-                  <input type="hidden" name ="multi" value={$multi} />
+                  <input type="hidden" name ="pid" value="{$pid}" />
+                  <input type="hidden" name ="fun" value="{$fun}" />
+                  <input type="hidden" name ="multi" value="{$multi}" />
+                  <input type="hidden" name ="default_id" value="{$defaultID}" />
                   <div class="my-input-prebox" style="max-width:120px">
                     <select name="filter[is_all]" >
                       <option value="0" {php}echo isset($filter['is_all']) &&  $filter['is_all'] == 0  ? 'selected' : ''; {/php}>{:lang('Find from current')}</option>
@@ -132,24 +140,34 @@
 {block name="script"}
 <script>
   var DialogList_EXEC = {
+    deptObj : null,
     datas : {
-      depts: [],
-      deptsData: {},
+      depts: <?php echo $defaultID ? '['.$defaultID.']' : '[]' ?>,
+      deptsData: <?php echo $defaultData ? json_encode($defaultData) : '{}' ?>, 
       multi:<?php echo $multi ? 1 : 0; ?>
     },
     init : function(){
       var _this = this;
       initLayuiTable({ limit: {$pagesize} });
-      var old_data_str = MyCookies.get('department_selected_list');
-      if(old_data_str){
-        this.datas.deptsData = $.parseJSON(old_data_str);
+
+     
+
+      var targetDatas = this.getTarget(); //取得来自父窗的点击对像
+      if(targetDatas){
+        var $targetWrapper = targetDatas.targetWrapper;
+        var targetShowString = $targetWrapper.data("data-show-target");
       }
+
+      // var old_data_str = MyCookies.get('department_selected_list');
+      // if(old_data_str){
+      //   this.datas.deptsData = $.parseJSON(old_data_str);
+      // }
+      this.deptObj = new MyDept({deptsData:this.datas.deptsData});
       if(this.datas.deptsData){
         var deptsData = this.datas.deptsData;
         for(var id in deptsData){
-          if(id){
+          if(id > 0){
             _this.datas.depts.push(id);
-
             var itemHtml = _this.selectedTemplate(deptsData[id]);
             $('.J-selected-wrapper').append(itemHtml);
             $btn = $('.P-department-list-dialog .J-btn-'+id);
@@ -160,24 +178,32 @@
       }
     },
 
+    navClick: function(btn){
+      var $btn = $(btn);
+      var pid = $btn.data('pid');
+      var $navFomr = $('.J-nav-form');
+      $navFomr.find("input[name='pid']").val(pid);
+      $navFomr.submit();
 
+    },
     /**
      * 重建 datas里的id列表
      */
     rebuildDeptIds: function(){
+      var _this = this;
       var deptsData = this.datas.deptsData;
-      this.datas.depts = [];
-      for(var id in deptsData){
-        if(id){
-          this.datas.depts.push(id);
-        }
-      }
+      this.deptObj.setDeptsData(deptsData);
+      this.datas.depts = this.deptObj.rebuildDeptIds();
+      console.log(this.datas.depts)
+      $('.P-department-list-dialog').find("input[name='default_id']").val(this.datas.depts);
+      console.log($('.P-department-list-dialog').find("input[name='default_id']").val());
+
     },
     /**
      * 已选项item模板
      */
-    selectedTemplate: function(data){
-      var html = '<div class="item" data-id="'+data.id+'" title="'+data.fullname+'"><span>'+data.name+'</span><a class="close" onclick="DialogList_EXEC.closeItem()"><i class="fa fa-close"></i></a></div>';
+    selectedTemplate: function(data,type){
+      var html = '<div class="item my-tag-item" data-id="'+data.id+'" title="'+data.fullname+'"><span>'+data.name+'</span><a class="close" onclick="DialogList_EXEC.closeItem()"><i class="fa fa-close"></i></a></div>';
       return html;
     },
     cancelSelected: function(){
@@ -221,7 +247,8 @@
         this.rebuildDeptIds();
 
         var newDataString = JSON.stringify(deptsData);
-        MyCookies.set('department_selected_list',newDataString);
+        console.log(newDataString);
+        // MyCookies.set('department_selected_list',newDataString);
         var itemHtml = this.selectedTemplate(data);
         $('.J-selected-wrapper').append(itemHtml);
       }else{
@@ -255,31 +282,29 @@
      * @return {[type]} [description]
      */
     done: function(datas){
+      var _this = this;
       var data = datas || {
         'id_list': this.datas.depts,
         'list': this.datas.deptsData
       }
 
-      if(typeof(window.parent.GV.lastOpenLayer)=="object" && typeof(window.parent.GV.lastOpenLayer.target) == "object"){
-        var $target = $(window.parent.GV.lastOpenLayer.target);
-        var $targetWrapper = $target.attr('onclick') ? $target : $target.closest('[onclick]');
+      var targetDatas = this.getTarget(); //取得来自父窗的点击对像
+      if(targetDatas){
+        var $target = targetDatas.target
+        var $targetWrapper = targetDatas.targetWrapper;
         var targetString = $targetWrapper.data('target');
         var $wrapper =  $targetWrapper.closest('form');
         var page_exec_str = $targetWrapper.data("page-exec");
+        var targetShowString = $targetWrapper.data("show-target");
       }
 
-      var page_exec = null;
+      var page_exec = this.getPageExec();
 
-      if(typeof(page_exec_str) == "undefined" ){
-        page_exec = typeof(window.parent.FORM_PAGE_EXEC)=='object' ? window.parent.FORM_PAGE_EXEC : (typeof(window.parent.LIST_PAGE_EXEC)=='object' ? window.parent.LIST_PAGE_EXEC : window.parent);
-      }else if( typeof(window.parent[page_exec_str]) == "object" ){
-        page_exec = window.parent[page_exec_str] ;
-      }else{
-        page_exec =  window.parent;
-      }
+
       if(typeof(page_exec.<?php echo $fun ?>)=="function"){
         page_exec.<?php echo $fun."("; ?>data<?php echo ")"; ?>;
       }else if(typeof($target)=="object"){
+
         if(data['fullname']){
           var showText = data['fullname'].replace(/\,/g,' / ');
         }else if(data['cancelSelected']){
@@ -287,14 +312,40 @@
         }
         $targetWrapper.attr('data-tips',showText).html(showText);
         if($wrapper){
+          if(_this.datas.multi){
+            var dataSet = this.deptObj.getFieldsSet();
+          }
           if(targetString){
             var targetInputArray = targetString.split(',');
           }
           $(targetInputArray).each(function(index, el) {
             var targetElArray = el.split(':');
-            if(typeof(targetElArray[1])!="undefined" && typeof(datas[targetElArray[1]])!="undefined"){
-              $wrapper.find('input[name="'+targetElArray[0]+'"]').val(datas[targetElArray[1]]);
+            if(_this.datas.multi){
+              if(typeof(targetElArray[1])!="undefined" && typeof(dataSet[targetElArray[1]])!="undefined"){
+                console.log(dataSet[targetElArray[1]]);
+                $wrapper.find('input[name="'+targetElArray[0]+'"]').val(dataSet[targetElArray[1]].join(','));
+              }
+              // var paramstrObj = {"default_id":_this.datas.depts.join(',')}
+              // $targetWrapper.data('paramstr',paramstrObj);
+
+              $targetWrapper.attr('data-paramstr','{"default_id":"'+_this.datas.depts.join(',')+'"}');  //重置父面的默认id
+            }else{
+              if(typeof(targetElArray[1])!="undefined" && typeof(datas[targetElArray[1]])!="undefined"){
+                $wrapper.find('input[name="'+targetElArray[0]+'"]').val(datas[targetElArray[1]]);
+              }
             }
+            if(targetShowString){
+                var $targetShowbox = $wrapper.find(targetShowString);
+                _this.deptObj.renderShowBox(_this.datas.deptsData,$targetShowbox);
+                // $targetShowbox.html('');
+                // for(var id in _this.datas.deptsData){
+                //   if(id > 0){
+                //     var itemHtml = _this.deptObj.selectedTemplate(_this.datas.deptsData[id]);
+                //     $targetShowbox.append(itemHtml);
+                //   }
+                // }
+              }
+            
           });
         }
       }else{
@@ -310,12 +361,38 @@
 
       this.close();
     },
+    //关闭
     close: function(){
       MyCookies.delete('department_selected_list');
       var layerIndex = parent.layer.getFrameIndex(window.name);
       parent.layer.close(layerIndex);
-
+    },
+    
+    getTarget: function(){
+      if(typeof(window.parent.GV.lastOpenLayer)=="object" && typeof(window.parent.GV.lastOpenLayer.target) == "object"){
+        var $target = $(window.parent.GV.lastOpenLayer.target);
+        var $targetWrapper = $target.attr('onclick') ? $target : $target.closest('[onclick]');
+        return  {
+          'target' : $target,
+          'targetWrapper' : $targetWrapper,
+        }
+      }else{
+        return false;
+      }
+      
+    },
+    getPageExec : function(){
+      var page_exec = null;
+      if(typeof(page_exec_str) == "undefined" ){
+        page_exec = typeof(window.parent.FORM_PAGE_EXEC)=='object' ? window.parent.FORM_PAGE_EXEC : (typeof(window.parent.LIST_PAGE_EXEC)=='object' ? window.parent.LIST_PAGE_EXEC : window.parent);
+      }else if( typeof(window.parent[page_exec_str]) == "object" ){
+        page_exec = window.parent[page_exec_str] ;
+      }else{
+        page_exec =  window.parent;
+      }
+      return page_exec;
     }
+   
   }
 
   DialogList_EXEC.init();

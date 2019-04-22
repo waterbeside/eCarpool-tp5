@@ -18,7 +18,7 @@ use my\Tree;
  */
 class Department extends AdminBase
 {
-
+    public  $DepartmentModel = null;
     public  $un_check = ['admin/department/list_dialog'];
     public $check_dept_setting = [
       "action" => ['list_dialog']
@@ -56,6 +56,7 @@ class Department extends AdminBase
         $order = 'name ';
 
         $DepartmentModel = new DepartmentModel();
+        $this->DepartmentModel = $DepartmentModel;
         $lists = $DepartmentModel->where($map)->order($order)->field($fields)->paginate($pagesize, false, ['query'=>request()->param()]);
 
         //start 父级部门导航
@@ -86,7 +87,7 @@ class Department extends AdminBase
      * 部门对话框
      * @return mixed
      */
-    public function list_dialog($pid='p_1',$filter = [], $page = 1,$fun = "select_dept",$multi = 0)
+    public function list_dialog($pid='p_1',$filter = [], $page = 1,$fun = "select_dept",$multi = 0,$default_id='')
     {
       $returnData = $this->index($pid,$filter,$page,10,0);
       $returnData['fun'] = $fun;
@@ -100,6 +101,9 @@ class Department extends AdminBase
         $returnData['lists'][$key]['auth_allow_select'] = $auth_depts_isAll || array_intersect($auth_depts,$fullPathArray) ? 1 : 0;
 
       }
+      $DepartmentModel = $this->DepartmentModel;
+      $returnData['defaultData'] = $default_id ? $DepartmentModel->getDeptDataIdList($default_id) : null;
+      $returnData['defaultID'] = $default_id; 
       return $this->fetch('list_dialog',$returnData );
     }
 

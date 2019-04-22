@@ -239,13 +239,14 @@ class Department extends Model
      }
      return $ids;
    }
-
+   
    public function excludeChildrens($ids){
      $idsArray = explode(",",$ids);
      $idsArray = array_values(array_unique($idsArray));
      $childrenList = [];
      foreach ($idsArray as $key => $value) {
        $childrens = $this->getChildrenIds($value);
+       $childrens = is_array($childrens) && $childrens ? $childrens : [];
        if(in_array($value,$childrenList)){
          unset($idsArray[$key]);
        }
@@ -259,6 +260,47 @@ class Department extends Model
      }
      return $idsArray;
    }
+
+   /**  
+    * 通过id 列表查找部门数据
+    */
+   public function getDeptDataIdList($ids,$field = null){
+      $deptsArray = explode(',',$ids);
+      $deptsData = [];
+      foreach ($deptsArray as $key => $value) {
+        $deptsItemData = $this->getItem($value);
+        // field('id , path, fullname , name')->find($value);
+        if($field){
+          $fieldArray = explode(',',$field);
+          $deptsItemData_n = [];
+          foreach($fieldArray as  $f){
+             $deptsItemData_n[$f] = isset($deptsItemData[$f]) ? $deptsItemData[$f] : null;
+          }
+          $deptsItemData  = $deptsItemData_n;
+        }
+        $deptsData[$value] = $deptsItemData ? $deptsItemData : [];
+      }
+      return $deptsData;
+   }
+
+   public function getDeptDataList($ids,$field = null){
+    $deptsArray = explode(',',$ids);
+    $deptsData = [];
+    foreach ($deptsArray as $key => $value) {
+      $deptsItemData = $this->getItem($value);
+      // field('id , path, fullname , name')->find($value);
+      if($field){
+        $fieldArray = explode(',',$field);
+        $deptsItemData_n = [];
+        foreach($fieldArray as  $f){
+           $deptsItemData_n[$f] = isset($deptsItemData[$f]) ? $deptsItemData[$f] : null;
+        }
+        $deptsItemData  = $deptsItemData_n;
+      }
+      $deptsData[] = $deptsItemData ? $deptsItemData : [];
+    }
+    return $deptsData;
+ }
 
 
 
