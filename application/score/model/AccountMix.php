@@ -1,6 +1,7 @@
 <?php
 namespace app\score\model;
 
+use app\common\model\Configs;
 use app\score\model\Account as AccountModel;
 use app\carpool\model\User as CarpoolUserModel;
 use app\user\model\Department as DepartmentModel;
@@ -177,7 +178,9 @@ class AccountMix extends AccountModel
           $account = $account ? $account : $accountDetial['carpool_account'] ;
           $data['region_id']  =   $this->getCarpoolDepartmentID($account);
         }
-        $data['extra_info'] = '{}';
+        $extra_info = isset($params['extra_info']) ? $params['extra_info'] : '';
+        $extra_info = is_array($extra_info) ? json_encode($extra_info) :  $extra_info;
+        $data['extra_info'] = empty($extra_info) ? '{}' : $extra_info;
         $data['is_delete'] = 0;
         $data['time'] =  date('Y-m-d H:i:s');
         $historyModel =   new HistoryModel;
