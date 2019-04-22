@@ -3,6 +3,7 @@ namespace app\api\controller;
 
 use app\common\controller\Base;
 use app\carpool\model\User as UserModel;
+use app\user\model\Department;
 use think\facade\Cache;
 use think\Controller;
 use think\Db;
@@ -186,5 +187,18 @@ class ApiBase extends Base
       Db::name('log')->insert($data);
     }
 
-
+    /** 
+     * 检查部门权限
+    */
+    public function checkDeptAuth($userDid,$dataRid){
+      $Department = new Department();
+      $deptData = $Department->getItem($userDid);
+      $dataRid = explode(',',$dataRid);
+      $arrayIts = array_intersect($dataRid, explode(',',($deptData['path'].','.$userDid)));
+      if(!empty($arrayIts) ){
+        return true;
+      }else{
+        return false;
+      }
+    }
 }

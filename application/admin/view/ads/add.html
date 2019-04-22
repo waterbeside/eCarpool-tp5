@@ -6,105 +6,121 @@
         <div class="layui-tab-content">
 
                 <form class="layui-form  " action="{:url('admin/Ads/add')}" method="post" style="margin-right:15px;" id="editForm" >
+                  <div class="layui-form-item">
+                      <label class="layui-form-label">授权区域</label>
+                      <div class="layui-input-block">
+                        <input type="hidden" name="region_id" value=""  class="layui-input layui-input-inline " readonly  >
+                        <a onclick="openLayer('{:url('admin/Department/list_dialog',['multi'=>1])}','选择区域/部门');" 
+                          href="javascript:void(0);"  
+                          class="layui-btn  layui-btn-primary J-btn-department"
+                            data-target="region_id:id"  
+                          data-show-target=".J-dept-select-wrapper"   
+                          data-paramstr='{"default_id":""}'
+                          >
+                          <i class="fa fa-book"></i> <span >选择区域/部门</span>
+                        </a>
+                        <div class="J-dept-select-wrapper"></div>
+                      </div>
+                      
+                    </div>
 
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">标题</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="title" value="" required  lay-verify="required" placeholder="请输入标题" class="layui-input">
+                        </div>
+                    </div>
 
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">标题</label>
-                              <div class="layui-input-block">
-                                  <input type="text" name="title" value="" required  lay-verify="required" placeholder="请输入标题" class="layui-input">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">缩略图</label>
+                        <div class="layui-input-block">
+                          <input type="text" name="thumb" value="{$data.thumb ? $data.thumb  : ''}" class="layui-input">
+                          <a   class="amain-uploadImgBtn" id="upload-btn">
+                              <img class="layui-upload-img" id="item-thumb" src="{$data.thumb ? $data.thumb  : ''}" >
+                              <div class="text">
+                                <i class="fa fa-upload"></i>上传图片
                               </div>
-                          </div>
-
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">缩略图</label>
-                              <div class="layui-input-block">
-                                <input type="text" name="thumb" value="{$data.thumb ? $data.thumb  : ''}" class="layui-input">
-                                <a   class="amain-uploadImgBtn" id="upload-btn">
-                                   <img class="layui-upload-img" id="item-thumb" src="{$data.thumb ? $data.thumb  : ''}" >
-                                   <div class="text">
-                                     <i class="fa fa-upload"></i>上传图片
-                                   </div>
-                                </a>
-                                <p id="uploadText"></p>
-                              </div>
-                          </div>
+                          </a>
+                          <p id="uploadText"></p>
+                        </div>
+                    </div>
 
 
 
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">所属APP</label>
-                              <div class="layui-input-block">
-                                {foreach name="$app_id_list" key='key' item="vo"}
-                                <input type="checkbox" name="app_id[{$key}]" title="{$vo}">
-                                {/foreach}
-                              </div>
-                          </div>
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">所属平台</label>
-                              <div class="layui-input-block">
-                                {foreach name="$platform_list" key='key' item="vo"}
-                                <?php if($key > 0){ ?>
-                                  <input type="checkbox" name="platform[{$key}]" title="{$vo}">
-                                <?php } ?>
-                                {/foreach}
-                              </div>
-                          </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">所属APP</label>
+                        <div class="layui-input-block">
+                          {foreach name="$app_id_list" key='key' item="vo"}
+                          <input type="checkbox" name="app_id[{$key}]" title="{$vo}">
+                          {/foreach}
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">所属平台</label>
+                        <div class="layui-input-block">
+                          {foreach name="$platform_list" key='key' item="vo"}
+                          <?php if($key > 0){ ?>
+                            <input type="checkbox" name="platform[{$key}]" title="{$vo}">
+                          <?php } ?>
+                          {/foreach}
+                        </div>
+                    </div>
 
 
 
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">所属类型</label>
-                              <div class="layui-input-block">
-                                <select name="type">
-                                    <!-- <option value="0">选译类型</option> -->
-                                    {foreach name="$typeList" key='key' item="vo"}
-                                    <option value="{$key}" > {$vo}</option>
-                                    {/foreach}
-                                </select>
-                              </div>
-                          </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">所属类型</label>
+                        <div class="layui-input-block">
+                          <select name="type">
+                              <!-- <option value="0">选译类型</option> -->
+                              {foreach name="$typeList" key='key' item="vo"}
+                              <option value="{$key}" > {$vo}</option>
+                              {/foreach}
+                          </select>
+                        </div>
+                    </div>
 
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">跳转类型</label>
-                              <div class="layui-input-block">
-                                <select name="link_type">
-                                    <option value="0"  >不跳转</option>
-                                    <option value="1"  > webview</option>
-                                    <option value="2"  > app内页</option>
-                                </select>
-                              </div>
-                          </div>
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">跳转连接</label>
-                              <div class="layui-input-block">
-                                  <input type="text" name="link" value=""  placeholder="跳转连接或内页映射名" class="layui-input">
-                              </div>
-                          </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">跳转类型</label>
+                        <div class="layui-input-block">
+                          <select name="link_type">
+                              <option value="0"  >不跳转</option>
+                              <option value="1"  > webview</option>
+                              <option value="2"  > app内页</option>
+                          </select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">跳转连接</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="link" value=""  placeholder="跳转连接或内页映射名" class="layui-input">
+                        </div>
+                    </div>
 
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">状态</label>
-                              <div class="layui-input-block">
-                                  <input type="radio" name="status" value="1" title="显示" checked="checked">
-                                  <input type="radio" name="status" value="0" title="隐藏" >
-                              </div>
-                          </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="status" value="1" title="显示" checked="checked">
+                            <input type="radio" name="status" value="0" title="隐藏" >
+                        </div>
+                    </div>
 
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">持续时间</label>
-                              <div class="layui-input-block">
-                                  <input type="nubmer" name="duration" value="0" class="layui-input">
-                              </div>
-                          </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">持续时间</label>
+                        <div class="layui-input-block">
+                            <input type="nubmer" name="duration" value="0" class="layui-input">
+                        </div>
+                    </div>
 
 
 
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">排序</label>
-                              <div class="layui-input-block">
-                                  <input type="number" name="sort" value="0"  class="layui-input">
-                                  <div class="layui-form-mid layui-word-aux" >越大越前</div>
-                              </div>
-                          </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">排序</label>
+                        <div class="layui-input-block">
+                            <input type="number" name="sort" value="0"  class="layui-input">
+                            <div class="layui-form-mid layui-word-aux" >越大越前</div>
+                        </div>
+                    </div>
 
 
 
