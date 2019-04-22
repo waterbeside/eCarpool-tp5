@@ -322,10 +322,12 @@ class Sms extends ApiBase
                 }
                 $hashPassword = md5($password); //加密后的密码
                 $status = UserModel::where([['phone','=',$phone],['is_delete','<>',1],['is_active','=',1]])->update(['md5password'=>$hashPassword]);
+                // dump($status);
                 if ($status!==false) {
+                  $step = 0;
                   break;
                 } else {
-                    return $this->jsonReturn(-1, [], "fail");
+                  return $this->jsonReturn(-1, [], "fail");
                 }
             }
             break;
