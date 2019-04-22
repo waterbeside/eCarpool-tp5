@@ -12,6 +12,7 @@ return [
   'Current' =>'当前',
   'Change password'=>  '更改密码',
   'Click to change' => '点击更换',
+  'Details' => '详情',
   'Done' => '完成',
   'Export table' => '导出表格',
   'Failed' => '失败',
@@ -22,13 +23,19 @@ return [
   'No' => '否',
   'No data' => '无数据',
   'Operate' =>'操作',
+  'Participant'=>'参与者',
+  'Participation time'=>'参与时间',
+  'Number of participation' => '参与数',
   'Reason' => '原因',
+  'Region' => '地区',
+  'Result' => '结果',
   'Select' => '选择',
   'Sign in'   => '登 入',
   'Sign out' => '登 出',
   'Status' => '状态',
   'Successfully' => '成功',
   'Time'      => '时间',
+  'Title'      => '标题',
   'Quantity' => '数量',
   'User' =>'用户',
   'Yes' =>'是',
@@ -57,6 +64,38 @@ return [
   'Images cannot be larger than {:size}' => '图片不能大于{:size}',
   'File not found'=>'找不到文件',
   'This attachment cannot be deleted' => '该附件不可以删除',
+
+
+  //////
+  'Branch' => '分公司',
+  'Save failed' => '保存失败',
+  'Save successfully'=>'保存成功',
+  'Successfully deleted' => '删除成功',
+  'Failed to delete' => '删除失败',
+  'Unsuccessful cancellation'=> '取消失败',
+  'Successful cancellation' => '取消成功',
+  'Data does not exist' => '文件不存在',
+
+  'Account does not exist' => '账号不存在',
+
+  'Goods does not exist' => '商品不存在',
+  'End order successfully' => '完结订单成功',
+  'Ending order failed' => '完结订单失败',
+  'Failed to delete order' => '删除订单失嵊',
+  'Order does not exist' => '订单不存在',
+  'The order status is [%s], no operation is allowed' => '该订单状态为【 %s 】，不可操作。',
+  'Only orders waiting to be redeemed are allowed to be cancelled' => '只有等待兑换的订单才允许被取消',
+
+  'The lottory has been closed or removed and cannot be modified' => '该次抽奖已结束或下架，无法修改',
+  'Trigger the lottery ticket value can not be less than 1' => '触发开奖票数值不能少于1',
+  'The required points for the lucky draw must be a number' =>  '抽奖所需分数必须为数字',
+  'The latest issue is not over, and the next issue cannot be created' => '最新一期未结束，无法创建下一期',
+
+  'Redeemed, not operational' =>  '已兑换，不可操作',
+  'Successfully completed the redemption'=>'完成兑奖成功',
+  'Failed to completed the redemption failed'=>'兑奖失败',
+
+  ////
 
 
   /** 前端 **/
@@ -224,6 +263,30 @@ return [
   'The default is “Preparing”. Once the lucky draw is set to be in progress or off the shelf, it is not allowed to modify the prize information again. Please think twice.'=> '默认为“准备中”，抽奖一旦设为进行中或下架，则不允许再对奖品信息进行修改，请三思而行。',
   'Once selected, only users in the region or department can see the prize' => '选择后，只有该区域或部门下的用户才能看到该奖品',
 
+  //抽奖记录
+  'm:s_l:Prize draw' => '实物抽奖',
+  'm:s_l:Winner' => '中奖者',
+  'm:s_l:Winning number' => '中奖编号',
+  'm:s_l:Winning information' => '中奖信息',
+  'm:s_l:Turntable draw' => '转盘抽奖',
+  'm:s_l:Turntable' => '转盘',
+  'Lottery record' => '抽奖记录',
+  'Lottery time' => '开奖时间',
+  'Lottery number' => '抽奖号',
+  'Lottery details' => '抽奖详情',
+  'Lottery information' => '抽奖信息',
+  'Confirm redemption' => '确认兑奖',
+  'Not redeemed' => '未兑',
+  'Redeemed' => '已兑',
+  'Redemption time'=>'兑换时间',
+  'Are you sure you want to end this redemption?'=>'您确定要完结本次兑换？',
+
+  //积分配置
+  'Configuration list' => '配置列表',
+  'Point document' => '积分文档',
+  'Lottery document' => '抽奖文档',
+  'Configuration name' => '配置名',
+
   //select
   'sl:下架' => '下架',
   'sl:准备中' => '准备中',
@@ -239,7 +302,8 @@ return [
   'sl:已兑换' => '已兑换',
 
   'sl:已开奖' => '已开奖',
-  'sl:开奖中' => '开奖中',
+  'sl:未开奖' => '未开奖',
+  'sl:中奖' => '中奖',
 
   'sl:管理员操作' => '管理员操作',
   'sl:拼车不合法' => '拼车不合法',
