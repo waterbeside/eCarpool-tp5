@@ -141,10 +141,10 @@ class ScorePrize extends AdminBase
           }else if($data['status'] == -1){
             $url = url('admin/ScorePrize/index',['status'=>-1]);
           }
-          return $this->success('添加成功',$url);
+          return $this->success(lang('Save successfully'),$url);
       } else {
           $this->log('添加抽奖失败',-1);
-          return $this->jsonReturn(-1,'添加失败');
+          return $this->jsonReturn(-1,lang('Save failed'));
       }
     }else{
       $prize_status = config('score.prize_status');
@@ -157,7 +157,7 @@ class ScorePrize extends AdminBase
         ];
         $data = PrizeModel::alias('t')->field($fields)->json(['images'])->join($join)->where("t.id",$id)->find();
         if(!$data){
-          $this->error("抽奖不存在");
+          $this->error(lang('Data does not exist'));
         }
         $this->checkDeptAuthByDid($data['p_region_id'],1); //检查地区权限
         $maxData = $this->checkMaxData($data['identity']);
@@ -188,14 +188,14 @@ class ScorePrize extends AdminBase
     if ($this->request->isPost()) {
       $prize_data = PrizeModel::where("id",$id)->json(['images'])->find();
       if(!$prize_data){
-        $this->error("抽奖不存在");
+        $this->error(lang('Data does not exist'));
       }
       $data               = $this->request->post();
       if(isset($data['p_region_id']) && !is_numeric($data['p_region_id'])){
         $this->jsonReturn(-1,"error p_region_id");
       }
       if($prize_data['status']<-1){
-        $this->error('该次抽奖已结束或下架，无法修改');
+        $this->error(lang('The lottory has been closed or removed and cannot be modified'));
       }
       if(in_array($prize_data['status'],[-1])){
         //开始验证字段
@@ -230,10 +230,10 @@ class ScorePrize extends AdminBase
         $upData['is_delete'] = isset($data['is_show']) && $data['is_show'] == 1 ? 0 : 1;
       }
       if(isset($upData['total_count']) && $upData['total_count'] < 1){
-          $this->error('触发开奖票数值不能少于1');
+          $this->error(lang('Trigger the lottery ticket value can not be less than 1'));
       }
       if(isset($upData['price']) && !is_float($upData['price']) && !is_numeric($upData['price']) ){
-          $this->error('抽奖所需分数必须为数字');
+          $this->error(lang('The required points for the lucky draw must be a number'));
       }
 
 
@@ -243,10 +243,10 @@ class ScorePrize extends AdminBase
 
       if (PrizeModel::json(['images'])->where('id',$id)->update($upData) !== false) {
           $this->log('保存抽奖成功，id='.$id,0);
-          return $this->jsonReturn(0,'保存成功');
+          return $this->jsonReturn(0,lang('Save successfully'));
       } else {
           $this->log('保存抽奖失败，id='.$id,-1);
-          return $this->jsonReturn(-1,'保存失败');
+          return $this->jsonReturn(-1,lang('Save failed'));
       }
 
     }else{
@@ -256,7 +256,7 @@ class ScorePrize extends AdminBase
       ];
       $data = PrizeModel::alias('t')->field($fields)->json(['images'])->join($join)->where("t.id",$id)->find();
       if(!$data){
-        $this->error("抽奖不存在");
+        $this->error(lang('Data does not exist'));
       }
       $this->checkDeptAuthByDid($data['p_region_id'],1); //检查地区权限
 
@@ -294,7 +294,7 @@ class ScorePrize extends AdminBase
     }
     $maxData = PrizeModel::field('max(publication_number),max(id),max(status) as max_status,min(status) as min_status ,identity')->group('identity')->where('identity',$identity)->find();
     if($maxData && $maxData['max_status'] > -2 ){
-      return $this->error("最新一期未结束，无法创建下一期");
+      return $this->error(lang('The latest issue is not over, and the next issue cannot be created'));
     }
     return $maxData;
   }

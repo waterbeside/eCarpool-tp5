@@ -6,34 +6,33 @@
     <div class="layui-tab ">
 
         <ul class="  amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/ScoreLottery/index')}"  showloading >抽奖情况</a></li>
+            <li class="layui-this"><a href="{:url('admin/ScoreLottery/index')}"  showloading >{:lang('Lottery record')}</a></li>
         </ul>
 
         <div class="amain-content">
           <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreLottery/index')}" method="get" onsubmit="submitForm()">
               <div class="layui-inline">
-                  <label class="layui-form-label">检索</label>
                   <div class="layui-input-inline">
-                      <input type="text" name="filter[keyword_prize]" value="{$filter['keyword_prize'] ? $filter['keyword_prize'] :''}" placeholder="奖品名" class="layui-input">
+                      <input type="text" name="filter[keyword_prize]" value="{$filter['keyword_prize'] ? $filter['keyword_prize'] :''}" placeholder="{:lang('Prize name')}" class="layui-input">
                   </div>
                   <div class="layui-input-inline">
-                      <input type="text" name="filter[keyword_user]" value="{$filter['keyword_user'] ? $filter['keyword_user'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
+                      <input type="text" name="filter[keyword_user]" value="{$filter['keyword_user'] ? $filter['keyword_user'] :''}" placeholder="{:lang('Account keyword')}" class="layui-input" style="width:140px" >
                   </div>
                   <!-- <div class="layui-input-inline">
                       <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
                   </div> -->
                   <div class="layui-input-inline">
                   <select name="result"  >
-                    <option value="all" >状态 - 不限</option>
-                    <option value="0" {php}echo is_numeric($result) &&  $result==0 ? 'selected' : ''; {/php}>未开奖</option>
-                    <option value="-1" {php}echo is_numeric($result) &&  $result==1 ? 'selected' : ''; {/php}>未中奖</option>
-                    <option value="gt_0" {php}echo $result=='gt_0' ? 'selected' : ''; {/php}>中奖</option>
+                    <option value="all" >{:lang('Status')} - {:lang('Unlimited')}</option>
+                    <option value="0" {php}echo is_numeric($result) &&  $result==0 ? 'selected' : ''; {/php}>{:lang('sl:未开奖')}</option>
+                    <option value="-1" {php}echo is_numeric($result) &&  $result==1 ? 'selected' : ''; {/php}>{:lang('sl:未中奖')}</option>
+                    <option value="gt_0" {php}echo $result=='gt_0' ? 'selected' : ''; {/php}>{:lang('sl:中奖')}</option>
                   </select>
                   </div>
                   <div class="layui-input-inline">
                       <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
-                      <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择显示区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="选择商品区域" data-title="选择商品区域" data-tips-position="3" >
-                        {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择用户区域/部门"}
+                      <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" >
+                              {$regionData ? str_replace(',',' / ',$regionData['fullname']) : lang("Region or department")}
                       </a>
                   </div>
 
@@ -57,9 +56,9 @@
 
             <div class="tab-title-wrapper">
               <ul class="layui-tab-title">
-                <li <?php echo !isset($type) || $type==="" || $type==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeType('all')" href="javascript:void(0);" >全部</a></li>
-                <li <?php echo is_numeric($type) &&  $type==1 ? 'class="layui-this"' : '' ; ?> ><a onclick="changeType(1)" href="javascript:void(0);" >实物抽奖</a></li>
-                <li <?php echo is_numeric($type) &&  $type==0 ? 'class="layui-this"' : '' ; ?> ><a onclick="changeType(0)" href="javascript:void(0);" >转盘抽奖</a></li>
+                <li <?php echo !isset($type) || $type==="" || $type==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeType('all')" href="javascript:void(0);" >{:lang('All')}</a></li>
+                <li <?php echo is_numeric($type) &&  $type==1 ? 'class="layui-this"' : '' ; ?> ><a onclick="changeType(1)" href="javascript:void(0);" >{:lang('m:s_l:Prize draw')}</a></li>
+                <li <?php echo is_numeric($type) &&  $type==0 ? 'class="layui-this"' : '' ; ?> ><a onclick="changeType(0)" href="javascript:void(0);" >{:lang('m:s_l:Turntable draw')}</a></li>
               </ul>
 
             </div>
@@ -71,23 +70,23 @@
               <div class="layui-tab-item layui-show">
                 <div class="order-list">
                   <form class="layui-form lottery-table-list-wrapper" >
-                    <blockquote class="layui-elem-quote">共检得 <b>{$lists->total()}</b> 条数据</blockquote>
+                    <blockquote class="layui-elem-quote">  <?php echo lang('A total of %s data were found',['<b>'.$lists->total().'</b>']) ?></blockquote>
 
                     <table class="layui-table" lay-filter="listtable">
                       <thead>
                       <tr >
                           <th lay-data="{field:'uid', width:80, fixed:'left'}"  >#</th>
-                          <th lay-data="{field:'publish_number', width:120, fixed:'left'}" >抽奖号</th>
-                          <th lay-data="{field:'prize_name',  minWidth:260}" >奖品</th>
-                          <th lay-data="{field:'result', width:100}" >结果</th>
-                          <th lay-data="{field:'user_name', width:120}"  >参与者</th>
-                          <th lay-data="{field:'loginname', width:120}"  >帐号</th>
-                          <th lay-data="{field:'buy_time', width:170}"  width="60">参与时间</th>
-                          <th lay-data="{field:'user_phone', width:120}"  >电话</th>
-                          <th lay-data="{field:'Department', width:120}" >部门</th>
-                          <th lay-data="{field:'company', width:90}" >公司</th>
+                          <th lay-data="{field:'publish_number', width:120, fixed:'left'}" >{:lang('Lottery number')}</th>
+                          <th lay-data="{field:'prize_name',  minWidth:260}" >{:lang('Prize name')}</th>
+                          <th lay-data="{field:'result', width:100}" >{:lang('Result')}</th>
+                          <th lay-data="{field:'user_name', width:120}"  >{:lang('Participant')}</th>
+                          <th lay-data="{field:'loginname', width:120}"  >{:lang('Account')}</th>
+                          <th lay-data="{field:'buy_time', width:170}"  width="60">{:lang('Participation time')}</th>
+                          <th lay-data="{field:'user_phone', width:120}"  >{:lang('Phone')}</th>
+                          <th lay-data="{field:'Department', width:120}" >{:lang('Department')}</th>
+                          <th lay-data="{field:'company', width:90}" >{:lang('Company')}</th>
                           <th lay-data="{field:'full_department', width:160}" >PATH</th>
-                          <th lay-data="{field:'options', width:70, fixed:'right'}"  width="60">操作</th>
+                          <th lay-data="{field:'options', width:80, fixed:'right'}"  width="60">{:lang('Operate')}</th>
                       </tr>
                       </thead>
                       <tbody class="lottery-table-list">
@@ -98,9 +97,9 @@
                           <td class="layui-elip">
                             <?php if($vo['type']){ ?>
                             <div  class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>"> </div>
-                            <span class="layui-elip">【第{$vo.publication_number}期】 {$vo.prize_name|iconv_substr=0,14} </span>
+                            <span class="layui-elip">【{:lang('Phase %d',[$vo['publication_number']])}】 {$vo.prize_name|iconv_substr=0,14} </span>
                             <?php }else{ ?>
-                              【转盘】 {$vo.result_str|iconv_substr=0,14}
+                              【{:lang('Turntable')}】 {$vo.result_str|iconv_substr=0,14}
                             <?php } ?>
 
                           </td>
@@ -109,12 +108,12 @@
                             if($vo['type']){
                               if($vo['result'] > 0){
                                 echo '<i class="fa fa-smile-o"></i>
-                                      <span class="layui-badge ">中奖</span>';
+                                      <span class="layui-badge ">'.lang('sl:中奖').'</span>';
                               }else if($vo['result'] == -1){
                                 echo '<i class="fa fa-frown-o"></i>
-                                      <span class="layui-badge layui-bg-gray">未中奖</span>';
+                                      <span class="layui-badge layui-bg-gray">'.lang('sl:未中奖').'</span>';
                               }else{
-                                echo '未开奖';
+                                echo lang('sl:未中奖');
                               }
                             }else{
                               echo $vo['result'];
@@ -130,7 +129,7 @@
                           <td>{$vo.full_department|str_replace=","," / ",###}</td>
 
                           <td >
-                            <a href="{:url('admin/ScoreLottery/detail',['id'=>$vo['id']])}"  data-title="中奖详情 #{$vo.id}"  data-trigger="modal" title="抽奖详情 #{$vo.id}" class="ibtn layui-btn layui-btn-xs  ">  详情</a>
+                            <a href="{:url('admin/ScoreLottery/detail',['id'=>$vo['id']])}"  data-title="{:lang('Lottery details')} #{$vo.id}"  data-trigger="modal" title="{:lang('Lottery details')} #{$vo.id}" class="ibtn layui-btn layui-btn-xs  ">  {:lang('Details')}</a>
                           </td>
 
                         </tr>
@@ -183,6 +182,7 @@ function submitForm(){
 laydate.render({
   elem: '#filter_time'
   ,range: '~' //或 range: '~' 来自定义分割字符
+  ,lang:'{$active_lang == "zh-cn" ? "cn" : "en"}'
   ,done: function(value, date, endDate){
 
  }

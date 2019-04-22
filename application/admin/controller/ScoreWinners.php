@@ -220,15 +220,15 @@ class ScoreWinners extends AdminBase
         $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
 
         if($data['exchange_time']){
-          $this->error("已兑换，不可操作。");
+          $this->error(lang('Redeemed, not operational'));
         }
         $result = WinnersModel::where('id',$id)->update(["exchange_time"=>date('Y-m-d H:i:s')]);
         if($result){
           $this->log('完成兑奖成功'.json_encode($this->request->post()),0);
-          $this->success('完成兑奖成功');
+          $this->success(lang('Successfully completed the redemption'));
         }else{
           $this->log('完成兑奖失败'.json_encode($this->request->post()),-1);
-          $this->success('完成兑奖失败');
+          $this->success(lang('Failed to completed the redemption failed'));
         }
       }
     }

@@ -171,7 +171,7 @@ class ScoreLottery extends AdminBase
             ->find($id);
 
     if(!$data){
-      $this->error("数据不存在");
+      $this->error(lang('Data does not exist'));
     }else{
       $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
 

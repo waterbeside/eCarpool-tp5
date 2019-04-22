@@ -106,7 +106,7 @@ class ScoreHistory extends AdminBase
             }
 
             if (!$accountInfo) {
-                $this->error("账号不存在");
+                $this->error(lang('Account does not exist'));
             }
             if ($accountInfo['carpool_account']) {
                 $userInfo = CarpoolUserModel::where(['loginname'=>$account])->find();
@@ -158,10 +158,10 @@ class ScoreHistory extends AdminBase
         $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
         if (HistoryModel::where('id', $id)->update(['is_delete' => 1])) {
             $this->log('删除积分记录成功，id='.$id, 0);
-            return $this->jsonReturn(0, '删除成功');
+            return $this->jsonReturn(0, lang('Successfully deleted'));
         } else {
             $this->log('删除积分记录失败，id='.$id, -1);
-            return $this->jsonReturn(-1, '删除失败');
+            return $this->jsonReturn(-1, lang('Failed to delete'));
         }
     }
 }

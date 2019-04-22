@@ -167,16 +167,16 @@ class ScoreOrder extends AdminBase
       $sheet = $spreadsheet->getActiveSheet();
 
       /*设置表头*/
-      $sheet->setCellValue('A1', '单号')
-      ->setCellValue('B1','姓名')
-      ->setCellValue('C1','电话')
-      ->setCellValue('D1','账号')
-      ->setCellValue('E1','公司')
-      ->setCellValue('F1','部门')
-      ->setCellValue('G1','分厂')
-      ->setCellValue('H1','下单时间')
-      ->setCellValue('I1','奖品')
-      ->setCellValue('J1','状态')
+      $sheet->setCellValue('A1', lang('Order number'))
+      ->setCellValue('B1',lang('Name'))
+      ->setCellValue('C1',lang('Phone'))
+      ->setCellValue('D1',lang('Account'))
+      ->setCellValue('E1',lang('Company'))
+      ->setCellValue('F1',lang('Department'))
+      ->setCellValue('G1',lang('Branch'))
+      ->setCellValue('H1',lang('Order time'))
+      ->setCellValue('I1',lang('Prize name'))
+      ->setCellValue('J1',lang('Status'))
       ;
 
       foreach ($lists as $key => $value) {
@@ -380,23 +380,23 @@ class ScoreOrder extends AdminBase
 
       $data = OrderModel::alias('t')->where('id',$id)->json(['content'])->find();
       if(!$data || $data['is_delete']==1){
-        $this->error("订单不存在");
+        $this->error(lang('Order does not exist'));
       }
       $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
 
       if(intval($data['status'])!==0){
         $statusMsg = isset($statusList[$data['status']]) ? $statusList[$data['status']] : $data['status'];
-        $this->error("该订单状态为【".$statusMsg."】，不可操作。");
+        $this->error(lang('The order status is [%s], no operation is allowed',[$statusMsg]));
       }
 
       $result = OrderModel::where('id',$id)->update(["status"=>1,"handler"=> -1 * intval($admin_id)]);
 
       if($result){
         $this->log('完结订单成功'.json_encode($this->request->post()),0);
-        $this->success('完结订单成功');
+        $this->success(lang('End order successfully'));
       }else{
         $this->log('完结订单失败'.json_encode($this->request->post()),-1);
-        $this->success('完结订单失败');
+        $this->success(lang('Ending order failed'));
       }
     }
   }
@@ -416,7 +416,7 @@ class ScoreOrder extends AdminBase
     ];
     $good = GoodsModel::alias('t')->field('t.*, d.fullname as full_department')->where("t.id",$gid)->json(['images'])->join($join)->find();
     if(!$good){
-      $this->error("商品不存在");
+      $this->error(lang('Goods does not exist'));
     }
     $good['thumb'] = is_array($good["images"]) ? $good["images"][0] : "" ;
 
@@ -494,10 +494,10 @@ class ScoreOrder extends AdminBase
 
       if (OrderModel::where('id', $id)->update(['is_delete' => 1,"handler"=> -1 * intval($admin_id)])) {
           $this->log('删除订单记录成功，id='.$id, 0);
-          return $this->jsonReturn(0, '删除成功');
+          return $this->jsonReturn(0, lang('Successfully deleted'));
       } else {
           $this->log('删除订单记录失败，id='.$id, -1);
-          return $this->jsonReturn(-1, '删除失败');
+          return $this->jsonReturn(-1, lang('Failed to delete'));
       }
   }
 
@@ -513,13 +513,13 @@ class ScoreOrder extends AdminBase
       $admin_id = $this->userBaseInfo['uid'];
 
       if(intval($orderData['status']) !== 0){
-        return $this->jsonReturn(-1, '只有等待兑换的订单才允许取消');
+        return $this->jsonReturn(-1, lang('Only orders waiting to be redeemed are allowed to be cancelled'));
       }
       Db::connect('database_score')->startTrans();
       try {
         $upDataOrderRes = OrderModel::where('id', $id)->update(['status' => -1,"handler"=> -1 * intval($admin_id)]); //取消订单状态
         if(!$upDataOrderRes){
-          throw new \Exception("取消失败");
+          throw new \Exception(lang('Unsuccessful cancellation'));
         }
         $upScoredata = [
           'reason' => 200,
@@ -537,11 +537,11 @@ class ScoreOrder extends AdminBase
       } catch (\Exception $e) {
          Db::connect('database_score')->rollback();
          $this->log('取消订单失败，id='.$id, -1);
-         return $this->jsonReturn(-1, '删除订单失败',[],["errorMsg"=> $e->getMessage()]);
+         return $this->jsonReturn(-1, lang('Failed to delete order'),[],["errorMsg"=> $e->getMessage()]);
       }
 
       $this->log('取消订单记录成功，id='.$id, 0);
-      return $this->jsonReturn(0, '取消成功');
+      return $this->jsonReturn(0, lang('Successful cancellation'));
 
 
   }

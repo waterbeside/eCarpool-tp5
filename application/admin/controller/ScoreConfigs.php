@@ -68,7 +68,7 @@ class ScoreConfigs extends AdminBase
       $value = $this->request->post('value');
       $value_array = json_decode($value,true);
       if(!is_numeric($region_id)){
-        $this->error("请选择地区");
+        $this->error(lang("Please select a region or department"));
       }
 
       $data_used  = [];

@@ -119,10 +119,10 @@ class ScoreGoods extends AdminBase
       if ( $id ) {
           $this->public_recache($id);
           $this->log('添加商品成功，id='.$id,0);
-          return $this->jsonReturn(0,'保存成功');
+          return $this->jsonReturn(0,lang('Save successfully'));
       } else {
           $this->log('添加商品失败',-1);
-          return $this->jsonReturn(-1,'保存失败');
+          return $this->jsonReturn(-1,lang('Save failed'));
       }
     }else{
 
@@ -166,10 +166,10 @@ class ScoreGoods extends AdminBase
       if ( $id ) {
           $this->public_recache($id);
           $this->log('添加商品成功，id='.$id,0);
-          return $this->jsonReturn(0,'保存成功');
+          return $this->jsonReturn(0,lang('Save successfully'));
       } else {
           $this->log('添加商品失败',-1);
-          return $this->jsonReturn(-1,'保存失败');
+          return $this->jsonReturn(-1,lang('Save failed'));
       }
 
     }else{
@@ -183,7 +183,7 @@ class ScoreGoods extends AdminBase
       ];
       $data = GoodsModel::alias('t')->field($fields)->json(['images'])->join($join)->where("t.id",$id)->find();
       if(!$data){
-        $this->error("商品不存在");
+        $this->error(lang('Goods does not exist'));
       }else{
         $data['is_show'] = $data['is_delete'] ? 0 : 1 ;
         $data['thumb'] = is_array($data["images"]) ? $data["images"][0] : "" ;
@@ -231,10 +231,10 @@ class ScoreGoods extends AdminBase
       if (GoodsModel::json(['images'])->where('id',$id)->update($upData) !== false) {
           $this->public_recache($id);
           $this->log('保存商品成功，id='.$id,0);
-          return $this->jsonReturn(0,'保存成功');
+          return $this->jsonReturn(0,lang('Save successfully'));
       } else {
           $this->log('保存商品失败，id='.$id,-1);
-          return $this->jsonReturn(-1,'保存失败');
+          return $this->jsonReturn(-1,lang('Save failed'));
       }
 
     }else{
@@ -249,7 +249,7 @@ class ScoreGoods extends AdminBase
       $data = GoodsModel::alias('t')->field($fields)->json(['images'])->join($join)->where("t.id",$id)->find();
 
       if(!$data){
-        $this->error("商品不存在");
+        $this->error(lang('Goods does not exist'));
       }else{
         $this->checkDeptAuthByDid($data['p_region_id'],1); //检查地区权限
 
