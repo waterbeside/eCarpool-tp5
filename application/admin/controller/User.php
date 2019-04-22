@@ -163,8 +163,8 @@ class User extends AdminBase
             $data            = $this->request->post();
             unset($data['md5password']);
 
-            $sub_company_name = CompanySubModel::where(['sub_company_id'=>$data['sub_company_id']])->value('sub_company_name');
-            $data['companyname'] = $sub_company_name ? $sub_company_name : '';
+            // $sub_company_name = CompanySubModel::where(['sub_company_id'=>$data['sub_company_id']])->value('sub_company_name');
+            // $data['companyname'] = $sub_company_name ? $sub_company_name : '';
             // $department_name = DepartmentModel_old::where(['departmentid'=>$data['departmentid']])->value('department_name');
             // $data['Department'] = $department_name ? $department_name : '';
 
