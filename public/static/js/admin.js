@@ -226,8 +226,13 @@ function initLayuiTable(options){
 function openLayer(url,opt,oe){
   var e = oe || e || event;
   var openLength = 0
+  var $target = $(e.target);
   GV['lastOpenLayer'] = [];
   GV['lastOpenLayer']['target'] = e.target;
+
+  var $targetWrapper = $target.attr('onclick') ? $target : $target.closest('[onclick]');
+  console.log($targetWrapper);
+  
   var defaults = {
     type: 2,
     area: ['700px', '90%'],
@@ -246,6 +251,23 @@ function openLayer(url,opt,oe){
     defaults.content = url;
   }
   var options = $.extend(true, defaults, opt_s);
+  if(typeof(options.urlParam)=='undefined'){
+    // var paramStr = $targetWrapper.data('paramstr');
+    // paramObject = typeof(paramStr)=="object"  ? paramStr : false;
+    var paramStr = $targetWrapper.attr('data-paramstr');
+    var paramObject = paramStr ? JSON.parse(paramStr) : false;
+  }else{
+    var paramObject = typeof(options.urlParam)=='object' ? options.urlParam : false ;
+  }
+  var paramFormatStr = '';
+  if(typeof(paramObject)=='object'){
+    paramFormatStr = options.content.indexOf('?') == -1 ? '?' : ''
+    for(k in paramObject){
+      paramFormatStr += paramFormatStr == "?"  ? '' : '&';
+      paramFormatStr += k+'='+paramObject[k];
+    }
+  }
+  options.content += paramFormatStr;
   GV['lastOpenLayer']['layer'] = layer.open(options);
 }
 
