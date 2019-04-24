@@ -10,7 +10,7 @@ use think\Db;
 
 /**
  * 二手市场公开信息
- * Class Banners
+ * Class Idle
  * @package app\api\controller
  */
 class Idle extends ApiBase

@@ -9,7 +9,7 @@ use my\RedisData;
 
 /**
  * 地址相关
- * Class Docs
+ * Class Address
  * @package app\api\controller
  */
 class Address extends ApiBase
