@@ -54,7 +54,7 @@
                         <tr>
                             <td>{$vo.id}</td>
                             <td>{$vo.title}</td>
-                            <td>{php}echo $category_list[$vo['cid']] ? $category_list[$vo['cid']]: $vo['cid'] ; {/php}</td>
+                            <td>{php}echo isset($category_list[$vo['cid']]) ? $category_list[$vo['cid']]: $vo['cid'] ; {/php}</td>
                             <td>{$vo.lang}</td>
                             <td>{php}echo $vo['status']==1 ? '显示' : '不显示';{/php}</td>
                             <td>{$vo.create_time}</td>

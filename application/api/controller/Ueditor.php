@@ -2,7 +2,8 @@
 namespace app\api\controller;
 
 use think\facade\Env;
-use think\Controller;
+// use think\Controller;
+use app\common\controller\Base;
 use org\UeditorUpload;
 use think\facade\Session;
 
@@ -11,7 +12,7 @@ use think\facade\Session;
  * Class Ueditor
  * @package app\api\controller
  */
-class Ueditor extends Controller
+class Ueditor extends Base
 {
     protected $config;
     protected $action;
@@ -85,6 +86,13 @@ class Ueditor extends Controller
                 ]);
             }
         } else {
+            $systemConfig = $this->systemConfig;
+            $site_domain  = trim($systemConfig['site_upload_domain']) ? trim($systemConfig['site_upload_domain']) : $this->request->root(true) ;
+            if(isset($result['url'])){
+                $result['path'] = $result['url'];
+                $result['url'] = $site_domain.$result['url'];
+            }
+            
             return json($result);
         }
     }
