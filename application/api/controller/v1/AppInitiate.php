@@ -152,12 +152,14 @@ class AppInitiate extends ApiBase
       // }
       $GradeModel = new GradeModel();
       $isGrade = $GradeModel->isGrade('trips',$app_id);
+      $gps_interval = config('trips.gps_interval') ? intval(config('trips.gps_interval'))  :  0;
       $returnData = [
         'notices' => $notices,
         'ads' =>  $adsData,
         'version' => $returnVersionData,
         'ip' => $ip,
         'grade_switch' => $isGrade ? 1 : 0, //是否使用评分系统
+        'gps_interval' => $gps_interval ? $gps_interval  :  30,
       ];
       // dump($lists);
       return $this->jsonReturn(0,$returnData,lang('Successfully'));
