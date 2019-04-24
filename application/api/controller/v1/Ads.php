@@ -10,7 +10,7 @@ use think\Db;
 
 /**
  * banners相关
- * Class Banners
+ * Class Ads
  * @package app\api\controller
  */
 class Ads extends ApiBase
@@ -64,7 +64,7 @@ class Ads extends ApiBase
       }
       $res_filt = [];
       foreach ($res as $key => $value) {
-        if($this->checkDeptAuth($department_id,$value['region_id'])){
+        if($this->checkDeptAuth($department_id,$value['region_id']) || !$userData){
           $res_filt[] = [
             "id" => $value["id"],
             "title" => $value["title"],
