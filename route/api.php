@@ -75,6 +75,7 @@ Route::group([], function () {
   Route::resource('api/:version/publics/idle','api/:version.publics.idle');
   Route::rule('api/:version/publics/comments','api/:version.publics.comments/index','GET');
   Route::rule('api/:version/app/url','api/:version.app/get_url','GET');
+  Route::rule('api/:version/publics/reports/trips_summary','api/:version.publics.reports/trips_summary','GET');
 
 
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
