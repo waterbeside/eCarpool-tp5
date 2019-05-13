@@ -349,9 +349,12 @@ PAGE_EXEC = {
           used_grades.push(el.grade);
         }
         total_rate += parseFloat(el.rate);
-
       }
     })
+    if(error_index>-1){
+      return false;
+    }
+
     if(used_grades.length != 8){
       layer.msg("必需开启使用8项");
       return false;
