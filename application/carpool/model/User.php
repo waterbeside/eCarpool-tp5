@@ -181,7 +181,7 @@ class User extends BaseModel
          "name" => $data['name'],
          'deptid' => $data['code'],
          'route_short_name' => 'XY',
-         'md5password' => $pw,
+         'md5password' => $pw, //日后将会取消初始密码的写入
          'is_active' => 1,
          // 'is_delete' => 0,
        ];
