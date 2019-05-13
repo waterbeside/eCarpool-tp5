@@ -5,6 +5,7 @@ use app\carpool\model\User as CarpoolUserModel;
 use app\carpool\model\Company as CompanyModel;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
+use app\carpool\model\InfoActiveLine;
 use app\admin\controller\AdminBase;
 use think\Db;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -398,18 +399,7 @@ class CarpoolTrips extends AdminBase
     $value_format['subtime'] = strtotime($value['subtime']);
 
     $value_format['time'] = strtotime($value['time'].'00');
-    if(!empty($merge_ids)){
-      if(!in_array('p',$unDo) && isset($value['p_uid']) &&  in_array($value['p_uid'],$merge_ids)){
-        $value_format['p_uid'] = $uid;
-        $value_format['passengerid'] = $uid;
-        $value_format['p_name'] = $userData['name'];
-      }
-      if(!in_array('d',$unDo) && isset($value['d_uid']) && in_array($value['d_uid'],$merge_ids)){
-        $value_format['d_uid'] = $uid;
-        $value_format['carownid'] = $uid;
-        $value_format['d_name'] = $userData['name'];
-      }
-    }
+   
     if(!is_numeric($value['startpid']) || $value['startpid'] < 1 ){
       $value_format['start_addressid'] = $value['startpid'];
       $value_format['start_addressname'] = $value['startname'];
@@ -485,5 +475,26 @@ class CarpoolTrips extends AdminBase
   }
 
 
+  public function public_activeline_list($infoid = 0,$pagesize = 100,$orderField = "locationtime" ,$orderType = 'desc'){
+    $orderType = $orderType == 'desc'  ? 'desc' : 'asc';
+    $orderField = in_array($orderField,['locationtime','uid','infoid'])  ?  $orderField : 'locationtime' ;
+    $map = [];
+    if(is_numeric($infoid) && $infoid > 0 ){
+      $map[] = ['t.infoid','=',$infoid];
+    }
+    $join = [];
+    $join[] = ['user u','u.uid = t.uid', 'left'];
+    $lists = InfoActiveLine::alias('t')->field('t.*,u.name,u.loginname')->join($join)->where($map)
+    ->order("$orderField $orderType")->paginate($pagesize, false,  ['query'=>request()->param()]);;
+    $returnData = [
+      'lists' => $lists,
+      'pagesize' => $pagesize,
+      'infoid' => $infoid,
+      'orderField'=>$orderField,
+      'orderType'=>$orderType,
+    ];
+    return $this->fetch('public_activeline_list', $returnData);
+
+  }
 
 }
