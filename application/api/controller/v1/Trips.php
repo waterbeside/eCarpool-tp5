@@ -568,10 +568,10 @@ class Trips extends ApiBase
         $WallModel    = new WallModel();
 
         //计算前后范围内有没有重复行程
-        if (!$InfoModel->checkRepetition($time, $uid, 120)) {
+        if ($InfoModel->checkRepetition($time, $uid, 60*5)) {
             $this->jsonReturn(-1, [], $InfoModel->errorMsg);
         }
-        if (!$WallModel->checkRepetition($time, $uid, 120)) {
+        if ($WallModel->checkRepetition($time, $uid, 60*5)) {
             $this->jsonReturn(-1, [], $WallModel->errorMsg);
         }
 
@@ -669,7 +669,6 @@ class Trips extends ApiBase
     public function passengers($id, $status = "neq|2")
     {
         $res =  $this->info_list("", $status, 0, $id, 0, 'status ASC, time ASC');
-
         if ($res) {
             foreach ($res['lists'] as $key => $value) {
                 $res['lists'][$key] = $this->unsetResultValue($value, ['love_wall_ID']);
@@ -685,7 +684,7 @@ class Trips extends ApiBase
      * 改变更新字段
      * @param string $from  行程类型 wall|info
      */
-    public function change($from="", $id, $type="")
+    public function change($from="", $id, $type="",$step=0)
     {
         $this->checkPassport(1);
         $type = mb_strtolower($type);
@@ -715,6 +714,10 @@ class Trips extends ApiBase
 
         $isDriver    = $datas->carownid == $uid ? true : false; //是否司机操作
         $driver_id   = $datas->carownid ; //司机id;
+
+        $AddressModel = new Address();
+        $InfoModel    = new InfoModel();
+        $WallModel    = new WallModel();
 
         /*********** 完成或取消或上车 ***********/
         if (in_array($type, ["cancel","finish","get_on"])) {
@@ -786,6 +789,14 @@ class Trips extends ApiBase
                 } else { //如果乘客取消，则推送给司机
                     $push_msg = lang("The passenger {:name} cancelled the trip", ["name"=>$userData['name']]) ;
                     $sendTarget = $driver_id;
+                    // 顺便检查词机空座位状态并更正 -----2019-04-25
+                    if($from == "info"){
+                        $took_count = InfoModel::where([["love_wall_ID",'=',$id],["status","in",[0,1,3,4]]])->count();
+                        if($took_count === 0){ //如果发现没有有效乘客，则更改空座位状态为0;
+                            WallModel::where(["love_wall_ID",'=',$datas->love_wall_ID])->update(["status"=>0]);
+                        }
+                    }
+                    
                 }
             } elseif ($type == 'get_on') {
                 $push_msg = lang("The passenger {:name} has got on your car", ["name"=>$userData['name']]) ;
@@ -822,6 +833,16 @@ class Trips extends ApiBase
             if ($isDriver) {
                 return $this->jsonReturn(-1, [], lang('You can`t take your own'));
             }
+
+             //计算前后范围内有没有重复行程
+             if ($InfoModel->checkRepetition(strtotime($datas->time.'00'), $uid, 60*5)) {
+                return $this->jsonReturn(30007, [], $InfoModel->errorMsg);
+            }
+            //计算前后范围内有没有重复行程
+            if ($WallModel->checkRepetition(strtotime($datas->time.'00'), $uid, 60*5)) {
+                return $this->jsonReturn(30007, [], $WallModel->errorMsg);
+            }
+        
 
             $seat_count = $datas->seat_count;
             $checkInfoMap = [['love_wall_ID','=',$id],['status','<>',2]];
@@ -881,6 +902,21 @@ class Trips extends ApiBase
             if ($datas->status > 0) {
                 return $this->jsonReturn(-1, [], lang("This requirement has been picked up or cancelled"));
             }
+
+             //计算前后范围内有没有重复行程
+            // if ($InfoModel->checkRepetition(strtotime($datas->time.'00'), $uid, 120)) {
+            //     return $this->jsonReturn(30007, [], $InfoModel->errorMsg);
+            // }
+            // 如果你有一趟空座位
+            $checkWallRes = $WallModel->checkRepetition(strtotime($datas->time.'00'), $uid, 60*5);
+            if($checkWallRes){
+                if($step == 1){
+                    $datas->love_wall_ID  = $checkWallRes['love_wall_ID'];
+                }else{
+                    return $this->jsonReturn(50008, $checkWallRes, $WallModel->errorMsg);
+                    // return $this->jsonReturn(50008, $checkWallRes, "你在该时间段内有一个已发布的空座位，是否将该乘客请求合并到你的空座位上");
+                }
+            }
             $datas->carownid = $uid;
             $datas->status = 1;
             $res = $datas->save();
@@ -898,7 +934,7 @@ class Trips extends ApiBase
             $addressDatas       = input('post.address');
             $map_type       =  $addressDatas['map_type'];
             $addressSign = $type == "startaddress" ? "start" : "end";
-            //处理起点
+            //处理站点
             if (!$addressDatas['addressid'] && !$map_type) {
                 $addressDatas['company_id'] = $userData['company_id'];
                 $addressDatas['create_uid'] = $userData['uid'];
@@ -906,8 +942,8 @@ class Trips extends ApiBase
                 if (!$addressRes) {
                     $this->jsonReturn(-1, [], lang("The adress must not be empty"));
                 }
-                $addressDatas['addressid'] = $startRes['addressid'];
-                $createAddress[0] = $startRes;
+                $addressDatas['addressid'] = $addressRes['addressid'];
+                $createAddress[0] = $addressRes;
             }
             $inputData = [
               $addressSign.'pid'  => $map_type ? (isset($addressDatas['gid']) &&  $addressDatas['gid'] ? -1 : 0) : $addressDatas['addressid'] ,
@@ -1367,23 +1403,23 @@ class Trips extends ApiBase
             $res = [];
             foreach ($uid as $key => $value) {
                 if (is_numeric($value)) {
-                    $res[] = $PushMessage->add($value, $message, lang("Car pooling"), 101, 1);
+                    $res[] = $PushMessage->add($value, $message, lang("Car pooling"), 101,101, 0);
                     // $PushMessage->push($value,$message,lang("Car pooling"),2);
                 }
             }
         } elseif (is_numeric($uid)) {
-            $res = $PushMessage->add($uid, $message, lang("Car pooling"), 101, 1);
+            $res = $PushMessage->add($uid, $message, lang("Car pooling"), 101,101, 0);
             // $PushMessage->push($uid,$message,lang("Car pooling"),2);
         } else {
             return false;
         }
-        try {
-            $pushRes = $PushMessage->push($uid, $message, lang("Car pooling"), $appid);
-            $this->errorMsg = $pushRes;
-        } catch (\Exception $e) {
-            $this->errorMsg = $e->getMessage();
-            $pushRes =  $e->getMessage();
-        }
+        // try {
+        //     $pushRes = $PushMessage->push($uid, $message, lang("Car pooling"), $appid);
+        //     $this->errorMsg = $pushRes;
+        // } catch (\Exception $e) {
+        //     $this->errorMsg = $e->getMessage();
+        //     $pushRes =  $e->getMessage();
+        // }
         return $res;
     }
 }

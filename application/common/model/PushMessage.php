@@ -22,10 +22,10 @@ class PushMessage extends Model
    * @param  $msg  [description]
    * @param [type] $type [description]
    */
-  public function  add($uid,$msg="",$title="",$type=101,$is_notify=1){
+  public function  add($uid,$msg="",$title="",$module_id= 101,$type=101,$is_notify=0){
     $default_data = [
       'message_time' => date("Y-m-d H:i:s"),
-      'module_id' => $type,
+      'module_id' => $module_id,
       'message_type' => $type,
       'is_notify' => 0,
     ];
@@ -37,7 +37,7 @@ class PushMessage extends Model
         'message_title' => $title,
         'message_content' => $msg,
         'is_notify' => $is_notify,
-        'module_id' => $type,
+        'module_id' => $module_id,
         'message_type' => $type,
       ];
     }
