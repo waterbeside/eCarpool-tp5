@@ -9,7 +9,7 @@ use app\carpool\model\Company as CompanyModel;
 use think\Db;
 
 /**
- * 辅助理接口
+ * 文章接口
  * Class Docs
  * @package app\api\controller
  */
