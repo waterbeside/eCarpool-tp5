@@ -41,10 +41,16 @@ class Wall extends Model
      $res = $this->where($map)->find();
      if($res){
        $resTime  = date('Y-m-d H:i',strtotime($res['time'].'00'));
-       $this->errorMsg = lang("You have already made one trip at {:time}, should not be published twice within the same time",["time"=>$resTime]);
-       return false;
+       $returnData = [
+        'time' => strtotime($res['time'].'00'),
+        'love_wall_ID' => $res['love_wall_ID'],
+        'd_uid' => $res['carownid'],
+        'p_uid' => 0,
+      ];
+       $this->errorMsg = lang("You have already made one trip at {:time}, please do not post in a similar time",["time"=>$resTime]);
+       return $returnData;
      }else{
-       return true;
+       return false;
      }
    }
 
