@@ -93,6 +93,12 @@ class Ads extends AdminBase
           if($data['link_type']>0 && !trim($data['link'])){
             return $this->jsonReturn(-1,'你选择了跳转，请填写跳转连接');
           }
+          if(is_numeric($data['lang']) && intval($data['lang']) === 0 ){
+            $data['lang'] = '';
+          }
+          if( $data['lang'] == '-1'  ){
+            $data['lang'] = $data['lang_input'];
+          }
           $validate_result = $this->validate($data, 'app\content\validate\Ads');
           if ($validate_result !== true) {
             return $this->jsonReturn(-1,$validate_result);
@@ -110,6 +116,7 @@ class Ads extends AdminBase
             'link_type' => $data['link_type'],
             'link' => $data['link'],
             'duration' => $data['duration'],
+            'lang' => $data['lang'],
           ];
           if($data['thumb'] && trim($data['thumb'])){
             $upData['images'][0] =  $data['thumb'];
@@ -168,6 +175,12 @@ class Ads extends AdminBase
           if($data['link_type']>0 && !trim($data['link'])){
             return $this->jsonReturn(-1,'你选择了跳转，请填写跳转连接');
           }
+          if(is_numeric($data['lang']) && intval($data['lang']) === 0 ){
+            $data['lang'] = '';
+          }
+          if( $data['lang'] == '-1'  ){
+            $data['lang'] = $data['lang_input'];
+          }
           $validate_result = $this->validate($data, 'app\content\validate\Ads');
           if ($validate_result !== true) {
             return $this->jsonReturn(-1,$validate_result);
@@ -183,6 +196,7 @@ class Ads extends AdminBase
             'link_type' => $data['link_type'],
             'link' => $data['link'],
             'duration' => $data['duration'],
+            'lang' => $data['lang'],
           ];
           if($data['thumb'] && trim($data['thumb'])){
             $upData['images'][0] =  $data['thumb'];

@@ -123,7 +123,22 @@
                 </div>
             </div>
 
-
+            <!-- <div class="layui-form-item">
+              <label class="layui-form-label">语言</label>
+              <div class="layui-input-block">
+                  <input type="text" name="lang" value="{$data.lang}" class="layui-input">
+                  <div class="layui-form-mid layui-word-aux" >语言 zh-cn</div>
+              </div>
+            </div> -->
+            <div class="layui-form-item">
+              <label class="layui-form-label ">选择语言</label>
+              <div class="layui-input-block">
+                <select name="lang" lay-filter='language_code_select' lay-verify="required">
+                   <option value="0">请选择语言</option>
+                 </select>
+                 <input type="text" id="language_code" name="lang_input" value="{$data.lang}"   placeholder="请输入语言码" class="layui-input">
+              </div>
+            </div>
 
 
 
@@ -148,12 +163,63 @@ FORM_PAGE_EXEC = {
   upload : layui.upload,
   deptObj : null,
   datas: {
+    langs:[],
+    lang:'{$data.lang}',
     depts: [],
     deptsData: <?php echo $deptsData ? json_encode($deptsData) : '[]'; ?>,
   },
+  getLangs: function(success){
+      var _this = this;
+      $.get("{:url('admin/i18n/public_langs')}",function(res){
+        console.log(res)
+        if(res.code === 0){
+          _this.datas.langs = res.data.lists;
+          _this.renderLangs(res.data.lists);
+          if(typeof(success)=="function"){
+            success(res);
+          }
+          form.render();
+          form.on('select(language_code_select)', function(data){
+            if(data.value == 0 || data.value == -1){
+              $("#language_code").show();
+            }else{
+              $("#language_code").hide();
+            }
+            console.log(data.value); //得到被选中的值
+            console.log(data.othis); //得到美化后的DOM对象
+          });
+        }
+      })
+
+  },
+
+  renderLangs: function(listData){
+    var options_s = '<option value="0">请选择语言</option>';
+    var options = '';
+    var lang = this.datas.lang;
+    var hasLang  = 0;
+    $(listData).each(function(index, el) {
+      var selected = el.code == lang ? "selected" : '';
+      hasLang = el.code == lang  ? 1 : hasLang;
+      options += '<option value="'+el.code+'"  '+selected+'>【'+el.code +"】"+el.name+'</option>';
+    });
+    var has_select_1 = ''
+    if(hasLang){
+      $("#language_code").hide();
+    }else{
+      has_select_1 = 'selected';
+      $("#language_code").show();
+    }
+    options_s += '<option value="-1" '+has_select_1+'>自定义</option>';
+    $("#editForm select[name='lang']").html(options_s+options)
+
+  },
+
 
   init: function(){
     var _this = this;
+    this.getLangs();
+
     // this.deptObj = new MyDept({deptsData:this.datas.deptsData,$targetShowWrapper:$('.J-dept-select-wrapper')});
     MyDept().renderShowBox(_this.datas.deptsData,$('.J-dept-select-wrapper'));
 

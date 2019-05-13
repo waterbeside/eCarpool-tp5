@@ -36,6 +36,11 @@ class AppInitiate extends ApiBase
     $lang = (new I18nLangModel())->formatLangCode($this->language);
     $lang = $lang ? $lang : "en";
     $platform_list = config('others.platform_list');
+    $userData = $this->getUserData();
+      // dump($userData);
+    if($userData){
+      $department_id = $userData['department_id'];
+    }
 
     /**
      * 通知列表
@@ -63,27 +68,38 @@ class AppInitiate extends ApiBase
     /**
      * 启屏广告图
      */
-    $map  = [];
-    $map[] = ['status','=',1];
-    $map[]  = ['is_delete',"=",0];
-    $map[] = ['type','=',1];
+    $adsData = [];
+    if($userData){
+      $map  = [];
+      $map[] = ['status','=',1];
+      $map[]  = ['is_delete',"=",0];
+      $map[] = ['type','=',1];
 
-    $whereExp = '';
-    $whereExp .= " FIND_IN_SET($app_id,app_ids) ";
-    $whereExp .= " AND FIND_IN_SET($platform,platforms) ";
 
-    $adsData  = AdsModel::where($map)->where($whereExp)->json(['images'])->order(['sort' => 'DESC', 'id' => 'DESC'])->select();
-    foreach ($adsData as $key => $value) {
-      $adsData[$key] = [
-        "id" => $value["id"],
-        "title" => $value["title"],
-        "images" => $value["images"],
-        "link_type" => $value["link_type"],
-        "link" => $value["link"],
-        "create_time" => $value["create_time"],
-        "type" => $value["type"],
-      ];
+      $whereExp = '';
+      $whereExp .= " FIND_IN_SET($app_id,app_ids) ";
+      $whereExp .= " AND FIND_IN_SET($platform,platforms) ";
+      $whereExp .= " AND  (lang = '$lang' OR lang = '')";
+
+      $adsRes  = AdsModel::where($map)->where($whereExp)->json(['images'])->order(['sort' => 'DESC', 'id' => 'DESC'])->select();
+      foreach ($adsRes as $key => $value) {
+        if($this->checkDeptAuth($department_id,$value['region_id'])){
+          $adsData[] = [
+            "id" => $value["id"],
+            "title" => $value["title"],
+            "images" => $value["images"],
+            "link_type" => $value["link_type"],
+            "link" => $value["link"],
+            "create_time" => $value["create_time"],
+            "type" => $value["type"],
+          ];
+        }
+      }
     }
+    
+    
+
+    
 
 
     /**

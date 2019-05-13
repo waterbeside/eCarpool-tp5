@@ -3,6 +3,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\ApiBase;
 use app\content\model\Ads as AdsModel;
+use app\common\model\I18nLang as I18nLangModel;
 use my\RedisData;
 
 
@@ -27,6 +28,9 @@ class Ads extends ApiBase
       if(!$type || !$app_id || !$platform){
         return $this->jsonReturn(992,[],lang('Parameter error'));
       }
+     
+      $lang = (new I18nLangModel())->formatLangCode($this->language);
+      $lang = $lang ? $lang : "en";
 
       $department_id = -1;
       $userData = $this->getUserData();
@@ -35,10 +39,9 @@ class Ads extends ApiBase
       if($userData){
         $department_id = $userData['department_id'];
       }
-      
-      
 
-      $keyOfDataVersion  = "carpool:ads:version:".$app_id."_".$type;
+      $keyOfDataVersion  = "carpool:ads:version:".$app_id."_".$type.'_'.$department_id.'_'.$lang; 
+      
 
       $redis = new RedisData();
       $lastVeison = $redis->get($keyOfDataVersion);
@@ -56,6 +59,7 @@ class Ads extends ApiBase
       $whereExp = '';
       $whereExp .= " FIND_IN_SET($app_id,app_ids) ";
       $whereExp .= " AND FIND_IN_SET($platform,platforms) ";
+      $whereExp .= " AND  (lang = '$lang' OR lang = '')";
 
       $res  = AdsModel::where($map)->where($whereExp)->json(['images'])->order(['sort' => 'DESC', 'id' => 'DESC'])->select();
       // dump($res);exit;

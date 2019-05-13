@@ -62,6 +62,7 @@
                             <th>持续时间</th>
                             <th>创建时间</th>
                             <th>更新时间</th>
+                            <th>Lang</th>
                             <th>有效平台</th>
                             <th>所属app</th>
                             <th style="width: 100px;">操作</th>
@@ -90,6 +91,9 @@
                             <td>
                               {$vo.update_time}
                             </td>
+                            <td>
+                                {$vo.lang}
+                              </td>
                             <td>
                               <?php
                               $platform_str = '';
