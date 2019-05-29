@@ -196,6 +196,27 @@ class UserTemp extends Model
   }
 
   /**
+   * 格式化从HR拉来的用户名
+   */
+  public function formatName($str){
+    $returnData  = [
+      'name' =>'',
+      'general_name'=>''
+    ];
+    $name_arr = explode('(',$str);
+    if(count($name_arr)>1){
+      $name_arr2 = explode(')',$name_arr[1]); 
+      $returnData['name'] = trim($name_arr2[0]);
+      $returnData['general_name'] = trim($name_arr[0]);
+    }else{
+      $returnData['name'] = '';
+      $returnData['general_name'] = trim($name_arr[0]);
+      // $returnData['name'] = trim($name_arr[0]);
+    }
+    return $returnData;
+  }
+
+  /**
    * 推用户数据到主库比较并更新
    * @param  string $code [description]
    * @param  [type] $data [description]
@@ -224,6 +245,9 @@ class UserTemp extends Model
     $department_format_data = $DepartmentModel->formatFullName($department_data['fullname']);
     $data['department_branch'] = $department_format_data['branch'];
     $data['department_format'] = $department_format_data['format_name'];
+    $nameFormat = $this->formatName($data['name']);
+    $data['name'] = $nameFormat['name'];
+    $data['general_name'] = $nameFormat['general_name'];
     $OldUserModel = new OldUserModel();
     $res_old = $OldUserModel->syncDataFromTemp($data); // 入到旧表中
 
@@ -240,7 +264,6 @@ class UserTemp extends Model
       $this->errorMsg = $OldUserModel->errorMsg;
       return false;
     }
-
 
     /*
     $res_new = [];

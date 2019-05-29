@@ -160,6 +160,9 @@ class User extends BaseModel
      if($data['name']){
        $inputUserData['nativename'] = $data['name'];
      }
+     if($data['general_name']){
+      $inputUserData['general_name'] = $data['general_name'];
+     }
 
      if($data['email']){
        $inputUserData['mail'] = $data['email'];
@@ -178,7 +181,7 @@ class User extends BaseModel
        $pw = $this->createPasswordFromCode($data['code']);
        $inputUserData_default = [
          'indentifier' => uuid_create(),
-         "name" => $data['name'],
+         "name" => $data['name'] ? $data['name'] : $data['general_name'],
          'deptid' => $data['code'],
          'route_short_name' => 'XY',
          'md5password' => $pw, //日后将会取消初始密码的写入
