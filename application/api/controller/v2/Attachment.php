@@ -23,7 +23,7 @@ class Attachment extends ApiBase
     }
 
     public function index($type=false){
-      $this->jsonReturn(0);
+      $this->jsonReturn(0,'');
     }
 
     /**
@@ -111,10 +111,16 @@ class Attachment extends ApiBase
 
 
         if(!empty($fileInfo)){  //如果有重复图片
+          $filepath_o = '';
+          if($module == "user/avatar"){
+            $filepath_o_arr = explode(config('secret.avatarUploadPath').DIRECTORY_SEPARATOR,$fileInfo['filepath']) ;
+            $filepath_o = isset($filepath_o_arr[1]) ? $filepath_o_arr[1] : $fileInfo['filepath'];
+          }
           $returnData = [
             'id'=>$fileInfo['id'],
             'path'=>$site_domain.$fileInfo['filepath'],
             'filepath'=>$fileInfo['filepath'],
+            'filepath_o'=>$filepath_o,
             'hash'=>[$md5,$sha1],
             'filesize'=>$fileInfo['filesize'],
             'upload'=>0,
@@ -146,6 +152,7 @@ class Attachment extends ApiBase
           $info = $file->move($fullUploadPath);
           $imgpath =  $now.DIRECTORY_SEPARATOR.$info->getFilename();
           $path = config('secret.avatarUploadPath').DIRECTORY_SEPARATOR.$imgpath;
+          $filepath_o = $imgpath;
           $upAvatarRes = $this->upDataAvatar($imgpath); //更新用户头像字段
           if(!$upAvatarRes){
             return $this->jsonReturn(-1,lang('Failed'));
@@ -184,7 +191,9 @@ class Attachment extends ApiBase
               'filesize'=>$upInfo['size'],
               'upload'=>1,
               'extra_info' => $extra,
+              'filepath_o' => isset($filepath_o) ?  $filepath_o : '',
             ];
+            
             $this->jsonReturn(0,$returnData,lang('upload successful'));
         }else{
             $this->jsonReturn(-1,lang('Attachment information failed to be written'));
