@@ -113,7 +113,7 @@ class SyncHr extends ApiBase
     public function single($code=0, $tid=0, $is_sync=0)
     {
         if (!$this->check_localhost() && !$this->checkPassport()) {
-            $this->error(lang('Illegal access'));
+            return $this->jsonReturn(30001, [], lang('Illegal access'));
         }
         if (!$code && !$tid) {
             return $this->jsonReturn(992, [], lang('Parameter error'));

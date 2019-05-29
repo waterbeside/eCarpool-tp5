@@ -161,7 +161,7 @@ class ApiBase extends Base
         // dump($this->request->port());exit;
         // && !in_array($host,["gitsite.net:8082","admin.carpoolchina.test"])
         if (strpos($host, '127.0.0.1') === false && strpos($host, 'localhost') === false) {
-            return $returnType ?  $this->error(lang('Illegal access')) : false ;
+            return $returnType ?  $this->jsonReturn(30001,lang('Illegal access')) : false ;
         } else {
             return true;
         }
