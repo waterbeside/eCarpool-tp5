@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>{$data.title}</title>
+  <link rel="stylesheet" href="__CSS__/font-awesome.min.css">
+  <link rel="stylesheet" href="__CSS__/bootstrap.min.css">
+
+  <style>
+      .main-body { padding: 12px; margin-right:160px; }
+      .chn-box { padding-top: 50px}
+      .chn-box table:not(.table) {
+          border: 1px solid #ccc;border-collapse: collapse;
+      }
+      .chn-box table:not(.table) td {
+          border: 1px solid #ccc; padding:8px;
+      }
+      .chn-box .tab-pane  { padding: 12px;}
+      #navbar-scl { position:fixed; top:10px; right:0; width:150px; background: #FFF;}
+      #navbar-scl li a {color:#888}
+      /* #navbar-scl li.active { } */
+      #navbar-scl li.active a {border-left:2px solid #7b0ee1; color:#7b0ee1}
+      #navbar-scl .nav > li > a { padding: 4px 18px; }
+  </style>
+  <script src="__JS__/jquery-3.3.1.min.js"></script>
+  <script src="__JS__/bootstrap.min.js"></script>
+
+
+</head>
+<body  data-target="#navbar-scl">
+    
+  <div id="navbar-scl">
+      <ul class="nav   nav-stacked"  >
+        <li><a href="#content">产品简介</a></li>
+        <li><a href="#testing">测试方法与标准</a></li>
+        <li><a href="#patent">专利/商标</a></li>
+        <li><a href="#customers">客户组合</a></li>
+        <li><a href="#bulk_note">大货备注</a></li>
+        <li><a href="#merchandizing">产品试验</a></li>
+    
+      </ul>
+  </div>
+  <div class="main-body">
+    <div class="page-header">
+      <img  src="{$data.thumb}" alt="" style="float: right; margin-right:20px;" height="100px">
+      <h1 class="title">{$data.title} <small>{$data.title_en}</small></h1>
+      <div class="info">
+          {$data.publish_time} 【{$data.cateData.name} <small>{$data.cateData.name_en}</small>】
+     </div>
+    </div>
+  
+    
+    <div class="chn-box" id="content">
+      <h2 >产品简介 <small>Introduction</small></h2>
+      <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active"><a href="#a-content-zh" aria-controls="home" role="tab" data-toggle="tab">zh</a></li>
+        <li role="presentation"><a href="#a-content-en"  role="tab" data-toggle="tab">en</a></li>
+      </ul>
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="a-content-zh">
+          <article>
+            {$data.data_zh.content|raw}
+          </article>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="a-content-en">
+            <article>
+              {$data.data_en.content|raw}
+            </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="chn-box" id="testing">
+      <h2>测试方法与标准 <small>Testing method and standards</small></h2>
+      <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active"><a href="#a-testing-zh" aria-controls="home" role="tab" data-toggle="tab">zh</a></li>
+        <li role="presentation"><a href="#a-testing-en"   role="tab" data-toggle="tab">en</a></li>
+      </ul>
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="a-testing-zh">
+          <article>
+            {$data.data_zh.testing|raw}
+          </article>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="a-testing-en">
+            <article>
+              {$data.data_en.testing|raw}
+            </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="chn-box" id="patent">
+        <h2>专利/商标 <small>Patent/Trademark</small> </h2>
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th width="120">国家地区名</th>
+              <th width="120">国家地区名(EN)</th>
+              <th>专利号</th>
+              <th>类型</th>
+            </tr>
+          </thead>
+          <tbody id="patent-list">
+            <?php if(count($data['patent'])>0){ 
+            foreach($data['patent'] as $key => $value){
+            ?>
+            <tr class="patent-item item">
+              <td>{$value.cty_name}</td>
+              <td>{$value.cty_name_en}</td>
+              <td>{$value.sn}</td>
+              <td>{$value.type_name}</td>
+            </tr>
+            <?php }}else{ echo('No Data');} ?>
+          </tbody>
+        </table>
+    </div>
+
+    <div class="chn-box" id="customers">
+        <h2>客户组合  <small>Customer portfolio</small> </h2>
+        <?php if(count($data['patent'])>0){ 
+          foreach($data['customer_list'] as $key => $value){
+          ?>
+          <img src="{$value.thumb}" alt="" height="100px">
+          <?php }}else{ echo('No Data');} ?>
+    </div>
+    
+    <div class="chn-box" id="bulk_note">
+        <h2>大货备注 <small>Notes to bulk</small></h2>
+        <ul class="nav nav-tabs" role="tablist">
+          <li role="presentation" class="active"><a href="#a-bulk-zh" aria-controls="home" role="tab" data-toggle="tab">zh</a></li>
+          <li role="presentation"><a href="#a-bulk-en"   role="tab" data-toggle="tab">en</a></li>
+        </ul>
+        <div class="tab-content">
+          <div role="tabpanel" class="tab-pane active" id="a-bulk-zh">
+            <article>
+              {$data.data_zh.bulk_note|raw}
+            </article>
+          </div>
+          <div role="tabpanel" class="tab-pane" id="a-bulk-en">
+              <article>
+                {$data.data_en.bulk_note|raw}
+              </article>
+          </div>
+        </div>
+    </div>
+
+    <div class="chn-box" id="merchandizing">
+        <h2>产品试验 <small>Merchandizing kits</small></h2>
+        <table class="table table-bordered table-hover" >
+          <thead>
+            <tr>
+              <th width="120">PPO_NO</th>
+              <th>描述</th>
+            </tr>
+          </thead>
+          <tbody id="patent-list">
+            <?php if(count($data['merchandizing'])>0){ 
+            foreach($data['merchandizing'] as $key => $value){
+            ?>
+            <tr class="patent-item item">
+              <td>{$value.ppo_no}</td>
+              <td>{$value.desc}</td>
+            </tr>
+            <?php }}else{ echo('No Data');} ?>
+          </tbody>
+        </table>
+    </div>
+
+      
+
+  </div>
+
+  <script>
+    $(function(){
+      $('body').scrollspy({ target: '#navbar-scl' })
+    })
+  </script>
+    
+</body>
+</html>
