@@ -66,7 +66,7 @@ class Trips extends ApiBase
             $orderby = 't.time ASC, t.infoid ASC, t.love_wall_id ASC';
             //如果$type !=1 则查缓存
             $cacheKey = "carpool:trips:my:u{$uid}:pz{$pagesize}_p{$page}_fd{$fullData}";
-            $cacheExp = 20;
+            $cacheExp = 5;
             $cacheData = $redis->get($cacheKey);
             if($cacheData){
               if($cacheData == "-1"){
@@ -783,11 +783,13 @@ class Trips extends ApiBase
             //如果是取消操作，则推送消息(设置要推的消息);
             if ($type == "cancel") {
                 if ($isDriver) { // 如果是司机，则推给乘客
-                    $push_msg = lang("The driver {:name} cancelled the trip", ["name"=>$userData['name']]) ;
+                    $push_msg = "司机".$userData['name']."取消了行程";
+                    // $push_msg = lang("The driver {:name} cancelled the trip", ["name"=>$userData['name']]) ;
                     $passengerids = $from == "wall" ?  InfoModel::where([["love_wall_ID",'=',$id],["status","in",[0,1,4]]])->column('passengerid') : $datas->passengerid ;
                     $sendTarget = $passengerids ;
                 } else { //如果乘客取消，则推送给司机
-                    $push_msg = lang("The passenger {:name} cancelled the trip", ["name"=>$userData['name']]) ;
+                    $push_msg = "乘客".$userData['name']."取消了行程";
+                    // $push_msg = lang("The passenger {:name} cancelled the trip", ["name"=>$userData['name']]) ;
                     $sendTarget = $driver_id;
                     // 顺便检查词机空座位状态并更正 -----2019-04-25
                     if($from == "info"){
@@ -796,10 +798,10 @@ class Trips extends ApiBase
                             WallModel::where(["love_wall_ID",'=',$datas->love_wall_ID])->update(["status"=>0]);
                         }
                     }
-                    
                 }
             } elseif ($type == 'get_on') {
-                $push_msg = lang("The passenger {:name} has got on your car", ["name"=>$userData['name']]) ;
+                $push_msg = '乘客'.$userData['name'].'上了你的车';
+                // $push_msg = lang("The passenger {:name} has got on your car", ["name"=>$userData['name']]) ;
                 $sendTarget = $driver_id;
             }
 
@@ -885,7 +887,8 @@ class Trips extends ApiBase
             }
             $datas->status = 1 ;
             $datas->save();
-            $this->pushMsg($datas->carownid, lang('{:name} took your car', ["name"=>$userData['name']]), $appid);
+            $this->pushMsg($datas->carownid, $userData['name'].'搭了你的车', $appid);
+            // $this->pushMsg($datas->carownid, lang('{:name} took your car', ["name"=>$userData['name']]), $appid);
             $extra = $this->errorMsg ? ['pushMsg'=>$this->errorMsg] : [1];
             return $this->jsonReturn(0, ['infoid'=>$res], 'success', $extra);
         }
@@ -921,7 +924,8 @@ class Trips extends ApiBase
             $datas->status = 1;
             $res = $datas->save();
             if ($res) {
-                $this->pushMsg($datas->passengerid, lang('{:name} accepted your ride requst', ["name"=>$userData['name']]), $appid);
+                $this->pushMsg($datas->passengerid, $userData['name'].'接受了你的约车需求', $appid);
+                // $this->pushMsg($datas->passengerid, lang('{:name} accepted your ride requst', ["name"=>$userData['name']]), $appid);
                 return $this->jsonReturn(0, [], 'success');
             }
         }
@@ -1403,12 +1407,14 @@ class Trips extends ApiBase
             $res = [];
             foreach ($uid as $key => $value) {
                 if (is_numeric($value)) {
-                    $res[] = $PushMessage->add($value, $message, lang("Car pooling"), 101,101, 0);
+                    $res[] = $PushMessage->add($value, $message, "拼车", 101,101, 0);
+                    // $res[] = $PushMessage->add($value, $message, lang("Car pooling"), 101,101, 0);
                     // $PushMessage->push($value,$message,lang("Car pooling"),2);
                 }
             }
         } elseif (is_numeric($uid)) {
-            $res = $PushMessage->add($uid, $message, lang("Car pooling"), 101,101, 0);
+            $res = $PushMessage->add($uid, $message, "拼车", 101,101, 0);
+            // $res = $PushMessage->add($uid, $message, lang("Car pooling"), 101,101, 0);
             // $PushMessage->push($uid,$message,lang("Car pooling"),2);
         } else {
             return false;
