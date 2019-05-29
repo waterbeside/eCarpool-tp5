@@ -21,7 +21,7 @@ class Attachment extends ApiBase
     }
 
     public function index($type=false){
-      $this->jsonReturn(0);
+      $this->jsonReturn(0,'');
     }
 
     /**
