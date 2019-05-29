@@ -12,200 +12,14 @@ GV['config'] = {
     amapScript : 'http://webapi.amap.com/maps?v=1.4.6&key=a9c78e8c6c702cc8ab4e17f5085ffd2a'
   }
 }
-GV['lang'] = 'zh-cn';
 
-
-var myLang = {
-  langs : ['zh-cn','en','vi'],
-  lists : {
-    'zh-cn':{
-      'warning': '警告',
-      'tips': '提示',
-      'yes': '是',
-      'no': '否',
-      'cancel': '取消',
-      'confirm': '确认',
-      'are you sure you want to do this?' : '确定执行此操作？',
-      'please confirm whether to delete' : '请确定是否删除',
-      'a form is being submitted, please try again later':'有表单正在提交，请稍候再试',
-      'network error, please try again later':'网络出错，请稍候再试',
-    },
-    'en':{
-      'warning': 'Warning',
-      'tips': 'Tips',
-      'yes': 'Yes',
-      'no': 'No',
-      'cancel': 'Cancel',
-      'confirm': 'Confirm',
-      'are you sure you want to do this?' : 'Are you sure you want to do this?',
-      'please confirm whether to delete':'Please confirm whether to delete',
-      'a form is being submitted, please try again later':'A form is being submitted, please try again later',
-      'network error, please try again later':'Network error, please try again later',
-    },
-    'vi':{
-      'warning': 'Warning',
-      'tips': 'Tips',
-      'yes': 'Yes',
-      'no': 'No',
-      'cancel': 'Cancel',
-      'confirm': 'Confirm',
-      'are you sure you want to do this?' : 'Bạn có chắc chắn muốn làm điều này?',
-      'please confirm whether to delete':'Vui lòng xác nhận xem có nên xóa không',
-      'a form is being submitted, please try again later':'Một mẫu đơn đang được gửi, vui lòng thử lại sau',
-      'network error, please try again later':'Lỗi mạng, vui lòng thử lại sau',
-    },
-  },
-  init : function(){
-    var lang = getLangFromCookie();
-    GV['lang'] = $.inArray(lang, myLang.langs) == -1 ? GV['lang'] : lang;
-  },
-  r:function(str){
-    if(typeof(myLang.lists[GV['lang']][str.toLowerCase()]) !="undefined"){
-      str = myLang.lists[GV['lang']][str.toLowerCase()];
-    }
-
-    return str;
-  }
-
-
+if(typeof(layer) == 'undefined'){
+  var layer = layui.layer;
 }
+var element =  layui.element;
+var laydate = layui.laydate;
+var form = layui.form;
 
-
-function cFormatDate(date,fmt){
-	var o = {
-			 "m+": date.getMonth() + 1, //月份
-			 "d+": date.getDate(), //日
-			 "h+": date.getHours(), //小时
-			 "i+": date.getMinutes(), //分
-			 "s+": date.getSeconds(), //秒
-			 "q+": Math.floor((date.getMonth() + 3) / 3), //季度
-			 "S": date.getMilliseconds() //毫秒
-	 };
-	 if (/(y+)/.test(fmt)) {
-			 fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
-	 }
-	 for (var k in o)
-			 if (new RegExp("(" + k + ")").test(fmt))
-					 fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
-	 return fmt;
-
-}
-
-function cRenderTimes(wrapper){
-  wrapper = wrapper || null;
-  if(wrapper){
-    var $timesBoxs = $(wrapper).find(".J-times-format").not(".J-format-ok");
-  }else{
-    var $timesBoxs = $(".J-times-format").not(".J-format-ok");
-  }
-  $timesBoxs.each(function(index, el) {
-    var formatStr = $(el).data('format');
-        formatStr = formatStr ? formatStr : 'yyyy-mm-dd hh:ii:ss';
-    var timestamp = parseInt($.trim($(el).text()));
-    var  dateObject = new Date(timestamp);
-    if(typeof(dateObject) == 'object' && !isNaN(dateObject.getDate())){
-      var frm_time = cFormatDate(dateObject,formatStr);
-      $(el).addClass('J-format-ok').html(frm_time);
-    }
-  });
-}
-
-//自动格式化时间戳
-function cRenderTips(wrapper,type){
-  wrapper = wrapper || null;
-  type = type || 0;
-  if(wrapper){
-    var $tipsBoxs = $(wrapper).find("[data-tips]")
-  }else{
-    var $tipsBoxs = $("[data-tips]");
-  }
-  if(!type){
-    $tipsBoxs = $("[data-tips]").not(".J-render-ok");
-  }
-  $tipsBoxs.each(function(index, el) {
-    var $_this = $(this);
-    $(this).addClass('J-render-ok')
-    $(this).hover(function(){
-      var tips = $_this.attr('data-tips');
-      if(tips){
-        var tipsPosition = $_this.data('tips-position') ;
-        layer.tips(tips, this,{
-          time:1000,
-          tips:tipsPosition ? tipsPosition : 2,
-        })
-      }
-    })
-  });
-}
-
-//从cookie取得存储的过程
-function getLangFromCookie(){
-   var lang = MyCookies.get('lang');
-   return lang ? lang : 'zh-cn';
-}
-
-
-/**
- * 动态加载JS
- * @param  {String}   url      URL
- * @param  {Function} callback 回调函数
- */
-function cLoadScript(url, callback) {
-  var script = document.createElement("script");
-  script.type = "text/javascript";
-  if(typeof(callback) != "undefined"){
-    if (script.readyState) {
-      script.onreadystatechange = function () {
-        if (script.readyState == "loaded" || script.readyState == "complete") {
-          script.onreadystatechange = null;
-          callback();
-        }
-      };
-    } else {
-      script.onload = function () {
-        callback();
-      };
-    }
-  }
-  script.src = url;
-  document.body.appendChild(script);
-}
-
-function redirect(url,win) {
-    var lct = typeof(win)!="undefined"  && win ? win.location : location;
-    //console.log(lct);
-    lct.href = url;
-}
-
-function reload(win) {
-    var lct = typeof(win)!="undefined" && win ? win.location : location;
-    //console.log(lct);
-    lct.reload();
-}
-
-
-GV.lockForm = false;
-
-  var layer = layui.layer,
-      // element = layui.element(),
-      element =  layui.element
-      laydate = layui.laydate,
-      // form = layui.form();
-      form = layui.form;
-
-  /**
-   * AJAX全局设置
-   */
-  $.ajaxSetup({
-      type: "post",
-      dataType: "json"
-  });
-
-  /**
-   * 后台侧边菜单选中状态
-   */
-  $('.layui-nav-item').find('a').removeClass('layui-this');
-  $('.layui-nav-tree').find('a[href*="' + GV.current_controller + '"]').parent().addClass('layui-this').parents('.layui-nav-item').addClass('layui-nav-itemed');
 
 function initLayuiTable(options){
   var defaults = {
@@ -220,207 +34,28 @@ function initLayuiTable(options){
 }
 
 
-/**
- * 通过layer的iframe打开
- */
-function openLayer(url,opt,oe){
-  var e = oe || e || event;
-  var openLength = 0
-  var $target = $(e.target);
-  GV['lastOpenLayer'] = [];
-  GV['lastOpenLayer']['target'] = e.target;
-
-  var $targetWrapper = $target.attr('onclick') ? $target : $target.closest('[onclick]');
-  console.log($targetWrapper);
-  
-  var defaults = {
-    type: 2,
-    area: ['700px', '90%'],
-    fixed: true,
-    maxmin: true,
-  }
-  var opt_s = {};
-  if(typeof(opt)=="string"){
-    defaults.title = opt;
-  }else{
-    opt_s = opt;
-  }
-  if(typeof(url)=="object"){
-    opt_s = url;
-  }else if(typeof(url)=="string"){
-    defaults.content = url;
-  }
-  var options = $.extend(true, defaults, opt_s);
-  if(typeof(options.urlParam)=='undefined'){
-    // var paramStr = $targetWrapper.data('paramstr');
-    // paramObject = typeof(paramStr)=="object"  ? paramStr : false;
-    var paramStr = $targetWrapper.attr('data-paramstr');
-    var paramObject = paramStr ? JSON.parse(paramStr) : false;
-  }else{
-    var paramObject = typeof(options.urlParam)=='object' ? options.urlParam : false ;
-  }
-  var paramFormatStr = '';
-  if(typeof(paramObject)=='object'){
-    paramFormatStr = options.content.indexOf('?') == -1 ? '?' : ''
-    for(k in paramObject){
-      paramFormatStr += paramFormatStr == "?"  ? '' : '&';
-      paramFormatStr += k+'='+paramObject[k];
-    }
-  }
-  options.content += paramFormatStr;
-  GV['lastOpenLayer']['layer'] = layer.open(options);
-}
-
-
-
-/**
- * 通过layer的iframe打开
- */
-function openParentLayer(url,opt){
-  var defaults = {
-    type: 2,
-    area: ['700px', '90%'],
-    fixed: true,
-    maxmin: true,
-  }
-  var opt_s = {};
-  if(typeof(opt)=="string"){
-    defaults.title = opt;
-  }else{
-    opt_s = opt;
-  }
-  if(typeof(url)=="object"){
-    opt_s = url;
-  }else if(typeof(url)=="string"){
-    defaults.content = url;
-  }
-  var options = $.extend(true, defaults, opt_s);
-  if(parent){
-    parent.layer.open(options);
-  }else{
-    layer.open(options);
-  }
-}
-
-
-function ajaxSubmit(setting){
-  if(GV.lockForm){
-    layer.msg(myLang.r('a form is being submitted, please try again later'));
-    return false;
-  }
-  GV.lockForm = true;
-  var loading = layer.load(2,{ shade: [0.2,'#fff']});
-  var defaults = {
-    dataType:"json",
-    type:"post",
-    jump:"",
-    unrefresh:false,
-    jumpWin:null,
-  }
-  var opt = $.extend({}, defaults, setting);
-  $.ajax({
-      url: opt.url,
-      dataType:opt.dataType,
-      type: opt.type,
-      data: opt.data,
-      success: function (res) {
-        if (res.code === 0) {
-          if(opt.unrefresh!=1 || opt.jump!=""){
-            setTimeout(function () {
-              if(opt.jump!=""){
-                redirect(opt.jump,opt.jumpWin);
-              }else if(res.url){
-                redirect(res.url,opt.jumpWin);
-              }else if(res.extra.url){
-                redirect(res.extra.url,opt.jumpWin);
-              }else{
-                reload(opt.jumpWin);
-              }
-            }, 400);
-          }
-        }
-        layer.msg(res.desc);
-        if(typeof(opt.success)=="function"){
-          opt.success(res);
-        }
-      },
-      error:function(jqXHR, textStatus, errorThrown){
-        layer.msg(myLang.r('network error, please try again later'));
-        if(typeof(opt.error)=="function"){
-          opt.error(jqXHR, textStatus, errorThrown);
-        }
-      },
-      complete:function(){
-        layer.close(loading);
-        setTimeout(function(){
-          GV.lockForm = false;
-        },1000)
-        if(typeof(opt.complete)=="function"){
-          opt.complete();
-        }
-      }
-  });
-}
-
-
-
-var MyCookies = {
-  //写cookies
-  set: function(name, value, time = 0) {
-    let days = 30
-    let exp = new Date()
-    if(time){
-      exp.setTime(exp.getTime() + time*1000)
-    }else{
-      exp.setTime(exp.getTime() + days*24*60*60*1000)
-    }
-    document.cookie = name + '=' + escape (value) + ';expires=' + exp.toGMTString()+';path=/'
-  },
-  //读取cookies
-  get: function (name) {
-    let arr = null
-    let reg = new RegExp('(^| )'+name+'=([^;]*)(;|$)')
-    if (document.cookie && (arr = document.cookie.match(reg))) {
-      return unescape(arr[2])
-    } else {
-      return null;
-    }
-  },
-  //删除cookies
-  delete: function (name) {
-    let cval = this.get(name)
-    if (cval!=null) {
-      document.cookie = name + '=' + cval + ';expires=' + (new Date(0)).toGMTString()+';path=/'
-    }
-  }
-}
-
-
-
 ////////////////////////////////////////////////////////
 
 function admin_init(){
-
-
-
   myLang.init(); //初始化语言
   cRenderTips();
   /**
+   * AJAX全局设置
+   */
+  $.ajaxSetup({
+    type: "post",
+    dataType: "json"
+  });
+
+  /**
+  * 后台侧边菜单选中状态
+  */
+  $('.layui-nav-item').find('a').removeClass('layui-this');
+  $('.layui-nav-tree').find('a[href*="' + GV.current_controller + '"]').parent().addClass('layui-this').parents('.layui-nav-item').addClass('layui-nav-itemed');
+
+  /**
    * 通用单图上传
    */
-
-  /*layui.upload({
-      url: "/index.php/api/upload/upload",
-      type: 'image',
-      ext: 'jpg|png|gif|bmp',
-      success: function (data) {
-          if (data.error === 0) {
-              document.getElementById('thumb').value = data.url;
-          } else {
-              layer.msg(data.message);
-          }
-      }
-  });*/
   var layUpload = layui.upload;
   var uploadInst = layUpload.render({
     elem: '#upload-input' //绑定元素
@@ -484,35 +119,35 @@ function admin_init(){
    */
   $(document).on('click',  '.ajax-action', function() {
   // $('.ajax-action').on('click', function () {
-      var _action = $(this).data('action');
-      layer.open({
-          shade: false,
-          title:myLang.r('tips'),
-          content: myLang.r('are you sure you want to do this?'),
-          btn: [myLang.r('confirm'), myLang.r('cancel')],
-          yes: function (index) {
-              $.ajax({
-                  url: _action,
-                  dataType:'json',
-                  data: $('.ajax-form').serialize(),
-                  success: function (res) {
-                      if (res.code === 0) {
-                        setTimeout(function () {
-                          if(res.url){
-                            location.href = res.url;
-                          }else{
-                            location.reload();
-                          }
-                        }, 1000);
-                      }
-                      layer.msg(res.desc);
-                  }
-              });
-              layer.close(index);
+    var _action = $(this).data('action');
+    layer.open({
+      shade: false,
+      title:myLang.r('tips'),
+      content: myLang.r('are you sure you want to do this?'),
+      btn: [myLang.r('confirm'), myLang.r('cancel')],
+      yes: function (index) {
+        $.ajax({
+          url: _action,
+          dataType:'json',
+          data: $('.ajax-form').serialize(),
+          success: function (res) {
+            if (res.code === 0) {
+              setTimeout(function () {
+                if(res.url){
+                  location.href = res.url;
+                }else{
+                  location.reload();
+                }
+              }, 1000);
+            }
+            layer.msg(res.desc);
           }
-      });
+        });
+        layer.close(index);
+      }
+    });
 
-      return false;
+    return false;
   });
 
   /**
@@ -531,30 +166,30 @@ function admin_init(){
       var _href = $(this).attr('href');
       var content = $(this).data('hint') || myLang.r('please confirm whether to delete');
       layer.open({
-          shade: false,
-          title:myLang.r('warning'),
-          content: content,
-          btn: [myLang.r('yes'), myLang.r('no')],
-          yes: function (index) {
-              $.ajax({
-                  url: _href,
-                  dataType:'json',
-                  type: "get",
-                  success: function (res) {
-                      if (res.code === 0) {
-                        setTimeout(function () {
-                          if(res.url){
-                            location.href = res.url;
-                          }else{
-                            location.reload();
-                          }
-                        }, 1000);
-                      }
-                      layer.msg(res.desc);
+        shade: false,
+        title:myLang.r('warning'),
+        content: content,
+        btn: [myLang.r('yes'), myLang.r('no')],
+        yes: function (index) {
+          $.ajax({
+            url: _href,
+            dataType:'json',
+            type: "get",
+            success: function (res) {
+              if (res.code === 0) {
+                setTimeout(function () {
+                  if(res.url){
+                    location.href = res.url;
+                  }else{
+                    location.reload();
                   }
-              });
-              layer.close(index);
-          }
+                }, 1000);
+              }
+              layer.msg(res.desc);
+            }
+          });
+          layer.close(index);
+        }
       });
 
       return false;

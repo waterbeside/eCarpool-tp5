@@ -1,4 +1,6 @@
+// out: ../css/admin.min.css, compress:true, sourceMap:false, autoprefixer: last 5 versions, groupmedia: true
 // compressedFilenamePattern: ../css/$1.min.css, expandedFilenamePattern: ../css/$1.css
+
 /*后台公用样式*/
 @import "colors";
 @import "animate";
@@ -33,7 +35,6 @@ select.my-select {
 }
 .my-input-prebox {
   display: inline-block; margin: 2px -6px 2px 0 ;vertical-align: middle;
-
   & , input {background: lighten($color-gray-l2,2%); }
 }
 //重置layui相关样式
@@ -94,12 +95,12 @@ select.my-select {
     }
   }
 }
-
-
+ 
 
 .blank10 {@include blank(10px)}
 .blank12 {@include blank(12px)}
 .blank20 {@include blank(20px)}
+.blank50 {@include blank(50px)}
 .blank80 {@include blank(80px)}
 
 html,body, body > .layui-layout , .amain-body {height: 100%;}
@@ -125,6 +126,12 @@ body {background:#FFF; color:$color-black-l1}
   }
 }
 
+.layui-tab-inform {
+  .layui-tab-title {
+    background: $color-gray-l2; padding-top: 4px;
+    .layui-this { background-color: #FFF;}
+  }
+}
 
 
 .t-number , .layui-table th.t-number { text-align: right}
@@ -173,6 +180,7 @@ body {background:#FFF; color:$color-black-l1}
     .layui-nav-child .aframe-icon { margin-left:0; }
   }
 }
+
 
 //主栏
 .aframe-con {
@@ -331,7 +339,7 @@ body {background:#FFF; color:$color-black-l1}
         input {display: inline; max-width: 120px;vertical-align: middle; }
         select { height: 30px; line-height: 30px;}
       }
-    }
+    } 
   }
 }
 
@@ -365,6 +373,13 @@ body {background:#FFF; color:$color-black-l1}
     .btn-drop {
       .drop-box {right: 0; text-align: left;}
     }
+  }
+
+  &.am-bottom-tool-bar-form {
+    .btns-wrapper {padding-right: 20px;
+      .btn { border-radius: 0 0 3px 3px}
+    }
+
   }
 
 }
@@ -844,3 +859,81 @@ body {background:#FFF; color:$color-black-l1}
     }
   }
 }
+
+
+.P-npdProduct-detail-form {
+  .layui-form-item {
+    .layui-form-label { width:100px}
+    .layui-input-block { margin-left: 130px}
+  }
+  .merch-item {
+    padding: 8px; background: $color-gray-l2;
+    margin-bottom: 8px;
+    .title {padding-bottom: 4px; cursor:move;}
+    .handle-icon { color: $color-silver-l1; cursor:move;} 
+    .btns { float:right; 
+      .btn {
+        $btn-height: 18px;
+        width:$btn-height;height: $btn-height; line-height: $btn-height;
+        overflow: hidden; border-radius: 3px; text-align: center;
+        padding: 2px;
+        opacity: .8;
+        display: inline-block;
+        color:$color-black-l1;
+        &:hover {
+          opacity: 1;
+          color:$color-black;
+        }
+      }
+      .btn-plus { background: $color-success; color:#FFF;
+        &:hover {
+          color:#fff;
+        }
+      }
+      .btn + .btn {  margin-left: 4px; }
+
+    }
+    &.sortable-chosen {
+      background-color: $color-silver-l2
+    }
+
+  }
+
+  .patent-item {
+    td {padding: 0}
+    .title {padding-bottom: 4px; cursor:move;}
+    .handle {text-align: center;padding: 4px 8px; }
+    .handle-icon { color: $color-silver-l1; cursor:move; } 
+    .btn-plus { background: $color-success; color:#FFF;
+      &:hover {
+        color:#fff;
+      }
+    }
+    .opt {  
+      padding:6px 8px ; vertical-align:middle;
+      .btn {
+        $btn-height: 18px;
+        width:$btn-height;height: $btn-height; line-height: $btn-height;
+        overflow: hidden; border-radius: 3px; text-align: center;
+        padding: 2px;
+        opacity: .8;
+        display: inline-block;
+        color:$color-black-l1;
+        &:hover {
+          opacity: 1;
+          color:$color-black;
+        }
+      }
+      .btn-plus { background: $color-success; color:#FFF;
+        &:hover {
+          color:#fff;
+        }
+      }
+      .btn + .btn {  margin-left: 4px; }
+
+    }
+    &.sortable-chosen {
+      background-color: $color-silver-l2
+    }
+  }
+} 
