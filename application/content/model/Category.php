@@ -9,7 +9,8 @@ class Category extends Model
 {
     protected $insert = ['create_time'];
 
-    protected $connection = 'database_content';
+    protected $connection = 'database_carpool';
+    protected $table = 't_category';
     protected $pk = 'id';
 
     protected static function init()

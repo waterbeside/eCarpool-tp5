@@ -8,7 +8,8 @@ use my\RedisData;
 class Label extends Model
 {
 
-    protected $connection = 'database_content';
+    protected $connection = 'database_carpool';
+    protected $table = 't_label';
     protected $pk = 'id';
 
     protected static function init()
