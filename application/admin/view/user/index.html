@@ -37,7 +37,9 @@
                           <th lay-data="{field:'uid', width:100, fixed:'left'}" >ID</th>
                           <th lay-data="{field:'loginname', width:120, fixed:'left'}">用户名</th>
                           <th lay-data="{field:'phone', width:100}">手机</th>
-                          <th lay-data="{field:'name', width:100}">姓名</th>
+                          <th lay-data="{field:'name', width:100}">暱稱</th>
+                          <th lay-data="{field:'nativename', width:100}">真名</th>
+                          <th lay-data="{field:'general_name', width:120}">General Name</th>
                           <th lay-data="{field:'full_department', minWidth:160}">部门(HR)</th>
                           <th lay-data="{field:'Department', width:80}">部门</th>
                           <th lay-data="{field:'company_name', width:100}">公司</th>
@@ -61,6 +63,8 @@
                         </td>
                         <td>{$vo.phone}</td>
                         <td>{$vo.name}</td>
+                        <td>{$vo.nativename}</td>
+                        <td>{$vo.general_name}</td>
                         <td>{$vo.full_department}</td>
                         <td>{$vo.Department}</td>
                         <td>{php}echo $vo['companyname'] ? $vo['companyname'].' / ' : '';{/php}{$vo.company_name}</td>
