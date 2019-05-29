@@ -6,6 +6,7 @@ use app\carpool\model\User as UserModel_o;
 use app\carpool\model\Department as DepartmentModel_o;
 use app\user\model\Department as DepartmentModel;
 use app\user\model\User as UserModel;
+use com\Nim as NimServer;
 use app\carpool\model\Address;
 use Firebase\JWT\JWT;
 use think\Db;
@@ -160,8 +161,7 @@ class Passport extends ApiBase
       $userData = $this->getUserData(true);
       $uid = $userData['uid'];
 
-      $value = $this->request->param($field);
-
+      $value = trim($this->request->param($field));
       switch ($field) {
         case 'password':
           $old_password = trim($value);
@@ -211,21 +211,40 @@ class Passport extends ApiBase
         case 'myaddress':
           return $this->change_address();
           break;
-
+        
+        case 'name':
+          if($value==''){
+            return $this->jsonReturn(-1,[],lang('Can not be empty'));
+          }
+          $status = UserModel_o::where("uid",$uid)->update([$field=>$value]);
+          if($status!=="false"){
+            $appKey     = config('secret.nim.appKey');
+            $appSecret  = config('secret.nim.appSecret');
+            $NIM = new NimServer($appKey,$appSecret);
+            $upNimData = [
+              'accid' => $this->userBaseInfo['loginname'],
+              'name'  => $value,
+            ];
+            $upNimRes = $NIM->updateUinfoByData($upNimData);
+            return $this->jsonReturn(0,"success");
+          }else{
+            return $this->jsonReturn(-1,"Failed");
+          }
+          break;
 
         default:
           if(!in_array($field,array('carnumber','carcolor'))){
             if($value==''){
-              return $this->jsonReturn(-1,[],lang('Can not be empty'));
+              return $this->jsonReturn(-1,lang('Can not be empty'));
             }
           }
           $status = UserModel_o::where("uid",$uid)->update([$field=>$value]);
           // var_dump($status);
           if($status!==false){
-            return $this->jsonReturn(0,[],"success");
+            return $this->jsonReturn(0,"success");
             // $this->success('修改成功');
           }else{
-            return $this->jsonReturn(-1,[],"fail");
+            return $this->jsonReturn(-1,"Failed");
             // $this->error('修改失败');
           }
           break;
