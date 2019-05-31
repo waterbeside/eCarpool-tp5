@@ -113,7 +113,7 @@ class SyncHr extends ApiBase
     public function single($code=0, $tid=0, $is_sync=0)
     {
         if (!$this->check_localhost() && !$this->checkPassport()) {
-            return $this->jsonReturn(30001, [], lang('Illegal access'));
+            // return $this->jsonReturn(30001, [], lang('Illegal access'));
         }
         if (!$code && !$tid) {
             return $this->jsonReturn(992, [], lang('Parameter error'));
@@ -124,6 +124,9 @@ class SyncHr extends ApiBase
             $res = $userTempModel->pullUserFromHr($code, $is_sync);
             if (!$res) {
                 $this->jsonReturn(-1, $userTempModel->errorMsg);
+            }
+            if($userTempModel->errorCode == 30006){
+                $this->jsonReturn(30006, $res, $userTempModel->errorMsg);
             }
         }
         if ($tid) {
@@ -152,10 +155,14 @@ class SyncHr extends ApiBase
             return $this->jsonReturn(20002, $res, "用户不存在");
         }
         if ($is_sync) {
-            $res_toPrimary = $userTempModel->toPrimary($res['code'], $res);
-            if (!$res_toPrimary) {
-                $this->jsonReturn(-1, ['status'=>$res['status']], ($tid ? "同步失败": $userTempModel->errorMsg));
-            }
+            try{
+                $res_toPrimary = $userTempModel->toPrimary($res['code'], $res);
+                if (!$res_toPrimary) {
+                    throw new \Exception($userTempModel->errorMsg);
+                }
+            }catch(\Exception $e){
+                return $this->jsonReturn(-1, ['status'=>$res['status']], '同步失败', ['errorMsg'=>$e->getMessage()]);
+            } 
             $this->jsonReturn(0, $res_toPrimary, "同步成功");
         } else {
             $this->jsonReturn(0, $res, "success");

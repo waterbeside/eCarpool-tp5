@@ -18,6 +18,7 @@ class UserTemp extends Model
   protected $pk = 'id';
 
   public $errorMsg = '';
+  public $errorCode = 0;
 
   public function getLastExecuteTime(){
     $lastExecuteTimeKey = "carpool:user:sync_hr:lastExecuteTime";
@@ -105,7 +106,8 @@ class UserTemp extends Model
     }
     $dataArray = $this->clientRequest(config('secret.HR_api.getUser'), ['employeecode' => $code]);
     if(!$dataArray){
-      $this->errorMsg ='查无数据';
+        $this->errorCode = -1;
+        $this->errorMsg = $this->errorMsg ? $this->errorMsg :'查无数据';
       return false;
     }
 
@@ -120,17 +122,26 @@ class UserTemp extends Model
       "sex" => $resData['Sex'],
     ];
     if($resData['Code'] == -2){
+      $this->errorCode = 10008;
       $this->errorMsg ='员工在职但未开放';
       return $data;
     }
     if($resData['Code'] == -1){
+      $this->errorCode = 10003;
       $this->errorMsg ='员工不存在或离职';
       return $data;
     }
     // dump($resData);exit;
     if($addTemp) {
-      $data = $this->addFromHr($resData);
+      $resAdddata = $this->addFromHr($resData);
+      if($resAdddata){
+        $this->errorCode = 0;
+        $data = $resAdddata;
+      }else{
+        $this->errorCode = 30006;
+      }
     }
+    
     return $data;
 
   }
@@ -166,6 +177,9 @@ class UserTemp extends Model
     }
   }
 
+  /**
+   * 插入数据到用户临时表
+   */
   protected function addFromHr($resData){
     $oldDataMap = [
       ['code',"=",$resData['Code']],
@@ -209,9 +223,9 @@ class UserTemp extends Model
       $returnData['name'] = trim($name_arr2[0]);
       $returnData['general_name'] = trim($name_arr[0]);
     }else{
-      $returnData['name'] = '';
-      $returnData['general_name'] = trim($name_arr[0]);
-      // $returnData['name'] = trim($name_arr[0]);
+      // $returnData['name'] = '';
+      $returnData['name'] = trim($name_arr[0]);
+      // $returnData['general_name'] = trim($name_arr[0]);
     }
     return $returnData;
   }
@@ -235,7 +249,7 @@ class UserTemp extends Model
       $this->errorMsg = "No data";
       return false;
     }
-
+    $data_o = $data;
     //创建及取得部门信息
     $DepartmentModel = new Department();
     $department_data = $DepartmentModel->create_department_by_str($data['department']);
@@ -257,6 +271,10 @@ class UserTemp extends Model
         'uid' => $res_old['uid'],
         'code'=> $data['code'],
         "status"=>$res_old['success'],
+        'name'=> $data_o['name'],
+        'department'=> $data_o['department'],
+        'email'=> $data_o['email'],
+        'modifty_time'=> $data_o['modifty_time'],
         // 'uids' => [$res_old['uid'],$res_new['uid']],
       ];
     }else{
