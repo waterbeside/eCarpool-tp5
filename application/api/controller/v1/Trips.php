@@ -8,12 +8,12 @@ use app\carpool\model\Wall as WallModel;
 use app\carpool\model\Address;
 use app\carpool\model\WallLike;
 use app\carpool\model\user as UserModel;
-use app\user\model\Department as DepartmentModel;
-use app\common\model\PushMessage;
 use app\carpool\model\UserPosition as UserPositionModel;
 use app\carpool\model\Grade as GradeModel;
-use my\RedisData;
 
+use app\carpool\service\Trips as TripsService;
+
+use my\RedisData;
 use think\Db;
 
 /**
@@ -23,34 +23,30 @@ use think\Db;
  */
 class Trips extends ApiBase
 {
-    protected function initialize()
-    {
-        parent::initialize();
-    }
 
     /**
      * 我的行程
      */
     public function index($pagesize=20, $type=0, $fullData = 0)
-    {
+    {   
         $page = input('param.page',1);
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
         $extra_info = json_decode($userData['extra_info'], true);
         $merge_ids = isset($extra_info['merge_id']) && is_array($extra_info['merge_id']) && $type ==1  ? $extra_info['merge_id'] : [];
 
-        $redis = new RedisData();
-        $InfoModel = new InfoModel();
+        $redis        = new RedisData();
+        $InfoModel    = new InfoModel();
+        $TripsService = new TripsService();
+
         $viewSql  =  $InfoModel->buildUnionSql($uid, $merge_ids ,($type ? "(0,1,3,4)" : "(0,1,4)"));
         $fields = 't.infoid , t.love_wall_ID , t.time, t.trip_type , t.time, t.status, t.passengerid, t.carownid , t.seat_count,  t.subtime, t.map_type ';
-        $fields .= ','.$this->buildUserFields('d');
+        $fields .= ','.$TripsService->buildUserFields('d');
         $fields .= ', dd.fullname as d_full_department';
-        $fields .= ','.$this->buildUserFields('p');
+        $fields .= ','.$TripsService->buildUserFields('p');
         $fields .= ', pd.fullname as p_full_department';
-        $fields .=  $this->buildAddressFields();
-        $join = $this->buildTripJoins();
-
-
+        $fields .=  $TripsService->buildAddressFields();
+        $join = $TripsService->buildTripJoins();
 
         if ($type==1) {
             $map = [
@@ -76,7 +72,6 @@ class Trips extends ApiBase
               return $this->jsonReturn(0, $returnData, "success");
             }
         }
-
 
         $modelObj =  Db::connect('database_carpool')->table("($viewSql)" . ' t')->field($fields)->where($map)->join($join)->order($orderby);
         if ($pagesize > 0 || $type > 0) {
@@ -108,9 +103,10 @@ class Trips extends ApiBase
               'currentPage'=>1,
             ];
         }
+
         foreach ($datas as $key => $value) {
-            $datas[$key] = $fullData ? $this->formatResultValue($value) : $this->unsetResultValue($this->formatResultValue($value), "list");
-            // $datas[$key] = $this->formatResultValue($value,$merge_ids);
+            $datas[$key] = $fullData ? $TripsService->formatResultValue($value) : $TripsService->unsetResultValue($TripsService->formatResultValue($value), "list");
+            // $datas[$key] = $TripsService->formatResultValue($value,$merge_ids);
             $datas[$key]['show_owner']  = $value['trip_type'] ||  ($value['infoid']>0 && $uid == $value['passengerid']  &&  $value['carownid'] > 0)  ?  1 : 0;
             $datas[$key]['is_driver']   =  $uid == $value['carownid']  ?  1 : 0;
             $datas[$key]['status'] = intval($value['status']);
@@ -127,7 +123,6 @@ class Trips extends ApiBase
         $this->jsonReturn(0, $returnData, "success");
     }
 
-
     /**
      * 历史行程
      */
@@ -137,7 +132,7 @@ class Trips extends ApiBase
         $uid = $userData['uid'];
         $page = input('param.page',1);
 
-
+        $TripsService = new TripsService();
         // 查缓存
         $redis = new RedisData();
         $cacheKey = "carpool:trips:history:u{$uid}:pz{$pagesize}_p{$page}";
@@ -157,12 +152,12 @@ class Trips extends ApiBase
         $InfoModel = new InfoModel();
         $viewSql  =  $InfoModel->buildUnionSql($uid, $merge_ids ,"(0,1,2,3,4)");
         $fields = 't.infoid , t.love_wall_ID , t.time, t.trip_type , t.time, t.status, t.passengerid, t.carownid , t.seat_count,  t.subtime, t.map_type ';
-        $fields .= ','.$this->buildUserFields('d');
+        $fields .= ','.$TripsService->buildUserFields('d');
         $fields .= ', dd.fullname as d_full_department';
-        $fields .= ','.$this->buildUserFields('p');
+        $fields .= ','.$TripsService->buildUserFields('p');
         $fields .= ', pd.fullname as p_full_department';
-        $fields .=  $this->buildAddressFields();
-        $join = $this->buildTripJoins();
+        $fields .=  $TripsService->buildAddressFields();
+        $join = $TripsService->buildTripJoins();
         $map = [
           ["t.time","<",date('YmdHi', strtotime('-30 minute'))],
           // ["t.go_time","<",strtotime('+15 minute')],
@@ -187,8 +182,8 @@ class Trips extends ApiBase
 
         foreach ($datas as $key => $value) {
             $app_id  = $value['map_type'] ? 2 : 1 ;
-            $datas[$key] =  $this->formatResultValue($value);
-            // $datas[$key] = $this->formatResultValue($value,$merge_ids);
+            $datas[$key] =  $TripsService->formatResultValue($value);
+            // $datas[$key] = $TripsService->formatResultValue($value,$merge_ids);
             $datas[$key]['show_owner']    = $value['trip_type'] ||  ($value['infoid']>0 && $uid == $value['passengerid']  &&  $value['carownid'] > 0)  ?  1 : 0;
             $datas[$key]['is_driver']     =  $uid == $value['carownid']  ?  1 : 0;
             $datas[$key]['status']        = intval($value['status']);
@@ -209,7 +204,7 @@ class Trips extends ApiBase
         ];
         $redis->setex($cacheKey, $cacheExp, json_encode($returnData));
         $this->jsonReturn(0, $returnData, "success");
-        // $this->unsetResultValue($this->index($pagesize, 1, 1));
+        // $TripsService->unsetResultValue($this->index($pagesize, 1, 1));
     }
 
     /**
@@ -217,6 +212,7 @@ class Trips extends ApiBase
      */
     public function wall_list($pagesize=20, $keyword="", $city=null, $map_type=NULL)
     {
+        $TripsService = new TripsService();
         $userData = $this->getUserData(1);
         $company_id = $userData['company_id'];
         $time_e = strtotime("+20 day");
@@ -244,9 +240,9 @@ class Trips extends ApiBase
         $fields .= ', t.love_wall_ID as id, t.subtime , t.carownid as driver_id  ';
         $fields .= ', dd.fullname as d_full_department  ';
 
-        $fields .= ','.$this->buildUserFields('d');
-        $fields .=  $this->buildAddressFields();
-        $join = $this->buildTripJoins("s,e,d,department");
+        $fields .= ','.$TripsService->buildUserFields('d');
+        $fields .=  $TripsService->buildAddressFields();
+        $join = $TripsService->buildTripJoins("s,e,d,department");
 
 
         $results = WallModel::alias('t')->field($fields)->join($join)->where($map)->order(' time ASC, t.love_wall_ID ASC  ')
@@ -256,7 +252,7 @@ class Trips extends ApiBase
         }
         $lists = [];
         foreach ($results['data'] as $key => $value) {
-            $lists[$key] = $this->unsetResultValue($this->formatResultValue($value), "list");
+            $lists[$key] = $TripsService->unsetResultValue($TripsService->formatResultValue($value), "list");
 
             //取点赞数
             // $lists[$key]['like_count']    = WallLike::where('love_wall_ID', $value['id'])->count();
@@ -291,6 +287,7 @@ class Trips extends ApiBase
             // return $this->error('lost id');
         }
         $data = null;
+        $TripsService = new TripsService();
 
         // 查缓存
         $redis = new RedisData();
@@ -309,16 +306,16 @@ class Trips extends ApiBase
           $fields = 't.time, t.status,  t.seat_count, t.map_type, t.im_tid, t.im_chat_tid';
           $fields .= ', t.love_wall_ID as id ,t.love_wall_ID , t.subtime , t.carownid as driver_id  ';
           $fields .= ', dd.fullname as d_full_department  ';
-          $fields .= ','.$this->buildUserFields('d');
-          $fields .=  $this->buildAddressFields();
-          $join = $this->buildTripJoins("s,e,d,department");
+          $fields .= ','.$TripsService->buildUserFields('d');
+          $fields .=  $TripsService->buildAddressFields();
+          $join = $TripsService->buildTripJoins("s,e,d,department");
           $data = WallModel::alias('t')->field($fields)->join($join)->where("t.love_wall_ID", $id)->find();
           if (!$data) {
               $redis->setex($cacheKey, $cacheExp, -1);
               return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
           }
           $app_id  = $data['map_type'] ? 2 : 1 ;
-          $data = $this->unsetResultValue($this->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
+          $data = $TripsService->unsetResultValue($TripsService->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
 
           $countBaseMap = ['love_wall_ID','=',$data['love_wall_ID']];
           $data['took_count']       = InfoModel::where([$countBaseMap,["status","in",[0,1,3,4]]])->count(); //取已坐数
@@ -396,8 +393,9 @@ class Trips extends ApiBase
             ];
         }
 
+        $TripsService = new TripsService();
 
-        $map[] = $this->buildStatusMap($status);
+        $map[] = $TripsService->buildStatusMap($status);
         // dump($map);exit;
 
         if ($keyword) {
@@ -415,10 +413,10 @@ class Trips extends ApiBase
         $fields .= ',t.infoid as id, t.love_wall_ID , t.subtime , t.carownid as driver_id , t.passengerid as passenger_id  ';
         $fields .= ', pd.fullname as p_full_department  ';
 
-        // $fields .= ','.$this->buildUserFields('d');
-        $fields .= ','.$this->buildUserFields('p');
-        $fields .=  $this->buildAddressFields();
-        $join = $this->buildTripJoins("s,e,p,department");
+        // $fields .= ','.$TripsService->buildUserFields('d');
+        $fields .= ','.$TripsService->buildUserFields('p');
+        $fields .=  $TripsService->buildAddressFields();
+        $join = $TripsService->buildTripJoins("s,e,p,department");
 
         $orderby = $orderby ? $orderby : 'time ASC, t.infoid ASC ';
 
@@ -452,7 +450,7 @@ class Trips extends ApiBase
         }
         $lists = [];
         foreach ($datas as $key => $value) {
-            $lists[$key] = $this->unsetResultValue($this->formatResultValue($value), "list");
+            $lists[$key] = $TripsService->unsetResultValue($TripsService->formatResultValue($value), "list");
         }
         $returnData = [
           'lists'=>$lists,
@@ -477,6 +475,7 @@ class Trips extends ApiBase
             // return $this->error('lost id');
         }
         $data = null;
+        $TripsService = new TripsService();
         // 查缓存
         $redis = new RedisData();
         $cacheKey = "carpool:trips:info_detail:{$id}";
@@ -491,19 +490,19 @@ class Trips extends ApiBase
         if(!$data || !is_array($data)){
           $fields = 't.time, t.status, t.map_type';
           $fields .= ',t.infoid as id, t.infoid , t.love_wall_ID , t.subtime , t.carownid as driver_id, t.passengerid as passenger_id  ';
-          $fields .= ','.$this->buildUserFields('d');
+          $fields .= ','.$TripsService->buildUserFields('d');
           $fields .= ', dd.fullname as d_full_department  ';
-          $fields .= ','.$this->buildUserFields('p');
+          $fields .= ','.$TripsService->buildUserFields('p');
           $fields .= ', pd.fullname as p_full_department  ';
-          $fields .=  $this->buildAddressFields();
-          $join = $this->buildTripJoins();
+          $fields .=  $TripsService->buildAddressFields();
+          $join = $TripsService->buildTripJoins();
           $data = InfoModel::alias('t')->field($fields)->join($join)->where("t.infoid", $id)->find();
           if (!$data) {
               $redis->setex($cacheKey, $cacheExp, -1);
               return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
           }
           $app_id  = $data['map_type'] ? 2 : 1 ;
-          $data = $this->unsetResultValue($this->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
+          $data = $TripsService->unsetResultValue($TripsService->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
           $redis->setex($cacheKey, $cacheExp, json_encode($data));
         }
 
@@ -527,8 +526,6 @@ class Trips extends ApiBase
 
 
 
-
-
     /**
      * 发布行程
      * @param string $from  行程类型 wall|info
@@ -538,6 +535,8 @@ class Trips extends ApiBase
         if (!in_array($from, ['wall','info'])) {
             $this->jsonReturn(992, [], lang('Parameter error'));
         }
+        $TripsService = new TripsService();
+
         $userData = $this->getUserData(1);
         $uid = $userData['uid']; //取得用户id
 
@@ -668,10 +667,11 @@ class Trips extends ApiBase
      */
     public function passengers($id, $status = "neq|2")
     {
+        $TripsService = new TripsService();
         $res =  $this->info_list("", $status, 0, $id, 0, 'status ASC, time ASC');
         if ($res) {
             foreach ($res['lists'] as $key => $value) {
-                $res['lists'][$key] = $this->unsetResultValue($value, ['love_wall_ID']);
+                $res['lists'][$key] = $TripsService->unsetResultValue($value, ['love_wall_ID']);
             }
             if (isset($res['page'])) {
                 unset($res['page']);
@@ -693,6 +693,7 @@ class Trips extends ApiBase
         if (!in_array($type, ['cancel','finish','riding','hitchhiking','pickup','get_on','startaddress','endaddress']) || !$id) {
             return $this->jsonReturn(992, [], lang('Parameter error'));
         }
+        $TripsService = new TripsService();
         if ($from=="wall") {
             $Model    = new WallModel();
         } elseif ($from=="info") {
@@ -812,7 +813,7 @@ class Trips extends ApiBase
 
             //如果是取消或上车操作，执行推送消息
             if (($type == "cancel" || $type == "get_on") && isset($push_msg) && isset($sendTarget) && !empty($sendTarget)) {
-                $this->pushMsg($sendTarget, $push_msg, $appid);
+                $TripsService->pushMsg($sendTarget, $push_msg, $appid);
             }
             $extra = $this->errorMsg ? ['pushMsg'=>$this->errorMsg] : [1];
             return $this->jsonReturn(0, [], "success", $extra);
@@ -887,8 +888,8 @@ class Trips extends ApiBase
             }
             $datas->status = 1 ;
             $datas->save();
-            $this->pushMsg($datas->carownid, $userData['name'].'搭了你的车', $appid);
-            // $this->pushMsg($datas->carownid, lang('{:name} took your car', ["name"=>$userData['name']]), $appid);
+            $TripsService->pushMsg($datas->carownid, $userData['name'].'搭了你的车', $appid);
+            // $TripsService->pushMsg($datas->carownid, lang('{:name} took your car', ["name"=>$userData['name']]), $appid);
             $extra = $this->errorMsg ? ['pushMsg'=>$this->errorMsg] : [1];
             return $this->jsonReturn(0, ['infoid'=>$res], 'success', $extra);
         }
@@ -924,8 +925,8 @@ class Trips extends ApiBase
             $datas->status = 1;
             $res = $datas->save();
             if ($res) {
-                $this->pushMsg($datas->passengerid, $userData['name'].'接受了你的约车需求', $appid);
-                // $this->pushMsg($datas->passengerid, lang('{:name} accepted your ride requst', ["name"=>$userData['name']]), $appid);
+                $TripsService->pushMsg($datas->passengerid, $userData['name'].'接受了你的约车需求', $appid);
+                // $TripsService->pushMsg($datas->passengerid, lang('{:name} accepted your ride requst', ["name"=>$userData['name']]), $appid);
                 return $this->jsonReturn(0, [], 'success');
             }
         }
@@ -986,6 +987,7 @@ class Trips extends ApiBase
     public function check_my_status(){
       $userData = $this->getUserData(1);
       $uid = $userData['uid'];
+      $TripsService = new TripsService();
       $redis = new RedisData();
       $exp = "30";   //缓存过期时间
       $cacheKey = [];
@@ -1000,7 +1002,6 @@ class Trips extends ApiBase
         // $isGrade = $GradeModel->isGrade('trips',$app_id,$datas[$key]['time']);
 
         $gradeConfigData = config('trips.grade');
-
         $gradeBaseSql = GradeModel::where("uid",$uid)->buildSql();
 
         $InfoModel = new InfoModel();
@@ -1068,6 +1069,7 @@ class Trips extends ApiBase
         $uids = [];
         $now = time();
         $myUid = $this->userBaseInfo['uid'];
+        $TripsService = new TripsService();
 
         if (in_array($from, ['rides','wall'])) { //如果是墙上空座位
             $from = 'wall';
@@ -1162,270 +1164,4 @@ class Trips extends ApiBase
     }
 
 
-    /* ----------------------------------------------------------------- */
-
-    /**
-     * 创件状态筛选map
-     */
-    protected function buildStatusMap($status, $t="t")
-    {
-        $statusExp = '=';
-        if (is_string($status) && strpos($status, '|')) {
-            $statusArray = explode('|', $status);
-            if (count($statusArray)>1) {
-                $statusExp = $statusArray[0];
-                $status = $statusArray[1];
-            } else {
-                $status = $status[0];
-            }
-        }
-        if (is_string($status) && strpos($status, ',')) {
-            $status = explode(',', $status);
-        }
-        if (is_array($status) && $statusExp == "=") {
-            $statusExp = "in";
-        }
-        if (in_array(mb_strtolower($statusExp), ['=','<=','>=','<','>','<>','in','eq','neq','not in','lt','gt','egt','elt'])) {
-            return [$t.'.status',$statusExp,$status];
-        } else {
-            return [$t.'.status',"=",$status];
-        }
-    }
-
-
-    /**
-     * 创件要select的用户字段
-     */
-    protected function buildUserFields($a="u", $fields=[])
-    {
-        $format_array = [];
-        $fields = !empty($fields) ? $fields : ['uid','loginname','name','phone','mobile','Department','sex','company_id','department_id','companyname','imgpath','carnumber','carcolor','im_id'];
-
-        foreach ($fields as $key => $value) {
-            $format_array[$key] = $a.".".$value." as ".$a."_".mb_strtolower($value);
-        }
-        return join(",", $format_array);
-    }
-
-    /**
-     * 创件要select的地址字段
-     */
-    protected function buildAddressFields($fields="", $start_latlng = false)
-    {
-        $fields .= ',t.startpid, t.endpid';
-        $fields .= ', x(t.start_latlng) as start_lng, y(t.start_latlng) as start_lat' ;
-        $fields .= ', x(t.end_latlng) as end_lng, y(t.end_latlng) as end_lat' ;
-        $fields .= ', t.startname , t.start_gid ';
-        $fields .= ', t.endname , t.end_gid ';
-        $fields .= ',s.addressname as start_addressname, s.latitude as start_latitude, s.longtitude as start_longitude';
-        $fields .= ',e.addressname as end_addressname, e.latitude as end_latitude, e.longtitude as end_longitude';
-        return $fields;
-    }
-
-
-    /**
-     * 创健要join的表的数缓
-     * @param  string|array $filter
-     * @return array
-     */
-    protected function buildTripJoins($filter="d,p,s,e,department")
-    {
-        if (is_string($filter)) {
-            $filter = explode(",", $filter);
-        }
-        $join = [];
-        if (is_array($filter)) {
-            foreach ($filter as $key => $value) {
-                $filter[$key] = mb_strtolower($value);
-            }
-            if (in_array('s', $filter) || in_array('start', $filter)) {
-                $join[] = ['address s','s.addressid = t.startpid', 'left'];
-            }
-            if (in_array('e', $filter) || in_array('end', $filter)) {
-                $join[] = ['address e','e.addressid = t.endpid', 'left'];
-            }
-            if (in_array('d', $filter) || in_array('driver', $filter)) {
-                $join[] = ['user d','d.uid = t.carownid', 'left'];
-                if (in_array('department', $filter)) {
-                    $join[] = ['t_department dd','dd.id = d.department_id', 'left'];
-                }
-            }
-            if (in_array('p', $filter) || in_array('passenger', $filter)) {
-                $join[] = ['user p','p.uid = t.passengerid', 'left'];
-                if (in_array('department', $filter)) {
-                    $join[] = ['t_department pd','pd.id = p.department_id', 'left'];
-                }
-            }
-        }
-        return $join;
-    }
-
-
-    /**
-     * 格式化结果字段
-     */
-    protected function formatResultValue($value, $merge_ids = [], $unDo = [])
-    {
-        $value_format = $value;
-        $value_format['subtime'] = intval(strtotime($value['subtime'])) ;
-        // $value_format['go_time'] = $value['go_time'] ?  $value['go_time'] : strtotime($value['time']."00");
-        // $value_format['time'] = date('Y-m-d H:i',strtotime($value['time'].'00'));
-        // $value_format['time'] = $value_format['go_time'];
-        $value_format['time'] = intval(strtotime($value['time'].'00')) ;
-        //整理指定字段为整型
-        $int_field_array = [
-          'p_uid','p_sex','p_company_id','p_department_id',
-          'd_uid','d_sex','d_company_id','d_department_id',
-          'infoid','love_wall_ID',
-          'startpid','endpid',
-          'seat_count','trip_type'
-        ];
-        $value = json_decode(json_encode($value),true);
-        foreach ($value as $key => $v) {
-           if(in_array($key,$int_field_array)){
-             $value_format[$key] = intval($v);
-           }
-        }
-        if (!empty($merge_ids)) {
-            if (!in_array('p', $unDo) && isset($value['p_uid']) &&  in_array($value['p_uid'], $merge_ids)) {
-                $value_format['p_uid'] = $uid;
-                $value_format['passengerid'] = $uid;
-                $value_format['p_name'] = $userData['name'];
-            }
-            if (!in_array('d', $unDo) && isset($value['d_uid']) && in_array($value['d_uid'], $merge_ids)) {
-                $value_format['d_uid'] = $uid;
-                $value_format['carownid'] = $uid;
-                $value_format['d_name'] = $userData['name'];
-            }
-        }
-
-        if (!is_numeric($value['startpid']) || $value['startpid'] < 1) {
-            $value_format['start_addressid'] = $value['startpid'];
-            $value_format['start_addressname'] = $value['startname'];
-            $value_format['start_longitude'] = $value['start_lng'];
-            $value_format['start_latitude'] = $value['start_lat'];
-        }
-        if (!is_numeric($value['endpid']) || $value['endpid'] < 1) {
-            $value_format['end_addressid'] = $value['endpid'];
-            $value_format['end_addressname'] = $value['endname'];
-            $value_format['end_longitude'] = $value['end_lng'];
-            $value_format['end_latitude'] = $value['end_lat'];
-        }
-
-        if (isset($value['d_full_department']) || isset($value['p_full_department']) ) {
-            $DepartmentModel = new DepartmentModel;
-        }
-        if (isset($value['d_full_department'])) {
-            $value_format['d_department'] = $DepartmentModel->formatFullName($value['d_full_department'], 3);
-        }
-        if (isset($value['p_full_department'])) {
-            $value_format['p_department'] = $DepartmentModel->formatFullName($value['p_full_department'], 3);
-        }
-        if (isset($value['d_imgpath']) && trim($value['d_imgpath'])=="") {
-            $value_format['d_imgpath'] = 'default/avatar.png';
-        }
-        if (isset($value['p_imgpath']) && trim($value['p_imgpath'])=="") {
-            $value_format['p_imgpath'] = 'default/avatar.png';
-        }
-        return $value_format;
-    }
-
-
-    /**
-     * 取消显示的字段
-     * @param array        $data         数据
-     * @param string|array $unsetFields  要取消的字段
-     * @param array        $unsetFields2 要取消的字段
-     */
-    protected function unsetResultValue($data, $unsetFields = "", $unsetFields2 = [])
-    {
-        $unsetFields_default = [
-           'start_lat','start_lng','start_gid','startname','startpid'
-          , 'end_lat','end_lng','end_gid','endname','endpid'
-          ,'passengerid','carownid','passenger_id','driver_id'
-        ];
-        if (is_string($unsetFields) && $unsetFields=="list") {
-            $unsetFields = [
-              'p_companyname','d_companyname'
-              ,'p_company_id','d_company_id'
-              ,'p_department_id','d_department_id'
-              ,'p_sex','d_sex'
-              ,'like_count'
-              // ,'d_im_id','p_im_id'
-              // ,'start_longitude','start_latitude'
-              ,'start_addressid'
-              // ,'end_longitude','end_latitude'
-              ,'end_addressid'
-            ];
-            $unsetFields = array_merge($unsetFields_default, $unsetFields);
-        }
-        if (is_string($unsetFields) && ($unsetFields=="" ||$unsetFields=="detail")) {
-            $unsetFields = [];
-            $unsetFields = array_merge($unsetFields_default, $unsetFields);
-        }
-        if (is_string($unsetFields) && $unsetFields=="detail_pb") {
-            $unsetFields = [
-              'p_companyname','d_companyname','d_im_id','p_im_id'
-              ,'d_phone','d_mobile','d_full_department','d_company_id','d_department_id','d_department'
-              ,'p_phone','p_mobile','p_full_department','p_company_id','p_department_id','p_department'
-              ,'start_addressid'
-              ,'end_addressid'
-            ];
-            $unsetFields = array_merge($unsetFields_default, $unsetFields);
-        }
-        if (is_array($unsetFields)) {
-            foreach ($unsetFields as $key => $value) {
-                unset($data[$value]);
-            }
-        }
-        return $data;
-    }
-
-
-    /**
-     * 通过id取得用户姓名
-     * @param  integer $uid 用户id
-     */
-    protected function getUserName($uid)
-    {
-        $name = UserModel::where('uid', $uid)->value('name');
-        return $name ? $name : "";
-    }
-
-    /**
-     * 通过id取得用户姓名
-     * @param  integer $uid      [对方id]
-     * @param  string  $message  [发送的内容]
-     */
-    protected function pushMsg($uid, $message, $appid = 1)
-    {
-        if (!$uid || !$message) {
-            return false;
-        }
-        $PushMessage = new PushMessage();
-        if (is_array($uid)) {
-            $res = [];
-            foreach ($uid as $key => $value) {
-                if (is_numeric($value)) {
-                    $res[] = $PushMessage->add($value, $message, "拼车", 101,101, 0);
-                    // $res[] = $PushMessage->add($value, $message, lang("Car pooling"), 101,101, 0);
-                    // $PushMessage->push($value,$message,lang("Car pooling"),2);
-                }
-            }
-        } elseif (is_numeric($uid)) {
-            $res = $PushMessage->add($uid, $message, "拼车", 101,101, 0);
-            // $res = $PushMessage->add($uid, $message, lang("Car pooling"), 101,101, 0);
-            // $PushMessage->push($uid,$message,lang("Car pooling"),2);
-        } else {
-            return false;
-        }
-        // try {
-        //     $pushRes = $PushMessage->push($uid, $message, lang("Car pooling"), $appid);
-        //     $this->errorMsg = $pushRes;
-        // } catch (\Exception $e) {
-        //     $this->errorMsg = $e->getMessage();
-        //     $pushRes =  $e->getMessage();
-        // }
-        return $res;
-    }
 }
