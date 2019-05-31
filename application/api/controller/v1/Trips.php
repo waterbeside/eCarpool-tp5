@@ -6,12 +6,14 @@ use app\api\controller\ApiBase;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
 use app\carpool\model\Address;
-use app\carpool\model\WallLike;
 use app\carpool\model\user as UserModel;
 use app\carpool\model\UserPosition as UserPositionModel;
 use app\carpool\model\Grade as GradeModel;
 
 use app\carpool\service\Trips as TripsService;
+use app\carpool\service\TripsChange as TripsChangeService;
+use app\carpool\service\TripsList as TripsListService;
+use app\carpool\service\TripsDetail as TripsDetailService;
 
 use my\RedisData;
 use think\Db;
@@ -32,94 +34,33 @@ class Trips extends ApiBase
         $page = input('param.page',1);
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
-        $extra_info = json_decode($userData['extra_info'], true);
-        $merge_ids = isset($extra_info['merge_id']) && is_array($extra_info['merge_id']) && $type ==1  ? $extra_info['merge_id'] : [];
 
-        $redis        = new RedisData();
-        $InfoModel    = new InfoModel();
-        $TripsService = new TripsService();
+        $redis            = new RedisData();
+        $TripsListService = new TripsListService();
 
-        $viewSql  =  $InfoModel->buildUnionSql($uid, $merge_ids ,($type ? "(0,1,3,4)" : "(0,1,4)"));
-        $fields = 't.infoid , t.love_wall_ID , t.time, t.trip_type , t.time, t.status, t.passengerid, t.carownid , t.seat_count,  t.subtime, t.map_type ';
-        $fields .= ','.$TripsService->buildUserFields('d');
-        $fields .= ', dd.fullname as d_full_department';
-        $fields .= ','.$TripsService->buildUserFields('p');
-        $fields .= ', pd.fullname as p_full_department';
-        $fields .=  $TripsService->buildAddressFields();
-        $join = $TripsService->buildTripJoins();
-
-        if ($type==1) {
-            $map = [
-              ["t.time","<",date('YmdHi', strtotime('+15 minute'))],
-              // ["t.go_time","<",strtotime('+15 minute')],
-            ];
-            $orderby = 't.time DESC, t.infoid DESC, t.love_wall_id DESC';
-        } else {
-            $map = [
-              ["t.time",">",date('YmdHi', strtotime("-1 hour"))],
-              // ["t.go_time",">",strtotime("-1 hour")],
-            ];
-            $orderby = 't.time ASC, t.infoid ASC, t.love_wall_id ASC';
-            //如果$type !=1 则查缓存
-            $cacheKey = "carpool:trips:my:u{$uid}:pz{$pagesize}_p{$page}_fd{$fullData}";
-            $cacheExp = 5;
-            $cacheData = $redis->get($cacheKey);
-            if($cacheData){
-              if($cacheData == "-1"){
-                return $this->jsonReturn(20002, lang('No data'));
-              }
-              $returnData = json_decode($cacheData,true);
-              return $this->jsonReturn(0, $returnData, "success");
+        if (!$type) {
+          $cacheKey = "carpool:trips:my:u{$uid}:pz{$pagesize}_p{$page}_fd{$fullData}";
+          $cacheExp = 5;
+          $cacheData = $redis->get($cacheKey);
+          if($cacheData){
+            if($cacheData == "-1"){
+              return $this->jsonReturn(20002, lang('No data'));
             }
+            $returnData = json_decode($cacheData,true);
+            return $this->jsonReturn(0, $returnData, "success");
+          }
+        } 
+        $returnData = $TripsListService->myList($userData,$pagesize,$type);
+       
+        if($returnData === false){
+          if(!$type){
+            $redis->setex($cacheKey, $cacheExp, -1);
+          }
+          return $this->jsonReturn(20002, lang('No data'));
         }
-
-        $modelObj =  Db::connect('database_carpool')->table("($viewSql)" . ' t')->field($fields)->where($map)->join($join)->order($orderby);
-        if ($pagesize > 0 || $type > 0) {
-            $results =    $modelObj->paginate($pagesize, false, ['query'=>request()->param()])->toArray();
-            if (!$results['data']) {
-                return $this->jsonReturn(20002, lang('No data'));
-            }
-
-            $datas = $results['data'];
-            $pageData = [
-              'total'=>$results['total'],
-              'pageSize'=>$results['per_page'],
-              'lastPage'=>$results['last_page'],
-              'currentPage'=>intval($results['current_page']),
-            ];
-        } else {
-            $datas =    $modelObj->select();
-            if (!$datas) {
-                if(!$type){
-                  $redis->setex($cacheKey, $cacheExp, -1);
-                }
-                return $this->jsonReturn(20002, lang('No data'));
-            }
-            $total = count($datas);
-            $pageData = [
-              'total'=>$total,
-              'pageSize'=>0,
-              'lastPage'=>$total,
-              'currentPage'=>1,
-            ];
-        }
-
-        foreach ($datas as $key => $value) {
-            $datas[$key] = $fullData ? $TripsService->formatResultValue($value) : $TripsService->unsetResultValue($TripsService->formatResultValue($value), "list");
-            // $datas[$key] = $TripsService->formatResultValue($value,$merge_ids);
-            $datas[$key]['show_owner']  = $value['trip_type'] ||  ($value['infoid']>0 && $uid == $value['passengerid']  &&  $value['carownid'] > 0)  ?  1 : 0;
-            $datas[$key]['is_driver']   =  $uid == $value['carownid']  ?  1 : 0;
-            $datas[$key]['status'] = intval($value['status']);
-            $datas[$key]['took_count']  = $value['infoid'] > 0 ? ($datas[$key]['is_driver'] ? 1 : 0) : InfoModel::where([['love_wall_ID','=',$value['love_wall_ID']],['status','<>',2]])->count() ; //取已坐数
-        }
-        $returnData = [
-          'lists'=>$datas,
-          'page' =>$pageData
-        ];
         if(!$type){
           $redis->setex($cacheKey, $cacheExp, json_encode($returnData));
         }
-
         $this->jsonReturn(0, $returnData, "success");
     }
 
@@ -128,13 +69,14 @@ class Trips extends ApiBase
      */
     public function history($pagesize =20)
     {
+        $page = input('param.page',1);
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
-        $page = input('param.page',1);
 
-        $TripsService = new TripsService();
+        $redis            = new RedisData();
+        $TripsListService = new TripsListService();
+
         // 查缓存
-        $redis = new RedisData();
         $cacheKey = "carpool:trips:history:u{$uid}:pz{$pagesize}_p{$page}";
         $cacheExp = 20;
         $cacheData = $redis->get($cacheKey);
@@ -146,73 +88,24 @@ class Trips extends ApiBase
           return $this->jsonReturn(0, $returnData, "success");
         }
 
-        $extra_info = json_decode($userData['extra_info'], true);
-        $merge_ids = isset($extra_info['merge_id']) && is_array($extra_info['merge_id'])  ? $extra_info['merge_id'] : [];
-
-        $InfoModel = new InfoModel();
-        $viewSql  =  $InfoModel->buildUnionSql($uid, $merge_ids ,"(0,1,2,3,4)");
-        $fields = 't.infoid , t.love_wall_ID , t.time, t.trip_type , t.time, t.status, t.passengerid, t.carownid , t.seat_count,  t.subtime, t.map_type ';
-        $fields .= ','.$TripsService->buildUserFields('d');
-        $fields .= ', dd.fullname as d_full_department';
-        $fields .= ','.$TripsService->buildUserFields('p');
-        $fields .= ', pd.fullname as p_full_department';
-        $fields .=  $TripsService->buildAddressFields();
-        $join = $TripsService->buildTripJoins();
-        $map = [
-          ["t.time","<",date('YmdHi', strtotime('-30 minute'))],
-          // ["t.go_time","<",strtotime('+15 minute')],
-        ];
-        $orderby = 't.time DESC, t.infoid DESC, t.love_wall_id DESC';
-        $modelObj =  Db::connect('database_carpool')->table("($viewSql)" . ' t')->field($fields)->where($map)->join($join)->order($orderby);
-        $results =    $modelObj->paginate($pagesize, false, ['query'=>request()->param()])->toArray();
-        if (!$results['data']) {
+        $returnData = $TripsListService->history($userData,$pagesize);
+        if ($returnData === false) {
             $redis->setex($cacheKey, $cacheExp, -1);
             return $this->jsonReturn(20002, lang('No data'));
         }
 
-        $datas = $results['data'];
-        $pageData = [
-          'total'=>$results['total'],
-          'pageSize'=>$results['per_page'],
-          'lastPage'=>$results['last_page'],
-          'currentPage'=>intval($results['current_page']),
-        ];
-
-        $GradeModel =  new GradeModel();
-
-        foreach ($datas as $key => $value) {
-            $app_id  = $value['map_type'] ? 2 : 1 ;
-            $datas[$key] =  $TripsService->formatResultValue($value);
-            // $datas[$key] = $TripsService->formatResultValue($value,$merge_ids);
-            $datas[$key]['show_owner']    = $value['trip_type'] ||  ($value['infoid']>0 && $uid == $value['passengerid']  &&  $value['carownid'] > 0)  ?  1 : 0;
-            $datas[$key]['is_driver']     =  $uid == $value['carownid']  ?  1 : 0;
-            $datas[$key]['status']        = intval($value['status']);
-            $datas[$key]['took_count']    = $value['infoid'] > 0 ? ($datas[$key]['is_driver'] ? 1 : 0) : InfoModel::where([['love_wall_ID','=',$value['love_wall_ID']],['status','<>',2]])->count() ; //取已坐数
-
-            $grade_type = $datas[$key]['is_driver'] && $value['love_wall_ID'] > 0 ? 1 : 0;
-            $ratedMap = [
-              ['type','=',$grade_type],
-              ['object_id','=',($grade_type ? $value['love_wall_ID'] : $value['infoid'])],
-              ['uid','=',$uid]
-            ];
-            $isGrade = $GradeModel->isGrade('trips',$app_id,$datas[$key]['time']);
-            $datas[$key]['already_rated'] =    !$isGrade  || $value['status']==2 || $GradeModel->where($ratedMap)->count() ? 1 : 0;
-        }
-        $returnData = [
-          'lists'=>$datas,
-          'page' =>$pageData
-        ];
         $redis->setex($cacheKey, $cacheExp, json_encode($returnData));
         $this->jsonReturn(0, $returnData, "success");
         // $TripsService->unsetResultValue($this->index($pagesize, 1, 1));
     }
+
 
     /**
      * 墙上空座位
      */
     public function wall_list($pagesize=20, $keyword="", $city=null, $map_type=NULL)
     {
-        $TripsService = new TripsService();
+        $TripsListService = new TripsListService();
         $userData = $this->getUserData(1);
         $company_id = $userData['company_id'];
         $time_e = strtotime("+20 day");
@@ -236,38 +129,11 @@ class Trips extends ApiBase
         if (is_numeric($map_type)) {
             $map[] = ['t.map_type','=',$map_type];
         }
-        $fields = 't.time, t.status, t.seat_count';
-        $fields .= ', t.love_wall_ID as id, t.subtime , t.carownid as driver_id  ';
-        $fields .= ', dd.fullname as d_full_department  ';
 
-        $fields .= ','.$TripsService->buildUserFields('d');
-        $fields .=  $TripsService->buildAddressFields();
-        $join = $TripsService->buildTripJoins("s,e,d,department");
-
-
-        $results = WallModel::alias('t')->field($fields)->join($join)->where($map)->order(' time ASC, t.love_wall_ID ASC  ')
-        ->paginate($pagesize, false, ['query'=>request()->param()])->toArray();
-        if (!$results['data']) {
-            return $this->jsonReturn(20002, lang('No data'));
+        $returnData = $TripsListService->wall_list($map,$pagesize);
+        if ($returnData === false) {
+          return $this->jsonReturn(20002, lang('No data'));
         }
-        $lists = [];
-        foreach ($results['data'] as $key => $value) {
-            $lists[$key] = $TripsService->unsetResultValue($TripsService->formatResultValue($value), "list");
-
-            //取点赞数
-            // $lists[$key]['like_count']    = WallLike::where('love_wall_ID', $value['id'])->count();
-            //取已坐数
-            $lists[$key]['took_count']    =  InfoModel::where([['love_wall_ID','=',$value['id']],["status","<>",2]])->count();
-        }
-        $returnData = [
-          'lists'=>$lists,
-          'page' =>[
-            'total'=>$results['total'],
-            'pageSize'=>$results['per_page'],
-            'lastPage'=>$results['last_page'],
-            'currentPage'=>intval($results['current_page']),
-          ]
-        ];
         $this->jsonReturn(0, $returnData, "success");
     }
 
@@ -286,52 +152,19 @@ class Trips extends ApiBase
             $this->jsonReturn(992, [], 'lost id');
             // return $this->error('lost id');
         }
-        $data = null;
+
         $TripsService = new TripsService();
+        $TripsDetailService = new TripsDetailService();
 
-        // 查缓存
-        $redis = new RedisData();
-        $cacheKey = "carpool:trips:wall_detail:{$id}";
-        $cacheExp = 30;
-        $cacheData = $redis->get($cacheKey);
-        if($cacheData){
-          if($cacheData == "-1"){
-            return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
-          }
-          $data = $cacheData;
-        }
-
-
-        if(!$data || !is_array($data)){
-          $fields = 't.time, t.status,  t.seat_count, t.map_type, t.im_tid, t.im_chat_tid';
-          $fields .= ', t.love_wall_ID as id ,t.love_wall_ID , t.subtime , t.carownid as driver_id  ';
-          $fields .= ', dd.fullname as d_full_department  ';
-          $fields .= ','.$TripsService->buildUserFields('d');
-          $fields .=  $TripsService->buildAddressFields();
-          $join = $TripsService->buildTripJoins("s,e,d,department");
-          $data = WallModel::alias('t')->field($fields)->join($join)->where("t.love_wall_ID", $id)->find();
-          if (!$data) {
-              $redis->setex($cacheKey, $cacheExp, -1);
-              return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
-          }
-          $app_id  = $data['map_type'] ? 2 : 1 ;
-          $data = $TripsService->unsetResultValue($TripsService->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
-
-          $countBaseMap = ['love_wall_ID','=',$data['love_wall_ID']];
-          $data['took_count']       = InfoModel::where([$countBaseMap,["status","in",[0,1,3,4]]])->count(); //取已坐数
-          $data['took_count_all']   = InfoModel::where([$countBaseMap,['status','<>',2]])->count() ; //取已坐数
-          $redis->setex($cacheKey, $cacheExp, json_encode($data));
-
-        }
-
-
+      
+        $data  = $TripsDetailService->detail('wall',$id,$pb);
+        $app_id = $data['map_type'] ? 1 : 2;
+        $countBaseMap = ['love_wall_ID','=',$data['love_wall_ID']];
 
         if (!$pb) {
-
             $data['uid']        = $uid;
             $GradeModel         = new GradeModel();
             $grade_allow = $GradeModel->isGrade('trips',$app_id,$data['time']);
-
 
             if($data['d_uid'] == $uid){
               $data['take_status']      = null;
@@ -372,10 +205,10 @@ class Trips extends ApiBase
      */
     public function info_list($keyword="", $status = 0, $pagesize=50, $wid = 0, $returnType = 1, $orderby = '',$city=NULL, $map_type=null)
     {
+        $TripsService = new TripsService();
+        $TripsListService = new TripsListService();
         $userData = $this->getUserData(1);
         $company_id = $userData['company_id'];
-
-
         $time_e = strtotime("+20 day");
         $time_s = strtotime("-1 hour");
 
@@ -393,11 +226,8 @@ class Trips extends ApiBase
             ];
         }
 
-        $TripsService = new TripsService();
-
         $map[] = $TripsService->buildStatusMap($status);
         // dump($map);exit;
-
         if ($keyword) {
             $map[] = ['s.addressname|p.name|e.addressname|t.startname|t.endname','like',"%{$keyword}%"];
         }
@@ -408,54 +238,10 @@ class Trips extends ApiBase
             $map[] = ['t.map_type','=',$map_type];
         }
 
-        $fields = 't.time, t.status ';
-        // $fields = ', FROM_UNIXTIME(t.go_time,'%Y-%M-%D %h:%i:%s') as format_time';
-        $fields .= ',t.infoid as id, t.love_wall_ID , t.subtime , t.carownid as driver_id , t.passengerid as passenger_id  ';
-        $fields .= ', pd.fullname as p_full_department  ';
-
-        // $fields .= ','.$TripsService->buildUserFields('d');
-        $fields .= ','.$TripsService->buildUserFields('p');
-        $fields .=  $TripsService->buildAddressFields();
-        $join = $TripsService->buildTripJoins("s,e,p,department");
-
-        $orderby = $orderby ? $orderby : 'time ASC, t.infoid ASC ';
-
-        $modelObj =  InfoModel::alias('t')->field($fields)->join($join)->where($map)->order($orderby);
-        // $sql = $modelObj->fetchSql()->select();
-        if ($pagesize > 0 || $wid > 0) {
-            $results =    $modelObj->paginate($pagesize, false, ['query'=>request()->param()])->toArray();
-
-            if (!$results['data']) {
-                return $this->jsonReturn(20002, lang('No data'));
-            }
-            $datas = $results['data'];
-            $pageData = [
-              'total'=>$results['total'],
-              'pageSize'=>$results['per_page'],
-              'lastPage'=>$results['last_page'],
-              'currentPage'=>intval($results['current_page']),
-            ];
-        } else {
-            $datas =    $modelObj->select();
-            if (!$datas) {
-                return $this->jsonReturn(20002, lang('No data'));
-            }
-            $total = count($datas);
-            $pageData = [
-            'total'=>$total,
-            'pageSize'=>0,
-            'lastPage'=>$total,
-            'currentPage'=>1,
-          ];
+        $returnData = $TripsListService->info_list($map,$pagesize,$wid,$orderby);
+        if ($returnData === false) {
+          return $this->jsonReturn(20002, lang('No data'));
         }
-        $lists = [];
-        foreach ($datas as $key => $value) {
-            $lists[$key] = $TripsService->unsetResultValue($TripsService->formatResultValue($value), "list");
-        }
-        $returnData = [
-          'lists'=>$lists,
-          'page' =>$pageData,
-        ];
         return $returnType ? $this->jsonReturn(0, $returnData, "success") : $returnData;
     }
 
@@ -475,39 +261,14 @@ class Trips extends ApiBase
             // return $this->error('lost id');
         }
         $data = null;
-        $TripsService = new TripsService();
-        // 查缓存
-        $redis = new RedisData();
-        $cacheKey = "carpool:trips:info_detail:{$id}";
-        $cacheExp = 30;
-        $cacheData = $redis->get($cacheKey);
-        if($cacheData){
-          if($cacheData == "-1"){
-            return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
-          }
-          $data = $cacheData;
-        }
-        if(!$data || !is_array($data)){
-          $fields = 't.time, t.status, t.map_type';
-          $fields .= ',t.infoid as id, t.infoid , t.love_wall_ID , t.subtime , t.carownid as driver_id, t.passengerid as passenger_id  ';
-          $fields .= ','.$TripsService->buildUserFields('d');
-          $fields .= ', dd.fullname as d_full_department  ';
-          $fields .= ','.$TripsService->buildUserFields('p');
-          $fields .= ', pd.fullname as p_full_department  ';
-          $fields .=  $TripsService->buildAddressFields();
-          $join = $TripsService->buildTripJoins();
-          $data = InfoModel::alias('t')->field($fields)->join($join)->where("t.infoid", $id)->find();
-          if (!$data) {
-              $redis->setex($cacheKey, $cacheExp, -1);
-              return $returnType ? $this->jsonReturn(20002, lang('No data')) : [];
-          }
-          $app_id  = $data['map_type'] ? 2 : 1 ;
-          $data = $TripsService->unsetResultValue($TripsService->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
-          $redis->setex($cacheKey, $cacheExp, json_encode($data));
-        }
+        $TripsDetailService = new TripsDetailService();
+
+        $data  = $TripsDetailService->detail('info',$id, $pb);
+        $app_id = $data['map_type'] ? 1 : 2;
 
         if (!$pb) {
             $data['uid']          = $uid;
+            //查询评分情况
             $GradeModel         = new GradeModel();
             $grade_allow = $GradeModel->isGrade('trips',$app_id,$data['time']);
             $ratedMap = [
@@ -515,7 +276,6 @@ class Trips extends ApiBase
               ['object_id','=', $id],
               ['uid','=',$uid]
             ];
-
             $data['already_rated'] =  !$data['d_uid'] || !$grade_allow ||  GradeModel::where($ratedMap)->count() ? 1 : 0;
         }
 
@@ -524,6 +284,25 @@ class Trips extends ApiBase
     }
 
 
+    /**
+     * 乘客列表
+     * @param  integer          $id 空座位id
+     * @param  integer|string   $status 状态筛选
+     */
+    public function passengers($id, $status = "neq|2")
+    {
+      $TripsService = new TripsService();
+      $res =  $this->info_list("", $status, 0, $id, 0, 'status ASC, time ASC');
+      if ($res) {
+        foreach ($res['lists'] as $key => $value) {
+          $res['lists'][$key] = $TripsService->unsetResultValue($value, ['love_wall_ID']);
+        }
+        if (isset($res['page'])) {
+          unset($res['page']);
+        }
+      }
+      $this->jsonReturn(0, $res, 'success');
+    }
 
 
     /**
@@ -535,15 +314,13 @@ class Trips extends ApiBase
         if (!in_array($from, ['wall','info'])) {
             $this->jsonReturn(992, [], lang('Parameter error'));
         }
-        $TripsService = new TripsService();
 
         $userData = $this->getUserData(1);
         $uid = $userData['uid']; //取得用户id
 
         $time                 = input('post.time');
         $map_type             = input('post.map_type');
-        // $datas['startpid']    = input('post.startpid');
-        // $datas['endpid']      = input('post.endpid');
+    
         $datas['start']       = input('post.start');
         $datas['start']       = is_array($datas['start']) ? $datas['start'] : json_decode($datas['start'],true);
         $datas['end']         = input('post.end');
@@ -552,9 +329,6 @@ class Trips extends ApiBase
         $datas['distance']    = input('post.distance', 0);
         $datas['time']        = is_numeric($time) ? date('YmdHi', $time) : date('YmdHi', strtotime($time.":00"));
 
-        // $this->jsonReturn(-1,$datas);
-        // dump($datas);exit;
-
         if (empty($time)) {
             $this->jsonReturn(-1, [], lang('Please select date and time'));
         }
@@ -562,52 +336,39 @@ class Trips extends ApiBase
             $this->jsonReturn(-1, [], lang('The number of empty seats cannot be empty'));
         }
 
-        $AddressModel = new Address();
+        $TripsService = new TripsService();
         $InfoModel    = new InfoModel();
         $WallModel    = new WallModel();
 
-        //计算前后范围内有没有重复行程
-        if ($InfoModel->checkRepetition($time, $uid, 60*5)) {
-            $this->jsonReturn(-1, [], $InfoModel->errorMsg);
-        }
-        if ($WallModel->checkRepetition($time, $uid, 60*5)) {
-            $this->jsonReturn(-1, [], $WallModel->errorMsg);
-        }
-
-
-        $createAddress = array();
-        //处理起点
-        if ((!isset($datas['start']['addressid']) || !(is_numeric($datas['start']['addressid']) && $datas['start']['addressid'] >0)) && !$map_type) {
-            $startDatas = $datas['start'];
-            $startDatas['company_id'] = $userData['company_id'];
-            $startDatas['create_uid'] = $userData['uid'];
-            $startRes = $AddressModel->addFromTrips($startDatas);
-            if (!$startRes) {
-                $this->jsonReturn(-1, [], lang("The point of departure must not be empty"));
-            }
-            $datas['start']['addressid'] = $startRes['addressid'];
-            $createAddress[0] = $startRes;
-        }
-
-        //处理终点
-        if ((!isset($datas['end']['addressid']) || !(is_numeric($datas['end']['addressid']) && $datas['end']['addressid'] >0)) && !$map_type) {
-            $endDatas = $datas['end'];
-            $endDatas['company_id'] = $userData['company_id'];
-            $endDatas['create_uid'] = $userData['uid'];
-            $endRes = $AddressModel->addFromTrips($endDatas);
-            if (!$endRes) {
-                $this->jsonReturn(-1, [], lang("The destination cannot be empty"));
-            }
-            $datas['end']['addressid'] = $endRes['addressid'];
-            $createAddress[1] = $endRes;
-        }
-
         //检查出发时间是否已经过了
         if (date('YmdHi', time()) > $datas['time']) {
-            $this->jsonReturn(-1, [], lang("The departure time has passed. Please select the time again"));
-            // $this->error("出发时间已经过了<br /> 请重选时间");
+          $this->jsonReturn(-1, [], lang("The departure time has passed. Please select the time again"));
         }
 
+        //计算前后范围内有没有重复行程
+        if ($InfoModel->checkRepetition($time, $uid, 60*5)) {
+            $this->jsonReturn(30007, [], $InfoModel->errorMsg);
+        }
+        if ($WallModel->checkRepetition($time, $uid, 60*5)) {
+            $this->jsonReturn(30007, [], $WallModel->errorMsg);
+        }
+        
+        $createAddress = array();
+
+        //处理起终点
+        if (!$map_type) {
+          $createAddress = $TripsService->createAddress($datas,$userData);
+          if($createAddress === false){
+            $this->jsonReturn(-1, [], $TripsService->errorMsg);            
+          }else{
+            if(isset($createAddress['start'])){
+              $datas['start']['addressid'] = $createAddress['start']['addressid'];
+            }
+            if(isset($createAddress['end'])){
+              $datas['end']['addressid'] = $createAddress['end']['addressid'];
+            }
+          }
+        }
 
         //检查时间是否上下班时间
         $hourMin = date('Hi', strtotime($datas['time']));
@@ -618,29 +379,7 @@ class Trips extends ApiBase
             $datas['type'] =  1 ;
         }
 
-        $inputData = [
-          'status'    => 0,
-          'subtime'   => date('YmdHi'),
-          'time'      => $datas['time'],
-          'type'      => $datas['type'],
-          'map_type'  => $map_type,
-          'distance'  => $datas['distance'],
-          'startpid'  => $map_type ? (isset($datas['start']['gid']) &&  $datas['start']['gid'] ? -1 : 0) : $datas['start']['addressid'] ,
-          'endpid'  => $map_type ? (isset($datas['end']['gid']) &&  $datas['end']['gid'] ? -1 : 0) : $datas['end']['addressid'] ,
-          'startname'  => $datas['start']['addressname'] ,
-          'start_latlng'  => Db::raw("geomfromtext('point(".$datas['start']['longitude']." ".$datas['start']['latitude'].")')"),
-          'endname'  => $datas['end']['addressname'] ,
-          'end_latlng'  => Db::raw("geomfromtext('point(".$datas['end']['longitude']." ".$datas['end']['latitude'].")')"),
-
-        ];
-        if ($map_type) {
-            if (isset($datas['start']['gid']) &&  $datas['start']['gid']) {
-                $inputData['start_gid'] = $datas['start']['gid'];
-            }
-            if (isset($datas['end']['gid']) &&  $datas['end']['gid']) {
-                $inputData['end_gid'] = $datas['start']['gid'];
-            }
-        }
+        $inputData = $TripsService->createTripBaseData($datas,$map_type);
 
         if ($from == "wall") {
             $inputData['carownid'] = $uid;
@@ -660,25 +399,7 @@ class Trips extends ApiBase
         }
     }
 
-    /**
-     * 乘客列表
-     * @param  integer          $id 空座位id
-     * @param  integer|string   $status 状态筛选
-     */
-    public function passengers($id, $status = "neq|2")
-    {
-        $TripsService = new TripsService();
-        $res =  $this->info_list("", $status, 0, $id, 0, 'status ASC, time ASC');
-        if ($res) {
-            foreach ($res['lists'] as $key => $value) {
-                $res['lists'][$key] = $TripsService->unsetResultValue($value, ['love_wall_ID']);
-            }
-            if (isset($res['page'])) {
-                unset($res['page']);
-            }
-        }
-        $this->jsonReturn(0, $res, 'success');
-    }
+    
 
     /**
      * 改变更新字段
@@ -690,81 +411,60 @@ class Trips extends ApiBase
         $type = mb_strtolower($type);
         $from = mb_strtolower($from);
 
-        if (!in_array($type, ['cancel','finish','riding','hitchhiking','pickup','get_on','startaddress','endaddress']) || !$id) {
-            return $this->jsonReturn(992, [], lang('Parameter error'));
-        }
         $TripsService = new TripsService();
-        if ($from=="wall") {
-            $Model    = new WallModel();
-        } elseif ($from=="info") {
-            $Model    = new InfoModel();
-        } else {
-            return $this->jsonReturn(992, [], lang('Parameter error'));
+        $TripsChangeService = new TripsChangeService();
+        $WallModel    = new WallModel();
+
+        //检查参数
+        $checkData = [
+          'from'=>$from,
+          'id'=>$id,
+          'type'=>$type,
+          'step'=>$step,
+        ];
+        if(!$TripsChangeService->checkParamData($checkData)){
+          return $this->jsonReturn(992, [], $TripsChangeService->errorMsg);          
         }
 
+        //验证用户
         $userData = $this->getUserData(1);
         $uid = $userData['uid']; //取得用户id
-        $fields = "*,x(start_latlng) as start_lng , y(start_latlng) as start_lat,x(end_latlng) as end_lng,y(end_latlng) as end_lat";
-        $datas = $Model->field($fields)->get($id);
 
+        //查询行程数据
+        $datas = $TripsChangeService->getData($from,$id);
         if (!$datas) {
             return $this->jsonReturn(20002, lang('No data'));
         }
-        $map_type = $datas['map_type'];
-        $appid = $map_type ? 2 : 1;
-
+        $map_type = $datas->map_type;
         $isDriver    = $datas->carownid == $uid ? true : false; //是否司机操作
-        $driver_id   = $datas->carownid ; //司机id;
 
-        $AddressModel = new Address();
-        $InfoModel    = new InfoModel();
-        $WallModel    = new WallModel();
+        //取得行程数据后再验证
+        $checkData['tripData'] = $datas;
+        $checkData['userData'] = $userData;
+        $checkData['uid'] = $uid;
+        
+        $checkRes = $TripsChangeService->checkAfterData($checkData);
+        if(!$checkRes){
+          if($TripsChangeService->errorCode == 1){
+            //如果是乘客从空座位操作, 则查出infoid，递归到from = info操作。
+            return $this->change("info", $TripsChangeService->data['infoid'], $type);
+          }
+          return $this->jsonReturn($TripsChangeService->errorCode, $TripsChangeService->errorMsg);
+        }
+        
 
         /*********** 完成或取消或上车 ***********/
         if (in_array($type, ["cancel","finish","get_on"])) {
-            //检查是否已取消或完成
-            if (in_array($datas->status, [2,3])) {
-                return $this->jsonReturn(-1, [], lang('The trip has been completed or cancelled. Operation is not allowed'));
-            }
-            //检查时间
-            if ($type == "finish" && strtotime($datas->time.'00')  > time()) {
-                return $this->jsonReturn(-1, [], lang('The trip not started, unable to operate'));
-            }
-            //检查是否允许操作
-            if ($from=="info" && !$isDriver && $datas->passengerid != $uid) {
-                return $this->jsonReturn(-1, [], lang('No permission'));
-            }
-            // 断定是否自己上自己车
-            if ($type == "get_on" && $isDriver) {
-                return $this->jsonReturn(-1, [], lang('You can`t take your own'));
-            }
-
-            //如果是乘客从空座位操作, 则查出infoid，递归到from = info操作。
-            if ($from=="wall" && !$isDriver) {
-                $infoDatas = InfoModel::where([["love_wall_ID",'=',$id],['passengerid',"=",$uid],['status','in',[0,1,4]]])->order("status")->find();
-                if (!$infoDatas) {
-                    $checkCount = InfoModel::where([["love_wall_ID",'=',$id],['passengerid',"=",$uid]])->order("status")->count();
-                    if (!$checkCount) {
-                        return $this->jsonReturn(-1, [], lang('No permission'));
-                    } else {
-                        return $this->jsonReturn(-1, [], lang('The trip has been completed or cancelled. Operation is not allowed'));
-                    }
-                }
-                return $this->change("info", $infoDatas['infoid'], $type);
-                exit;
-            }
-
-
             //处理要更新的数据
             if ($type == "cancel") { //如果是取消
               $datas->cancel_user_id = $uid;
-                $datas->cancel_time    = date('YmdHis', time());
-                $datas->status         = 2;
-                if ($from == "info" && $isDriver) {
-                    $datas->status          = 0;
-                    $datas->love_wall_ID    = null;
-                    $datas->carownid        = null;
-                }
+              $datas->cancel_time    = date('YmdHis', time());
+              $datas->status         = 2;
+              if ($from == "info" && $isDriver) {
+                  $datas->status          = 0;
+                  $datas->love_wall_ID    = null;
+                  $datas->carownid        = null;
+              }
             } elseif ($type == "finish") { //如果是完结
                 $datas->cancel_time    = date('YmdHis', time());
                 $datas->status         = 3;
@@ -775,35 +475,16 @@ class Trips extends ApiBase
 
             //保存改变的状态
             $res = $datas->save();
-
             if (!$res) {
                 return $this->jsonReturn(-1, [], lang('Fail'));
             }
 
-
-            //如果是取消操作，则推送消息(设置要推的消息);
-            if ($type == "cancel") {
-                if ($isDriver) { // 如果是司机，则推给乘客
-                    $push_msg = "司机".$userData['name']."取消了行程";
-                    // $push_msg = lang("The driver {:name} cancelled the trip", ["name"=>$userData['name']]) ;
-                    $passengerids = $from == "wall" ?  InfoModel::where([["love_wall_ID",'=',$id],["status","in",[0,1,4]]])->column('passengerid') : $datas->passengerid ;
-                    $sendTarget = $passengerids ;
-                } else { //如果乘客取消，则推送给司机
-                    $push_msg = "乘客".$userData['name']."取消了行程";
-                    // $push_msg = lang("The passenger {:name} cancelled the trip", ["name"=>$userData['name']]) ;
-                    $sendTarget = $driver_id;
-                    // 顺便检查词机空座位状态并更正 -----2019-04-25
-                    if($from == "info"){
-                        $took_count = InfoModel::where([["love_wall_ID",'=',$id],["status","in",[0,1,3,4]]])->count();
-                        if($took_count === 0){ //如果发现没有有效乘客，则更改空座位状态为0;
-                            WallModel::where(["love_wall_ID",'=',$datas->love_wall_ID])->update(["status"=>0]);
-                        }
-                    }
-                }
-            } elseif ($type == 'get_on') {
-                $push_msg = '乘客'.$userData['name'].'上了你的车';
-                // $push_msg = lang("The passenger {:name} has got on your car", ["name"=>$userData['name']]) ;
-                $sendTarget = $driver_id;
+            // 顺便检查词机空座位状态并更正 -----2019-04-25
+            if ($type == "cancel" && !$isDriver && $from == "info") {
+              $took_count = InfoModel::where([["love_wall_ID",'=',$id],["status","in",[0,1,3,4]]])->count();
+              if($took_count === 0){ //如果发现没有有效乘客，则更改空座位状态为0;
+                  WallModel::where(["love_wall_ID",'=',$datas->love_wall_ID])->update(["status"=>0]);
+              }
             }
 
             if ($from=="wall" && $isDriver) { //如果是司机操作空座位，则同时对乘客行程进行操作。
@@ -812,101 +493,29 @@ class Trips extends ApiBase
             }
 
             //如果是取消或上车操作，执行推送消息
-            if (($type == "cancel" || $type == "get_on") && isset($push_msg) && isset($sendTarget) && !empty($sendTarget)) {
-                $TripsService->pushMsg($sendTarget, $push_msg, $appid);
+            if ($type == "cancel" || $type == "get_on") {
+                $TripsChangeService->pushMsg($checkData);
             }
-            $extra = $this->errorMsg ? ['pushMsg'=>$this->errorMsg] : [1];
+            $extra = $TripsChangeService->errorMsg ? ['pushMsg'=>$TripsChangeService->errorMsg] : [];
             return $this->jsonReturn(0, [], "success", $extra);
         }
 
         /*********** riding 搭车  ***********/
         if ($type == "riding" || $type == "hitchhiking") {
-            if ($from !="wall") {
-                return $this->jsonReturn(992, [], lang('Parameter error'));
-            }
-
-            if ($datas->status == 2) {
-                return $this->jsonReturn(-1, [], lang('Failed, the owner has cancelled the trip'));
-                // return $this->error('或车主或已取消空座位，<br />请选择其它司机。');
-            }
-            if ($datas->status == 3) {
-                return $this->jsonReturn(-1, [], lang('Failed, the trip has ended'));
-            }
-            // 断定是否自己搭自己
-            if ($isDriver) {
-                return $this->jsonReturn(-1, [], lang('You can`t take your own'));
-            }
-
-             //计算前后范围内有没有重复行程
-             if ($InfoModel->checkRepetition(strtotime($datas->time.'00'), $uid, 60*5)) {
-                return $this->jsonReturn(30007, [], $InfoModel->errorMsg);
-            }
-            //计算前后范围内有没有重复行程
-            if ($WallModel->checkRepetition(strtotime($datas->time.'00'), $uid, 60*5)) {
-                return $this->jsonReturn(30007, [], $WallModel->errorMsg);
-            }
-        
-
-            $seat_count = $datas->seat_count;
-            $checkInfoMap = [['love_wall_ID','=',$id],['status','<>',2]];
-            $took_count = InfoModel::where($checkInfoMap)->count();
-
-            if ($took_count >= $seat_count) {
-                return $this->jsonReturn(-1, [$seat_count,$took_count], lang('Failed, seat is full'));
-            }
-            $checkInfoMap[] = ['passengerid','=',$uid];
-            $checkHasTake = InfoModel::where($checkInfoMap)->count();
-            if ($checkHasTake>0) {
-                return $this->jsonReturn(-1, [], lang('You have already taken this trip'));
-            }
-
-            $setInfoDatas = array(
-              'passengerid'   => $uid,
-              'carownid'      => $datas->carownid,
-              'love_wall_ID'  => $id,
-              'subtime'       => date('YmdHi', time()),
-              'time'          => $datas->time,
-              'startpid'      => $datas->startpid,
-              'startname'     => $datas->startname,
-              'start_gid'     => $datas->start_gid,
-              'endpid'        => $datas->endpid,
-              'endname'       => $datas->endname,
-              'end_gid'       => $datas->end_gid,
-              'type'          => $datas->type,
-              'map_type'      => $datas->map_type,
-              'status'        => 1,
-            );
-            if ($datas->start_lat && $datas->start_lng) {
-                $setInfoDatas['start_latlng'] = Db::raw("geomfromtext('point(".$datas->start_lng." ".$datas->start_lat.")')");
-                $setInfoDatas['end_latlng'] = Db::raw("geomfromtext('point(".$datas->end_lng." ".$datas->end_lat.")')");
-            }
-
-
-            $res = InfoModel::insertGetId($setInfoDatas);
+            $res = $TripsChangeService->riding($datas,$uid);
             if (!$res) {
                 return $this->jsonReturn(-1, [], lang('Fail'));
             }
             $datas->status = 1 ;
             $datas->save();
-            $TripsService->pushMsg($datas->carownid, $userData['name'].'搭了你的车', $appid);
-            // $TripsService->pushMsg($datas->carownid, lang('{:name} took your car', ["name"=>$userData['name']]), $appid);
-            $extra = $this->errorMsg ? ['pushMsg'=>$this->errorMsg] : [1];
+
+            $TripsChangeService->pushMsg($checkData);
+            $extra = $TripsChangeService->errorMsg ? ['pushMsg'=>$TripsChangeService->errorMsg] : [];
             return $this->jsonReturn(0, ['infoid'=>$res], 'success', $extra);
         }
 
         /*********** pickup 接受需求  ***********/
         if ($type == "pickup") {
-            if ($from !="info") {
-                return $this->jsonReturn(992, [], lang('Parameter error'));
-            }
-            // 断定是否自己搭自己
-            if ($datas->passengerid == $uid) {
-                return $this->jsonReturn(-1, [], lang('You can`t take your own'));
-            }
-            if ($datas->status > 0) {
-                return $this->jsonReturn(-1, [], lang("This requirement has been picked up or cancelled"));
-            }
-
              //计算前后范围内有没有重复行程
             // if ($InfoModel->checkRepetition(strtotime($datas->time.'00'), $uid, 120)) {
             //     return $this->jsonReturn(30007, [], $InfoModel->errorMsg);
@@ -925,31 +534,27 @@ class Trips extends ApiBase
             $datas->status = 1;
             $res = $datas->save();
             if ($res) {
-                $TripsService->pushMsg($datas->passengerid, $userData['name'].'接受了你的约车需求', $appid);
-                // $TripsService->pushMsg($datas->passengerid, lang('{:name} accepted your ride requst', ["name"=>$userData['name']]), $appid);
-                return $this->jsonReturn(0, [], 'success');
+              $TripsChangeService->pushMsg($checkData);
+              $extra = $TripsChangeService->errorMsg ? ['pushMsg'=>$TripsChangeService->errorMsg] : [];
+              return $this->jsonReturn(0, [], 'success',$extra);
             }
         }
 
         /*********** startaddress|endaddress 修改起点终点  ***********/
         if (in_array($type, ["startaddress","endaddress"]) && $from =="info") {
-            if ($datas->passengerid != $uid) {
-                return $this->jsonReturn(-1, [], lang('No permission'));
-            }
+            
             $addressDatas       = input('post.address');
             $map_type       =  $addressDatas['map_type'];
             $addressSign = $type == "startaddress" ? "start" : "end";
             //处理站点
             if (!$addressDatas['addressid'] && !$map_type) {
-                $addressDatas['company_id'] = $userData['company_id'];
-                $addressDatas['create_uid'] = $userData['uid'];
-                $addressRes = $AddressModel->addFromTrips($addressDatas);
-                if (!$addressRes) {
-                    $this->jsonReturn(-1, [], lang("The adress must not be empty"));
-                }
-                $addressDatas['addressid'] = $addressRes['addressid'];
-                $createAddress[0] = $addressRes;
+              $addressRes = $TripsService->createOneAddress($addressDatas,$userData);
+              if (!$addressRes) {
+                  $this->jsonReturn(-1, [], lang("The adress must not be empty"));
+              }
+              $addressDatas['addressid'] = $addressRes['addressid'];
             }
+
             $inputData = [
               $addressSign.'pid'  => $map_type ? (isset($addressDatas['gid']) &&  $addressDatas['gid'] ? -1 : 0) : $addressDatas['addressid'] ,
               $addressSign.'name'  => $addressDatas['addressname'] ,
@@ -1123,7 +728,6 @@ class Trips extends ApiBase
           'now'  => $now,
         ];
 
-
         //验证是否成员，查找该行程的所有乘客id，以便用检查是否有权查询其它用户的位置信息
         if ($wid) {
             if ($tripData['d_uid']) {
@@ -1162,6 +766,5 @@ class Trips extends ApiBase
 
         $this->jsonReturn(0, $returnData, $msg);
     }
-
 
 }
