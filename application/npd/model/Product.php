@@ -20,6 +20,9 @@ class Product extends Model
    
     public function getDetail($id){
         $data     = $this->find($id);
+        if(!$data){
+            return null;
+        }
         $data['data_zh']  = ProductData::where([['pid','=',$id],['lang','=','zh-cn']])->find();
         $data['data_en']  = ProductData::where([['pid','=',$id],['lang','=','en']])->find();
         $data['merchandizing']   = ProductMerchandizing::where([['pid','=',$id]])->select();
