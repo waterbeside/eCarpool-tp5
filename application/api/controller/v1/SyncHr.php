@@ -118,6 +118,7 @@ class SyncHr extends ApiBase
         if (!$code && !$tid) {
             return $this->jsonReturn(992, [], lang('Parameter error'));
         }
+        $DepartmentModel = new Department();
         $userTempModel = new UserTemp();
         if ($code) {
             $tid = 0;
@@ -148,7 +149,7 @@ class SyncHr extends ApiBase
             if (!$userData) {
                 return $this->jsonReturn(20002, $res, "用户不存在");
             }
-            if ($userData &&  in_array($userData["company_id"], [1,11]) && !in_array($userData['Department'], ['李宁','高明常安花园','高明一中','佛山市政府'])) {
+            if ($userData && $DepartmentModel->checkIsCheckLeave($userData)) {
                 // if($is_sync) OldUserModel::where('uid',$userData['uid'])->update(['is_active'=>0,'modifty_time'=>date("Y-m-d H:i:s")]);
                 return $this->jsonReturn(10003, $res, "用户已离积");
             }
@@ -169,6 +170,7 @@ class SyncHr extends ApiBase
         }
         exit;
     }
+
 
 
     /**
