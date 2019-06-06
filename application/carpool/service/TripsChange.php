@@ -8,6 +8,7 @@ use app\carpool\model\user as UserModel;
 use app\common\model\PushMessage;
 use app\user\model\Department as DepartmentModel;
 use app\carpool\service\Trips as TripsService;
+use think\Db;
 
 
 class TripsChange
@@ -171,6 +172,7 @@ class TripsChange
         return $this->error(-1, lang('No permission'));
       }
     }
+    return true;
 
       
   }
@@ -185,7 +187,7 @@ class TripsChange
     $from = mb_strtolower($data['from']);
     $id = mb_strtolower($data['id']);
     $uid = mb_strtolower($data['uid']);
-    $userData = mb_strtolower($data['userData']);
+    $userData = $data['userData'];
     $tripData = $data['tripData'];
     $driver_id   = $tripData->carownid ; //司机id;
     $isDriver    = $tripData->carownid == $uid ? true : false; //是否司机操作
