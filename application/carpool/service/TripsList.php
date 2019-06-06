@@ -5,6 +5,7 @@ use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
 use app\carpool\model\Grade as GradeModel;
 use app\carpool\service\Trips as TripsService;
+use think\Db;
 
 class TripsList
 {
@@ -14,7 +15,7 @@ class TripsList
   public function myList($userData,$pagesize=20,$type = 0,$fullData = 0){
 
     $TripsService = new TripsService();
-
+    $uid = $userData['uid'];
     $viewSql    = $TripsService->buildUnionSql($userData ,($type ? "(0,1,3,4)" : "(0,1,4)"),$type);
     $fields     = $TripsService->buildQueryFields('all');
     $join       = $TripsService->buildTripJoins();
@@ -80,9 +81,7 @@ class TripsList
    * 历史行程
    */
   public function history($userData,$pagesize =20){
-    $userData = $this->getUserData(1);
     $uid = $userData['uid'];
-
     $TripsService = new TripsService();
     $viewSql    = $TripsService->buildUnionSql($userData ,"(0,1,2,3,4)", 1);
 
@@ -206,11 +205,6 @@ class TripsList
     
     return $returnData;
   }  
-
-
-
-  
-
 
   /**
    * 取得分页数据
