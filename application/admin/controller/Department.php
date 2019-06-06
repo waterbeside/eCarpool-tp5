@@ -18,11 +18,15 @@ use my\Tree;
  */
 class Department extends AdminBase
 {
+    public  $DepartmentModel = null;
+    public  $un_check = ['admin/department/list_dialog'];
+    public $check_dept_setting = [
+      "action" => ['list_dialog']
+    ];
 
     protected function initialize()
     {
         parent::initialize();
-
     }
 
     /**
@@ -31,7 +35,7 @@ class Department extends AdminBase
      * @param int    $page
      * @return mixed
      */
-    public function index($pid=0,$filter = [], $page = 1)
+    public function index($pid=0,$filter = [], $page = 1, $pagesize = 50, $returnType = 1)
     {
 
         $map = [];
@@ -50,10 +54,13 @@ class Department extends AdminBase
         }
         $fields = '*';
         $order = 'name ';
-        $lists = DepartmentModel::where($map)->order($order)->field($fields)->paginate(50, false, ['query'=>request()->param()]);
+
+        $DepartmentModel = new DepartmentModel();
+        $this->DepartmentModel = $DepartmentModel;
+        $lists = $DepartmentModel->where($map)->order($order)->field($fields)->paginate($pagesize, false, ['query'=>request()->param()]);
 
         //start 父级部门导航
-        $path_data = DepartmentModel::where('id',$pid)->find();
+        $path_data = $DepartmentModel->where('id',$pid)->find();
         $path_array = $path_data ? explode(',',$path_data['path']) : [];
         $path_array[] = $pid;
         $fullname_array = explode(',',$path_data['fullname']);
@@ -70,9 +77,34 @@ class Department extends AdminBase
           'pid'=>$pid,
           'path' => $path,
           'deep' => $deep,
-
+          'pagesize' => $pagesize,
         ];
-        return $this->fetch('index',$returnData );
+        return $returnType ? $this->fetch('index',$returnData ) : $returnData;
+    }
+
+
+    /**
+     * 部门对话框
+     * @return mixed
+     */
+    public function list_dialog($pid='p_1',$filter = [], $page = 1,$fun = "select_dept",$multi = 0,$default_id='')
+    {
+      $returnData = $this->index($pid,$filter,$page,10,0);
+      $returnData['fun'] = $fun;
+      $returnData['multi'] = $multi;
+      $authDeptData = $this->authDeptData;
+      $auth_depts_isAll = $this->userBaseInfo['auth_depts_isAll'];
+      $auth_depts = $this->userBaseInfo['auth_depts'];
+       // var_dump($returnData['lists']);
+      foreach ($returnData['lists'] as $key => $value) {
+        $fullPathArray = explode(',',($value['path'].','.$value['id']));
+        $returnData['lists'][$key]['auth_allow_select'] = $auth_depts_isAll || array_intersect($auth_depts,$fullPathArray) ? 1 : 0;
+
+      }
+      $DepartmentModel = $this->DepartmentModel;
+      $returnData['defaultData'] = $default_id ? $DepartmentModel->getDeptDataIdList($default_id) : null;
+      $returnData['defaultID'] = $default_id; 
+      return $this->fetch('list_dialog',$returnData );
     }
 
     /**
@@ -215,7 +247,6 @@ class Department extends AdminBase
        $msg .= $successMsg."<br />".$failMsg."<br />";
        // return $this->fetch('index/multi_jump',['url'=>'','msg'=>$msg]);
        return $this->fetch('index/multi_jump',['url'=>$jumpUrl,'msg'=>$msg]);
-
 
      }
 

@@ -4,23 +4,23 @@
       <div class="cp-avatar" style="background-image:url('{$data.userInfo.avatar}')"></div>
     </div>
 
-    <h3>中奖信息</h3>
+    <h3>{:lang('m:s_l:Winning information')}</h3>
     <table class="layui-table">
       <tbody>
         <tr>
-          <td class="label" width="100">中奖编号</td>
+          <td class="label" width="100">{:lang('m:s_l:Winning number')}</td>
           <td> {$data.publish_number}</td>
         </tr>
         <tr>
-          <td class="label" width="100">奖品名称</td>
+          <td class="label" width="100">{:lang('Prize name')}</td>
           <td>
             <div  class="cover-thumb " style=" display: inline-block; vertical-align:middle;  height:30px;width:40px; <?php echo $data['thumb'] ? 'background-image:url(\''.$data['thumb'].'\')' : ''; ?>"> </div>
-            <span class="layui-elip">【第{$data.publication_number}期】 {$data.prize_name|iconv_substr=0,14} </span>
+            <span class="layui-elip">【{:lang('Phase %d',[$data['publication_number']])}】 {$data.prize_name|iconv_substr=0,14} </span>
           </td>
         </tr>
 
         <tr>
-          <td class="label">抽奖时间</td>
+          <td class="label">{:lang('Participation time')}</td>
           <td>
             {$data.buy_time}
             <span style=" color: #ccc; margin-left:5px">
@@ -29,11 +29,20 @@
           </td>
         </tr>
         <tr>
-          <td class="label">是否已兑</td>
-          <td>{$data.exchange_time ? "是，兑换时间：".$data.exchange_time : "否" }</td>
+          <td class="label">{:lang('Lottery time')}</td>
+          <td>
+            {$data.end_time}
+          </td>
         </tr>
         <tr>
-          <td class="label">采购价</td>
+          <td class="label">{:lang('Redeemed')}?</td>
+          <td>
+            {$data.exchange_time ? lang('Yes').' '.lang('Redemption time').':' : lang('No') }
+            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.exchange_time ? strtotime($data.exchange_time)*1000 : '-'}</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="label">{:lang('Purchase price')}</td>
           <td>{$data.amount}</td>
         </tr>
 
@@ -42,28 +51,28 @@
     <div class="blank10"></div>
 
 
-    <h3>用户信息</h3>
+    <h3>{:lang('User Info')}</h3>
     <table class="layui-table">
       <tbody>
         <tr>
-          <td class="label" width="100">用户名</td>
+          <td class="label" width="100">{:lang('Username')}</td>
           <td>{$data.userInfo.loginname}</td>
         </tr>
         <tr>
-          <td class="label">手机</td>
+          <td class="label">{:lang('Phone')}</td>
           <td>{$data.userInfo.phone}</td>
         </tr>
         <tr>
-          <td class="label">姓名</td>
+          <td class="label">{:lang('Name')}</td>
           <td>{$data.userInfo.name}</td>
         </tr>
 
         <tr>
-          <td class="label">所属公司</td>
+          <td class="label">{:lang('Company')}</td>
           <td><?php echo isset($companys[$data['userInfo']['company_id']]) ? $companys[$data['userInfo']['company_id']] : ''; ?></td>
         </tr>
         <tr>
-          <td class="label">部门</td>
+          <td class="label">{:lang('Department')}</td>
           <!-- <td>{$data.userInfo.Department}</td> -->
           <td>{$data.userInfo.department_id ? $data.userInfo.full_department|str_replace=","," / ",### : $data.userInfo.Department}</td>
         </tr>
@@ -78,7 +87,7 @@
     <div class="blank10"></div>
     <?php if(!$data['exchange_time']){ ?>
     <div style="text-align:right">
-        <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="RESOLVE_INIT.finish({$data.id})">确认兑奖</a>
+        <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="RESOLVE_INIT.finish({$data.id})">{:lang('Confirm redemption')}</a>
     </div>
     <div class="blank10"></div>
     <?php  } ?>
@@ -93,13 +102,16 @@ var RESOLVE_INIT = {
   data : {
 
   },
+  init : function(){
+    cRenderTimes();
+  },
   finish : function(id){
     // var order_no = $("input[name=order_no]").val();
     // console.log(order_no)
-    layer.confirm('您确定要完结本次兑换？',
+    layer.confirm("{:lang('Are you sure you want to end this redemption?')}",
       {
         closeBtn: 1,
-        btn: ['确定','取消'] //按钮
+        btn: [myLang.r('Yes'),myLang.r('No')] //按钮
       }, function(){
         ajaxSubmit({
           url:"<?php echo url('admin/ScoreWinners/finish');?>",
@@ -115,6 +127,7 @@ var RESOLVE_INIT = {
 
 
 }
+RESOLVE_INIT.init();
 
 
 </script>

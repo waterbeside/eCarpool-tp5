@@ -2,6 +2,9 @@
 return [
   //通用
   '.' => '.',
+  ',' => ',',
+  'Failed' => 'Thất bại',
+  'Successfully' => 'Thành công',
   'Fail' => 'Thất bại',
   "Can not be empty" => 'không thể để trống',
   "Illegal access" => 'Truy cập bất hợp pháp',
@@ -9,10 +12,16 @@ return [
   "Parameter error"=>"Lỗi tham số",
   "No permission" => "Không cho phép",
 
+
+  //jwt 验证
+  'You are not logged in' =>'Bạn chưa đăng nhập',
+  'Login status expired, please login again' =>'Tình trạng đăng nhập đã hết hạn, vui lòng đăng nhập lại',
+
   //用户相关
   'Please enter user name'  => 'Vui lòng nhập tên người dùng',
   'Please enter your password' => 'Vui lòng nhập mật khẩu của bạn',
   'User name or password error' => 'Tên người dùng hoặc mật khẩu không chính xác',
+  'The phone number you entered is incorrect' => 'Số điện thoại bạn nhập không chính xác',
   'Name error' => 'Tên không chính xác',
   'The user is banned' => 'Người dùng bị cấm',
 
@@ -27,6 +36,12 @@ return [
   'No need to merge' => 'Không cần phải hợp nhất',
   'The phone number has been bound to this account, no need to merge.' => 'Số điện thoại đã bị ràng buộc vào tài khoản này, không cần phải hợp nhất',
   'The phone number has been registered for another account'=>'Số điện thoại đã được đăng ký một tài khoản khác',
+  'Please log in directly to the employee number to perform the binding operation' => 'Vui lòng đăng nhập trực tiếp vào số nhân viên để ràng buộc',
+
+  //短信
+  'Verification code cannot be empty' => 'Mã xác minh không thể để trống',
+  'Verification code error' => 'Lỗi mã xác minh',
+
 
   //字段相关
   'Please select date and time' => 'Vui lòng chọn ngày và giờ',
@@ -39,6 +54,8 @@ return [
   "The destination cannot be empty" => 'Điểm kết thúc không được để trống',
   "The departure time has passed. Please select the time again" => "Thời gian khởi hành đã quá hạn, vui lòng chọn lại thời gian",
   "You have already made one trip at {:time}, should not be published twice within the same time"=> "Bạn có chuyến đi lúc {:time}, vui lòng không lặp lại trong thời gian tương tự",
+  "You have already made one trip at {:time}, please do not post in a similar time"=> "Bạn có chuyến đi lúc {:time}, Đừng thêm các chuyến đi nhiều lần trong thời gian tương tự",
+
   'The number of empty seats cannot be empty'=>'Số lượng chỗ ngồi trống không được để trống',
   'The trip has been completed or cancelled. Operation is not allowed' => 'Chuyến đi đã hoàn thành hoặc hủy. Thao tác không được phép',
   'The trip not started, unable to operate' => 'Chuyến đi chưa bắt đầu, không thể thao tác',
@@ -49,6 +66,8 @@ return [
   'Failed, seat is full' => 'Thất bại, chỗ ngồi đã đầy',
   'You have already taken this trip'=>'Bạn không phải là tài xế hoặc hành khách của chuyến đi này',
   'You are not the driver or passenger of this trip'=>'Bạn không phải là tài xế hoặc hành khách của chuyến đi này',
+  'You are not the driver of this trip'=>'Bạn không phải là người lái xe của chuyến đi này',
+
   'Not allowed to view  other`s location information'=>'Không được phép xem thông tin vị trí của người khác',
   'This user has not joined this trip or has cancelled the itinerary' => 'Người dùng này chưa tham gia chuyến đi này hoặc đã hủy hành trình',
 
@@ -68,6 +87,11 @@ return [
   "Please upload attachments" => 'Vui lòng tải lên tệp đính kèm',
   "Not image file format" => 'Sai định dạng hình ảnh',
   'Images cannot be larger than 800K' => 'Hình ảnh không được lớn hơn 800KB',
+  'Images cannot be larger than {:size}' => 'Hình ảnh không được lớn hơn {:size}',
   "File not found"=>'Không tìm thấy tệp',
   "This attachment cannot be deleted" => 'Không thể xóa tệp đính kèm này',
+
+  //评分
+  "You can't rate this"=> "Bạn không thể đánh giá điều này",
+  "You have already rated this" => "Bạn đã đánh giá điều này",
 ];

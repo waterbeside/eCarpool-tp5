@@ -323,4 +323,3 @@ class Tree {
         return(strpos(',,' . $list . ',', ',' . $item . ','));
     }
 }
-?>

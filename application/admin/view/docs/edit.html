@@ -37,10 +37,10 @@
                       <div class="layui-col-md4">
                         <div class="col-wrapper">
                           <div class="layui-form-item">
-                              <label class="layui-form-label">所属类型</label>
+                              <label class="layui-form-label">所属分组</label>
                               <div class="layui-input-block">
                                 <select name="cid">
-                                    <option value="0">选译类型</option>
+                                    <option value="0">选译类型-不分组</option>
                                     {foreach name="$category_list" key='key' item="vo"}
                                     <option value="{$key}" {if condition="$data.cid==$key"} selected="selected"{/if}> {$vo}</option>
                                     {/foreach}
@@ -161,9 +161,13 @@ PAGE_EXEC = {
 $(function() {
     var photoListItem,
         uploadImage;
+    var url="{:url('/api/ueditor')}";
+
     var ue = UE.getEditor('content',{
+      serverUrl :url,
       //这里可以选择自己需要的工具按钮名称,此处仅选择如下五个
-      toolbars:[['undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript','|','justifyleft','justifyright','justifycenter','|','blockquote','pasteplain','inserttable','autotypeset','removeformat']],
+      toolbars:[['undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript','|'
+      ,'justifyleft','justifyright','justifycenter','|','simpleupload','|','blockquote','pasteplain','inserttable','autotypeset','removeformat']],
       wordCount:true,
       topOffset:0,
       maximumWords:8000,

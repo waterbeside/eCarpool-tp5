@@ -16,6 +16,10 @@
     </style>
 </head>
 <body>
+  <?php
+   $header = request()->header();
+   $dontJump = isset($header['x-requested-with']) && $header['x-requested-with'] == 'modal-html' ? 1 : 0;
+  ?>
     <div class="system-message">
         <?php switch ($code) {?>
             <?php case 1:?>
@@ -28,20 +32,22 @@
             <?php break;?>
         <?php } ?>
         <p class="detail"></p>
-        <?php if($url!="javascript:void(0);"){ ?>
+        <?php  if($wait>0 && !$dontJump){ ?>
         <p class="jump">
             页面自动 <a id="href"  >跳转</a> 等待时间： <b id="wait"><?php echo($wait);?></b>
         </p>
        <?php } ?>
-
     </div>
     <script type="text/javascript">
         (function(){
+            var waitTime = "<?php echo($wait);?>";
             var url = "<?php echo($url);?>"
+            if(waitTime<1){
+              return false;
+            }
             // url = url == "javascript:history.back(-1);" ? "" :url ;
             document.getElementById('href').href = url
-            var wait = document.getElementById('wait')
-
+            var wait = document.getElementById('wait');
             var interval = setInterval(function(){
                 var time = --wait.innerHTML;
                 if(time <= 0) {

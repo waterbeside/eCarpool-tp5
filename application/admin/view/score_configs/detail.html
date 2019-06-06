@@ -1,0 +1,79 @@
+<div class="amain-body P-ScoreConfigs-detail">
+
+
+    <table class="layui-table">
+      <tbody>
+        <tr>
+          <td class="label" width="100">title</td>
+          <td>{$data.title}</td>
+        </tr>
+        <tr>
+          <td class="label">name</td>
+          <td>{$data.name}</td>
+        </tr>
+        <tr>
+          <td class="label">remark</td>
+          <td>{$data.remark}</td>
+        </tr>
+        <tr>
+          <td class="label">value</td>
+          <td>
+            <div class="code-wrapper code-json">
+            </div>
+          </td>
+
+        </tr>
+
+      </tbody>
+    </table>
+    <div class="modal-bottom-btns-bar">
+      <button type="button" class="close layui-btn layui-btn-primary" data-dismiss="modal" aria-label="Close"><i class="fa fa-times"></i> 取消</button>
+    </div>
+</div>
+
+<script>
+// form.render();
+DETAIL_PAGE_EXEC = {
+  data :{
+    value:<?php echo $data['value']; ?>
+  },
+  formatJson : function(msg) {
+    var rep = "~";
+    var jsonStr = JSON.stringify(msg, null, rep)
+    var str = "";
+    for (var i = 0; i < jsonStr.length; i++) {
+        var text2 = jsonStr.charAt(i)
+        if (i > 1) {
+            var text = jsonStr.charAt(i - 1)
+            if (rep != text && rep == text2) {
+                str += "<br/>"
+            }
+        }
+        str += text2;
+    }
+    jsonStr = "";
+    for (var i = 0; i < str.length; i++) {
+        var text = str.charAt(i);
+        if (rep == text)
+            jsonStr += "        "
+        else {
+            jsonStr += text;
+        }
+        if (i == str.length - 2)
+            jsonStr += "<br/>"
+    }
+    return jsonStr;
+  },
+  init: function(){
+    var msg = this.data.value;
+    msg = this.formatJson(msg);
+    $('.code-json').html(msg);
+  }
+
+}
+
+DETAIL_PAGE_EXEC.init();
+
+
+
+</script>

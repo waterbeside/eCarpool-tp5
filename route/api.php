@@ -49,6 +49,7 @@ Route::group([], function () {
   Route::rule('api/:version/trips/wall','api/:version.trips/wall_list','GET');
   Route::rule('api/:version/trips/info','api/:version.trips/info_list','GET');
   Route::rule('api/:version/trips/history','api/:version.trips/history','GET');
+  Route::rule('api/:version/trips/check_my_status','api/:version.trips/check_my_status','GET');
   Route::rule('api/:version/trips','api/:version.trips/index','GET');
   Route::rule('api/:version/trips/:from','api/:version.trips/add','POST');
   Route::rule('api/:version/trips/:from/:id','api/:version.trips/change','PATCH');
@@ -58,7 +59,12 @@ Route::group([], function () {
   //地址相关
   Route::rule('api/:version/address/:id','api/:version.address/read','GET')->pattern(['id' => '\d+']);
   Route::rule('api/:version/address/my','api/:version.address/my','GET');
+  Route::rule('api/:version/address/citys','api/:version.address/citys','GET');
   Route::rule('api/:version/address','api/:version.address/save','POST');
+
+
+  Route::rule('api/:version/grade','api/:version.grade/index','GET');
+  Route::rule('api/:version/grade','api/:version.grade/save','POST');
 
   //用户相关
   Route::resource('api/:version/user','api/:version.user');
@@ -69,6 +75,7 @@ Route::group([], function () {
   Route::resource('api/:version/publics/idle','api/:version.publics.idle');
   Route::rule('api/:version/publics/comments','api/:version.publics.comments/index','GET');
   Route::rule('api/:version/app/url','api/:version.app/get_url','GET');
+  Route::rule('api/:version/publics/reports/trips_summary','api/:version.publics.reports/trips_summary','GET');
 
 
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();

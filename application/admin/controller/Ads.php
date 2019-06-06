@@ -3,6 +3,7 @@ namespace app\admin\controller;
 
 use app\content\model\Ads as AdsModel;
 use app\admin\controller\AdminBase;
+use app\user\model\Department ;
 use think\Db;
 // use my\RedisData;
 
@@ -44,10 +45,17 @@ class Ads extends AdminBase
         }
         $lists  = AdsModel::where($map)->where($whereExp)->json(['images'])->order(['sort' => 'DESC', 'id' => 'DESC'])->paginate($pagesize, false, ['page' => $page]);
         $typeList = config('content.ads_type');
+        $DepartmentModel = new Department();
+
         foreach ($lists as $key => $value) {
           $lists[$key]['platform_list'] =  explode(',',$value['platforms']);
           $lists[$key]['app_id_list'] =  explode(',',$value['app_ids']);
           $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
+          $lists[$key]['deptData'] = [];
+          if($value['region_id']){
+            $lists[$key]['deptData'] = $value['region_id'] ? $DepartmentModel->getDeptDataList($value['region_id']) : [];
+          }
+          
         }
 
         $this->assign('typeList', $typeList);
@@ -85,12 +93,19 @@ class Ads extends AdminBase
           if($data['link_type']>0 && !trim($data['link'])){
             return $this->jsonReturn(-1,'你选择了跳转，请填写跳转连接');
           }
+          if(is_numeric($data['lang']) && intval($data['lang']) === 0 ){
+            $data['lang'] = '';
+          }
+          if( $data['lang'] == '-1'  ){
+            $data['lang'] = $data['lang_input'];
+          }
           $validate_result = $this->validate($data, 'app\content\validate\Ads');
           if ($validate_result !== true) {
             return $this->jsonReturn(-1,$validate_result);
           }
 
           $upData = [
+            'region_id' => $data['region_id'] ? $data['region_id'] : 0,
             'title' =>   iconv_substr($data['title'],0,100) ,
             'app_ids' => $data['app_ids'],
             'platforms' => $data['platforms'],
@@ -101,6 +116,7 @@ class Ads extends AdminBase
             'link_type' => $data['link_type'],
             'link' => $data['link'],
             'duration' => $data['duration'],
+            'lang' => $data['lang'],
           ];
           if($data['thumb'] && trim($data['thumb'])){
             $upData['images'][0] =  $data['thumb'];
@@ -159,11 +175,18 @@ class Ads extends AdminBase
           if($data['link_type']>0 && !trim($data['link'])){
             return $this->jsonReturn(-1,'你选择了跳转，请填写跳转连接');
           }
+          if(is_numeric($data['lang']) && intval($data['lang']) === 0 ){
+            $data['lang'] = '';
+          }
+          if( $data['lang'] == '-1'  ){
+            $data['lang'] = $data['lang_input'];
+          }
           $validate_result = $this->validate($data, 'app\content\validate\Ads');
           if ($validate_result !== true) {
             return $this->jsonReturn(-1,$validate_result);
           }
           $upData = [
+            'region_id' => $data['region_id'] ? $data['region_id'] : 0,
             'title' =>   iconv_substr($data['title'],0,100) ,
             'app_ids' => $data['app_ids'],
             'platforms' => $data['platforms'],
@@ -173,6 +196,7 @@ class Ads extends AdminBase
             'link_type' => $data['link_type'],
             'link' => $data['link'],
             'duration' => $data['duration'],
+            'lang' => $data['lang'],
           ];
           if($data['thumb'] && trim($data['thumb'])){
             $upData['images'][0] =  $data['thumb'];
@@ -192,6 +216,19 @@ class Ads extends AdminBase
 
       }else{
         $data = AdsModel::json(['images'])->find($id);
+        // $deptsArray = explode(',',$data['region_id']);
+        $deptsData = [];
+        $DepartmentModel = new Department();
+        $deptsData = $data['region_id'] ? $DepartmentModel->getDeptDataIdList($data['region_id']) : [];
+
+        // foreach ($deptsArray as $key => $value) {
+        //   // dump($value);
+        //   if( intval($value) > 0){
+        //     $deptsItemData = $DepartmentModel->field('id , path, fullname , name')->find($value);
+        //     $deptsData[$value] = $deptsItemData ? $deptsItemData->toArray() : [];
+        //   }
+        // }
+
         $typeList = config('content.ads_type');
         $data['thumb'] = is_array($data["images"]) ? $data["images"][0] : "" ;
         $data['platform_list'] =  explode(',',$data['platforms']);
@@ -199,7 +236,7 @@ class Ads extends AdminBase
         $this->assign('app_id_list', config('others.app_id_list'));
         $this->assign('platform_list', config('others.platform_list'));
         $this->assign('typeList', $typeList);
-        return $this->fetch('edit', ['data' => $data]);
+        return $this->fetch('edit', ['data' => $data,'deptsData'=>$deptsData]);
       }
 
     }

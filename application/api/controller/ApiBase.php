@@ -3,6 +3,7 @@ namespace app\api\controller;
 
 use app\common\controller\Base;
 use app\carpool\model\User as UserModel;
+use app\user\model\Department;
 use think\facade\Cache;
 use think\Controller;
 use think\Db;
@@ -21,8 +22,9 @@ class ApiBase extends Base
     protected function initialize()
     {
         // config('default_lang', 'zh-cn');
-        $this->loadLanguagePack();
         parent::initialize();
+        $this->loadLanguagePack();
+
     }
 
 
@@ -47,7 +49,7 @@ class ApiBase extends Base
         $Authorization = $Authorization ? $Authorization : cookie('admin_token');
         $Authorization = $Authorization ? $Authorization : input('request.admin_token');
         if(!$Authorization){
-          $this->passportError = [10004,'您尚未登入'];
+          $this->passportError = [10004,lang('You are not logged in')];
           return $returnType ? $this->jsonReturn(10004,$this->passportError[1]) : false;
         }else{
           try{
@@ -71,7 +73,7 @@ class ApiBase extends Base
           if(isset($jwtDecode->uid) && isset($jwtDecode->loginname) ){
             $now = time();
             if( $now  > $jwtDecode->exp){
-                $this->passportError = [10004,'登入超时，请重新登入'];
+                $this->passportError = [10004,lang('Login status expired, please login again')];
                 return $returnType ? $this->jsonReturn(10004,$this->passportError[1]) : false;
             }
             $this->userBaseInfo  = array(
@@ -80,7 +82,7 @@ class ApiBase extends Base
             );
             return true;
           }else{
-            $this->passportError = [10004,'您尚未登入'];
+            $this->passportError = [10004,lang('You are not logged in')];
             return $returnType ? $this->jsonReturn(10004,$this->passportError[1]) : false;
           }
         }
@@ -113,7 +115,7 @@ class ApiBase extends Base
      */
     public function loadLanguagePack($language = NULL,$formCommon = 0){
       $path = $formCommon ? Env::get('root_path') .'application/common/lang/' : Env::get('root_path') .'application/api/lang/';
-      $lang = $language ? $language  : $this->getLang();
+      $lang = $language ? $language  : $this->language;
       Lang::load( $path.$lang.'.php');
     }
 
@@ -135,7 +137,7 @@ class ApiBase extends Base
         $userData = UserModel::find($uid);
       }
       if(!$uid || !$userData){
-        return $returnType ? $this->jsonReturn(10004,'您尚未登入') : false;
+        return $returnType ? $this->jsonReturn(10004,lang('You are not logged in')) : false;
       }
       if(!$userData['is_active']){
         return $returnType ? $this->jsonReturn(10003,lang('The user is banned')) : false;
@@ -148,15 +150,32 @@ class ApiBase extends Base
 
     }
 
+    /**
+     * 验证是否本地请求
+     * @param  integer $returnType 0返回true or false，其它当false时，返json
+     * @return boolean
+     */
+    public function check_localhost($returnType = 0)
+    {
+        $host = $this->request->host();
+        // dump($this->request->port());exit;
+        // && !in_array($host,["gitsite.net:8082","admin.carpoolchina.test"])
+        if (strpos($host, '127.0.0.1') === false && strpos($host, 'localhost') === false) {
+            return $returnType ?  $this->jsonReturn(30001,lang('Illegal access')) : false ;
+        } else {
+            return true;
+        }
+    }
+
 
     /**
      * 接口日圮
      * @param  string  $desc   描述
      * @param  integer $status 状态 -1失败，1成功
      */
-    public function log($desc='',$status=0){
+    public function log($desc='',$status=0,$uid = null){
       $request = request();
-      $data['uid'] = $this->userBaseInfo['uid'];
+      $data['uid'] = is_numeric($uid) ? $uid : ($this->userBaseInfo['uid'] ? $this->userBaseInfo['uid'] : 0);
       $data['ip'] = $request->ip();
       $isAjaxShow =  $request->isAjax() ? " (Ajax)" : "";
       $data['type'] = $request->method()."$isAjaxShow";
@@ -168,5 +187,18 @@ class ApiBase extends Base
       Db::name('log')->insert($data);
     }
 
-
+    /** 
+     * 检查部门权限
+    */
+    public function checkDeptAuth($userDid,$dataRid){
+      $Department = new Department();
+      $deptData = $Department->getItem($userDid);
+      $dataRid = explode(',',$dataRid);
+      $arrayIts = array_intersect($dataRid, explode(',',($deptData['path'].','.$userDid)));
+      if(!empty($arrayIts) ){
+        return true;
+      }else{
+        return false;
+      }
+    }
 }

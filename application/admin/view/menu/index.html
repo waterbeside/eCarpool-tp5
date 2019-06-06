@@ -59,7 +59,7 @@ PAGE_EXEC = {
 
       columns:[[
             {field:'id',title:'#',width:60},
-            {field:'title',title:'名称',width:290},
+            {field:'title',title:'标题',width:290,formatter:formatTitle},
             {field:'name',title:'路由标识' ,formatter:formatName},
             {field:'status',title:'状态',width:50,formatter:formatStatus},
             {field:'sort',title:'排序',width:40},
@@ -69,10 +69,39 @@ PAGE_EXEC = {
 
       },
       onLoadSuccess:function(node, data){
-
+        $(".P-menu [data-tips]").each(function(index, el) {
+          var $_this = $(this);
+          $(this).hover(function(){
+            var tips = $_this.attr('data-tips');
+            if(tips){
+              var tipsPosition = $_this.data('tips-position') ;
+              layer.tips(tips, this,{
+                // time:1000,
+                tips:4,
+              })
+            }
+          })
+        });
       }
     })
 
+  function formatTitle(value,row){
+    var s_en = '<span class="layui-badge layui-bg-black" title="'+row.title_en+'" >EN</span>';
+    var s_vi = '<span class="layui-badge layui-bg-black" title="'+row.title_vi+'" >VI</span>';
+    var s = value;
+    var tips = "";
+    if($.trim(row.title_en)!=""){
+        s += s_en;
+        tips += 'EN:\t'+row.title_en
+    }
+    if($.trim(row.title_vi)!=""){
+        s += s_vi;
+        tips = tips ? tips + "<br />" : tips;
+        tips += 'VI:\t'+row.title_vi;
+    }
+    tips = tips ? 'data-tips="'+tips+'"' : '';
+    return '<span '+tips+' >' + s + '</span>'
+  }
 
    function formatOption(value,row){
      var s = '<a href="{:url('admin/menu/add')}?pid='+row.id+'" class="layui-btn layui-btn-success layui-btn-xs " data-title="添加子菜单"  data-trigger="modal" title="添加子菜单"><i class="layui-icon">&#xe654;</i> </a>'

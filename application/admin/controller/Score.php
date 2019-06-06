@@ -2,6 +2,7 @@
 namespace app\admin\controller;
 
 use app\score\model\History as HistoryModel;
+use app\score\model\Configs as ScoreConfigsModel;
 use app\score\model\AccountMix as AccountMixModel;
 use app\score\model\Account as ScoreAccountModel;
 use app\common\model\Docs as DocsModel;
@@ -19,44 +20,66 @@ use think\Db;
 class Score extends AdminBase
 {
 
+
+  public $check_dept_setting = [
+    "action" => ['config']
+  ];
+
+
   /**
    * 变更积分
    * @return mixed
    */
   public function change()
   {
+    $type         = input('param.type/s');
+    $account      = input('param.account/s');
+    $account_id   = input('param.account_id/d',0);
+    $accountModel = new AccountMixModel();
+    if( ($type=='0' || $type=="score") && $account_id ){ //直接从积分帐号取
+      $accountInfo = $accountModel->getDetailById($account_id);
+    }else{
+      $accountInfo = $accountModel->getDetailByAccount($type,$account);
+    }
+    if(!$accountInfo){
+      $this->jsonReturn(-1,'查找不到该账号信息');
+    }
+    $department_id = $accountInfo['carpool']['department_id'];
+    $this->checkDeptAuthByDid($department_id,1); //检查地区权限
+
     if ($this->request->isPost()) {
       $datas         = $this->request->post('');
-
+      if($datas['operand'] == 0){
+        $this->jsonReturn(-1,'请输入分值');
+      }
       if(!$datas['operand'] || !$datas['reason']){
         $this->jsonReturn(-1,'参数错误');
       }else{
         $datas['operand'] = abs(intval($datas['operand']));
       }
-      //根据accountType查出account字段
-      if($this->updateScore($datas)){
+
+      if( ($datas['isadd'] && $datas['reason'] < 0 ) || (!$datas['isadd'] && $datas['reason'] > 0)  ){
+        $datas['reason']  = - $datas['reason'];
+      }
+      $datas['region_id'] = $department_id;
+      if($accountModel->updateScore($datas)){
+        $this->log('改分成功',0);
         $this->jsonReturn(0,'改分成功');
       }else{
-        $this->jsonReturn(-1,'改分失败');
-      };
+        $errorMsg = $accountModel->errorMsg ?  $accountModel->errorMsg : '改分失败';
+        $this->log('改分失败'.json_encode($this->request->post()),-1);
+        $this->jsonReturn(-1,$errorMsg);
+      }
 
     }else{
-      $type         = input('param.type/s');
-      $account      = input('param.account/s');
-      $account_id   = input('param.account_id/d',0);
-      $accountModel = new AccountMixModel();
-      if( ($type=='0' || $type=="score") && $account_id ){ //直接从积分帐号取
-        $accountInfo = $accountModel->getDetailById($account_id);
-      }else{
-        $accountInfo = $accountModel->getDetailByAccount($type,$account);
-      }
 
       $reasons = config('score.reason');
       $reasons_operable = config('score.reason_operable');
       $reasonsArray=[];
+      $lang = $this->activeLang;
       foreach ($reasons as $key => $value) {
         if(in_array($key,$reasons_operable)){
-          $reasonsArray[] = ['code'=>$key,'title'=>$value];
+          $reasonsArray[] = ['code'=>$key,'title'=>lang("sl:{$value}")];
         }
       }
 
@@ -74,10 +97,11 @@ class Score extends AdminBase
   }
 
   /**
-   * 更新积分
-   * @param  Array $datas 更新的数据
+   * 更新积分(取消使用，已改用AccountMix模型里的方法)
+   * @param  array $datas 更新的数据
    */
-  public function updateScore($datas){
+  public function updateScore($datas)
+  {
 
     $type         = $datas['type'];
     $account_id   = isset($datas['account_id']) ? $datas['account_id'] : NULL;
@@ -160,25 +184,21 @@ class Score extends AdminBase
     /**
      * 积分配置
      */
-    public function config(){
+    public function config()
+    {
       # 控制积分兑换&&积分抽奖&&实物抽奖开关
                 // "order_switch" : 1,
                 // "lottery_integral_switch" : 1,
                 // "lottery_material_switch" : 1,
 
       $configs = $this->systemConfig;
-      $redis = new RedisData();
-      $rule_number =  $this->request->param('rule_number',0);
-      $cacheKey = "CONFIG_SETTING:".$rule_number;
 
-      $soreSettingData=json_decode($redis->get($cacheKey),true);
-      // dump($soreSettingData);
       if ($this->request->isPost()){
+        $region_id =  $this->request->param('region_id');
         $datas          = $this->request->post('');
         $order_date     = explode(',',$datas['order_date']);
         $exchange_date  = explode(',',$datas['exchange_date']);
-        $rule_number =  isset($datas['rule_number']) ? $datas['rule_number'] : false;
-        if(!is_numeric($rule_number)){
+        if(!is_numeric($region_id)){
           $this->error("请选择地区");
         }
 
@@ -193,6 +213,8 @@ class Score extends AdminBase
             }
           }
         }
+
+
 
         $data['exchange_date'] = $exchange_date;
         if($datas['exchange_date'] == "*"){
@@ -215,26 +237,81 @@ class Score extends AdminBase
         }
         $soreSettingData['lottery_integral_price']    = $datas['lottery_integral_price'];
 
+
+        $map = [
+          ['p_region_id','=',$region_id] ,
+          ['name','=','integral_config'] ,
+        ];
+        $ScoreConfigsModel = new ScoreConfigsModel();
+        $res = $ScoreConfigsModel->where($map)->find();
+
+        $data = null;
+        if($res){
+          $res = $res->toArray();
+          $data = json_decode($res['value'],true);
+        }
+        $soreSettingData = is_array($data) ? array_merge($data,$soreSettingData) : $soreSettingData;
         $soreSettingDataStr = json_encode($soreSettingData);
-        $redis->set($cacheKey, $soreSettingDataStr);
+
+        $updataData = [
+          'p_region_id' => $region_id,
+          'name' => 'integral_config',
+          'value'=> $soreSettingDataStr,
+          'title'=> '积分配置',
+        ];
+
+        if( $res && $res['id'] ){
+          $map[] = ['id',"=",$res['id']];
+          $updateRes = $ScoreConfigsModel->where($map)->update($updataData);
+          $updateid =  $updateRes !== false ? $res['id'] :false;
+        }else{
+          $updateid = $ScoreConfigsModel->insertGetId($updataData);
+
+        }
+        if(!$updateid){
+          return $this->jsonReturn(-1,'更新失败');
+        }
+
+        $redis = new RedisData();
+        $redis->delete("CONFIG_SETTING:".$region_id);
+
+
         $this->log('修改积分配置成功',0);
         $this->success("修改成功");
 
-
       }else{
+        $region_id =  $this->request->param('region_id',1);
 
-        $data = $soreSettingData;
-        $data['order_date_str']           =  !isset($data['order_date'])  ? '' : (is_array($data['order_date']) ? join(",",$data['order_date']) : $data['order_date']);
-        $data['exchange_date_str']        =  !isset($data['exchange_date'])  ? '' : (is_array($data['exchange_date']) ? join(",",$data['exchange_date']) : $data['exchange_date']);
+        //地区排查 检查管理员管辖的地区部门
+        $authDeptData = $this->authDeptData;
+        // dump($authDeptData);exit;
+        if(empty($authDeptData['allow_region_ids']) && !$this->userBaseInfo['auth_depts_isAll'] ){
+           $region_id = $authDeptData['filter_region_ids'][0];
+        }
+        $regionData = isset($authDeptData['filter_region_datas'][0]) ? $authDeptData['filter_region_datas'][0] : null;
+
+        $map = [
+          'p_region_id' => $region_id,
+          'name' => 'integral_config'
+        ];
+        $res = ScoreConfigsModel::where($map)->find();
+        $data = null;
+        if($res){
+          $res = $res->toArray();
+          $data = json_decode($res['value'],true);
+          $data['order_date_str'] =  is_array($data['order_date']) ? implode(',',$data['order_date']) : $data['order_date'] ;
+          $data['exchange_date_str'] = is_array($data['exchange_date']) ? implode(',',$data['exchange_date']) : $data['exchange_date'];
+        }
+        //
         /*$data['(order_switch)']             =  isset($data['order_switch'])             ? $data['order_switch']            : 0  ;
         $data['lottery_integral_switch']  =  isset($data['lottery_integral_switch'])  ? $data['lottery_integral_switch'] : 0  ;
         $data['lottery_material_switch']  =  isset($data['lottery_material_switch'])  ? $data['lottery_material_switch'] : 0  ;
         $data['lottery_integral_price']   =  isset($data['lottery_integral_price'])   ? $data['lottery_integral_price']  : 0  ;*/
 
         $returnData = [
-          'rule_number' => $rule_number,
-          'rule_number_lists'=> config("score.rule_number"),
-          'configs'=>$configs,
+          'regionData'=> isset($regionData) ? $regionData : NULL,
+          'region_id'=>$region_id,
+          'res'=>$res,
           'data'=>$data
         ];
         return $this->fetch('config',$returnData);
@@ -361,7 +438,8 @@ class Score extends AdminBase
      * @param  integer $page [description]
      * @return [type]        [description]
      */
-      public function test_multi_balance($page=1){
+      public function test_multi_balance($page=1)
+      {
         $lists = Db::connect('database_carpool')->table('temp_carpool_score')->page($page,1)->select();
         exit;
         if(count($lists)>0){

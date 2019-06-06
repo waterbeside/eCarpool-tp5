@@ -1,45 +1,45 @@
 {extend name="base" /}
 {block name="body"}
 <div class="amain-body">
-
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
 
         <ul class="  amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/ScoreGoods/index',['rule_number'=>$rule_number])}"  >产品管理</a></li>
+            <li class="layui-this"><a href="{:url('admin/ScoreGoods/index')}" showloading> {:lang('Goods management')}</a></li>
             <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ScoreGoods/add',['rule_number'=>$rule_number])}"  data-title="添加商品"  data-trigger="modal" >
-              <i class="fa fa-plus"></i> 添加商品</a>
-            </li>
-            <li class="btn-item btn-item-right ">
-              {include file="_components/select_ruleNumber" /}
+              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ScoreGoods/add')}"  data-title="{:lang('Add goods')}"  data-trigger="modal" >
+              <i class="fa fa-plus"></i> {:lang('Add goods')}</a>
             </li>
         </ul>
 
         <div class="layui-tab-content dark-grey-wrapper ">
 
 
-                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreGoods/index',['rule_number'=>$rule_number])}" method="get">
+                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreGoods/index')}" method="get">
                     <div class="layui-inline">
-                        <label class="layui-form-label">检索</label>
                         <div class="layui-input-inline">
-                            <input type="text" name="keyword" value="{$keyword}" placeholder="请输入关键词" class="layui-input">
+                            <input type="text" name="keyword" value="{$keyword}" placeholder="{:lang('Please enter keywords')}" class="layui-input">
                         </div>
                         <div class="layui-input-inline">
-                          <select name="filter[status]" lay-verify="required" >
-                            <option value="" >商品状态 - 不限</option>
+                          <select name="filter[status]" >
+                            <option value="" >{:lang('Goods status')} - {:lang('Unlimited')}</option>
                             {foreach name="statusList" key="key" item="vo"}
-                            <option value="{$key}" {php}echo isset($filter['status']) && is_numeric($filter['status']) === intval($key) ? 'selected' : ''; {/php}>{$vo}</option>
+                            <option value="{$key}" {php}echo isset($filter['status']) && is_numeric($filter['status']) === intval($key) ? 'selected' : ''; {/php}>{:lang("sl:".$vo)}</option>
                             {/foreach}
                           </select>
                         </div>
                         <div class="layui-input-inline">
-                          <select name="filter[is_hidden]" lay-verify="required" >
-                            <option value="" >是否显示 - 不限</option>
-                            <option value="1" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "1" ? 'selected' : ''; {/php}>不显示</option>
-                            <option value="0" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "0" ? 'selected' : ''; {/php}>显示</option>
-
+                          <select name="filter[is_hidden]" >
+                            <option value="" >{:lang("Is visible?")} - {:lang('Unlimited')}</option>
+                            <option value="1" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "1" ? 'selected' : ''; {/php}>{:lang("Not visible")}</option>
+                            <option value="0" {php}echo isset($filter['is_hidden']) && $filter['is_hidden'] === "0" ? 'selected' : ''; {/php}>{:lang("Visible")}</option>
                           </select>
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
+                            <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" >
+                              {$regionData ? str_replace(',',' / ',$regionData['fullname']) : lang("Region or department")}
+                            </a>
                         </div>
                     </div>
                     <div class="layui-inline">
@@ -49,7 +49,7 @@
                 <hr>
                 <div class="card-list-01 good-list">
                   <form class="layui-form">
-                    {if !count($lists)>0}无数据{/if}
+                    {if !count($lists)>0}{:lang('No Data')}{/if}
                     {foreach name="lists" item="vo"}
                     <div class="am-card  <?php echo $vo['is_delete'] ? 'unshow' : '' ;?>">
                       <div class="am-card-padding-inner">
@@ -57,24 +57,32 @@
                         <div class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>">  </div>
                         <div class="am-card-body">
                           <h5 class="am-card-title layui-elip" >
-                            <a href="{:url('admin/ScoreGoods/edit',['id'=>$vo['id']])}"   data-title="編輯商品 #{$vo.id}"  data-trigger="modal" title="編輯商品 #{$vo.id}">
+                            <a href="{:url('admin/ScoreGoods/edit',['id'=>$vo['id']])}"   data-title="{:lang('Modify goods')} #{$vo.id}"  data-trigger="modal" title="{:lang('Modify goods')} #{$vo.id}">
                               {$vo.name}
                             </a>
                           </h5>
                           <span class="id">#{$vo.id}</span>
                           <p class="am-card-text">{$vo.desc|iconv_substr=0,80}...</p>
-                          <div class="info-bar">
-                            <span class="info-item price"> 兑换价：<b >{$vo.price}</b></span>
-                            <span class="info-item  amount"> 采购价：<b >{$vo.amount}</b></span>
-                            <span class="info-item  inventory">库存：<b>{$vo.inventory >-1 ?$vo.inventory : '无限'}</b></span>
-                            <span class="info-item  status">状态：<b><?php echo $statusList[$vo['status']] ;?> / <small><?php echo $vo['is_delete'] ? "不显示" : "显示" ;?></small></b></span>
+                          <div class="depts_bar">
+                            <div class="item my-tag-item" data-id="{$vo.p_region_id}" title="{$vo.fullname}">{$vo.fullname|str_replace=","," / ",###}</div>
                           </div>
+                          <div class="info-bar">
+                            <span class="info-item price">{:lang('Redeem points')}: <b >{$vo.price}</b></span>
+                            <span class="info-item  amount">{:lang('Purchase price')}: <b >{$vo.amount}</b></span>
+                            <span class="info-item  inventory">{:lang('Inventory')}: <b>{$vo.inventory >-1 ? $vo.inventory : '∞'}</b></span>
+                            <span class="info-item  status">{:lang('Status')}: <b>
+                              <?php
+                                echo isset($statusList[$vo['status']]) ? lang("sl:".$statusList[$vo['status']]) : $vo['status']  ;
+                              ?> /
+                              <small><?php echo $vo['is_delete'] ? lang('Not visible') : lang("Visible") ;?></small></b>
+                            </span>
+                          </div>
+
                           <div class="btns-wrapper">
-                            <a href="javascript:void(0);" onclick="refreshGoodCache(this)" data-id="{$vo.id}"  data-disabled="0" class="ibtn layui-btn layui-btn-primary    layui-btn-radius   "><i class="fa fa-refresh"></i> 刷新</a>
-
+                            <a href="javascript:void(0);" onclick="refreshGoodCache(this)" data-id="{$vo.id}"  data-disabled="0" class="ibtn layui-btn layui-btn-primary    layui-btn-radius   "><i class="fa fa-refresh"></i> {:lang('Refresh')}</a>
                             <!-- <input type="checkbox" name="is_delete" value="1" lay-skin="switch" lay-text="显示|隐藏" {if condition="$vo.is_delete!=1"} checked="checked"{/if}> -->
-                            <a href="{:url('admin/ScoreGoods/edit',['id'=>$vo['id']])}"  data-title="編輯商品 #{$vo.id}"  data-trigger="modal" title="編輯商品 #{$vo.id}" class="ibtn layui-btn    layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a>
-
+                            <a href="{:url('admin/ScoreGoods/duplication',['id'=>$vo['id']])}"  data-title="{:lang('Duplicate goods')}"  data-trigger="modal" title="{:lang('Duplicate goods')} #{$vo.id}" class="ibtn layui-btn layui-btn-success    layui-btn-radius   "><i class="fa fa-copy"></i> {:lang('Duplicate')}</a>
+                            <a href="{:url('admin/ScoreGoods/edit',['id'=>$vo['id']])}"  data-title="{:lang('Modify goods')} #{$vo.id}"  data-trigger="modal" title="{:lang('Modify goods')} #{$vo.id}" class="ibtn layui-btn    layui-btn-radius   "><i class="layui-icon">&#xe642;</i> {:lang('Modify')}</a>
                           </div>
                         </div>
                       </div>
@@ -102,7 +110,7 @@ function refreshGoodCache(obj){
   var id = $btn.data("id");
   var isDisabled = $btn.data("disabled");
   if(isDisabled){
-    layer.msg("请勿重复提交");
+    layer.msg("{:lang('Please do not resubmit')}");
     return false;
   }
   $btn.data("disabled",1);
@@ -113,18 +121,15 @@ function refreshGoodCache(obj){
     url:"<?php echo url('admin/ScoreGoods/public_recache');?>",
     data:{id:id},
     success:function(res){
-
       if (res.code === 0) {
-        layer.msg("刷新成功");
+        layer.msg("{:lang('Refresh successfully')}");
       }else{
-        layer.msg("刷新失败");
-
+        layer.msg("{:lang('Refresh failed')}");
       }
       setTimeout(function(){
         $btn.data("disabled",0);
         $btn.find(".fa").removeClass('fa-spin');
       },800)
-
     },
   })
   // console.log(id)

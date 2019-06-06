@@ -10,7 +10,7 @@ use think\Db;
 
 /**
  * 评论
- * Class Banners
+ * Class Comments
  * @package app\api\controller
  */
 class Comments extends ApiBase

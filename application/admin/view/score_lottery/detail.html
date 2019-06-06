@@ -4,85 +4,92 @@
       <div class="cp-avatar" style="background-image:url('{$data.userInfo.avatar}')"></div>
     </div>
 
-    <h3>抽奖信息</h3>
+    <h3>{:lang('Lottery information')}</h3>
     <table class="layui-table">
       <tbody>
 
         <tr>
-          <td class="label" width="100">抽奖编号</td>
+          <td class="label" width="100">{:lang('Lottery number')}</td>
           <td> {$data.publish_number}</td>
         </tr>
 
         <?php if($data['type']){ ?>
         <tr>
-          <td class="label" >奖品名称</td>
+          <td class="label" >{:lang('Prize name')}</td>
           <td>
             <div  class="cover-thumb " style=" display: inline-block; vertical-align:middle;  height:30px;width:40px; <?php echo $data['thumb'] ? 'background-image:url(\''.$data['thumb'].'\')' : ''; ?>"> </div>
-            <span class="layui-elip">【第{$data.publication_number}期】 {$data.prize_name|iconv_substr=0,14} </span>
+            <span class="layui-elip">【{:lang('Phase %d',[$data['publication_number']])}】 {$data.prize_name|iconv_substr=0,14} </span>
           </td>
         </tr>
         <tr>
-          <td class="label">采购价</td>
+          <td class="label">{:lang('Purchase price')}</td>
           <td>{$data.amount}</td>
         </tr>
         <tr>
-          <td class="label">抽奖时间</td>
+          <td class="label">{:lang('Participation time')}</td>
           <td>
-            {$data.buy_time}
+            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.buy_time|strtotime}000</span>
             <span style=" color: #ccc; margin-left:5px">
               <?php echo  $data['platform']===2 ? '<i class="fa fa-android"></i>' : ($data['platform']===1 ? '<i class="fa fa-apple"></i>':''); ?>
             </span>
           </td>
         </tr>
+
         <tr>
-          <td class="label" >是否中奖</td>
+          <td class="label" >{:lang('Status')}</td>
           <td>
             <?php
             if($data['result'] > 0){
               echo '<i class="fa fa-smile-o"></i>
-                    <span class="layui-badge ">中奖</span>';
+                    <span class="layui-badge ">'.lang('sl:中奖').'</span>';
             }else if($data['result'] == -1){
               echo '<i class="fa fa-frown-o"></i>
-                    <span class="layui-badge layui-bg-gray">未中奖</span>';
+                    <span class="layui-badge layui-bg-gray">'.lang('sl:未中奖').'</span>';
             }else{
-              echo '未开奖';
+              echo lang('sl:未开奖');
             }
             ?>
 
           </td>
         </tr>
-        <tr>
+        <!-- <tr>
           <td class="label">是否已兑</td>
-          <td>{$data.result > 0 && $data.winnersInfo.exchange_time ? "是，兑换时间：".$data.winnersInfo.exchange_time : "否"}</td>
-        </tr>
+          <td>
+            {$data.result > 0 && $data.winnersInfo.exchange_time ? "是，兑换时间：" : "否"}
+            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.exchange_time ? strtotime($data.exchange_time)*1000 : '-'}</span>
+          </td>
+        </tr> -->
       <?php }else{ ?>
         <tr>
-          <td class="label" >抽奖类型</td>
+          <td class="label">{:lang('Prize name')}</td>
           <td>
-            <span class="layui-elip">转盘抽奖 </span>
+            {:lang('Turntable')}: {$data.result_str}
           </td>
         </tr>
         <tr>
-          <td class="label">抽奖时间</td>
+          <td class="label">{:lang('Participation time')}</td>
           <td>
-            {$data.buy_time}
+            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.buy_time|strtotime}000</span>
             <span style=" color: #ccc; margin-left:5px">
               <?php echo  $data['platform']===2 ? '<i class="fa fa-android"></i>' : ($data['platform']===1 ? '<i class="fa fa-apple"></i>':''); ?>
             </span>
           </td>
         </tr>
+
+
         <tr>
-          <td class="label" >结果</td>
+          <td class="label" >{:lang('Result')}</td>
           <td>
             <span class="layui-elip">{$data.result_str} </span>
           </td>
         </tr>
-        <tr>
-          <td class="label">是否已兑</td>
-          <td>{$data.result < -99 && $data.winnersInfo.exchange_time ? "是，兑换时间：".$data.winnersInfo.exchange_time : "否"}</td>
-        </tr>
+
 
       <?php } ?>
+      <tr>
+        <td class="label">{:lang('Order department')}</td>
+        <td>{$data.region_id ? $data.full_department|str_replace=","," / ",### : $data.region_id}</td>
+      </tr>
 
 
       </tbody>
@@ -90,28 +97,28 @@
     <div class="blank10"></div>
 
 
-    <h3>用户信息</h3>
+    <h3>{:lang('User Info')}</h3>
     <table class="layui-table">
       <tbody>
         <tr>
-          <td class="label" width="100">用户名</td>
+          <td class="label" width="100">{:lang('Username')}</td>
           <td>{$data.userInfo.loginname}</td>
         </tr>
         <tr>
-          <td class="label">手机</td>
+          <td class="label">{:lang('Phone')}</td>
           <td>{$data.userInfo.phone}</td>
         </tr>
         <tr>
-          <td class="label">姓名</td>
+          <td class="label">{:lang('Full name')}</td>
           <td>{$data.userInfo.name}</td>
         </tr>
 
         <tr>
-          <td class="label">所属公司</td>
+          <td class="label">{:lang('Company')}</td>
           <td><?php echo isset($companys[$data['userInfo']['company_id']]) ? $companys[$data['userInfo']['company_id']] : ''; ?></td>
         </tr>
         <tr>
-          <td class="label">部门</td>
+          <td class="label">{:lang('Department')}</td>
           <!-- <td>{$data.userInfo.Department}</td> -->
           <td>{$data.userInfo.department_id ? $data.userInfo.full_department|str_replace=","," / ",### : $data.userInfo.Department}</td>
 
@@ -127,13 +134,13 @@
     <div class="blank10"></div>
     <?php if($data['type'] > 0 && $data['result'] > 0 && !$data['winnersInfo']['exchange_time']){ ?>
     <div style="text-align:right">
-        <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="RESOLVE_INIT.finish(1,{$data.winnersInfo.id})">确认兑奖</a>
+        <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="RESOLVE_INIT.finish(1,{$data.winnersInfo.id})">{:lang('Confirm redemption')}</a>
     </div>
     <div class="blank10"></div>
     <?php  } ?>
     <?php if($data['type'] === 0 && $data['result'] < -99 && !$data['winnersInfo']['exchange_time']){ ?>
     <div style="text-align:right">
-        <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="RESOLVE_INIT.finish(0,{$data.winnersInfo.id})">确认兑奖</a>
+        <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="RESOLVE_INIT.finish(0,{$data.winnersInfo.id})">{:lang('Confirm redemption')}</a>
     </div>
     <div class="blank10"></div>
     <?php  } ?>
@@ -148,9 +155,11 @@ var RESOLVE_INIT = {
   data : {
 
   },
+  init : function(){
+    cRenderTimes();
+  },
   finish : function(type,id){
-    alert(type);
-    alert(id);
+
     var url = type === 1 ? "<?php echo url('admin/ScoreWinners/finish');?>" : (type === 0 ? "<?php echo url('admin/ScoreSpecialWinner/finish');?>": '');
 
     if(url == ''){
@@ -159,10 +168,10 @@ var RESOLVE_INIT = {
     }
     // var order_no = $("input[name=order_no]").val();
     // console.log(order_no)
-    layer.confirm('您确定要完结本次兑换？',
+    layer.confirm("{:lang('Are you sure you want to end this redemption?')}",
       {
         closeBtn: 1,
-        btn: ['确定','取消'] //按钮
+        btn: [myLang.r('Yes'),myLang.r('No')] //按钮
       }, function(){
         ajaxSubmit({
           url:url,
@@ -178,6 +187,6 @@ var RESOLVE_INIT = {
 
 
 }
-
+RESOLVE_INIT.init();
 
 </script>

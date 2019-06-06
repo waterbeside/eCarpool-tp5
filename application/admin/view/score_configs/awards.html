@@ -6,27 +6,37 @@
     <div class="layui-tab layui-tab-brief">
 
         <ul class="amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/ScoreConfigs/awards')}"  >转盘抽奖奖项配置</a></li>
-            <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " onclick="return PAGE_EXEC.add()" >
-              <i class="fa fa-plus"></i> 添加奖项</a>
-            </li>
-
-            <li class="btn-item btn-item-right">
-              <select name="rule_number" class="select-jump my-select"     >
-                {foreach name="rule_number_lists" key="key" item="vo"}
-                <option value="{$key}" {php} echo isset($rule_number) && is_numeric($rule_number) && $rule_number == $key ? 'selected' : ''; {/php} href="{:url('awards',['rule_number'=>$key])}">{$vo.title} </option>
-                {/foreach}
-              </select>
-            </li>
-
+            <li class="layui-this"><a href="{:url('admin/ScoreConfigs/awards',['region_id'=>$region_id])}"  >转盘抽奖奖项配置</a></li>
         </ul>
 
         <div class="layui-tab-content">
-          <blockquote class="layui-elem-quote">注意，当奖励设为小于-100时，则为抽取实物，请填写实物价绍和对应的价值</blockquote>
+          <form class="layui-form layui-form-pane" action="{:url('admin/ScoreConfigs/awards')}" method="get">
+              <div class="layui-inline">
+                  <div class="layui-input-inline">
+                      <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
+                      <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择显示区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary"
+                        data-target="region_id:id" data-tips="选择显示区域" data-title="选择显示区域" data-tips-position="3" data-auto-submit="true"   >
+                        {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择显示区域"}
+                      </a>
+                  </div>
+              </div>
+
+          </form>
+          <div class="blank10"></div>
+
+          <?php if(!$lists){ ?>
+             <blockquote class="layui-elem-quote layui-elem-quote-warning">
+               <p> 该"地区/部门"{$regionData ? "【".str_replace(',',' / ',$regionData['fullname'])."】" : ""}未有单独进行积分配置, </p>
+               <p> 点击保存即生成. </p>
+             </blockquote>
+             <div class="blank10"></div>
+
+          <?php } ?>
+
+          <blockquote class="layui-elem-quote layui-elem-quote-danger">注意，当奖励设为小于-100时，则为抽取实物，请填写实物价绍和对应的价值</blockquote>
 
 
-          <div class="blank20"></div>
+          <div class="blank10"></div>
 
           <form class="layui-form " onsubmit="return false;" method="post">
             <div class="lists-header">
@@ -51,10 +61,9 @@
             <div class="blank20"></div>
             <div class="win-rate">胜率：<b id="win-rate"></b></div>
             <div class="win-rate">总概率：<b id="win-rate-total"></b></div>
-            <input type="hidden" name="rule_number" value="{$rule_number}">
+
 
             <div class="layui-btn-container layui-row" style="text-align: right">
-                <button class="layui-btn layui-btn-lg" onclick="return PAGE_EXEC.submitData();"><i class="fa fa-save"></i> 保存</button>
             </div>
             <div class="blank20"></div>
 
@@ -63,6 +72,19 @@
 
         </div>
     </div>
+
+    <div class="am-bottom-tool-bar">
+      <div class="am-bottom-tool-bar-inner " lay-filter="form-bottom-tool">
+        <div class="form-wrapper layui-form">
+        </div>
+        <div class="btns-wrapper">
+          <button class="layui-btn layui-btn-sm layui-btn-success " onclick="return PAGE_EXEC.add()" >
+            <i class="fa fa-plus"></i> 添加奖项</button>
+          <button class="layui-btn layui-btn-sm" onclick="return PAGE_EXEC.submitData();"><i class="fa fa-save"></i> 保存</button>
+        </div>
+      </div>
+    </div>
+    <!-- 底部工具栏 -->
 </div>
 
 {/block}
@@ -92,10 +114,9 @@
 var laytpl = layui.laytpl;
 PAGE_EXEC = {
   data : {
-    lists: {:json_encode($lists)},
-    // lists:<?php echo json_encode($lists);?>
-    itemDefault: {grade:0,rate:0,cost:0,desc:"",description:"",status:0,is_bulletin:0,mextend:{}},
+    itemDefault: {"grade":0,"rate":0,cost:0,desc:"",description:"",full_desc:"",status:0,is_bulletin:0,mextend:{}},
     isLoading: false,
+    lists: {:json_encode($lists)},
   },
 
   /**
@@ -105,6 +126,7 @@ PAGE_EXEC = {
     var _this = this;
     var listWrapper = document.getElementById('list-wrapper');
     var dataLength = _this.data.lists.length;
+
     if(dataLength < 8){
       for(var i=0;i < 8-dataLength; i++){
         _this.data.lists.push($.extend({},_this.data.itemDefault))
@@ -327,9 +349,12 @@ PAGE_EXEC = {
           used_grades.push(el.grade);
         }
         total_rate += parseFloat(el.rate);
-
       }
     })
+    if(error_index>-1){
+      return false;
+    }
+
     if(used_grades.length != 8){
       layer.msg("必需开启使用8项");
       return false;
@@ -354,7 +379,7 @@ PAGE_EXEC = {
     var _this =  this;
     var data = {
       value:JSON.stringify(_this.data.lists),
-      rule_number:"<?php echo $rule_number; ?>",
+      region_id:"<?php echo $region_id; ?>",
     };
     if(_this.data.isLoading){
       return false;

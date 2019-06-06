@@ -6,6 +6,7 @@ use app\common\model\Configs;
 use think\Response;
 use think\exception\HttpResponseException;
 use think\facade\Cache;
+use think\facade\Hook;
 
 
 /**
@@ -16,70 +17,39 @@ use think\facade\Cache;
 class Base extends Controller
 {
 
-    public $systemConfig  = null;
+    public $systemConfig  = NULL;
     public $language  = 'zh-cn';
-    public $language_l = [];
+    public $language_l = NULL;
     public $errorMsg = '';
 
     protected function initialize()
     {
-        $this->language = $this->getLang();
+        $this->getLang();
         $this->systemConfig = $this->getSystemConfigs();
         parent::initialize();
     }
 
-    public function getLang(){
-      $lang_s =  input('request._language');
-      $lang_s = $lang_s ? $lang_s : input('request.lang');
-      $lang_s = $lang_s ? $lang_s : request()->header('Accept-Lang');
-      $lang_s = $lang_s ? $lang_s : request()->header('Accept-Language');
-      $lang_l = $this->formatAcceptLang($lang_s);
-      $this->language_l = $lang_l;
-      return $lang_l[0] == 'zh' ? ( isset($lang_l[1]) ? $this->formatZhLang($lang_l[1],'zh-cn') : 'zh-cn') : $this->formatZhLang($lang_l[0]);
-    }
-
-
-    public function formatZhLang($language,$default = null) {
-      if($language == 'zh-hant-hk'){
-        return 'zh-hk';
-      }
-      if($language == 'zh-hant-tw'){
-        return 'zh-tw';
-      }
-      if($language == 'zh-hans'){
-        return 'zh-cn';
-      }
-      if(strpos($language,'zh-hant') !== false  ){
-        return 'zh-hk';
-      }
-      if(strpos($language,'zh-hans') !== false  ){
-        return 'zh-cn';
-      }
-      return $default ? $default : $language  ;
+    /**
+     * 取得使用语言
+     * @return [type] [description]
+     */
+    public function getLang($type = 0)
+    {
+      $getLangRes =  Hook::exec('app\\common\\behavior\\GetLang', $this,[]);
+      return $getLangRes;
     }
 
     /**
+     * 格式化最后要得到的语言码
+     * @param  string $language
+     * @return string
      */
-  	public function formatAcceptLang($language) {
-      $lang_l = explode(',',$language);
-      $lang_format_list = [];
-      $q_array = [];
+    public function formatLangCode($language)
+    {
+      $getLangRes =  Hook::exec(['app\\common\\behavior\\GetLang','formatLangCode'], $language);
+      return $getLangRes;
+    }
 
-      foreach ($lang_l as $key => $value) {
-        $temp_arr = explode(';',$value);
-        $q = isset($temp_arr[1]) ? $temp_arr[1] : 1;
-        $q_array[]  = $q;
-        $lang_format_list[$key] = ['lang'=>$temp_arr[0],'q'=>$q];
-      }
-
-      array_multisort($q_array, SORT_DESC,  $lang_format_list);
-      $lang = [];
-      foreach ($lang_format_list as $key => $value) {
-        $lang[] = strtolower(trim($value['lang']));
-      }
-      $lang = array_unique($lang);
-      return $lang;
-  	}
 
 
 
@@ -90,12 +60,14 @@ class Base extends Controller
      * @param  string $message [描述]
      * @param  array  $extra   [其它]
      */
-  	public function jsonReturn($code, $data, $message = '',$extra = array()) {
-
+  	public function jsonReturn($code, $data, $message = '',$extra = array())
+    {
       if(is_string($data)){
         $message = $data;
         $data = [];
       }
+      $data = empty($data) ? (object)array() : $data;
+      $extra = empty($extra) ? (object)array() : $extra;
   		$data = array(
   			'code'=>$code,
   			'desc'=>$message,
@@ -112,7 +84,8 @@ class Base extends Controller
     /**
 	   * 数组去重
 	   */
-	  public function arrayUniq($arr){
+	  public function arrayUniq($arr)
+    {
 	    $arr = array_unique($arr);
 	    $arr = array_values($arr);
 	    return $arr;
@@ -121,7 +94,8 @@ class Base extends Controller
 		 /**
 	   * 二维数组去重
 	   */
-		 public function arrayUniqByKey($arr,$key){
+		 public function arrayUniqByKey($arr,$key)
+     {
          //建立一个目标数组
          $res = array();
          foreach ($arr as $value) {
@@ -141,7 +115,8 @@ class Base extends Controller
 	   * 清除数组内每个元素的两头空格
 	   * @return array||string
 	   */
-		public function trimArray($arr){
+		public function trimArray($arr)
+    {
 	    if (!is_array($arr)){
 				  return trim($arr);
 			}
@@ -149,7 +124,8 @@ class Base extends Controller
 		}
 
 
-    public function jump($isSuccess=1 , $msg = '', $url = null, $data = '', $wait = 3, array $header = []){
+    public function jump($isSuccess=1 , $msg = '', $url = null, $data = '', $wait = 3, array $header = [])
+    {
       if (is_null($url)) {
         if($isSuccess===1){
           $url =  isset($_SERVER["HTTP_REFERER"]) ? $_SERVER["HTTP_REFERER"] : ((strpos($url, '://') || 0 === strpos($url, '/')) ? url($url) : '') ;
@@ -173,7 +149,12 @@ class Base extends Controller
 
     }
 
-    public function getSystemConfigs(){
+    /**
+     * 从数据库最得系统配置
+     * @return [type] [description]
+     */
+    public function getSystemConfigs()
+    {
       $ConfigsModel = new Configs();
       $configs = $ConfigsModel->getConfigs();
       return $configs;
@@ -189,7 +170,7 @@ class Base extends Controller
      * @param  array     $header 发送的Header信息
      * @return void
      */
-    protected function success($msg = '', $url = null, $data = '', $wait = 3, array $header = [])
+    public function success($msg = '', $url = null, $data = '', $wait = 3, array $header = [])
     {
       if($this->request->isAjax()){
         $extra = is_array($wait) ? $wait :[];
@@ -214,7 +195,7 @@ class Base extends Controller
      * @param  array     $header 发送的Header信息
      * @return void
      */
-    protected function error($msg = '', $url = null, $data = '', $wait = 3, array $header = [])
+    public function error($msg = '', $url = null, $data = '', $wait = 3, array $header = [])
     {
       if($this->request->isAjax()){
         $extra = is_array($wait) ? $wait :[];
@@ -240,17 +221,29 @@ class Base extends Controller
     public function clientRequest($url,$data=[],$type='POST',$dataType="json"){
       try {
         $client = new \GuzzleHttp\Client(['verify'=>false]);
-        $response = $client->request($type, $url, ['form_params' => $data]);
+        // $params = strtolower($type) == 'get' ? [
+        //   'query' => $data
+        // ] : [
+        //   'form_params' => $data
+        // ];
+        $params = $data;
+        $response = $client->request($type, $url, $params);
+
         $contents = $response->getBody()->getContents();
         if(mb_strtolower($dataType)=="json"){
           $contents = json_decode($contents,true);
         }
         return $contents;
-      } catch (\GuzzleHttp\Exception\ClientException $exception) {
-        $responseBody = $exception->getResponse()->getBody()->getContents();
-        $this->errorMsg ='拉取失败';
+      } catch (\GuzzleHttp\Exception\RequestException $exception) {
+        if ($exception->hasResponse()) {
+          $responseBody = $exception->getResponse()->getBody()->getContents();
+        }
+        $this->errorMsg = $exception->getMessage() ? $exception->getMessage()  :(isset($responseBody) ? $responseBody : '')  ;
         return false;
       }
+
     }
+
+
 
 }

@@ -24,7 +24,7 @@ class ScoreReports extends AdminBase
    * [index description]
    *
    */
-  public function index($filter=[],$rule_number=NULL);
+  public function index($filter=[],$rule_number=NULL)
   {
     $timeStr = isset($filter['time'])?$filter['time']:0;
     $period = $this->get_period(isset($filter['time'])?$filter['time']:0);
@@ -35,7 +35,8 @@ class ScoreReports extends AdminBase
   /**
    * 统计积分数
    */
-  public function public_count($timeStr = NULL,$type = 'total' , $is_minus = 0, $uid = 0,$rule_number = NULL){
+  public function public_count($timeStr = NULL,$type = 'total' , $is_minus = 0, $uid = 0,$rule_number = NULL)
+  {
     $period = $this->get_period($timeStr);
     $baseMap = [];
     $where_base = " is_delete = 0  AND time >=  '".$period[0]."' AND time < '".$period[1]."' ";

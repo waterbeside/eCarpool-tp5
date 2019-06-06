@@ -108,11 +108,11 @@
                               {$vo.seat_count}
                             </td>
                             <td>{$vo.took_count}</td>
-                            <td>{$vo.time}</td>
+                            <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($vo.time)*1000}</span></td>
                             <td>{$vo.start_addressname}</td>
                             <td>{$vo.end_addressname}</td>
                             <td>{$vo.map_type}</td>
-                            <td>{$vo.subtime}</td>
+                            <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($vo.subtime)*1000}</span></td>
                             <td>
                               <a onclick="openLayer('{:url('admin/CarpoolTrips/detail',['id'=>$vo['love_wall_ID'],'type'=>1])}',{area:['700px','90%'],title:'【{$vo.d_name}】的空座位'});" href="javascript:void(0);"  class="layui-btn  layui-btn-xs " >详情</a>
                             </td>

@@ -3,12 +3,13 @@ namespace app\api\controller\v1;
 
 use app\api\controller\ApiBase;
 use app\carpool\model\Address as AddressModel;
-
+use think\facade\Cache;
 use think\Db;
+use my\RedisData;
 
 /**
  * 地址相关
- * Class Docs
+ * Class Address
  * @package app\api\controller
  */
 class Address extends ApiBase
@@ -69,6 +70,7 @@ class Address extends ApiBase
       }
       $userData = $this->getUserData(1);
       $data['company_id'] = intval($userData['company_id']);
+      $data['create_uid'] = intval($userData['uid']);
       $AddressModel = new AddressModel();
       $res = $AddressModel->addFromTrips($data);
       if(!$res){
@@ -95,6 +97,73 @@ class Address extends ApiBase
       if(isset($data['company_id'])) $data['company_id'] = intval($data['company_id']);
       if(isset($data['ordernum'])) $data['ordernum'] = intval($data['ordernum']);
       return $this->jsonReturn(0,$res,'success');
+    }
+
+
+    /**
+     *  GET 取得城市列表 group by
+     * @param  integer $type 0 ，所有，1 空坐位上的，2约车需求上的
+     * @return [type]        [description]
+     */
+    public function citys($type = 0){
+      $userData = $this->getUserData(1);
+      $company_id = $userData['company_id'];
+      if($type){
+        if(!in_array($type,[1,2,'wall','info'])){
+          return $this->jsonReturn(992,'error type');
+        }
+        $cacheKey = "carpool:citys:company_id_$company_id:type_$type";
+        $redis = new RedisData();
+        $res_str =  $redis->get($cacheKey);
+        $res =  $res_str ? json_decode($res_str,true) : false;
+        // $res = Cache::get($cacheKey);
+        if(!$res){
+          $join = [];
+          if($type == 1 || $type == "wall"){
+            $join[] = ['love_wall s','t.addressid = s.startpid', 'left'];
+          }elseif($type == 2 || $type == "info"){
+            $join[] = ['info s','t.addressid = s.startpid', 'left'];
+          }
+          $map = [
+            ["s.time",">",date('YmdHi')],
+            ["s.status","<>",'2'],
+            ["t.company_id","=",$company_id]
+          ];
+
+            $resList = AddressModel::alias('t')->field('t.city , count(t.city) as num')->join($join)->where($map)->group('t.city')->order('num DESC')->select();
+            $res = [];
+            $hasNull = false;
+            $hasMin = false;
+            foreach ($resList as $key => $value) {
+              if($value['city'] == "(null)"){
+                $hasNull = true;
+              }else if($value['city'] == "--"){
+                $hasMin = true;
+              }else{
+                $res[] = $value['city'];
+              }
+            }
+            if($hasMin){
+              $res[] = "--";
+            }
+            if($hasNull){
+              // $res[] = "(null)";
+            }
+            // Cache::set($cacheKey,$res,300);
+            $redis->setex($cacheKey, 300, json_encode($res));
+
+        }
+
+      }else{
+        $res = AddressModel::group('city')->order('city Desc')->cache(30)->column('city');
+      }
+      if($res){
+        $this->jsonReturn(0,$res,lang('Successfully'));
+      }else{
+        $this->jsonReturn(20002,$res,lang('No data'));
+      }
+
+
     }
 
 

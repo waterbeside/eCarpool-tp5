@@ -26,5 +26,3 @@ class RedisData extends Redis {
 
 
 }
-
-?>

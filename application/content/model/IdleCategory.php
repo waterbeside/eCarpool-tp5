@@ -7,8 +7,8 @@ use my\RedisData;
 
 class IdleCategory extends Model
 {
+    protected $connection = 'database_carpool';
     protected $table = 't_idle_category';
-    protected $connection = 'database_content';
     protected $pk = 'id';
 
     protected static function init()

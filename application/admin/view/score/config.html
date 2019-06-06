@@ -6,24 +6,33 @@
     <div class="layui-tab layui-tab-brief">
 
         <ul class=" amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/Score/config',['rule_number'=>$rule_number])}"  >积分配置</a></li>
-            <li ><a href="{:url('admin/Score/doc',['cate'=>'score'])}"  >积分文档</a></li>
-            <li ><a href="{:url('admin/Score/doc',['cate'=>'lottery'])}"  >抽奖文档</a></li>
-            <li class="btn-item btn-item-right">
-              <select name="rule_number" class="select-jump my-select"   >
-                {foreach name="rule_number_lists" key="key" item="vo"}
-                <option value="{$key}" {php} echo isset($rule_number) && is_numeric($rule_number) && $rule_number == $key ? 'selected' : ''; {/php} href="{:url('config',['rule_number'=>$key])}">{$vo.title} </option>
-                {/foreach}
-              </select>
-            </li>
+            <li class="layui-this"><a href="{:url('admin/Score/config')}"  >积分配置</a></li>
+        
         </ul>
-
         <div class="layui-tab-content">
+          <form class="layui-form layui-form-pane" action="{:url('admin/Score/config')}" method="get">
+              <div class="layui-inline">
+                  <div class="layui-input-inline">
+                      <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
+                      <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择显示区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary"
+                        data-target="region_id:id" data-tips="选择显示区域" data-title="选择显示区域" data-tips-position="3" data-auto-submit="true"   >
+                        {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择显示区域"}
+                      </a>
+                  </div>
+              </div>
+
+          </form>
 
           <div class="blank20"></div>
-
-          <form class="layui-form form-container" action="{:url('admin/Score/config',['rule_number'=>$rule_number])}" method="post">
-            <input type="hidden" name="rule_number" value="{$rule_number}" />
+          <?php if(!$data){ ?>
+             <blockquote class="layui-elem-quote layui-elem-quote-warning">
+               <p> 该"地区/部门"{$regionData ? "【".str_replace(',',' / ',$regionData['fullname'])."】" : ""}未有单独进行积分配置, </p>
+               <p> 点击保存即生成. </p>
+             </blockquote>
+          <?php } ?>
+          <form class="layui-form form-container" action="{:url('admin/Score/config')}" method="post">
+            <input type="hidden" name="region_id" value="{$region_id}" />
+            <input type="hidden" name="id" value="{$res.id}" />
             <table class="layui-table">
               <tbody>
                 <tr>
@@ -69,11 +78,10 @@
             </table>
 
 
-
               <div class="blank20"></div>
 
               <div class="layui-btn-container layui-row" style="text-align: right">
-                  <button class="layui-btn layui-btn-lg" lay-submit lay-filter="*">提交</button>
+                  <button class="layui-btn layui-btn-lg" lay-submit lay-filter="*">保存</button>
               </div>
 
           </form>
@@ -85,7 +93,9 @@
 {/block}
 {block name="script"}
 <script>
+PAGE_EXEC = {
 
+}
 
 
 

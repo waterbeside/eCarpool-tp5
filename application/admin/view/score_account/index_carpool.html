@@ -6,10 +6,10 @@
     <div class="layui-tab layui-tab-brief">
 
         <ul class="amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/scoreAccount/index',['type'=>2])}"  showloading>Carpool帐号</a></li>
-            <li class=""><a href="{:url('admin/scoreAccount/index',['type'=>0])}" showloading >积分帐号</a></li>
+            <li class="layui-this"><a href="{:url('admin/scoreAccount/index',['type'=>2])}"  showloading>{:lang('Carpool account')}</a></li>
+            <li class=""><a href="{:url('admin/scoreAccount/index',['type'=>0])}" showloading >{:lang('Point account')}</a></li>
             <li class="btn-item btn-item-right">
-              <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="exportExcel()"  ><i class="fa fa-file-excel-o"></i> 导出报表</a>
+              <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="exportExcel()"  ><i class="fa fa-file-excel-o"></i> {:lang('Export table')}</a>
             </li>
         </ul>
 
@@ -17,23 +17,23 @@
 
                 <form class="layui-form layui-form-pane"  id="filter-form" action="{:url('admin/scoreAccount/index',['type'=>2])}" method="get">
                     <div class="layui-inline">
-                        <label class="layui-form-label">检索</label>
+                       <label class="layui-form-label layui-form-label-filter"><i class="fa fa-filter"></i></label>
                         <div class="layui-input-inline">
-                            <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
+                            <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="{:lang('Account keyword')}" class="layui-input" style="width:140px" >
                         </div>
                         <div class="layui-input-inline">
-                            <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input"  >
+                            <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="{:lang('Department keyword')}" class="layui-input"  >
                         </div>
 
                     </div>
                     <div class="layui-inline">
-                        &nbsp;&nbsp;&nbsp;&nbsp;分数范围:
+                        &nbsp;&nbsp;&nbsp;&nbsp;{:lang('Points range')}:
                         <div class="layui-input-inline">
-                          <input type="number" name="filter[floor]" value="{$filter['floor'] ? $filter['floor'] :'0'}" placeholder="" class="layui-input"  style="width:60px" >
+                          <input type="number" name="filter[floor]" value="{$filter['floor'] ? $filter['floor'] :'0'}" placeholder="" class="layui-input"  style="width:82px" >
                         </div>
                         〜
                         <div class="layui-input-inline">
-                          <input type="number" name="filter[ceiling]" value="{$filter['ceiling'] ? $filter['ceiling'] :''}" placeholder="不限" class="layui-input"  style="width:60px" >
+                          <input type="number" name="filter[ceiling]" value="{$filter['ceiling'] ? $filter['ceiling'] :''}" placeholder="{:lang('unlimited')}" class="layui-input"  style="width:82px" >
                         </div>
                     </div>
                     <div class="layui-inline">
@@ -47,15 +47,15 @@
                     <thead>
                     <tr >
                         <th lay-data="{field:'uid', width:80,fixed: 'left' }" >#</th>
-                        <th lay-data="{field:'loginname', width:120, fixed: 'left'}">用户名</th>
-                        <th lay-data="{field:'name' }">姓名</th>
-                        <th lay-data="{field:'score', width:100}">积分余额</th>
-                        <th lay-data="{field:'phone', width:120}">手机</th>
-                        <th lay-data="{field:'full_department', width:160}">部门(HR)</th>
-                        <th lay-data="{field:'Department', width:80}">部门</th>
-                        <th lay-data="{field:'company_name', width:140}">公司</th>
+                        <th lay-data="{field:'loginname', width:120, fixed: 'left'}">{:lang('Username')}</th>
+                        <th lay-data="{field:'name' }">{:lang('Name')}</th>
+                        <th lay-data="{field:'score', width:100}">{:lang('Remaining points')}</th>
+                        <th lay-data="{field:'phone', width:120}">{:lang('Phone')}</th>
+                        <th lay-data="{field:'full_department', width:160}">{:lang('Department')}(HR)</th>
+                        <th lay-data="{field:'Department', width:80}">{:lang('Department')}</th>
+                        <th lay-data="{field:'company_name', width:140}">{:lang('Company')}</th>
                         <th lay-data="{field:'other', width:60}">...</th>
-                        <th lay-data="{field:'options', width:150,fixed: 'right'}">操作</th>
+                        <th lay-data="{field:'options', width:150,fixed: 'right'}">{:lang('Operate')}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -63,12 +63,12 @@
                     <tr class="account-list-item" data-id="{$vo.uid}" data-account="{$vo.loginname}">
                         <td>{$vo.uid}</td>
                         <td>
-                          <a onclick="openLayer('{:url('admin/ScoreAccount/detail',['type'=>2,'account'=>$vo['loginname']])}','用户详情');" href="javascript:void(0);" >
+                          <a onclick="openLayer('{:url('admin/ScoreAccount/detail',['type'=>2,'account'=>$vo['loginname']])}','{:lang('User detail')}');" href="javascript:void(0);" >
                           {$vo.loginname}
                           </a>
                         </td>
                         <td>
-                          <a onclick="openLayer('{:url('admin/ScoreAccount/detail',['type'=>2,'account'=>$vo['loginname']])}','用户详情');" href="javascript:void(0);" >
+                          <a onclick="openLayer('{:url('admin/ScoreAccount/detail',['type'=>2,'account'=>$vo['loginname']])}','{:lang('User detail')}');" href="javascript:void(0);" >
                           {$vo.name}{php}echo $vo['account_id'] ? ' <i class="text-red fa fa-id-card"></i>' : '';{/php}
                           </a>
                         </td>
@@ -84,9 +84,16 @@
                           {php}echo $vo['sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
                         </td>
                         <td>
-                          {php}$openAccountUrlParam =  $vo['account_id'] ? ['type'=>'0','account_id'=>$vo['account_id']] : ['type'=>'carpool','account'=>$vo['loginname']];{/php}
-                          <a href="{:url('admin/Score/change',$openAccountUrlParam)}"   data-trigger="modal" data-title="加减分 {$vo.loginname}" class="layui-btn   layui-btn-xs "   >加减分</a>
-                          <a onclick="openLayer('{:url('admin/ScoreHistory/lists',$openAccountUrlParam)}','积分历史:{$vo.loginname}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary layui-btn-xs "   >积分历史</a>
+                          {php}
+                            $openAccountUrlParam =  $vo['account_id'] ? ['type'=>'0','account_id'=>$vo['account_id']] : ['type'=>'carpool','account'=>$vo['loginname']];
+                          {/php}
+                          <a onclick="openLayer('{:url('admin/ScoreHistory/lists',$openAccountUrlParam)}','{:lang('Points history')} : {$vo.loginname}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary layui-btn-xs "   data-tips="{:lang('Points history')}" data-tips-position="1"><i class="fa fa-history"></i></a>
+
+                          {php} if($hasAuth_changeScore){ {/php}
+                            <a href="{:url('admin/Score/change',$openAccountUrlParam)}"   data-trigger="modal" data-title="{:lang('Change point')} : {$vo.loginname}" class="layui-btn   layui-btn-xs "  data-tips="{:lang('Change point')}" data-tips-position="1"  ><i class="fa fa-sliders"></i></a>
+                          {php} }{/php}
+
+
                         </td>
                     </tr>
                     {/foreach}
@@ -113,6 +120,7 @@ var RESOLVE_INIT = {
     this.tableHeight = win_height - 190 > 400 ? win_height-190 : "auto";
 
     this.renderTable();
+    cRenderTips(null,1);
 
 
   },

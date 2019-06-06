@@ -1,9 +1,12 @@
 <?php
 namespace app\score\model;
 
-use think\Model;
+use think\Db;
+use app\common\model\Configs;
+use app\common\model\BaseModel;
+// use think\Model;
 
-class Account extends Model
+class Account extends BaseModel
 {
     // protected $insert = ['create_time'];
 
@@ -17,8 +20,13 @@ class Account extends Model
     }*/
 
     // 直接使用配置参数名
-   protected $connection = 'database_score';
+    protected $connection = 'database_score';
+    protected $table = 't_account';
+    protected $pk = 'id';
 
-   protected $pk = 'id';
+
+
+
+
 
 }

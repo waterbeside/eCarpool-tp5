@@ -4,28 +4,28 @@
       <div class="cp-avatar" style="background-image:url('{$data.userInfo.avatar}')"></div>
     </div>
 
-    <h3>用户信息</h3>
+    <h3>{:lang("User Info")}</h3>
     <table class="layui-table">
       <tbody>
         <tr>
-          <td class="label" width="100">用户名</td>
+          <td class="label" width="100">{:lang("Username")}</td>
           <td>{$data.userInfo.loginname}</td>
         </tr>
         <tr>
-          <td class="label">手机</td>
+          <td class="label">{:lang("Phone")}</td>
           <td>{$data.userInfo.phone}</td>
         </tr>
         <tr>
-          <td class="label">姓名</td>
+          <td class="label">{:lang("Full name")}</td>
           <td>{$data.userInfo.name}</td>
         </tr>
 
         <tr>
-          <td class="label">所属公司</td>
+          <td class="label">{:lang("Company")}</td>
           <td><?php echo isset($companys[$data['userInfo']['company_id']]) ? $companys[$data['userInfo']['company_id']] : ''; ?></td>
         </tr>
         <tr>
-          <td class="label">部门</td>
+          <td class="label">{:lang("Department")}</td>
           <td>{$data.userInfo.department_id ? $data.userInfo.full_department|str_replace=","," / ",### : $data.userInfo.Department}</td>
         </tr>
       </tbody>
@@ -33,43 +33,54 @@
 
     <div class="blank10"></div>
 
-    <h3>订单信息</h3>
+    <h3>{:lang("Order information")}</h3>
     <table class="layui-table">
       <tbody>
         <tr>
-          <td class="label" width="100">订单号</td>
+          <td class="label" width="100">{:lang("Order number")}</td>
           <td> {$data.uuid|iconv_substr=0,8}/{$data.id}</td>
         </tr>
         <tr>
-          <td class="label">下单时间</td>
-          <td>{$data.creation_time}
+          <td class="label">{:lang("Order time")}</td>
+          <td>
+            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.creation_time|strtotime}000</span>
             <span style=" color: #ccc; margin-left:5px">
               <?php echo  $data['platform']===1 ? '<i class="fa fa-android"></i>' : ($data['platform']===0 ? '<i class="fa fa-apple"></i>':''); ?>
             </span>
           </td>
         </tr>
         <tr>
-          <td class="label">订单状态</td>
-          <td><div class="layui-badge goodOrder-status_{$data.status}"><?php echo $statusList[$data['status']]; ?> </div></td>
+          <td class="label">{:lang('Last operation time')}</td>
+          <td>
+            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.operation_time|strtotime}000</span>
+          </td>
         </tr>
         <tr>
-          <td class="label">消耗积分</td>
+          <td class="label">{:lang('Order status')}</td>
+          <td><div class="layui-badge goodOrder-status_{$data.status}"><?php echo $statusList[$data['status']] ? lang("sl:".$statusList[$data['status']]): $data['status']; ?> </div></td>
+        </tr>
+        <tr>
+          <td class="label">{:lang('Consumption points')}</td>
           <td>{$data.total}</td>
+        </tr>
+        <tr>
+          <td class="label">{:lang('Order department')}</td>
+          <td>{$data.region_id ? $data.full_department|str_replace=","," / ",### : $data.region_id}</td>
         </tr>
 
       </tbody>
     </table>
     <div class="blank10"></div>
 
-    <h3>商品信息</h3>
+    <h3>{:lang('Goods information')}</h3>
     <table class="layui-table">
       <thead>
       <tr >
-          <th width="40">编号</th>
-          <th>商品</th>
-          <th width="50">兑换价</th>
-          <th width="50">采购价</th>
-          <th width="100" >数量</th>
+          <th width="40">#</th>
+          <th>{:lang('Goods')}</th>
+          <th width="50">{:lang('Redeem points')}</th>
+          <th width="50">{:lang('Purchase price')}</th>
+          <th width="100" >{:lang('Quantity')}</th>
       </tr>
       </thead>
       <tbody class="goods-table-list">
@@ -96,7 +107,7 @@
       <!--<div class="layui-input-inline">
           <input type="text" name="order_no" value="" placeholder="请输入订单号确认" class="layui-input">
       </div>-->
-        <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="RESOLVE_INIT.finish({$data.id})">完结兑换订单</a>
+        <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="DETAIL_PAGE_EXEC.finish({$data.id})">{:lang('End order')}</a>
 
     </div>
     <div class="blank10"></div>
@@ -107,18 +118,22 @@
 
 
 <script>
-var RESOLVE_INIT = {
+var DETAIL_PAGE_EXEC = {
 
   data : {
 
   },
+  init : function(){
+    cRenderTimes();
+  },
   finish : function(id){
     // var order_no = $("input[name=order_no]").val();
     // console.log(order_no)
-    layer.confirm('您确定要完结本次兑换？',
+    layer.confirm("{:lang('Are you sure you want to end this order?')}",
       {
         closeBtn: 1,
-        btn: ['确定','取消'] //按钮
+        title:myLang.r('Tips'),
+        btn: [myLang.r('Yes'),myLang.r('No')] //按钮
       }, function(){
         ajaxSubmit({
           url:"<?php echo url('admin/ScoreOrder/finish');?>",
@@ -135,5 +150,5 @@ var RESOLVE_INIT = {
 
 }
 
-
+DETAIL_PAGE_EXEC.init();
 </script>

@@ -7,6 +7,7 @@ use app\carpool\model\UpdateVersion as VersionModel;
 use app\carpool\model\VersionDetails as VersionDetailsModel;
 use app\content\model\Ads as AdsModel;
 use app\common\model\Apps as AppsModel;
+use app\carpool\model\Grade as GradeModel;
 use my\RedisData;
 
 use app\common\model\I18nLang as I18nLangModel;
@@ -33,7 +34,13 @@ class AppInitiate extends ApiBase
   public function index($app_id = 0,$platform = 0,$version_code = 0)
   {
     $lang = (new I18nLangModel())->formatLangCode($this->language);
+    $lang = $lang ? $lang : "en";
     $platform_list = config('others.platform_list');
+    $userData = $this->getUserData();
+      // dump($userData);
+    if($userData){
+      $department_id = $userData['department_id'];
+    }
 
     /**
      * 通知列表
@@ -46,12 +53,9 @@ class AppInitiate extends ApiBase
     $map[] = ['end_time','>=',date("Y-m-d H:i:s")];
     $map[] = ['start_time','<',date("Y-m-d H:i:s")];
     $whereExp = '';
-    if (isset($filter['app_id']) && $filter['app_id'] ){
-      $whereExp .= $filter['app_id'] ." in(app_ids)";
-    }
-    if (isset($filter['platform']) && $filter['platform'] ){
-      $whereExp .= $filter['platform'] ." in(platforms)";
-    }
+    $whereExp .= " FIND_IN_SET($app_id,app_ids) ";
+    $whereExp .= " AND FIND_IN_SET($platform,platforms) ";
+
     $notices  = NoticeModel::field($field)->alias('t')->where($map)->where($whereExp)->order('t.sort DESC , t.id DESC')
     // ->fetchSql(true)
     ->select();
@@ -64,27 +68,38 @@ class AppInitiate extends ApiBase
     /**
      * 启屏广告图
      */
-    $map  = [];
-    $map[] = ['status','=',1];
-    $map[]  = ['is_delete',"=",0];
-    $map[] = ['type','=',1];
+    $adsData = [];
+    if($userData){
+      $map  = [];
+      $map[] = ['status','=',1];
+      $map[]  = ['is_delete',"=",0];
+      $map[] = ['type','=',1];
 
-    $whereExp = '';
-    $whereExp .= $app_id ." in(app_ids)";
-    $whereExp .= "And ".$platform ." in(platforms)";
 
-    $adsData  = AdsModel::where($map)->where($whereExp)->json(['images'])->order(['sort' => 'DESC', 'id' => 'DESC'])->select();
-    foreach ($adsData as $key => $value) {
-      $adsData[$key] = [
-        "id" => $value["id"],
-        "title" => $value["title"],
-        "images" => $value["images"],
-        "link_type" => $value["link_type"],
-        "link" => $value["link"],
-        "create_time" => $value["create_time"],
-        "type" => $value["type"],
-      ];
+      $whereExp = '';
+      $whereExp .= " FIND_IN_SET($app_id,app_ids) ";
+      $whereExp .= " AND FIND_IN_SET($platform,platforms) ";
+      $whereExp .= " AND  (lang = '$lang' OR lang = '')";
+
+      $adsRes  = AdsModel::where($map)->where($whereExp)->json(['images'])->order(['sort' => 'DESC', 'id' => 'DESC'])->select();
+      foreach ($adsRes as $key => $value) {
+        if($this->checkDeptAuth($department_id,$value['region_id'])){
+          $adsData[] = [
+            "id" => $value["id"],
+            "title" => $value["title"],
+            "images" => $value["images"],
+            "link_type" => $value["link_type"],
+            "link" => $value["link"],
+            "create_time" => $value["create_time"],
+            "type" => $value["type"],
+          ];
+        }
+      }
     }
+    
+    
+
+    
 
 
     /**
@@ -151,14 +166,19 @@ class AppInitiate extends ApiBase
       //     $ip_data['country_id'] = $ip_res['data']['country_id'];
       //   }
       // }
+      $GradeModel = new GradeModel();
+      $isGrade = $GradeModel->isGrade('trips',$app_id);
+      $gps_interval = config('trips.gps_interval') ? intval(config('trips.gps_interval'))  :  0;
       $returnData = [
         'notices' => $notices,
         'ads' =>  $adsData,
         'version' => $returnVersionData,
         'ip' => $ip,
+        'grade_switch' => $isGrade ? 1 : 0, //是否使用评分系统
+        'gps_interval' => $gps_interval ? $gps_interval  :  30,
       ];
       // dump($lists);
-      return $this->jsonReturn(0,$returnData,'success');
+      return $this->jsonReturn(0,$returnData,lang('Successfully'));
     }
 
 

@@ -1,9 +1,11 @@
 <?php
 namespace app\carpool\model;
 
-use think\Model;
+use app\common\model\Configs;
+use app\common\model\BaseModel;
+// use think\Model;
 
-class User extends Model
+class User extends BaseModel
 {
     // protected $insert = ['create_time'];
 
@@ -20,7 +22,7 @@ class User extends Model
    protected $connection = 'database_carpool';
    protected $pk = 'uid';
 
-   public $errorMsg = '';
+   // public $errorMsg = '';
 
    public function getDetail($account="",$uid=0){
      if(!$account && !$uid){
@@ -33,10 +35,31 @@ class User extends Model
    }
 
 
-   public function hashPassword($password){
-      return md5($password);
+   public function hashPassword($password,$salt = false){
+     if(is_string($salt)){
+       return md5(md5($password).$salt);
+     }else{
+       return md5($password);
+     }
    }
 
+
+   public function createHashPassword($password){
+     $salt = getRandomString(6);
+     return [
+       "hash" => md5(md5($password).$salt),
+       "salt" => $salt,
+     ];
+   }
+
+
+
+   /**
+    * 取工号数字部分并作为密码
+    * @param  [type]  $code [description]
+    * @param  integer $hash [description]
+    * @return [type]        [description]
+    */
    public function createPasswordFromCode($code,$hash=1){
      $n = preg_match('/\d+/', $code ,$arr);
      $pw = $n ? @$arr[0] : $code;
@@ -48,6 +71,78 @@ class User extends Model
      }
      return $hash ? $this->hashPassword($pw) : $pw;
    }
+
+
+   /**
+    * 通过账号密码，取得用户信息
+    * @param  string $loginname 用户名
+    * @param  string $password  密码
+    * @return array||false
+    */
+   public function checkedPassword($loginname,$password){
+     $userData = $this->where([['loginname','=',$loginname],['is_delete','<>',1]])->find();
+     if(!$userData){
+       $this->errorCode = 10002;
+       $this->errorMsg = lang('User does not exist');
+       return false;
+     }
+
+     if(!$userData['is_active']){
+       $this->errorCode = 10003;
+       $this->errorMsg = lang('The user is banned');
+       return false;
+     }
+     if(!$userData['md5password']){ // 当md5password字段为空时，使用hr初始密码验证
+       $checkPassword = $this->checkInitPwd($loginname,$password);
+       if($checkPassword){
+         return $userData;
+       }else{
+         $this->errorCode = 10001;
+         // $this->errorMsg = lang('User name or password error');
+         return false;
+       }
+     }
+
+     if(isset($userData['salt']) && $userData['salt']){
+       if(strtolower($userData['md5password']) != strtolower($this->hashPassword($password,$userData['salt']))){
+         $this->errorCode = 10001;
+         $this->errorMsg = lang('User name or password error');
+         return false;
+       }
+     }else if(strtolower($userData['md5password']) != strtolower($this->hashPassword($password))){
+       $this->errorCode = 10001;
+       $this->errorMsg = lang('User name or password error');
+       return false;
+     }
+     return $userData;
+
+   }
+
+
+   public function checkInitPwd($loginname,$password){
+     $scoreConfigs = (new Configs())->getConfigs("score");
+     $url = config("secret.HR_api.checkPwd");
+     $token =  $scoreConfigs['score_token'];
+     $postData = [
+       'code' =>$loginname,
+       'pwd' => $password,
+     ];
+     $scoreAccountRes = $this->clientRequest($url,['form_params'=>$postData],'POST','xml');
+
+     if(!$scoreAccountRes){
+       return false;
+     }else{
+       $bodyObj = new \SimpleXMLElement($scoreAccountRes);
+       $bodyString = json_decode(json_encode($bodyObj),true)[0] ;
+       if($bodyString!=="OK"){
+         $this->errorMsg = $bodyString;
+         return false;
+       }else{
+         return  true;
+       }
+     }
+   }
+
 
    /**
     * 从temp拿到数
@@ -61,8 +156,16 @@ class User extends Model
        "department_id"=> $data['department_id'],
        'company_id' => isset($data['department_city']) && mb_strtolower($data['department_city']) == "vietnam" ? 11 : 1,
      ];
+
      if($data['name']){
        $inputUserData['nativename'] = $data['name'];
+     }
+     if($data['general_name']){
+      $inputUserData['general_name'] = $data['general_name'];
+     }
+
+     if($data['email']){
+       $inputUserData['mail'] = $data['email'];
      }
 
      if(isset($data['department_format']) && $data['department_format']){
@@ -78,10 +181,10 @@ class User extends Model
        $pw = $this->createPasswordFromCode($data['code']);
        $inputUserData_default = [
          'indentifier' => uuid_create(),
-         "name" => $data['name'],
+         "name" => $data['name'] ? $data['name'] : $data['general_name'],
          'deptid' => $data['code'],
          'route_short_name' => 'XY',
-         'md5password' => $pw,
+         'md5password' => $pw, //日后将会取消初始密码的写入
          'is_active' => 1,
          // 'is_delete' => 0,
        ];
@@ -114,6 +217,7 @@ class User extends Model
        }
      }
    }
+
 
 
 }

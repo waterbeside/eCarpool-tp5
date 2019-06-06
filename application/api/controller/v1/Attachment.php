@@ -21,7 +21,7 @@ class Attachment extends ApiBase
     }
 
     public function index($type=false){
-      $this->jsonReturn(0);
+      $this->jsonReturn(0,'');
     }
 
     /**
@@ -45,6 +45,9 @@ class Attachment extends ApiBase
           dump(isset($_FILES["file"])?$_FILES["file"]:"" );
           dump(isset($_REQUEST["file"])?$_REQUEST["file"]:"" );
         }
+        if($module == "user/avatar"){ //如果是头像上传
+          $this->jsonReturn(-1,lang('Please use v2 Api'));
+        }
         if(!$file){
           $this->jsonReturn(-1,lang('Please upload attachments'));
         }
@@ -62,8 +65,11 @@ class Attachment extends ApiBase
               $this->jsonReturn(-1,lang('Not image file format'));
             }
 
-            if($upInfo['size'] > 819200){
-              $this->jsonReturn(-1,lang('Images cannot be larger than 800K'));
+            // if($upInfo['size'] > 819200){
+            //   $this->jsonReturn(-1,lang('Images cannot be larger than 800K'));
+            // }
+            if($upInfo['size'] > 2048000){
+              $this->jsonReturn(-1,lang('Images cannot be larger than {:size}',["size"=>"2M"]));
             }
             $image = \think\Image::open(request()->file('file'));
             $extra = [
@@ -137,7 +143,6 @@ class Attachment extends ApiBase
             'times' => 1,
             'last_time' => time(),
             'extra_info' => json_encode($extra),
-
         ];
         if($img_id=AttachmentModel::insertGetId($data)){
             $returnData = [

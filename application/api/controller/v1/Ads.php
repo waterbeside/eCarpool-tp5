@@ -3,6 +3,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\ApiBase;
 use app\content\model\Ads as AdsModel;
+use app\common\model\I18nLang as I18nLangModel;
 use my\RedisData;
 
 
@@ -10,7 +11,7 @@ use think\Db;
 
 /**
  * banners相关
- * Class Banners
+ * Class Ads
  * @package app\api\controller
  */
 class Ads extends ApiBase
@@ -27,11 +28,24 @@ class Ads extends ApiBase
       if(!$type || !$app_id || !$platform){
         return $this->jsonReturn(992,[],lang('Parameter error'));
       }
+     
+      $lang = (new I18nLangModel())->formatLangCode($this->language);
+      $lang = $lang ? $lang : "en";
 
-      $keyOfDataVersion  = "carpool:ads:version:".$app_id."_".$type;
+      $department_id = -1;
+      $userData = $this->getUserData();
+      // dump($userData);
+
+      if($userData){
+        $department_id = $userData['department_id'];
+      }
+
+      $keyOfDataVersion  = "carpool:ads:version:".$app_id."_".$type.'_'.$department_id.'_'.$lang; 
+      
+
       $redis = new RedisData();
       $lastVeison = $redis->get($keyOfDataVersion);
-
+      
       if($ver > 0 && $lastVeison && $ver >= intval($lastVeison)){
         return $this->jsonReturn(20008,[],'No new data');
       }
@@ -43,26 +57,31 @@ class Ads extends ApiBase
       $map[] = ['type','=',$type];
 
       $whereExp = '';
-      $whereExp .= $app_id ." in(app_ids)";
-      $whereExp .= "And ".$platform ." in(platforms)";
+      $whereExp .= " FIND_IN_SET($app_id,app_ids) ";
+      $whereExp .= " AND FIND_IN_SET($platform,platforms) ";
+      $whereExp .= " AND  (lang = '$lang' OR lang = '')";
 
       $res  = AdsModel::where($map)->where($whereExp)->json(['images'])->order(['sort' => 'DESC', 'id' => 'DESC'])->select();
+      // dump($res);exit;
       if(!$res){
         return $this->jsonReturn(20002,[],lang('No data'));
       }
+      $res_filt = [];
       foreach ($res as $key => $value) {
-        $res[$key] = [
-          "id" => $value["id"],
-          "title" => $value["title"],
-          "images" => $value["images"],
-          "link_type" => $value["link_type"],
-          "link" => $value["link"],
-          "create_time" => $value["create_time"],
-          "type" => $value["type"],
-        ];
+        if($this->checkDeptAuth($department_id,$value['region_id']) || !$userData){
+          $res_filt[] = [
+            "id" => $value["id"],
+            "title" => $value["title"],
+            "images" => $value["images"],
+            "link_type" => $value["link_type"],
+            "link" => $value["link"],
+            "create_time" => $value["create_time"],
+            "type" => $value["type"],
+          ];
+        }
       }
       $returnData = [
-        'lists'=>$res,
+        'lists'=>$res_filt,
         'data_version'=> intval($lastVeison),
       ];
       return $this->jsonReturn(0,$returnData,'success');

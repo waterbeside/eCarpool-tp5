@@ -31,45 +31,66 @@ class ScoreLottery extends AdminBase
    * 已抽奖列表
    * @return mixed
    */
-  public function index($filter=[],$type="all",$result="all",$page = 1,$pagesize = 20,$export=0,$rule_number=NULL)
+  public function index($filter=[],$type="all",$result="all",$page = 1,$pagesize = 20, $export=0)
   {
     $map = [];
     $map[] = ['t.is_delete','<>', 1];
-    //地区区分
-    if (is_numeric($rule_number)) {
-      $map[] = ['t.rule_number','=', $rule_number];
+
+
+    //构建sql
+    $fields = 't.* ';
+    $fields .=' ,pr.amount , pr.name as prize_name ,  pr.price , pr.level, pr.images, pr.total_count , pr.real_count';
+    $fields .=' ,ac.id as account_id , ac.carpool_account, ac.balance';
+    $fields .=' ,u.name as user_name , u.phone as user_phone , u.company_id ,u.loginname, u.Department, u.sex , u.companyname,  d.fullname as full_department';
+
+    $join = [
+      ['prize pr', 'pr.identity = t.prize_identity and pr.publication_number = t.publication_number','left'],
+      ['account ac','ac.id = t.account_id','left'],
+      ['carpool.user u','u.loginname = ac.carpool_account','left'],
+      // ['carpool.t_department d','u.department_id = d.id','left'],
+      ['carpool.t_department d','t.region_id = d.id','left'],
+    ];
+
+
+    //地区排查 检查管理员管辖的地区部门
+    $authDeptData = $this->authDeptData;
+    if(isset($authDeptData['region_map'])){
+      $map[] = $authDeptData['region_map'];
     }
+    // //地区排查
+    // if($region_id){
+    //   if(is_numeric($region_id)){
+    //     $regionData = $this->getDepartmentById($region_id);
+    //   }
+    //   $region_map_sql = $this->buildRegionMapSql($region_id);
+    //   $map[] = ['','exp', Db::raw($region_map_sql)];
+    // }
+
     //筛选用户信息
     if (isset($type) && is_numeric($type) ){
       $map[] = ['t.type','=', $type];
     }
     //筛选时间
-    if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
-      $time_s = date("Y-m-01");
-      $time_e = date("Y-m-d",strtotime("$time_s +1 month"));
-      $time_e_o = date("Y-m-d",strtotime($time_e)- 24*60*60);
-      $filter['time'] = $time_s." ~ ".$time_e_o;
+    if(!isset($filter['time']) || !$filter['time']){
+      $filter['time'] =  $this->getFilterTimeRangeDefault('Y-m-d','m');
     }
-    $time_arr = explode(' ~ ',$filter['time']);
-    $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
-    $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
-    $map[] = ['buy_time', 'between time', [$time_s, $time_e]];
+    $time_arr = $this->formatFilterTimeRange($filter['time'],'Y-m-d H:i:s','d');
+    if(count($time_arr)>1){
+      $map[] = ['t.buy_time', '>=', $time_arr[0]];
+      $map[] = ['t.buy_time', '<', $time_arr[1]];
+    }
 
-
-    $isJoinUser = false;
     //筛选用户信息
     if (isset($filter['keyword_user']) && $filter['keyword_user'] ){
       $map[] = ['u.loginname|u.phone|u.name','like', "%{$filter['keyword_user']}%"];
-      $isJoinUser = true;
+
     }
     //筛选部门
     if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
-      // $map[] = ['u.Department|u.companyname','like', "%{$filter['keyword_dept']}%"];
-      $map[] = ['d.fullname','like', "%{$filter['keyword_dept']}%"];
-      $isJoinUser = true;
+      $map[] = ['u.Department|u.companyname','like', "%{$filter['keyword_dept']}%"];
+      // $map[] = ['d.fullname','like', "%{$filter['keyword_dept']}%"];
+
     }
-
-
 
     //筛选奖品信息
     if (isset($filter['keyword_prize']) && $filter['keyword_prize'] ){
@@ -88,23 +109,7 @@ class ScoreLottery extends AdminBase
       $map[] = ['t.result','>', 0];
     }
 
-    //构建sql
-    $fields = 't.* ';
-    $fields .=' ,pr.amount , pr.name as prize_name ,  pr.price , pr.level, pr.images, pr.total_count , pr.real_count';
-    $fields .=' ,ac.id as account_id , ac.carpool_account, ac.balance';
-    // $fields .=' ,u.name as user_name , u.phone as user_phone , u.company_id ,u.loginname, u.Department, u.sex , u.companyname';
-    $join = [
-      ['prize pr', 'pr.identity = t.prize_identity and pr.publication_number = t.publication_number','left'],
-      ['account ac','ac.id = t.account_id','left'],
-      // ['carpool.user u','u.loginname = ac.carpool_account','left'],
-    ];
 
-
-    if($isJoinUser){
-      $fields .=' ,u.name as user_name , u.phone as user_phone , u.company_id ,u.loginname, u.Department, u.sex , u.companyname,  d.fullname as full_department';
-      $join[] =  ['carpool.user u','u.loginname = ac.carpool_account','left'];
-      $join[] =  ['carpool.t_department d','u.department_id = d.id','left'];
-    }
     $lists = LotteryModel::alias('t')->field($fields)
             ->join($join)
             ->json(['images'])
@@ -116,19 +121,6 @@ class ScoreLottery extends AdminBase
     $DepartmentModel = new DepartmentModel();
 
     foreach ($lists as $key => $value) {
-      if( !$isJoinUser){
-        $userInfo = CarpoolUserModel::where(['loginname'=>$value['carpool_account']])->find();
-        $lists[$key]['uid'] = $userInfo['uid'] ;
-        $lists[$key]['loginname'] = $userInfo['loginname'] ;
-        $lists[$key]['user_name'] = $userInfo['name'] ;
-        $lists[$key]['user_phone'] = $userInfo['phone'] ;
-        $lists[$key]['sex'] = $userInfo['sex'] ;
-        $lists[$key]['company_id'] = $userInfo['company_id'] ;
-        $lists[$key]['companyname'] = $userInfo['companyname'] ;
-        //部门
-        $lists[$key]['Department'] =  $userInfo['Department'];
-        $lists[$key]['full_department'] =  $userInfo['department_id'] ? $DepartmentModel->where('id',$userInfo['department_id'])->value('fullname') : "";
-      }
       $lists[$key]['Department'] = $lists[$key]['full_department'] ? $DepartmentModel->formatFullName($lists[$key]['full_department'],1) : $lists[$key]['Department']  ;
       $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
 
@@ -139,7 +131,6 @@ class ScoreLottery extends AdminBase
       $companys[$value['company_id']] = $value['company_name'];
     }
     $returnData = [
-      'rule_number' => $rule_number,
       'lists' => $lists,
       'pagesize'=>$pagesize,
       'filter'=>$filter,
@@ -166,9 +157,11 @@ class ScoreLottery extends AdminBase
     $fields = 't.* ';
     $fields .=' ,pr.amount , pr.name as prize_name ,  pr.price , pr.level, pr.images, pr.total_count , pr.real_count';
     $fields .=' ,ac.id as account_id , ac.carpool_account, ac.balance';
+    $fields .=' ,d.fullname as full_department';
     $join = [
       ['prize pr', 'pr.identity = t.prize_identity and pr.publication_number = t.publication_number','left'],
       ['account ac','ac.id = t.account_id','left'],
+      ['carpool.t_department d','t.region_id = d.id','left'],
     ];
 
     $data = LotteryModel::alias('t')->field($fields)
@@ -178,8 +171,10 @@ class ScoreLottery extends AdminBase
             ->find($id);
 
     if(!$data){
-      $this->error("数据不存在");
+      $this->error(lang('Data does not exist'));
     }else{
+      $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
+
       $data['thumb'] = is_array($data["images"]) ? $data["images"][0] : "" ;
       $data['userInfo'] = CarpoolUserModel::alias('t')
                           ->field('t.*, d.fullname as full_department')

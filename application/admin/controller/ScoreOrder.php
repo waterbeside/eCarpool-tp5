@@ -9,6 +9,7 @@ use app\carpool\model\User as CarpoolUserModel;
 use app\carpool\model\Company as CompanyModel;
 use app\user\model\Department as DepartmentModel;
 use app\score\model\Account as ScoreAccountModel;
+use app\score\model\AccountMix as AccountMixModel;
 use app\score\model\Order as OrderModel;
 use app\score\model\Goods as GoodsModel;
 use app\score\model\OrderGoods as OrderGoodsModel;
@@ -26,36 +27,51 @@ use think\Db;
 class ScoreOrder extends AdminBase
 {
 
+  public $check_dept_setting = [
+    "action" => ['index','goods']
+  ];
+
   /**
    * 订单列表
    * @return mixed
    */
-  public function index($filter=[],$status="0",$page = 1,$pagesize = 15,$export=0,$rule_number=NULL)
+  public function index($filter=[],$status="0",$page = 1,$pagesize = 15, $export=0)
   {
+    //构建sql
+    $fields = 't.*, ac.carpool_account, ac.balance    ';
+    $fields .= ',cu.uid, cu.loginname,cu.name, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname, d.fullname as full_department';
+
+    $join = [
+      ['account ac','t.creator = ac.id', 'left'],
+    ];
+    $join[] = ['carpool.user cu','cu.loginname = ac.carpool_account', 'left'];
+    // $join[] = ['carpool.t_department d','cu.department_id = d.id','left'];
+    $join[] = ['carpool.t_department d','t.region_id = d.id','left'];
+
+
     $map = [];
     $map[] = ['t.is_delete','<>', 1];
-
-    //地区区分
-    if (is_numeric($rule_number)) {
-      $map[] = ['t.rule_number','=', $rule_number];
-    }
-
     //筛选状态
     if(is_numeric($status)){
       $map[] = ['t.status','=', $status];
     }
+    //地区排查 检查管理员管辖的地区部门
+    $authDeptData = $this->authDeptData;
+    if(isset($authDeptData['region_map'])){
+      $map[] = $authDeptData['region_map'];
+    }
+
 
     //筛选时间
-    if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
-      $time_s = date("Y-m-01");
-      $time_e = date("Y-m-d",strtotime("$time_s +1 month"));
-      $time_e_o = date("Y-m-d",strtotime($time_e)- 24*60*60);
-      $filter['time'] = $time_s." ~ ".$time_e_o;
+    if(!isset($filter['time']) || !$filter['time']){
+      $filter['time'] =  $this->getFilterTimeRangeDefault('Y-m-d','m');
     }
-    $time_arr = explode(' ~ ',$filter['time']);
-    $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
-    $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
-    $map[] = ['creation_time', 'between time', [$time_s, $time_e]];
+    $time_arr = $this->formatFilterTimeRange($filter['time'],'Y-m-d H:i:s','d');
+    if(count($time_arr)>1){
+      $map[] = ['t.creation_time', '>=', $time_arr[0]];
+      $map[] = ['t.creation_time', '<', $time_arr[1]];
+    }
+
 
     //筛选单号
     $mapOrderRaw = '';
@@ -90,17 +106,8 @@ class ScoreOrder extends AdminBase
       }
     }
 
-    //构建sql
-    $fields = 't.*, ac.carpool_account, ac.balance    ';
-    $join = [
-      ['account ac','t.creator = ac.id', 'left'],
-    ];
-    if( (isset($filter['keyword']) && $filter['keyword']) || (isset($filter['keyword_dept']) && $filter['keyword_dept'])){
-      $fields .= ',cu.uid, cu.loginname,cu.name, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname, d.fullname as full_department';
-      $join[] = ['carpool.user cu','cu.loginname = ac.carpool_account', 'left'];
-      $join[] = ['carpool.t_department d','cu.department_id = d.id','left'];
 
-    }
+
 
     $ModelBase = OrderModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC');
     if(!empty($mapOrderRaw)){
@@ -118,23 +125,9 @@ class ScoreOrder extends AdminBase
     $GoodsModel = new GoodsModel();
     $DepartmentModel = new DepartmentModel();
     foreach($lists as $key => $value) {
-      if( !(isset($filter['keyword']) && $filter['keyword']) && !(isset($filter['keyword_dept']) && $filter['keyword_dept'])){
-        $userInfo = CarpoolUserModel::where(['loginname'=>$value['carpool_account']])->find();
-        $lists[$key]['uid'] = $userInfo['uid'] ;
-        $lists[$key]['loginname'] = $userInfo['loginname'] ;
-        $lists[$key]['name'] = $userInfo['name'] ;
-        $lists[$key]['phone'] = $userInfo['phone'] ;
-        $lists[$key]['sex'] = $userInfo['sex'] ;
-        $lists[$key]['company_id'] = $userInfo['company_id'] ;
-        $lists[$key]['companyname'] = $userInfo['companyname'] ;
-        //部门
-        $lists[$key]['Department'] =  $userInfo['Department'];
-        $lists[$key]['full_department'] =  $userInfo['department_id'] ? $DepartmentModel->where('id',$userInfo['department_id'])->value('fullname') : "";
-      }
+
       $lists[$key]['Department'] = $lists[$key]['full_department'] ? $DepartmentModel->formatFullName($lists[$key]['full_department'],1) : $lists[$key]['Department']  ;
 
-
-      //
       $goods = []; //商品
       foreach ($value['content'] as $gid => $num) {
         if(isset($goodList[$gid])){
@@ -174,16 +167,16 @@ class ScoreOrder extends AdminBase
       $sheet = $spreadsheet->getActiveSheet();
 
       /*设置表头*/
-      $sheet->setCellValue('A1', '单号')
-      ->setCellValue('B1','姓名')
-      ->setCellValue('C1','电话')
-      ->setCellValue('D1','账号')
-      ->setCellValue('E1','公司')
-      ->setCellValue('F1','部门')
-      ->setCellValue('G1','分厂')
-      ->setCellValue('H1','下单时间')
-      ->setCellValue('I1','奖品')
-      ->setCellValue('J1','状态')
+      $sheet->setCellValue('A1', lang('Order number'))
+      ->setCellValue('B1',lang('Name'))
+      ->setCellValue('C1',lang('Phone'))
+      ->setCellValue('D1',lang('Account'))
+      ->setCellValue('E1',lang('Company'))
+      ->setCellValue('F1',lang('Department'))
+      ->setCellValue('G1',lang('Branch'))
+      ->setCellValue('H1',lang('Order time'))
+      ->setCellValue('I1',lang('Prize name'))
+      ->setCellValue('J1',lang('Status'))
       ;
 
       foreach ($lists as $key => $value) {
@@ -223,14 +216,18 @@ class ScoreOrder extends AdminBase
     }else{
       // dump($lists);
       $statusList = config('score.order_status');
+      $auth = [];
+      $auth['admin/ScoreOrder/finish'] = $this->checkActionAuth('admin/ScoreOrder/finish');
+      $auth['admin/ScoreOrder/cancel'] = $this->checkActionAuth('admin/ScoreOrder/cancel');
+      $auth['admin/ScoreOrder/delete'] = $this->checkActionAuth('admin/ScoreOrder/delete');
       $returnData = [
-        'rule_number' => $rule_number,
         'lists' => $lists,
         'pagesize'=>$pagesize,
         'statusList'=>$statusList,
         'filter'=>$filter,
         'status'=>$status,
-        'companys'=>$companys
+        'companys'=>$companys,
+        'auth' => $auth
       ];
       return $this->fetch('index', $returnData);
     }
@@ -249,14 +246,17 @@ class ScoreOrder extends AdminBase
       $this->error("Lost id");
     }
 
-    $fields = 't.*, ac.carpool_account, ac.balance ';
+    $fields = 't.*, ac.carpool_account, ac.balance , d.fullname as full_department';
     $join = [
       ['account ac','t.creator = ac.id', 'left'],
+      ['carpool.t_department d','t.region_id = d.id', 'left'],
     ];
     $data = OrderModel::alias('t')->field($fields)->join($join)->where('t.id',$id)->json(['content'])->find();
     if(!$data){
       $this->error("订单不存在");
     }else{
+      $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
+
       $data['userInfo'] = CarpoolUserModel::alias('t')
                           ->field('t.*, d.fullname as full_department')
                           ->join([['t_department d','t.department_id = d.id','left']])
@@ -293,6 +293,9 @@ class ScoreOrder extends AdminBase
     $statusList = config('score.order_status');
     $auth = [];
     $auth['admin/ScoreOrder/finish'] = $this->checkActionAuth('admin/ScoreOrder/finish');
+    $auth['admin/ScoreOrder/cancel'] = $this->checkActionAuth('admin/ScoreOrder/cancel');
+    $auth['admin/ScoreOrder/delete'] = $this->checkActionAuth('admin/ScoreOrder/delete');
+
 
     return $this->fetch('detail', ['data' => $data,'companys' => $companys,'statusList'=>$statusList,'auth'=>$auth]);
 
@@ -312,33 +315,45 @@ class ScoreOrder extends AdminBase
     }elseif($filter['status']=="all_01"){
       $map[] = ['o.status','in', [0,1]];
     }
-
-    //筛选时间
-    if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
-      $time_s = date("Y-m-01");
-      $time_e = date("Y-m-d",strtotime("$time_s +1 month"));
-      $time_e_o = date("Y-m-d",strtotime($time_e)- 24*60*60);
-      $filter['time'] = $time_s." ~ ".$time_e_o;
-    }
-    $time_arr = explode(' ~ ',$filter['time']);
-    $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
-    $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
-    $map[] = ['o.creation_time', '>=', $time_s];
-    $map[] = ['o.creation_time', '<', $time_e];
-
+    $fields = "g.*, sum(t.count) as num, d.fullname, g.p_region_id ";
     $join = [
       ['order o','o.id = t.oid', 'left'],
       ['goods g','g.id = t.gid', 'left'],
+      ['carpool.t_department d','g.p_region_id = d.id','left']
     ];
-    $lists = OrderGoodsModel::alias('t')->field("g.*, sum(t.count) as num ")->json(['images'])->join($join)->where($map)->group('t.gid')->order('t.gid DESC')->select();
+
+    //地区排查 检查管理员管辖的地区部门
+    $authDeptData = $this->authDeptData;
+
+    if(isset($authDeptData['region_map'])){
+      $map[] = $authDeptData['region_map'];
+    }
+
+
+
+    //筛选时间
+    if(!isset($filter['time']) || !$filter['time']){
+      $filter['time'] =  $this->getFilterTimeRangeDefault('Y-m-d','m');
+    }
+    $time_arr = $this->formatFilterTimeRange($filter['time'],'Y-m-d H:i:s','d');
+    if(count($time_arr)>1){
+      $map[] = ['o.creation_time', '>=', $time_arr[0]];
+      $map[] = ['o.creation_time', '<', $time_arr[1]];
+    }
+
+    $lists = OrderGoodsModel::alias('t')->field($fields)->json(['images'])->join($join)->where($map)->group('t.gid')->order('t.gid DESC')->select();
     foreach ($lists as $key => $value) {
       $lists[$key]['thumb'] = is_array($value["images"]) ? $value["images"][0] : "" ;
     }
 
     $statusList = config('score.order_status');
 
-
-    return $this->fetch('goods', ['lists' => $lists,'filter'=>$filter,'statusList'=>$statusList]);
+    $returnData = [
+      'lists' => $lists,
+      'filter'=>$filter,
+      'statusList'=>$statusList
+    ];
+    return $this->fetch('goods', $returnData);
 
   }
 
@@ -365,22 +380,23 @@ class ScoreOrder extends AdminBase
 
       $data = OrderModel::alias('t')->where('id',$id)->json(['content'])->find();
       if(!$data || $data['is_delete']==1){
-        $this->error("订单不存在");
+        $this->error(lang('Order does not exist'));
       }
+      $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
 
       if(intval($data['status'])!==0){
         $statusMsg = isset($statusList[$data['status']]) ? $statusList[$data['status']] : $data['status'];
-        $this->error("该订单状态为【".$statusMsg."】，不可操作。");
+        $this->error(lang('The order status is [%s], no operation is allowed',[$statusMsg]));
       }
 
       $result = OrderModel::where('id',$id)->update(["status"=>1,"handler"=> -1 * intval($admin_id)]);
 
       if($result){
         $this->log('完结订单成功'.json_encode($this->request->post()),0);
-        $this->success('完结订单成功');
+        $this->success(lang('End order successfully'));
       }else{
         $this->log('完结订单失败'.json_encode($this->request->post()),-1);
-        $this->success('完结订单失败');
+        $this->success(lang('Ending order failed'));
       }
     }
   }
@@ -395,9 +411,12 @@ class ScoreOrder extends AdminBase
     if(!$gid){
       $this->error('Lost id');
     }
-    $good = GoodsModel::where("id",$gid)->json(['images'])->find();
+    $join = [
+      ['carpool.t_department d','t.p_region_id = d.id','left'],
+    ];
+    $good = GoodsModel::alias('t')->field('t.*, d.fullname as full_department')->where("t.id",$gid)->json(['images'])->join($join)->find();
     if(!$good){
-      $this->error("商品不存在");
+      $this->error(lang('Goods does not exist'));
     }
     $good['thumb'] = is_array($good["images"]) ? $good["images"][0] : "" ;
 
@@ -413,18 +432,11 @@ class ScoreOrder extends AdminBase
       $map[] = ['o.status','in', [0,1]];
     }
 
-
-    $time_arr = explode(' ~ ',$time);
-    $time_arr = count($time_arr) > 1 ? $time_arr : explode('+~+',$time);
-
-    if(is_array($time_arr)){
-      $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
-      $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
-      // $map[] = ['o.creation_time', 'between', [$time_s, $time_e]];
-      $map[] = ['o.creation_time', '>=', $time_s];
-      $map[] = ['o.creation_time', '<', $time_e];
+    $time_arr = $this->formatFilterTimeRange($time,'Y-m-d H:i:s','d');
+    if(count($time_arr)>1){
+      $map[] = ['o.creation_time', '>=', $time_arr[0]];
+      $map[] = ['o.creation_time', '<', $time_arr[1]];
     }
-
 
 
 
@@ -465,6 +477,71 @@ class ScoreOrder extends AdminBase
     $statusList = config('score.order_status');
 
     return $this->fetch('good_owners', ['good'=>$good,'lists' => $lists,'companys'=>$companys,'time'=>$time,'filter'=>$filter,'status'=>$status,'statusList'=>$statusList,'pagesize'=>$pagesize,'total'=>$total,'sum'=>$sum]);
+
+
+  }
+
+
+  /**
+   * 删除记录
+   * @param $id
+   */
+  public function delete($id)
+  {
+      $data = OrderModel::find($id);
+      $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
+      $admin_id = $this->userBaseInfo['uid'];
+
+      if (OrderModel::where('id', $id)->update(['is_delete' => 1,"handler"=> -1 * intval($admin_id)])) {
+          $this->log('删除订单记录成功，id='.$id, 0);
+          return $this->jsonReturn(0, lang('Successfully deleted'));
+      } else {
+          $this->log('删除订单记录失败，id='.$id, -1);
+          return $this->jsonReturn(-1, lang('Failed to delete'));
+      }
+  }
+
+
+  /**
+   * 取消订单
+   * @param $id
+   */
+  public function cancel($id)
+  {
+      $orderData = OrderModel::find($id);
+      $this->checkDeptAuthByDid($orderData['region_id'],1); //检查地区权限
+      $admin_id = $this->userBaseInfo['uid'];
+
+      if(intval($orderData['status']) !== 0){
+        return $this->jsonReturn(-1, lang('Only orders waiting to be redeemed are allowed to be cancelled'));
+      }
+      Db::connect('database_score')->startTrans();
+      try {
+        $upDataOrderRes = OrderModel::where('id', $id)->update(['status' => -1,"handler"=> -1 * intval($admin_id)]); //取消订单状态
+        if(!$upDataOrderRes){
+          throw new \Exception(lang('Unsuccessful cancellation'));
+        }
+        $upScoredata = [
+          'reason' => 200,
+          'operand'=> $orderData['total'],
+          'account_id'=> $orderData['creator'],
+        ];
+        $AccountModel = new AccountMixModel();
+        $upScoreRes = $AccountModel->updateScore($upScoredata);  //更新订单分数
+        if(!$upScoreRes){
+          throw new \Exception($AccountModel->errorMsg);
+        }
+        // 提交事务
+        Db::connect('database_score')->commit();
+
+      } catch (\Exception $e) {
+         Db::connect('database_score')->rollback();
+         $this->log('取消订单失败，id='.$id, -1);
+         return $this->jsonReturn(-1, lang('Failed to delete order'),[],["errorMsg"=> $e->getMessage()]);
+      }
+
+      $this->log('取消订单记录成功，id='.$id, 0);
+      return $this->jsonReturn(0, lang('Successful cancellation'));
 
 
   }

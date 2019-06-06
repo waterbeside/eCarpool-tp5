@@ -8,8 +8,8 @@ use app\carpool\model\WallReply;
 use think\Db;
 
 /**
- * banners相关
- * Class Banners
+ * 行程评论
+ * Class TripComments
  * @package app\api\controller
  */
 class TripComments extends ApiBase

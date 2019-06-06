@@ -7,7 +7,8 @@ use think\Model;
 class CommonNotice extends Model
 {
 
-    protected $connection = 'database_content';
+    protected $connection = 'database_carpool';
+    protected $table = 't_common_notice';
     protected $pk = 'id';
 
     protected static function init()

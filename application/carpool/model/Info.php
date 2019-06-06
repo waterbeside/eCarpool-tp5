@@ -20,6 +20,7 @@ class Info extends Model
       'status'    =>  'integer',
    ];
    public $errorMsg = "";
+   public $errorData = "";
 
    /**
     * 发布行程时检查行程是否有重复
@@ -41,10 +42,16 @@ class Info extends Model
      $res = $this->where($map)->find();
      if($res){
        $resTime  = date('Y-m-d H:i',strtotime($res['time'].'00'));
-       $this->errorMsg = lang("You have already made one trip at {:time}, should not be published twice within the same time",["time"=>$resTime]);
-       return false;
+       $returnData = [
+         'time' => strtotime($res['time'].'00'),
+         'love_wall_ID' => $res['love_wall_ID'],
+         'd_uid' => $res['carownid'],
+         'p_uid' => $res['passengerid'],
+       ];
+       $this->errorMsg = lang("You have already made one trip at {:time}, please do not post in a similar time",["time"=>$resTime]);
+       return $returnData;
      }else{
-       return true;
+       return false;
      }
    }
 
@@ -53,7 +60,7 @@ class Info extends Model
 
 
    //取得合并的info和wall表
-   public function buildUnionSql($uid,$merge_ids=[]){
+   public function buildUnionSql($uid,$merge_ids=[],$statusSet = "(0,1,4)"){
      $whereUser = " a.carownid=$uid OR a.passengerid=$uid ";
      $whereUser2 = " a.carownid=$uid  ";
      $whereUser_lw = " lw.carownid=$uid  ";
@@ -81,7 +88,7 @@ class Info extends Model
        info AS a
      WHERE
        ( $whereUser )
-       AND a.status in (0,1,4)
+       AND a.status in $statusSet
        AND (a.love_wall_ID is null OR  a.love_wall_ID not in (select lw.love_wall_ID  from love_wall AS lw where $whereUser_lw and lw.status<>2 ) )
        ORDER BY a.time desc";
 
@@ -99,7 +106,7 @@ class Info extends Model
      FROM
        love_wall as a
      WHERE
-       a.status in (0,1,4)
+       a.status in $statusSet
        AND ($whereUser2)
      ORDER BY  a.time desc";
 

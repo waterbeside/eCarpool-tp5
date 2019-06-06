@@ -50,6 +50,9 @@ class Address extends Model
        'company_id'   => intval($data['company_id']),
        'city'       => isset($data['city']) && $data['city'] ? $data['city'] : "--",
      ];
+     if(isset($data['create_uid'])){
+       $inputData['create_uid'] = $data['create_uid'];
+     }
      $createID = $this->insertGetId($inputData);
      if($createID){
        $data['addressid'] = intval($createID);

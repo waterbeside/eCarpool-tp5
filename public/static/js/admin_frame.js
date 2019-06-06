@@ -130,21 +130,21 @@
       }else{
         $obox.removeClass('layui-show');
       }
-
     }
-    $(document).on('click','.aframe-tab-tool',function(){
+    
+    $(document).on('click','.aframe-tab-tool  ',function(e){
       var $obox = $(".aframe-tab-tool-options");
       if($obox.hasClass('layui-show')){
         showTabToolOptions(0);
       }else{
         showTabToolOptions(1);
       }
-      // showTabToolOptions();
     });
 
     $(document).on('click',function(e){
       // console.log(e)
-      if(!$(e.target).hasClass('aframe-tab-tool-options') && !$(e.target).parents("aframe-tab-tool-options").length > 0 && !$(e.target).hasClass('aframe-tab-tool')){
+      console.log($(e.target).closest('.aframe-tab-tool').length);
+      if(!$(e.target).hasClass('aframe-tab-tool-options') && !$(e.target).parents("aframe-tab-tool-options").length > 0 && !$(e.target).hasClass('aframe-tab-tool') && $(e.target).closest('.aframe-tab-tool').length<1){
         showTabToolOptions(0)
       }
     });

@@ -29,18 +29,45 @@ class ScoreWinners extends AdminBase
    * 中奖列表
    * @return mixed
    */
-  public function index($filter=[],$page = 1,$pagesize = 20,$export=0,$rule_number=NULL)
+  public function index($filter=[],$page = 1,$pagesize = 20,$export=0)
   {
+    $fields = 't.*
+      ,pr.amount , pr.name as prize_name ,  pr.price , pr.level, pr.images, pr.total_count , pr.real_count
+      ,lo.uuid as lottery_uuid, lo.buy_time
+      ,ac.id as account_id , ac.carpool_account, ac.balance
+      ,u.name as user_name , u.phone as user_phone , u.company_id ,u.loginname, u.Department, u.sex , u.companyname
+      , d.fullname as full_department
+    ';
+    $join = [
+      ['prize pr', 'pr.identity = t.prize_identity and pr.publication_number = t.publication_number','left'],
+      ['lottery lo', 'lo.id = t.lottery_id','left'],
+      ['account ac','ac.id = lo.account_id','left'],
+      ['carpool.user u','u.loginname = ac.carpool_account','left'],
+      // ['carpool.t_department ud','u.department_id = ud.id','left'],
+      ['carpool.t_department d','lo.region_id = d.id','left'],
+    ];
     $map = [];
+
+    //地区排查 检查管理员管辖的地区部门
+    $authDeptData = $this->authDeptData;
+    if(isset($authDeptData['region_map'])){
+      $map[] = $authDeptData['region_map'];
+    }
+    // //地区排查
+    // if($region_id){
+    //   if(is_numeric($region_id)){
+    //     $regionData = $this->getDepartmentById($region_id);
+    //   }
+    //   $region_map_sql = $this->buildRegionMapSql($region_id);
+    //   $map[] = ['','exp', Db::raw($region_map_sql)];
+    // }
+
     $map[] = ['t.is_delete','<>', 1];
     //筛选奖品信息
     if (isset($filter['keyword_prize']) && $filter['keyword_prize'] ){
       $map[] = ['pr.name','like', "%{$filter['keyword_prize']}%"];
     }
-    //地区区分
-    if (is_numeric($rule_number)) {
-      $map[] = ['pr.rule_number','=', $rule_number];
-    }
+
     //筛选用户信息
     if (isset($filter['keyword_user']) && $filter['keyword_user'] ){
       $map[] = ['u.loginname|u.phone|u.name','like', "%{$filter['keyword_user']}%"];
@@ -60,31 +87,16 @@ class ScoreWinners extends AdminBase
     }
 
     //筛选时间
-    if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
-      $time_s = date("Y-m-01");
-      $time_e = date("Y-m-d",strtotime("$time_s +1 month"));
-      $time_e_o = date("Y-m-d",strtotime($time_e)- 24*60*60);
-      $filter['time'] = $time_s." ~ ".$time_e_o;
+    if(!isset($filter['time']) || !$filter['time']){
+      $filter['time'] =  $this->getFilterTimeRangeDefault('Y-m-d','m');
     }
-    $time_arr = explode(' ~ ',$filter['time']);
-    $time_s = date('Y-m-d H:i:s',strtotime($time_arr[0]));
-    $time_e = date('Y-m-d H:i:s',strtotime($time_arr[1]) + 24*60*60);
-    $map[] = ['buy_time', 'between time', [$time_s, $time_e]];
-    //构建sql
-    $fields = 't.*
-      ,pr.amount , pr.name as prize_name ,  pr.price , pr.level, pr.images, pr.total_count , pr.real_count
-      ,lo.uuid as lottery_uuid
-      ,ac.id as account_id , ac.carpool_account, ac.balance
-      ,u.name as user_name , u.phone as user_phone , u.company_id ,u.loginname, u.Department, u.sex , u.companyname
-      , d.fullname as full_department
-    ';
-    $join = [
-      ['prize pr', 'pr.identity = t.prize_identity and pr.publication_number = t.publication_number','left'],
-      ['lottery lo', 'lo.id = t.lottery_id','left'],
-      ['account ac','ac.id = lo.account_id','left'],
-      ['carpool.user u','u.loginname = ac.carpool_account','left'],
-      ['carpool.t_department d','u.department_id = d.id','left'],
-    ];
+    $time_arr = $this->formatFilterTimeRange($filter['time'],'Y-m-d H:i:s','d');
+    if(count($time_arr)>1){
+      $filterTimeField = isset($filter['time_type']) && $filter['time_type'] ? "t.lottery_time"  : "lo.buy_time";
+      $map[] = ["$filterTimeField", '>=', $time_arr[0]];
+      $map[] = ["$filterTimeField", '<', $time_arr[1]];
+    }
+
     // $lists = WinnersModel::alias('t')->field($fields)->join($join)->where($map)->json(['content'])->order('t.operation_time ASC, t.creation_time ASC , t.id ASC')->paginate($pagesize, false,  ['query'=>request()->param()]);
 
     $lists = WinnersModel::alias('t')->field($fields)
@@ -111,7 +123,6 @@ class ScoreWinners extends AdminBase
     }
     // dump($lists);
     $returnData =  [
-      'rule_number' => $rule_number,
       'lists' => $lists,
       'pagesize'=>$pagesize,
       'filter'=>$filter,
@@ -135,7 +146,7 @@ class ScoreWinners extends AdminBase
     //构建sql
     $fields = 't.*
       ,pr.amount , pr.name as prize_name ,  pr.price , pr.level, pr.images, pr.total_count , pr.real_count
-      ,lo.uuid as lottery_uuid, lo.publish_number, lo.buy_time, lo.platform
+      ,lo.uuid as lottery_uuid, lo.publish_number, lo.buy_time, lo.platform, lo.region_id
       ,ac.id as account_id , ac.carpool_account, ac.balance
     ';
     $join = [
@@ -153,6 +164,8 @@ class ScoreWinners extends AdminBase
     if(!$data){
       $this->error("数据不存在");
     }else{
+      $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
+
       $data['thumb'] = is_array($data["images"]) ? $data["images"][0] : "" ;
       $data['userInfo'] = CarpoolUserModel::alias('t')
                           ->field('t.*, d.fullname as full_department')
@@ -171,7 +184,6 @@ class ScoreWinners extends AdminBase
     foreach($companyLists as $key => $value) {
       $companys[$value['company_id']] = $value['company_name'];
     }
-
 
     return $this->fetch('detail', ['data' => $data,'companys' => $companys]);
 
@@ -192,25 +204,31 @@ class ScoreWinners extends AdminBase
         if(!$id ){
           $this->error("Params error");
         }
-        /*if(!$order_no ){
-          $this->error("Params error");
-        }*/
 
-        $data = WinnersModel::alias('t')->find($id);
+        //构建sql
+        $fields = 't.*
+          ,lo.region_id
+        ';
+        $join = [
+          ['lottery lo', 'lo.id = t.lottery_id','left'],
+        ];
+        $data = WinnersModel::alias('t')->field($fields)->join($join)->find($id);
         if(!$data){
           $this->error("数据不存在");
         }
+        // dump($data['region_id']);exit;
+        $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
 
         if($data['exchange_time']){
-          $this->error("已兑换，不可操作。");
+          $this->error(lang('Redeemed, not operational'));
         }
         $result = WinnersModel::where('id',$id)->update(["exchange_time"=>date('Y-m-d H:i:s')]);
         if($result){
           $this->log('完成兑奖成功'.json_encode($this->request->post()),0);
-          $this->success('完成兑奖成功');
+          $this->success(lang('Successfully completed the redemption'));
         }else{
           $this->log('完成兑奖失败'.json_encode($this->request->post()),-1);
-          $this->success('完成兑奖失败');
+          $this->success(lang('Failed to completed the redemption failed'));
         }
       }
     }

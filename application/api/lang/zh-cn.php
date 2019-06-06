@@ -3,6 +3,8 @@ return [
   //通用
   '.' => '。',
   ',' => '，',
+  'Failed' => '失败',
+  'Successfully' => '成功',
   'Fail' => '失败',
   "Can not be empty" => '不能为空',
   "Illegal access" => '禁止非法访问',
@@ -10,10 +12,15 @@ return [
   "Parameter error"=>"参数错误",
   "No permission" => "无权操作",
 
+  //jwt 验证
+  'You are not logged in' =>'您尚未登入',
+  'Login status expired, please login again' =>'登录身份过期，请重新登入',
+
   //用户相关
   'Please enter user name'  => '请输入用户名',
   'Please enter your password' => '请输入密码',
   'User name or password error' => '用户名或密码错误',
+  'The phone number you entered is incorrect' => '您输入的手机号有误',
   'Name error' => '姓名错误',
   'The user is banned' => '该用户被封禁',
   'The user is deleted' => '该用户被封禁',
@@ -29,6 +36,12 @@ return [
   'No need to merge' => '无须再合并',
   'The phone number has been bound to this account, no need to merge.' => '该手机号已绑定本帐号,无须再合并',
   'The phone number has been registered for another account'=>'该手机号已被注册其它账号',
+  'Please log in directly to the employee number to perform the binding operation' => '目标账号未开通积分账号，请直接登入员工号进行绑定操作',
+
+  //短信
+  'Verification code cannot be empty' => '验证码不能为空',
+  'Verification code error' => '验证码错误',
+
 
   //字段相关
   'Please select date and time' => '请选择日期时间',
@@ -41,6 +54,7 @@ return [
   "The destination cannot be empty" => '终点不能为空',
   "The departure time has passed. Please select the time again" => "出发时间已经过了，请重选时间。",
   "You have already made one trip at {:time}, should not be published twice within the same time"=> "您在 {:time} 已有一趟行程，在相近时间内请勿重复发布",
+  "You have already made one trip at {:time}, please do not post in a similar time"=> "您在 {:time} 已有一趟行程，请不要在相近时间多次添加行程",
   'The number of empty seats cannot be empty'=>'空座位个数不能为空',
   'The trip has been completed or cancelled. Operation is not allowed' => '该行程已结束或取消，不允许操作。',
   'The trip not started, unable to operate' => '行程未开始，无法操作',
@@ -51,6 +65,7 @@ return [
   'You have already taken this trip'=>'您已搭乘过本行程',
   'Failed, seat is full' => '搭车失败，座位已满',
   'You are not the driver or passenger of this trip'=>'你不是本行程的司机或乘客',
+  'You are not the driver of this trip'=>'你不是本行程的司机',
   'Not allowed to view other`s location information'=>'不允许查看对方的位置信息',
   'This user has not joined this trip or has cancelled the itinerary' => '该用户没有参与本次行程或已取消了行程',
 
@@ -71,6 +86,11 @@ return [
   "Please upload attachments" => '请上传附件',
   "Not image file format" => '图片格式不正确',
   'Images cannot be larger than 800K' => '图片不能大于800K',
+  'Images cannot be larger than {:size}' => '图片不能大于{:size}',
   "File not found"=>'找不到文件',
   "This attachment cannot be deleted" => '该附件不可以删除',
+
+  //评分
+  "You can't rate this"=> "你不能对此评分",
+  "You have already rated this" => "你已经对此评过分",
 ];

@@ -5,6 +5,7 @@ use app\carpool\model\User as CarpoolUserModel;
 use app\carpool\model\Company as CompanyModel;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
+use app\carpool\model\InfoActiveLine;
 use app\admin\controller\AdminBase;
 use think\Db;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -17,6 +18,9 @@ use PhpOffice\PhpSpreadsheet\Writer\Csv;
  */
 class CarpoolTrips extends AdminBase
 {
+  public $check_dept_setting = [
+    "action" => []
+  ];
   /**
    * [index description]
    * @param  array   $filter   筛选项
@@ -37,6 +41,22 @@ class CarpoolTrips extends AdminBase
     }
 
     $map = [];
+
+    //地区排查 检查管理员管辖的地区部门
+
+
+    $deptAuthMapSql_dd = $this->buildRegionMapSql($this->userBaseInfo['auth_depts'],'dd');
+    if($deptAuthMapSql_dd){
+      $map[] = ['','exp', Db::raw($deptAuthMapSql_dd)];
+    }
+    if(!$type){
+      $deptAuthMapSql_pd = $this->buildRegionMapSql($this->userBaseInfo['auth_depts'],'pd');
+      if($deptAuthMapSql_pd){
+        $map[] = ['','exp', Db::raw($deptAuthMapSql_pd)];
+      }
+    }
+
+
     if(isset($filter['status']) && is_numeric($filter['status'])){
       $map[] = ['status','=', $filter['status']];
     }
@@ -44,13 +64,17 @@ class CarpoolTrips extends AdminBase
     if(is_numeric($status)){
       $map[] = ['t.status','=', $status];
     }
+
     //筛选时间
-    if(!isset($filter['time']) || !$filter['time'] || !is_array(explode(' ~ ',$filter['time']))){
-      $time_s = date("Y-m-01");
-      $time_e = date("Y-m-d",strtotime("$time_s +1 month"));
-      $time_e_o = date("Y-m-d",strtotime($time_e)- 24*60*60);
-      $filter['time'] = $time_s." ~ ".$time_e_o;
+    if(!isset($filter['time']) || !$filter['time']){
+      $filter['time'] =  $this->getFilterTimeRangeDefault('Y-m-d','m');
     }
+    $time_arr = $this->formatFilterTimeRange($filter['time'],'YmdHi','d');
+    if(count($time_arr)>1){
+      $map[] = ['t.time', '>=', $time_arr[0]];
+      $map[] = ['t.time', '<', $time_arr[1]];
+    }
+
 
     //筛选部门
     if (isset($filter['keyword_dept']) && $filter['keyword_dept'] ){
@@ -67,11 +91,7 @@ class CarpoolTrips extends AdminBase
     if (isset($filter['keyword_address']) && $filter['keyword_address'] ){
       $map[] = ['s.addressname|e.addressname','like', "%{$filter['keyword_address']}%"];
     }
-    $time_arr = explode(' ~ ',$filter['time']);
-    $time_s = date('YmdHi',strtotime($time_arr[0]));
-    $time_e = date('YmdHi',strtotime($time_arr[1]) + 24*60*60);
-    $map[] = ['time', '>=', $time_s];
-    $map[] = ['time', '<', $time_e];
+
 
     // $fields = 't.time, t.status';
     // $fields .= ',s.addressname as start_addressname, s.latitude as start_latitude, s.longtitude as start_longtitude';
@@ -121,6 +141,7 @@ class CarpoolTrips extends AdminBase
         $lists = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('love_wall_ID DESC , t.time DESC')->select();
       }else{
         $lists = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('love_wall_ID DESC , t.time DESC')
+        // ->fetchSql()->select();dump($lists);exit;
         ->paginate($pagesize, false,  ['query'=>request()->param()]);
       }
       // dump($lists->toArray());exit;
@@ -181,10 +202,10 @@ class CarpoolTrips extends AdminBase
         $lists = WallModel::alias('t')->field($fields)->join($join)->where($map)->where($map_stauts)->order('t.time DESC')->select();
       }else{
         $lists = WallModel::alias('t')->field($fields)->join($join)->where($map)->where($map_stauts)->order('t.time DESC')
+        // ->fetchSql()->select();dump($lists);exit;
         ->paginate($pagesize, false,  ['query'=>request()->param()]);
       }
 
-      // ->fetchSql()->select();dump($lists);exit;
 
       foreach ($lists as $key => $value) {
          $value  = $this->formatResultValue($value);
@@ -378,18 +399,7 @@ class CarpoolTrips extends AdminBase
     $value_format['subtime'] = strtotime($value['subtime']);
 
     $value_format['time'] = strtotime($value['time'].'00');
-    if(!empty($merge_ids)){
-      if(!in_array('p',$unDo) && isset($value['p_uid']) &&  in_array($value['p_uid'],$merge_ids)){
-        $value_format['p_uid'] = $uid;
-        $value_format['passengerid'] = $uid;
-        $value_format['p_name'] = $userData['name'];
-      }
-      if(!in_array('d',$unDo) && isset($value['d_uid']) && in_array($value['d_uid'],$merge_ids)){
-        $value_format['d_uid'] = $uid;
-        $value_format['carownid'] = $uid;
-        $value_format['d_name'] = $userData['name'];
-      }
-    }
+   
     if(!is_numeric($value['startpid']) || $value['startpid'] < 1 ){
       $value_format['start_addressid'] = $value['startpid'];
       $value_format['start_addressname'] = $value['startname'];
@@ -465,5 +475,26 @@ class CarpoolTrips extends AdminBase
   }
 
 
+  public function public_activeline_list($infoid = 0,$pagesize = 100,$orderField = "locationtime" ,$orderType = 'desc'){
+    $orderType = $orderType == 'desc'  ? 'desc' : 'asc';
+    $orderField = in_array($orderField,['locationtime','uid','infoid'])  ?  $orderField : 'locationtime' ;
+    $map = [];
+    if(is_numeric($infoid) && $infoid > 0 ){
+      $map[] = ['t.infoid','=',$infoid];
+    }
+    $join = [];
+    $join[] = ['user u','u.uid = t.uid', 'left'];
+    $lists = InfoActiveLine::alias('t')->field('t.*,u.name,u.loginname')->join($join)->where($map)
+    ->order("$orderField $orderType")->paginate($pagesize, false,  ['query'=>request()->param()]);;
+    $returnData = [
+      'lists' => $lists,
+      'pagesize' => $pagesize,
+      'infoid' => $infoid,
+      'orderField'=>$orderField,
+      'orderType'=>$orderType,
+    ];
+    return $this->fetch('public_activeline_list', $returnData);
+
+  }
 
 }

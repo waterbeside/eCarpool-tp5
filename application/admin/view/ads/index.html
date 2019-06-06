@@ -54,12 +54,15 @@
                             <th>图</th>
                             <th>标题</th>
                             <th>分类</th>
+                            <th>地区</th>
 
                             <th>状态</th>
+                            
 
                             <th>持续时间</th>
                             <th>创建时间</th>
                             <th>更新时间</th>
+                            <th>Lang</th>
                             <th>有效平台</th>
                             <th>所属app</th>
                             <th style="width: 100px;">操作</th>
@@ -74,6 +77,11 @@
                               {$vo.title}
                             </td>
                             <td>{php}echo isset($typeList[$vo['type']]) ? $typeList[$vo['type']]: $vo['type'] ; {/php}</td>
+                            <td>
+                                <?php foreach($vo['deptData'] as $k => $v){ ?>
+                                <div class="item my-tag-item" data-id="{$v.id}" title="{$v.fullname}">{$v.fullname|str_replace=","," / ",###}</div>
+                                <?php } ?>
+                            </td>
 
                             <td>{php}echo $vo['status']==1 ? '<b class="text-red">显示</b>' : '<b class="text-gray">不显示</b>';{/php}</td>
                             <td>
@@ -83,6 +91,9 @@
                             <td>
                               {$vo.update_time}
                             </td>
+                            <td>
+                                {$vo.lang}
+                              </td>
                             <td>
                               <?php
                               $platform_str = '';
