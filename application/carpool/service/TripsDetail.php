@@ -62,9 +62,5 @@ class TripsDetail
     return $data;
   }
 
-  /**
-   * 取得
-   */
-
 
 }
