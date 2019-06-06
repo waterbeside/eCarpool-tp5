@@ -105,19 +105,22 @@ class Trips extends ApiBase
      */
     public function wall_list($pagesize=20, $keyword="", $city=null, $map_type=NULL)
     {
+        $TripsService = new TripsService();
         $TripsListService = new TripsListService();
         $userData = $this->getUserData(1);
         $company_id = $userData['company_id'];
         $time_e = strtotime("+20 day");
         $time_s = strtotime("-1 hour");
         $map = [
-          ['d.company_id','=',$company_id],
+          // ['d.company_id','=',$company_id], // from buildCompanyMap;
           // ['love_wall_ID','>',0],
           ['t.status','<',2],
           // ['go_time','between time',[date('YmdHi',$time_s),date('YmdHi',$time_e)]],
           ['t.time','<',(date('YmdHi', $time_e))],
           ['t.time','>',(date('YmdHi', $time_s))],
         ];
+        $map[] = $TripsService->buildCompanyMap($userData,'d');
+        
         if ($keyword) {
             $map[] = ['d.name|s.addressname|e.addressname|t.startname|t.endname','like',"%{$keyword}%"];
         }
@@ -218,14 +221,16 @@ class Trips extends ApiBase
             ];
         } else {
             $map = [
-              ['p.company_id','=',$company_id],
+              // ['p.company_id','=',$company_id], // from buildCompanyMap;
               // ['love_wall_ID','>',0],
               // ['go_time','between time',[date('YmdHi',$time_s),date('YmdHi',$time_e)]],
               ['t.time','<',(date('YmdHi', $time_e))],
               ['t.time','>',(date('YmdHi', $time_s))],
             ];
         }
+        
 
+        $map[] = $TripsService->buildCompanyMap($userData,'p');
         $map[] = $TripsService->buildStatusMap($status);
         // dump($map);exit;
         if ($keyword) {
@@ -452,7 +457,6 @@ class Trips extends ApiBase
           return $this->jsonReturn($TripsChangeService->errorCode, $TripsChangeService->errorMsg);
         }
         
-
         /*********** 完成或取消或上车 ***********/
         if (in_array($type, ["cancel","finish","get_on"])) {
             //处理要更新的数据
@@ -508,7 +512,6 @@ class Trips extends ApiBase
             }
             $datas->status = 1 ;
             $datas->save();
-
             $TripsChangeService->pushMsg($checkData);
             $extra = $TripsChangeService->errorMsg ? ['pushMsg'=>$TripsChangeService->errorMsg] : [];
             return $this->jsonReturn(0, ['infoid'=>$res], 'success', $extra);
@@ -668,7 +671,7 @@ class Trips extends ApiBase
     {
         $this->checkPassport(1);
         if (!$from || !$id || !$uid) {
-            $this->jsonReturn(992, [], lang('Parameter error'));
+          $this->jsonReturn(992, [], lang('Parameter error'));
         }
         $msg = "";
         $uids = [];
@@ -731,7 +734,7 @@ class Trips extends ApiBase
         //验证是否成员，查找该行程的所有乘客id，以便用检查是否有权查询其它用户的位置信息
         if ($wid) {
             if ($tripData['d_uid']) {
-                $uids[] = $tripData['d_uid'];
+              $uids[] = $tripData['d_uid'];
             }
             $passengerids = InfoModel::where([["love_wall_ID",'=',$wid],['status',"<>",2]])->column('passengerid');
             $uids = array_merge($uids, $passengerids);

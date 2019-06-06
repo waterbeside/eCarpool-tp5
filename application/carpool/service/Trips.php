@@ -4,9 +4,11 @@ namespace app\carpool\service;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
 use app\carpool\model\Address;
+use app\carpool\model\Configs as ConfigsModel;
 use app\carpool\model\user as UserModel;
 use app\common\model\PushMessage;
 use app\user\model\Department as DepartmentModel;
+use think\Db;
 
 class Trips
 {
@@ -174,10 +176,10 @@ class Trips
           $DepartmentModel = new DepartmentModel();
       }
       if (isset($value['d_full_department'])) {
-          $value_format['d_department'] = $DepartmentModel->formatFullName($value['d_full_department'], 3);
+          $value_format['d_department'] = $DepartmentModel->formatFullName($value['d_full_department'], 4);
       }
       if (isset($value['p_full_department'])) {
-          $value_format['p_department'] = $DepartmentModel->formatFullName($value['p_full_department'], 3);
+          $value_format['p_department'] = $DepartmentModel->formatFullName($value['p_full_department'], 4);
       }
       if (isset($value['d_imgpath']) && trim($value['d_imgpath'])=="") {
           $value_format['d_imgpath'] = 'default/avatar.png';
@@ -394,6 +396,21 @@ class Trips
     return $fields;
   }
 
+
+  public function buildCompanyMap($userData,$prefix='t'){
+    $company_id = $userData['company_id'];
+    $ConfigsModel = new ConfigsModel();
+    $groups = $ConfigsModel->getConfig('trip_company_group',true);
+    if($groups && is_array($groups)){
+      foreach($groups as $k => $v){
+        if(is_array($v) && in_array($company_id,$v)){
+          return [$prefix.'.company_id','in',$v];
+        }
+      }
+    }
+    return [$prefix.'.company_id','=',$company_id];
+    
+  }
 
 
 
