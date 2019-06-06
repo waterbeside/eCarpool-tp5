@@ -176,12 +176,12 @@ class NpdProduct extends AdminBase
 
       /******** 处理 merchandizing副表 ********/
       ProductMerchandizing::where('pid',$id)->delete();
-      if(count($upData['merchandizing']>0)){
+      if($upData['merchandizing'] &&  count($upData['merchandizing'])>0){
         ProductMerchandizing::insertAll($upData['merchandizing']);
       }
       /******** 处理 patent副表 ********/
       ProductPatent::where('pid',$id)->delete();
-      if(count($upData['patent']>0)){
+      if($upData['patent'] && count($upData['patent'])>0){
         ProductPatent::insertAll($upData['patent']);
       }
     }
