@@ -177,7 +177,7 @@ class DepartmentOld extends AdminBase
       }else{
         $lists = UserTemp::field('department')->group('department')->select();
       }
-      // dump($lists);exit;
+      dump($lists);exit;
       if(!count($lists)){
         if($page>0 && $return ){
           return $this->fetch('index/multi_jump',['url'=>'','msg'=>'完成']);
