@@ -15,6 +15,7 @@ return [
   'Details' => 'Details',
   'Done' => 'Done',
   'Export table' => 'Export table',
+  'Export' => 'Export',
   'Failed' => 'Failed',
   'keyword'=> 'keyword',
   'keywords'=> 'keywords',

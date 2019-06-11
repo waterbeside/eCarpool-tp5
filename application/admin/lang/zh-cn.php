@@ -15,6 +15,7 @@ return [
   'Details' => '详情',
   'Done' => '完成',
   'Export table' => '导出表格',
+  'Export' => '导出',
   'Failed' => '失败',
   'keyword'=> '关键字',
   'keywords'=> '关键词',

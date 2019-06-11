@@ -15,6 +15,7 @@ return [
   'Details' => 'Chi tiết',
   'Done' => 'Hoàn thành',
   'Export table' => 'Hình thức xuất khẩu',
+  'Export' => 'Export',
   'Failed' => 'Thất bại',
   'keyword'=> 'Từ khóa',
   'keywords'=> 'Từ khóa',
