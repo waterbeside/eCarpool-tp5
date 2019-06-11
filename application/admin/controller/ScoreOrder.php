@@ -133,10 +133,9 @@ class ScoreOrder extends AdminBase
         if(isset($goodList[$gid])){
           $good = $goodList[$gid];
         }else{
-          $good = $GoodsModel->getFromRedis($gid);
+          $good = $GoodsModel->getItem($gid);
           $goodList[$gid] =  $good ? $good : [];
         }
-
         if($good){
           $images = json_decode($good['images'],true);
           $good['thumb'] = $images ? $images[0] : "" ;
