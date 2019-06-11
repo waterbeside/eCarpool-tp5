@@ -143,7 +143,7 @@ class Department extends AdminBase
       }else{
         $lists = UserTemp::field('department')->group('department')->select();
       }
-      // dump($lists);exit;
+      dump($lists);exit;
       if(!count($lists)){
         if($page>0 && $return ){
           return $this->fetch('index/multi_jump',['url'=>'','msg'=>'完成']);
@@ -186,69 +186,69 @@ class Department extends AdminBase
     /**
      * 临时方法，把Department字段为空的用户填上
      */
-     public function reset_user_department($page = 0, $pagesize = 20){
-       $map = [
-         ['department_id','>',0],
-         ['company_id','in',[1,11]],
-       ];
-       $fields = 'department_id,company_id,count(department_id) as c';
-       $group = 'department_id,company_id';
-       $total =  User::group($group)->where($map)->count(); //总条数
+    public function reset_user_department($page = 0, $pagesize = 20){
+      $map = [
+        ['department_id','>',0],
+        ['company_id','in',[1,11]],
+      ];
+      $fields = 'department_id,company_id,count(department_id) as c';
+      $group = 'department_id,company_id';
+      $total =  User::group($group)->where($map)->count(); //总条数
 
-       $lists =  User::field($fields)
-        ->group($group)->where($map)
-        ->page($page,$pagesize)->select();
+      $lists =  User::field($fields)
+      ->group($group)->where($map)
+      ->page($page,$pagesize)->select();
 
-       if(!count($lists) && $page>0 ){
-         return $this->fetch('index/multi_jump',['url'=>'','msg'=>'完成']);
-       }
-       $success = [];
-       $fail = [];
-       $department_model = new DepartmentModel();
-       foreach ($lists as $key => $value) {
-         $department_data = $department_model->getItem($value['department_id']);
-         $format_department = $department_data['department_format']['format_name'];
-         $value['format_department'] = $format_department;
-         // dump($format_department);
-         //执行更新
-         $updateMap = [
-           ['company_id','=',$value['company_id']],
-           ['department_id','=',$value['department_id']],
-         ];
-         $updateData = [
-           'Department'=>$format_department,
-           'companyname'=>$department_data['department_format']['branch']
-         ];
-         if($department_data['department_format']['branch'] && $department_data['department_format']['department']){
-           $updateRes = User::where($updateMap)->update($updateData);
-         }else{
-           $updateRes = 0;
-         }
-         $value['update_res'] = $updateRes;
-         if($updateRes){
-           $success[] = $value;
-         }else{
-           $fail[] = $value;
-         }
-       }
-       // dump($lists);
-       $jumpUrl  = url('reset_user_department',['page'=>$page+1,'pagesize'=>$pagesize]);
-       $msg = "";
-       $successMsg = "success:<br />";
-       foreach ( $success as $key => $value) {
-         $br = "<br />";
-         $successMsg .= $value['department_id'].":".$value['format_department'].":".$value['update_res'].$br;
-       }
-       $failMsg = "fail:<br />";
-       foreach ( $fail as $key => $value) {
-         $br = "<br />";
-         $failMsg .= $value['department_id'].":".$value['format_department'].":".$value['update_res'].$br;
-       }
-       $msg .= $successMsg."<br />".$failMsg."<br />";
-       // return $this->fetch('index/multi_jump',['url'=>'','msg'=>$msg]);
-       return $this->fetch('index/multi_jump',['url'=>$jumpUrl,'msg'=>$msg]);
+      if(!count($lists) && $page>0 ){
+        return $this->fetch('index/multi_jump',['url'=>'','msg'=>'完成']);
+      }
+      $success = [];
+      $fail = [];
+      $department_model = new DepartmentModel();
+      foreach ($lists as $key => $value) {
+        $department_data = $department_model->getItem($value['department_id']);
+        $format_department = $department_data['department_format']['format_name'];
+        $value['format_department'] = $format_department;
+        // dump($format_department);
+        //执行更新
+        $updateMap = [
+          ['company_id','=',$value['company_id']],
+          ['department_id','=',$value['department_id']],
+        ];
+        $updateData = [
+          'Department'=>$format_department,
+          'companyname'=>$department_data['department_format']['branch']
+        ];
+        if($department_data['department_format']['branch'] && $department_data['department_format']['department']){
+          $updateRes = User::where($updateMap)->update($updateData);
+        }else{
+          $updateRes = 0;
+        }
+        $value['update_res'] = $updateRes;
+        if($updateRes){
+          $success[] = $value;
+        }else{
+          $fail[] = $value;
+        }
+      }
+      // dump($lists);
+      $jumpUrl  = url('reset_user_department',['page'=>$page+1,'pagesize'=>$pagesize]);
+      $msg = "";
+      $successMsg = "success:<br />";
+      foreach ( $success as $key => $value) {
+        $br = "<br />";
+        $successMsg .= $value['department_id'].":".$value['format_department'].":".$value['update_res'].$br;
+      }
+      $failMsg = "fail:<br />";
+      foreach ( $fail as $key => $value) {
+        $br = "<br />";
+        $failMsg .= $value['department_id'].":".$value['format_department'].":".$value['update_res'].$br;
+      }
+      $msg .= $successMsg."<br />".$failMsg."<br />";
+      // return $this->fetch('index/multi_jump',['url'=>'','msg'=>$msg]);
+      return $this->fetch('index/multi_jump',['url'=>$jumpUrl,'msg'=>$msg]);
 
-     }
+    }
 
 
 }

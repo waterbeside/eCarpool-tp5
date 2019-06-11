@@ -189,8 +189,8 @@ class TripsChange
     $uid = mb_strtolower($data['uid']);
     $userData = $data['userData'];
     $tripData = $data['tripData'];
-    $driver_id   = $tripData->carownid ; //司机id;
-    $isDriver    = $tripData->carownid == $uid ? true : false; //是否司机操作
+    $driver_id   = $data['driver_id'];
+    $isDriver    = $driver_id == $uid ? true : false; //是否司机操作
     $map_type = $tripData->map_type;
     $appid      = $map_type ? 2 : 1;
 
