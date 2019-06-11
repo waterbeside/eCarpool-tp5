@@ -447,6 +447,7 @@ class Trips extends ApiBase
         $checkData['tripData'] = $datas;
         $checkData['userData'] = $userData;
         $checkData['uid'] = $uid;
+        $checkData['driver_id'] = $datas->carownid;
         
         $checkRes = $TripsChangeService->checkAfterData($checkData);
         if(!$checkRes){
@@ -490,15 +491,13 @@ class Trips extends ApiBase
                   WallModel::where(["love_wall_ID",'=',$datas->love_wall_ID])->update(["status"=>0]);
               }
             }
-
-            if ($from=="wall" && $isDriver) { //如果是司机操作空座位，则同时对乘客行程进行操作。
-                $upInfoData = $type == "finish" ? ["status"=>3] : ["status"=>0,"love_wall_ID"=>null,"carownid"=>-1] ;
-                InfoModel::where([["love_wall_ID",'=',$id],["status","in",[0,1,4]]])->update($upInfoData);
-            }
-
             //如果是取消或上车操作，执行推送消息
             if ($type == "cancel" || $type == "get_on") {
                 $TripsChangeService->pushMsg($checkData);
+            }
+            if ($from=="wall" && $isDriver) { //如果是司机操作空座位，则同时对乘客行程进行操作。
+              $upInfoData = $type == "finish" ? ["status"=>3] : ["status"=>0,"love_wall_ID"=>null,"carownid"=>-1] ;
+              InfoModel::where([["love_wall_ID",'=',$id],["status","in",[0,1,4]]])->update($upInfoData);
             }
             $extra = $TripsChangeService->errorMsg ? ['pushMsg'=>$TripsChangeService->errorMsg] : [];
             return $this->jsonReturn(0, [], "success", $extra);
