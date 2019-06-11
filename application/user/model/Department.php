@@ -23,10 +23,10 @@ class Department extends Model
   /**
    * create_department_by_str 根据部门路径字符串添加部门到数据库，并返回最后部门id]
    * @param  string  $department_str 部门全称
-   * @param  integer  $company_id 公司id
    */
-  public function create_department_by_str($department_str, $company_id = 1)
+  public function create_department_by_str($department_str)
   {
+    $company_id = 1;
     if (!$department_str) {
       return 0;
     }
@@ -39,7 +39,9 @@ class Department extends Model
     }
 
     $array = explode('/', $department_str);
-
+    if(is_array($array) && count($array)>1 ){
+      $company_id = mb_strtolower($array[1]) == "vietnam" ? 11 : 1;
+    }
 
     $lists = [];
     $ids = [];
