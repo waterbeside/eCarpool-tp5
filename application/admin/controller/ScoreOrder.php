@@ -14,7 +14,7 @@ use app\score\model\Order as OrderModel;
 use app\score\model\Goods as GoodsModel;
 use app\score\model\OrderGoods as OrderGoodsModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use my\CurlRequest;
 use think\Db;
@@ -160,7 +160,9 @@ class ScoreOrder extends AdminBase
 
     /* 导出报表 */
     if($export){
-      $filename = md5(json_encode($filter)).'_'.$status.'_'.time().'.csv';
+
+      $encoding = input('param.encoding');
+      $filename =  md5(json_encode($filter)).'_'.$status.'_'.time().($encoding ? '.xls' : '.csv' );
 
       $spreadsheet = new Spreadsheet();
       $sheet = $spreadsheet->getActiveSheet();
@@ -201,10 +203,12 @@ class ScoreOrder extends AdminBase
       /*$value = "Hello World!" . PHP_EOL . "Next Line";
       $sheet->setCellValue('A1', $value)；
       $sheet->getStyle('A1')->getAlignment()->setWrapText(true);*/
-
-      $writer = new Csv($spreadsheet);
-      /*$filename = Env::get('root_path') . "public/uploads/temp/hello_world.xlsx";
-      $writer->save($filename);*/
+      
+      $writer = $encoding ? new Xls($spreadsheet) :  new Csv($spreadsheet);
+      if($encoding){
+        // header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Type: application/vnd.ms-excel; charset=GBK"); 
+      }
       header('Content-Disposition: attachment;filename="'.$filename.'"');//告诉浏览器输出浏览器名称
       header('Cache-Control: max-age=0');//禁止缓存
       $writer->save('php://output');

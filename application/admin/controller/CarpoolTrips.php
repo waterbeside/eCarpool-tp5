@@ -10,6 +10,7 @@ use app\admin\controller\AdminBase;
 use think\Db;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
 
 /**
  * 拼车行程管理
@@ -238,7 +239,8 @@ class CarpoolTrips extends AdminBase
     }
     //导出表格
     if($export){
-      $filename = md5(json_encode($filter)).'_'.time().'.csv';
+      $encoding = input('param.encoding');
+      $filename =  md5(json_encode($filter)).'_'.time().($encoding ? '.xls' : '.csv' );
 
       $spreadsheet = new Spreadsheet();
       $sheet = $spreadsheet->getActiveSheet();
@@ -281,8 +283,10 @@ class CarpoolTrips extends AdminBase
       /*$value = "Hello World!" . PHP_EOL . "Next Line";
       $sheet->setCellValue('A1', $value)；
       $sheet->getStyle('A1')->getAlignment()->setWrapText(true);*/
-
-      $writer = new Csv($spreadsheet);
+      $writer = $encoding ? new Xls($spreadsheet) :  new Csv($spreadsheet);
+      if($encoding){
+        header("Content-Type: application/vnd.ms-excel; charset=GBK"); 
+      }
       /*$filename = Env::get('root_path') . "public/uploads/temp/hello_world.xlsx";
       $writer->save($filename);*/
       header('Content-Disposition: attachment;filename="'.$filename.'"');//告诉浏览器输出浏览器名称
