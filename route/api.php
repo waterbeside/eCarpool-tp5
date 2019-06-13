@@ -71,6 +71,9 @@ Route::group([], function () {
   Route::rule('api/:version/user/:id/position','api/:version.user_position/read','GET');
   Route::rule('api/:version/user/:id/position','api/:version.user_position/save','POST');
 
+  //部门相关
+  Route::rule('api/:version/department/selects','api/:version.department/selects','GET');
+
   //*********公开的
   Route::resource('api/:version/publics/idle','api/:version.publics.idle');
   Route::rule('api/:version/publics/comments','api/:version.publics.comments/index','GET');
