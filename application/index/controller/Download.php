@@ -6,7 +6,7 @@ use app\carpool\model\UpdateVersion as VersionModel;
 
 class Download extends HomeBase
 {
-    public function carpool($platform = 2)
+    public function carpool($platform = 2, $type=1)
     {
       if(!$platform){
         $this->error('Param platform Error');
@@ -20,11 +20,12 @@ class Download extends HomeBase
       if(!$versionData){
         $this->error('No Data');
       }
-      if(!$versionData['url']){
+      $urlField = $type == 2 ? 'url2' : 'url';
+      if(!$versionData[$urlField]){
         $this->error('No URL');
       }
       // exit;
 
-      $this->redirect($versionData['url'],302);
+      $this->redirect($versionData[$urlField],302);
     }
 }
