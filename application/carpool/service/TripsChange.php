@@ -202,8 +202,10 @@ class TripsChange
         $sendTarget = $passengerids ;
       } else { //如果乘客取消，则推送给司机
         // $push_msg = lang("The passenger {:name} cancelled the trip", ["name"=>$userData['name']]) ;
-        $push_msg = "乘客".$userData['name']."取消了行程";
-        $sendTarget = $driver_id;
+        if($driver_id > 0){
+          $push_msg = "乘客".$userData['name']."取消了行程";
+          $sendTarget = $driver_id;
+        }
       }
     } else if ($type == 'get_on') {
       // $push_msg = lang("The passenger {:name} has got on your car", ["name"=>$userData['name']]) ;
