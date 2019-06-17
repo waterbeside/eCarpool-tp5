@@ -139,9 +139,9 @@ class CarpoolTrips extends AdminBase
       }
 
       if($export){
-        $lists = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('love_wall_ID DESC , t.time DESC')->select();
+        $lists = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('t.time DESC, love_wall_ID DESC ')->select();
       }else{
-        $lists = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('love_wall_ID DESC , t.time DESC')
+        $lists = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('t.time DESC, love_wall_ID DESC ')
         // ->fetchSql()->select();dump($lists);exit;
         ->paginate($pagesize, false,  ['query'=>request()->param()]);
       }
