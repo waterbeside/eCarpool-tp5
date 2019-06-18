@@ -3,7 +3,7 @@
 <div class="amain-body P-user-list">
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
-      <ul class="  amain-tool-bar" >
+      <ul class="amain-tool-bar" >
           <li class="layui-this"><a href="{:url('admin/User/index')}"  >用户管理</a></li>
           <li class="btn-item btn-item-right">
             <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/User/add')}"  data-title="添加用户"  data-trigger="modal" >
@@ -12,88 +12,87 @@
       </ul>
 
 
-        <div class="layui-tab-content">
-                <form class="layui-form layui-form-pane" action="{:url('admin/User/index')}" method="get">
-                    <div class="layui-inline">
-                        <label class="layui-form-label">检索</label>
+      <div class="layui-tab-content">
+        <form class="layui-form layui-form-pane" action="{:url('admin/User/index')}" method="get">
+          <div class="layui-inline">
+            <label class="layui-form-label">检索</label>
+            <div class="layui-input-inline">
+              <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
+            </div>
+            <div class="layui-input-inline">
+              <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
+            </div>
+          </div>
+          <div class="layui-inline">
+              <input type="hidden" name="export" value="0">
+              <button class="layui-btn"><i class="fa fa-search"></i></button>
+          </div>
+        </form>
+        <hr>
 
-                        <div class="layui-input-inline">
-                            <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
-                        </div>
-                        <div class="layui-input-inline">
-                            <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
-                        </div>
-                    </div>
-                    <div class="layui-inline">
-                        <input type="hidden" name="export" value="0">
-                        <button class="layui-btn"><i class="fa fa-search"></i></button>
-                    </div>
-                </form>
-                <hr>
+        <table lay-filter="listtable" class="layui-table">
+          <thead>
+            <tr>
+                <th lay-data="{field:'uid', width:100, fixed:'left'}" >ID</th>
+                <th lay-data="{field:'loginname', width:120, fixed:'left'}">用户名</th>
+                <th lay-data="{field:'phone', width:100}">手机</th>
+                <th lay-data="{field:'name', width:100}">暱稱</th>
+                <th lay-data="{field:'nativename', width:100}">真名</th>
+                <th lay-data="{field:'general_name', width:120}">General Name</th>
+                <th lay-data="{field:'full_department', minWidth:160}">部门(HR)</th>
+                <th lay-data="{field:'Department', width:80}">部门</th>
+                <th lay-data="{field:'company_name', width:100}">公司</th>
+                <!-- <th lay-data="{field:'score', width:80}">分</th> -->
+                <th lay-data="{field:'other', width:60}">...</th>
+                <th lay-data="{field:'options', width:160}">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+          {foreach name="user_list" item="vo"}
+          <tr>
+            <td>
+              <div <?php echo  ($vo['is_delete']  ? 'class="is_delete"' : ''); ?>>
+                {$vo.uid}
+              </div>
+            </td>
+            <td>
+              <a href="{:url('admin/User/public_detail',['id'=>$vo['uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
+                {$vo.loginname}
+              </a>
+            </td>
+            <td>{$vo.phone}</td>
+            <td>{$vo.name}</td>
+            <td>{$vo.nativename}</td>
+            <td>{$vo.general_name}</td>
+            <td>{$vo.full_department}</td>
+            <td>{$vo.Department}</td>
+            <td>{php}echo $vo['companyname'] ? $vo['companyname'].' / ' : '';{/php}{$vo.company_name}</td>
 
-                <table lay-filter="listtable" class="layui-table">
-                    <thead>
-                      <tr>
-                          <th lay-data="{field:'uid', width:100, fixed:'left'}" >ID</th>
-                          <th lay-data="{field:'loginname', width:120, fixed:'left'}">用户名</th>
-                          <th lay-data="{field:'phone', width:100}">手机</th>
-                          <th lay-data="{field:'name', width:100}">暱稱</th>
-                          <th lay-data="{field:'nativename', width:100}">真名</th>
-                          <th lay-data="{field:'general_name', width:120}">General Name</th>
-                          <th lay-data="{field:'full_department', minWidth:160}">部门(HR)</th>
-                          <th lay-data="{field:'Department', width:80}">部门</th>
-                          <th lay-data="{field:'company_name', width:100}">公司</th>
-                          <!-- <th lay-data="{field:'score', width:80}">分</th> -->
-                          <th lay-data="{field:'other', width:60}">...</th>
-                          <th lay-data="{field:'options', width:160}">操作</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                    {foreach name="user_list" item="vo"}
-                    <tr>
-                        <td>
-                          <div <?php echo  ($vo['is_delete']  ? 'class="is_delete"' : ''); ?>>
-                            {$vo.uid}
-                          </div>
-                        </td>
-                        <td>
-                          <a href="{:url('admin/User/public_detail',['id'=>$vo['uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
-                            {$vo.loginname}
-                          </a>
-                        </td>
-                        <td>{$vo.phone}</td>
-                        <td>{$vo.name}</td>
-                        <td>{$vo.nativename}</td>
-                        <td>{$vo.general_name}</td>
-                        <td>{$vo.full_department}</td>
-                        <td>{$vo.Department}</td>
-                        <td>{php}echo $vo['companyname'] ? $vo['companyname'].' / ' : '';{/php}{$vo.company_name}</td>
+            <!-- <td><a  class="layui-btn layui-btn-normal layui-btn-xs " data-title="分数管理"  data-trigger="modal" href="">0</a></td> -->
+            <td>
+              {php}echo $vo['is_active']==1 ? '' : '<i class="fa fa-times"></i>';{/php}
+              {php}echo $vo['sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+            </td>
+            <td>
+              <a href="{:url('admin/nim/im_user',['uid'=>$vo['uid']])}"  class="layui-btn   layui-btn-xs " data-title="云信账号"  data-trigger="modal" title="編輯云帐号">IM</a>
+              <a href="{:url('admin/user/edit',['id'=>$vo['uid']])}"  class="layui-btn   layui-btn-xs " data-title="編輯成員"  data-trigger="modal" title="編輯"><i class="layui-icon">&#xe642;</i></a>
+              <?php if($auth['admin/pushmsg/add'] ){ ?>
+                <a href="{:url('admin/pushmsg/add',['uid'=>$vo['uid']])}" class="layui-btn layui-btn-success layui-btn-xs" data-title="发送推送"  data-trigger="modal" title="发送推送"  data-width="580px" ><i class="fa fa-envelope"></i></a>
+              <?php } ?>
+              <a href="{:url('admin/user/delete',['id'=>$vo['uid']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除" ><i class="layui-icon">&#xe640;</i></a>
+              <?php if($auth['admin/user/shift_delete'] ){ ?>
+                <a href="{:url('admin/user/shift_delete',['id'=>$vo['uid']])}" class="layui-btn layui-btn-danger layui-btn-xs ajax-delete" title="彻底删除" data-hint="是否彻底删除?"><i class="layui-icon">&#xe640;</i></a>
+              <?php } ?>
 
-                        <!-- <td><a  class="layui-btn layui-btn-normal layui-btn-xs " data-title="分数管理"  data-trigger="modal" href="">0</a></td> -->
-                        <td>
-                          {php}echo $vo['is_active']==1 ? '' : '<i class="fa fa-times"></i>';{/php}
-                          {php}echo $vo['sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
-                        </td>
-                        <td>
-                          <a href="{:url('admin/nim/im_user',['uid'=>$vo['uid']])}"  class="layui-btn   layui-btn-xs " data-title="云信账号"  data-trigger="modal" title="編輯云帐号">IM</a>
-                          <a href="{:url('admin/user/edit',['id'=>$vo['uid']])}"  class="layui-btn   layui-btn-xs " data-title="編輯成員"  data-trigger="modal" title="編輯"><i class="layui-icon">&#xe642;</i></a>
-                          <?php if($auth['admin/pushmsg/add'] ){ ?>
-                            <a href="{:url('admin/pushmsg/add',['uid'=>$vo['uid']])}" class="layui-btn layui-btn-success layui-btn-xs" data-title="发送推送"  data-trigger="modal" title="发送推送"  data-width="580px" ><i class="fa fa-envelope"></i></a>
-                          <?php } ?>
-                          <a href="{:url('admin/user/delete',['id'=>$vo['uid']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除" ><i class="layui-icon">&#xe640;</i></a>
-                          <?php if($auth['admin/user/shift_delete'] ){ ?>
-                            <a href="{:url('admin/user/shift_delete',['id'=>$vo['uid']])}" class="layui-btn layui-btn-danger layui-btn-xs ajax-delete" title="彻底删除" data-hint="是否彻底删除?"><i class="layui-icon">&#xe640;</i></a>
-                          <?php } ?>
+            </td>
+          </tr>
+          {/foreach}
+          </tbody>
+        </table>
+        <!--分页-->
+        {$user_list|raw}
 
-                        </td>
-                    </tr>
-                    {/foreach}
-                    </tbody>
-                </table>
-                <!--分页-->
-                {$user_list|raw}
-
-        </div>
+      </div>
     </div>
 </div>
 
