@@ -57,7 +57,7 @@ class AdminUser extends AdminBase
             $item->dept_group_id =  $groupData['dept_group_id'];
         });
 
-        return $this->fetch('index', ['lists' => $lists,'groups'=>$groups,'dept_groups'=>$dept_groups]);
+        return $this->fetch('index', ['lists' => $lists,'groups'=>$groups,'dept_groups'=>$dept_groups,'pagesize'=>$pagesize]);
     }
 
     /**
