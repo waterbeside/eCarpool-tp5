@@ -1,7 +1,6 @@
 <?php
 namespace app\admin\controller;
 
-use app\carpool\model\User as CarpoolUserModel;
 use app\carpool\model\Company as CompanyModel;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
@@ -11,6 +10,9 @@ use think\Db;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
+
+use app\carpool\service\Trips as TripsService;
+use app\carpool\service\TripsDetail as TripsDetailService;
 
 /**
  * 拼车行程管理
@@ -40,12 +42,10 @@ class CarpoolTrips extends AdminBase
         $this->error('数据量过大，请筛选后再导出');
       }
     }
+    $TripsService = new TripsService();
 
     $map = [];
-
     //地区排查 检查管理员管辖的地区部门
-
-
     $deptAuthMapSql_dd = $this->buildRegionMapSql($this->userBaseInfo['auth_depts'],'dd');
     if($deptAuthMapSql_dd){
       $map[] = ['','exp', Db::raw($deptAuthMapSql_dd)];
@@ -75,6 +75,7 @@ class CarpoolTrips extends AdminBase
       $map[] = ['t.time', '>=', $time_arr[0]];
       $map[] = ['t.time', '<', $time_arr[1]];
     }
+    
 
 
     //筛选部门
@@ -94,133 +95,152 @@ class CarpoolTrips extends AdminBase
     }
 
 
-    // $fields = 't.time, t.status';
-    // $fields .= ',s.addressname as start_addressname, s.latitude as start_latitude, s.longtitude as start_longtitude';
-    // $fields .= ',e.addressname as end_addressname, e.latitude as end_latitude, e.longtitude as end_longtitude';
-    $join = [];
-    // $join[] = ['address s','s.addressid = t.startpid', 'left'];
-    // $join[] = ['address e','e.addressid = t.endpid', 'left'];
-    //从info表取得行程
-    if(is_numeric($type) && $type == 0 ){
-      //筛选用户信息
-      if (isset($filter['keyword']) && $filter['keyword'] ){
-        $map[] = ['d.loginname|d.phone|d.name|p.loginname|p.phone|p.name','like', "%{$filter['keyword']}%"];
-      }
-      $fields = 't.infoid , t.love_wall_ID , t.time,  t.time, t.status, t.passengerid, t.carownid ,   t.subtime, t.map_type ';
-      $fields .= ','.$this->buildUserFields('d');
-      $fields .= ', dd.fullname as d_full_department  ';
-      $fields .= ','.$this->buildUserFields('p');
-      $fields .= ', pd.fullname as p_full_department  ';
-      $fields .=  $this->buildAddressFields();
-      $join = $this->buildTripJoins();
-      //
-      // $fields .= ',t.infoid, t.love_wall_ID , t.subtime , t.carownid as driver_id , t.passengerid as passenger_id ';
-      // $fields .= ',d.loginname as driver_loginname , d.name as driver_name, d.phone as driver_phone, d.Department as driver_department, d.sex as driver_sex ,d.company_id as driver_company_id, d.companyname as driver_companyname, d.carnumber';
-      // $fields .= ',p.loginname as passenger_loginname , p.name as passenger_name, p.phone as passenger_phone, p.Department as passenger_department, p.sex as passenger_sex ,p.company_id as passenger_company_id, p.companyname as passenger_companyname';
-      // $join[] = ['user d','d.uid = t.carownid', 'left'];
-      // $join[] = ['user p','p.uid = t.passengerid', 'left'];
-      if(is_numeric($status)){
-        $map[] = ['t.status', '=', $status];
-      }else{
-        switch ($status) {
-          case 'cancel':
-            $map[] = ['t.status', '=', 2];
-            break;
-          case 'success':
-            $map[] = ['t.status', 'in', [1,3]];
-            break;
-          case 'fail':
-            $map[] = ['t.status', '=', 0];
-            break;
-          default:
-            // code...
-            break;
+    $cacheKey = "carpool_admin:trips_list:".md5(json_encode($map).json_encode($filter)).":type_{$type}:status_{$status}";
+    $cacheKey = $export ? $cacheKey : $cacheKey.":pagesize_{$pagesize}:page_{$page}" ;
+    $redis = $this->redis();
+    $cacheData = $redis->cache($cacheKey);
+    if($cacheData){
+      $lists = isset($cacheData['lists']) ? $cacheData['lists'] : null;
+      $pagination = $cacheData['pagination'];
+    }
+    if(!$cacheData || $lists===null){      
+      $join = [];
+      //从info表取得行程
+      if(is_numeric($type) && $type == 0 ){
+        //筛选用户信息
+        if (isset($filter['keyword']) && $filter['keyword'] ){
+          $map[] = ['d.loginname|d.phone|d.name|p.loginname|p.phone|p.name','like', "%{$filter['keyword']}%"];
         }
+        $fields = 't.infoid , t.love_wall_ID , t.time,  t.time, t.status, t.passengerid, t.carownid ,   t.subtime, t.map_type ';
+        $fields .= ','.$TripsService->buildUserFields('d');
+        $fields .= ', dd.fullname as d_full_department  ';
+        $fields .= ','.$TripsService->buildUserFields('p');
+        $fields .= ', pd.fullname as p_full_department  ';
+        $fields .=  $TripsService->buildAddressFields();
+        $join   = $TripsService->buildTripJoins();
+        if(is_numeric($status)){
+          $map[] = ['t.status', '=', $status];
+        }else{
+          switch ($status) {
+            case 'cancel':
+              $map[] = ['t.status', '=', 2];
+              break;
+            case 'success':
+              $map[] = ['t.status', 'in', [1,3,4]];
+              break;
+            case 'fail':
+              $map[] = ['t.status', '=', 0];
+              break;
+            default:
+              // code...
+              break;
+          }
+        }
+
+        if($export){
+          $lists_res = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('t.time DESC, love_wall_ID DESC ')->select();
+        }else{
+          $lists_res = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('t.time DESC, love_wall_ID DESC ')
+          // ->fetchSql()->select();dump($lists);exit;
+          ->paginate($pagesize, false,  ['query'=>request()->param()]);
+        }
+        // dump($lists->toArray());exit;
+
+        // ->fetchSql()->select();
+        // dump($lists);exit;
+       
+        // dump($lists);exit;
+
       }
+
+      if($type ==1 ){
+        //筛选用户信息
+        if (isset($filter['keyword']) && $filter['keyword'] ){
+          $map[] = ['d.loginname|d.phone|d.name','like', "%{$filter['keyword']}%"];
+        }
+        $subQuery = InfoModel::field('count(love_wall_ID) as count , love_wall_ID')->group('love_wall_ID')->where('status <> 2')->fetchSql(true)->buildSql();
+        // $fields .=' , (select count(*) from info as i where i.love_wall_ID = t.love_wall_ID and i.status <> 2 ) AS took_count'
+        // $fields .= ',d.loginname as driver_loginname , d.name as driver_name, d.phone as driver_phone, d.Department as driver_department, d.sex as driver_sex ,d.company_id as driver_company_id, d.companyname as driver_companyname, d.carnumber';
+        // $join[] = ['user d','d.uid = t.carownid', 'left'];
+        $fields = 't.time, t.status, t.seat_count';
+        $fields .= ', t.love_wall_ID  , t.subtime , t.carownid as driver_id , t.map_type ';
+        $fields .= ','.$TripsService->buildUserFields('d');
+        $fields .= ', dd.fullname as d_full_department  ';
+        $fields .=  $TripsService->buildAddressFields();
+        $join = $TripsService->buildTripJoins("s,e,d,department");
+
+
+        $fields .= ',ic.count as took_count';
+        $join[] = [[$subQuery=>'ic'],'ic.love_wall_ID = t.love_wall_ID', 'left'];
+        $map_stauts = [];
+        if(is_numeric($status)){
+          $map_stauts[] = ['t.status', '=', $status];
+        }else{
+          switch ($status) {
+            case 'cancel':
+              $map_stauts[] = ['t.status', '=', 2];
+              break;
+            case 'success':
+              $map_stauts[] = ['t.status', '<>', 2];
+              $map_stauts[] = ['ic.count', '>', 0];
+              break;
+            case 'fail':
+              $map_stauts  = 't.status <> 2 AND (ic.count IS NULL OR ic.count = 0)';
+              break;
+            default:
+              // code...
+              break;
+          }
+        }
+
+        if($export){
+          $lists_res = WallModel::alias('t')->field($fields)->join($join)->where($map)->where($map_stauts)->order('t.time DESC')->select();
+          // var_dump($lists);exit;
+        }else{
+          $lists_res = WallModel::alias('t')->field($fields)->join($join)->where($map)->where($map_stauts)->order('t.time DESC')
+          // ->fetchSql()->select();dump($lists);exit;
+          ->paginate($pagesize, false,  ['query'=>request()->param()]);
+        }
+       
+      
+               // dump($lists);exit;
+      }
+      
 
       if($export){
-        $lists = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('t.time DESC, love_wall_ID DESC ')->select();
+        $lists = $lists_res->toArray();
+        $pagination = [
+          'total' => count($lists),
+          'page'=> $page,
+          'render' => '',
+        ];
       }else{
-        $lists = InfoModel::alias('t')->field($fields)->join($join)->where($map)->order('t.time DESC, love_wall_ID DESC ')
-        // ->fetchSql()->select();dump($lists);exit;
-        ->paginate($pagesize, false,  ['query'=>request()->param()]);
+        $pagination = [
+          'total' => $lists_res->total(),
+          'page'=> $page,
+          'render' => $lists_res->render(),
+        ];
+        $lists_to_array = $lists_res->toArray();
+        $lists = $lists_to_array['data'];
       }
-      // dump($lists->toArray());exit;
 
-      // ->fetchSql()->select();
-      // dump($lists);exit;
       foreach ($lists as $key => $value) {
-        $value  = $this->formatResultValue($value);
+        $value  = $TripsService->formatResultValue($value);
         $lists[$key] = $value;
         $lists[$key]['time'] = date('Y-m-d H:i',$value['time']);
         $lists[$key]['subtime'] = date('Y-m-d H:i',$value['subtime']);
       }
-      // dump($lists);exit;
+      // foreach ($lists as $key => $value) {
+      //   // $lists[$key]['took_count']       = InfoModel::where([['love_wall_ID','=',$value['love_wall_ID']],['status','<>',2]])->count(); //取已坐数
+      //   // $data['took_count_all']   = Info::model()->count('love_wall_ID='.$data['love_wall_ID'].' and status <> 2'); //取已坐数
+      //   // $data['hasTake']          = Info::model()->count('love_wall_ID='.$data['love_wall_ID'].' and status < 2 and passengerid ='.$uid.''); //查看是否已搭过此车主的车
+      //   // $data['hasTake_finish']   = Info::model()->count('love_wall_ID='.$data['love_wall_ID'].' and status = 3 and passengerid ='.$uid.''); //查看是否已搭过此车主的车
+      // }
 
+      $redis->cache($cacheKey,['lists'=>$lists,'pagination'=>$pagination],20);
+      
     }
-
-    if($type ==1 ){
-      //筛选用户信息
-      if (isset($filter['keyword']) && $filter['keyword'] ){
-        $map[] = ['d.loginname|d.phone|d.name','like', "%{$filter['keyword']}%"];
-      }
-      $subQuery = InfoModel::field('count(love_wall_ID) as count , love_wall_ID')->group('love_wall_ID')->where('status <> 2')->fetchSql(true)->buildSql();
-      // $fields .=' , (select count(*) from info as i where i.love_wall_ID = t.love_wall_ID and i.status <> 2 ) AS took_count'
-      // $fields .= ',d.loginname as driver_loginname , d.name as driver_name, d.phone as driver_phone, d.Department as driver_department, d.sex as driver_sex ,d.company_id as driver_company_id, d.companyname as driver_companyname, d.carnumber';
-      // $join[] = ['user d','d.uid = t.carownid', 'left'];
-      $fields = 't.time, t.status, t.seat_count';
-      $fields .= ', t.love_wall_ID  , t.subtime , t.carownid as driver_id , t.map_type ';
-      $fields .= ','.$this->buildUserFields('d');
-      $fields .= ', dd.fullname as d_full_department  ';
-      $fields .=  $this->buildAddressFields();
-      $join = $this->buildTripJoins("s,e,d,department");
-
-
-      $fields .= ',ic.count as took_count';
-      $join[] = [[$subQuery=>'ic'],'ic.love_wall_ID = t.love_wall_ID', 'left'];
-      $map_stauts = [];
-      if(is_numeric($status)){
-        $map_stauts[] = ['t.status', '=', $status];
-      }else{
-        switch ($status) {
-          case 'cancel':
-            $map_stauts[] = ['t.status', '=', 2];
-            break;
-          case 'success':
-            $map_stauts[] = ['t.status', '<>', 2];
-            $map_stauts[] = ['ic.count', '>', 0];
-            break;
-          case 'fail':
-            $map_stauts  = 't.status <> 2 AND (ic.count IS NULL OR ic.count = 0)';
-            break;
-          default:
-            // code...
-            break;
-        }
-      }
-
-      if($export){
-        $lists = WallModel::alias('t')->field($fields)->join($join)->where($map)->where($map_stauts)->order('t.time DESC')->select();
-      }else{
-        $lists = WallModel::alias('t')->field($fields)->join($join)->where($map)->where($map_stauts)->order('t.time DESC')
-        // ->fetchSql()->select();dump($lists);exit;
-        ->paginate($pagesize, false,  ['query'=>request()->param()]);
-      }
-
-
-      foreach ($lists as $key => $value) {
-         $value  = $this->formatResultValue($value);
-         $lists[$key] = $value;
-         $lists[$key]['time'] = date('Y-m-d H:i',$value['time']);
-         $lists[$key]['subtime'] = date('Y-m-d H:i',$value['subtime']);
-         // $lists[$key]['took_count']       = InfoModel::where([['love_wall_ID','=',$value['love_wall_ID']],['status','<>',2]])->count(); //取已坐数
-         // $data['took_count_all']   = Info::model()->count('love_wall_ID='.$data['love_wall_ID'].' and status <> 2'); //取已坐数
-         // $data['hasTake']          = Info::model()->count('love_wall_ID='.$data['love_wall_ID'].' and status < 2 and passengerid ='.$uid.''); //查看是否已搭过此车主的车
-         // $data['hasTake_finish']   = Info::model()->count('love_wall_ID='.$data['love_wall_ID'].' and status = 3 and passengerid ='.$uid.''); //查看是否已搭过此车主的车
-      }
-      // dump($lists);exit;
-
-    }
+    
 
 
 
@@ -230,15 +250,26 @@ class CarpoolTrips extends AdminBase
       $companys[$value['company_id']] = $value['company_name'];
     }
     // dump($lists);
+    $returnData = ['lists' => $lists,'pagination'=>$pagination, 'pagesize'=>$pagesize,'type'=>$type,'status'=>$status,'filter'=>$filter,'companys'=>$companys];
     if(!$export){
       if($type){
-        return $this->fetch('wall_index', ['lists' => $lists, 'pagesize'=>$pagesize,'type'=>$type,'status'=>$status,'filter'=>$filter,'companys'=>$companys]);
+        return $this->fetch('wall_index', $returnData);
       }else{
-        return $this->fetch('index', ['lists' => $lists, 'pagesize'=>$pagesize,'type'=>$type,'status'=>$status,'filter'=>$filter,'companys'=>$companys]);
+        return $this->fetch('index', $returnData);
       }
+    }else{
+      return $returnData;
     }
+    
+  }
+
+
+  public function export($filter=[],$status="all",$type=0)
+  {
+    $res = $this->index($filter,$status,$type,1,0,1);
+    $lists = isset($res['lists']) ? $res['lists'] : [];
+    $companys = $res['companys'];
     //导出表格
-    if($export){
       $encoding = input('param.encoding');
       $filename =  md5(json_encode($filter)).'_'.time().($encoding ? '.xls' : '.csv' );
 
@@ -261,7 +292,6 @@ class CarpoolTrips extends AdminBase
       ->setCellValue('M1', $type ? '-' : '乘客部门(HR)')
       ->setCellValue('N1', $type ? '-' : '乘客电话')
       ;
-
       foreach ($lists as $key => $value) {
         $rowNum = $key+2;
         $sheet->setCellValue('A'.$rowNum, $value['start_addressname'])
@@ -296,7 +326,6 @@ class CarpoolTrips extends AdminBase
       unset($spreadsheet);
       // dump($lists);
       exit;
-    }
 
   }
 
@@ -308,6 +337,8 @@ class CarpoolTrips extends AdminBase
     if(!$id){
       return $this->error('Lost id');
     }
+
+    $TripsService = new TripsService();
 
     // $fields = 't.time, t.status';
     // $fields .= ',s.addressname as start_addressname, s.latitude as start_latitude, s.longtitude as start_longtitude';
@@ -324,14 +355,14 @@ class CarpoolTrips extends AdminBase
 
       $fields = 't.time, t.status,  t.seat_count, t.map_type';
       $fields .= ', t.love_wall_ID as id ,t.love_wall_ID , t.subtime , t.carownid as driver_id  ';
-      $fields .= ','.$this->buildUserFields('d');
-      $fields .=  $this->buildAddressFields();
-      $join = $this->buildTripJoins("s,e,d");
+      $fields .= ','.$TripsService->buildUserFields('d');
+      $fields .=  $TripsService->buildAddressFields();
+      $join = $TripsService->buildTripJoins("s,e,d");
 
       $data = WallModel::alias('t')->field($fields)->join($join)
       // ->fetchSql()
       ->find($id);
-      $data  = $this->formatResultValue($data);
+      $data  = $TripsService->formatResultValue($data);
 
       $data['d_avatar'] = $data['d_imgpath'] ? config('secret.avatarBasePath').$data['d_imgpath'] : config('secret.avatarBasePath')."im/default.png";
       $data['time'] = date('Y-m-d H:i',$data['time']);
@@ -363,14 +394,14 @@ class CarpoolTrips extends AdminBase
       $fields = 't.time, t.status, t.map_type';
       $fields .= ',t.infoid as id, t.infoid , t.love_wall_ID , t.subtime , t.carownid as driver_id, t.passengerid as passenger_id  ';
 
-      $fields .= ','.$this->buildUserFields('d');
-      $fields .= ','.$this->buildUserFields('p');
-      $fields .=  $this->buildAddressFields();
-      $join = $this->buildTripJoins();
+      $fields .= ','.$TripsService->buildUserFields('d');
+      $fields .= ','.$TripsService->buildUserFields('p');
+      $fields .=  $TripsService->buildAddressFields();
+      $join   = $TripsService->buildTripJoins();
 
-      $data = InfoModel::alias('t')->field($fields)->join($join)->find($id);
+      $data   = InfoModel::alias('t')->field($fields)->join($join)->find($id);
 
-      $data  = $this->formatResultValue($data);
+      $data   = $TripsService->formatResultValue($data);
 
       $data['d_avatar'] = $data['d_imgpath'] ? config('secret.avatarBasePath').$data['d_imgpath'] : config('secret.avatarBasePath')."im/default.png";
       $data['p_avatar'] = $data['p_imgpath'] ? config('secret.avatarBasePath').$data['p_imgpath'] : config('secret.avatarBasePath')."im/default.png";
@@ -390,92 +421,6 @@ class CarpoolTrips extends AdminBase
     ];
     $template_name = $type ? 'wall_detail' : 'detail';
     return $this->fetch($template_name, $returnData);
-
-  }
-
-
-  /**
-   * 格式化结果字段
-   */
-  protected function formatResultValue($value,$merge_ids = [] ,$unDo = [])
-  {
-    $value_format = $value;
-    $value_format['subtime'] = strtotime($value['subtime']);
-
-    $value_format['time'] = strtotime($value['time'].'00');
-   
-    if(!is_numeric($value['startpid']) || $value['startpid'] < 1 ){
-      $value_format['start_addressid'] = $value['startpid'];
-      $value_format['start_addressname'] = $value['startname'];
-      $value_format['start_longitude'] = $value['start_lng'];
-      $value_format['start_latitude'] = $value['start_lat'];
-    }
-    if(!is_numeric($value['endpid']) || $value['endpid'] < 1 ){
-      $value_format['end_addressid'] = $value['endpid'];
-      $value_format['end_addressname'] = $value['endname'];
-      $value_format['end_longitude'] = $value['end_lng'];
-      $value_format['end_latitude'] = $value['end_lat'];
-    }
-    return $value_format;
-  }
-
-  /**
-   * 创件要select的用户字段
-   */
-  protected function buildUserFields($a="u",$fields=[])
-  {
-    $format_array = [];
-    $fields = !empty($fields) ? $fields : ['uid','loginname','name','phone','mobile','Department','sex','company_id','department_id','companyname','imgpath','carnumber','im_id'];
-
-    foreach ($fields as $key => $value) {
-      $format_array[$key] = $a.".".$value." as ".$a."_".mb_strtolower($value);
-    }
-    return join(",",$format_array);
-  }
-
-  /**
-   * 创件要select的地址字段
-   */
-  protected function buildAddressFields($fields="",$start_latlng = false)
-  {
-    $fields .= ',t.startpid, t.endpid';
-    $fields .= ', x(t.start_latlng) as start_lng, y(t.start_latlng) as start_lat' ;
-    $fields .= ', x(t.end_latlng) as end_lng, y(t.end_latlng) as end_lat' ;
-    $fields .= ', t.startname , t.start_gid ';
-    $fields .= ', t.endname , t.end_gid ';
-    $fields .= ',s.addressname as start_addressname, s.latitude as start_latitude, s.longtitude as start_longitude';
-    $fields .= ',e.addressname as end_addressname, e.latitude as end_latitude, e.longtitude as end_longitude';
-    return $fields;
-  }
-
-
-  /**
-   * 创健要join的表的数缓
-   * @param  string|array $filter
-   * @return array
-   */
-  protected function buildTripJoins($filter="d,p,s,e,department")
-  {
-    if(is_string($filter)){
-      $filter = explode(",",$filter);
-    }
-    $join = [];
-    if(is_array($filter)){
-      foreach ($filter as $key => $value) {
-        $filter[$key] = mb_strtolower($value);
-      }
-      if(in_array('s',$filter) || in_array('start',$filter))      $join[] = ['address s','s.addressid = t.startpid', 'left'];
-      if(in_array('e',$filter) || in_array('end',$filter))        $join[] = ['address e','e.addressid = t.endpid', 'left'];
-      if(in_array('d',$filter) || in_array('driver',$filter)){
-        $join[] = ['user d','d.uid = t.carownid', 'left'];
-        if(in_array('department',$filter))  $join[] = ['t_department dd','dd.id = d.department_id', 'left'];
-      }
-      if(in_array('p',$filter) || in_array('passenger',$filter)){
-        $join[] = ['user p','p.uid = t.passengerid', 'left'];
-        if(in_array('department',$filter))  $join[] = ['t_department pd','pd.id = p.department_id', 'left'];
-      }
-    }
-    return $join;
   }
 
 
