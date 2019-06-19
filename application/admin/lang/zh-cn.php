@@ -6,19 +6,23 @@ return [
   ',' => '，',
   'Add' => '加',
   'All' => '全部',
+  'Available Car' => '墙上空座位',
   'Cancel' => '取消',
   'Cancel selection' => '取消选择',
   'Captcha' => '验证码',
-  'Current' =>'当前',
   'Change password'=>  '更改密码',
   'Click to change' => '点击更换',
+  'Creation time' =>'创建时间',
+  'Current' =>'当前',
   'Details' => '详情',
   'Done' => '完成',
+  'Driver' => '司机',
   'Export table' => '导出表格',
   'Export' => '导出',
   'Failed' => '失败',
   'keyword'=> '关键字',
   'keywords'=> '关键词',
+  'License plate'=>'车牌',
   'Menu'      => '菜单',
   'Minus' => '减',
   'No' => '否',
@@ -26,6 +30,7 @@ return [
   'Operate' =>'操作',
   'Participant'=>'参与者',
   'Participation time'=>'参与时间',
+  'Passenger' => '乘客',
   'Number of participation' => '参与数',
   'Reason' => '原因',
   'Region' => '地区',
@@ -130,6 +135,7 @@ return [
   // filter
   'Account keyword' => '用户关键字',
   'Department keyword' => '部门关键字',
+  'Address keyword' => '地址关键字',
   'Unlimited' => '不限',
   'Please enter keywords' => '请输入关键字',
   'Points range' =>'分数范围',
@@ -138,9 +144,6 @@ return [
   'Not visible' => '不显示',
   'Region or department' => '地区或部门',
   'Time range' => '时间范围',
-
-
-
 
   //主框页
   'Welcome' => '欢迎',
@@ -165,6 +168,24 @@ return [
   'You have selected the parent of the department, please do not select' => '您已选择部门的父级，请勿再选',
   'Please select a region or department' => '请选择地区或部门',
 
+  //行程相关 trips
+  'Driver department'=>'司机部门',
+  'Passenger department'=>'乘客部门',
+  'Departure time' => '出发时间',
+  'Destination' => '目的地',
+  'Departure station' => '出发地',
+  'trips:cancel'=>'行程取消',
+  'trips:success'=>'约车成功',
+  'trips:failed'=>'约车失败',
+  'trips:空座位管理'=>'空座位管理',
+  'trips:行程管理'=>'行程管理',
+  'trip:filter:hr'=>'HR',
+  'trip:filter:u'=>'USR',
+  'trip:空位数'=>'空位数',
+  'trip:乘客数'=>'乘客数',
+
+
+
   //积分账号页
   'Points' => '积分',
   'Carpool account' => 'Carpool账号',
@@ -183,6 +204,7 @@ return [
   'Account' => '账号',
   'Company' => '公司',
   'Department' => '部门',
+  'Email' => '邮箱',
   'Female' => '女',
   'Full name'=>'姓名',
   'Male' => '男',
@@ -193,6 +215,11 @@ return [
   'Username' => '用户名',
   'User detail'=>'用户详情',
   'User Info' => '用户信息',
+  'User:Phone'=> '电话(绑)',
+  'User:Mobile'=> 'Mobile',
+  'User:Show name'=> '显示名',
+  'User:Real name'=> '真名',
+  
 
 
   //商品页
