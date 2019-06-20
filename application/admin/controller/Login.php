@@ -81,7 +81,7 @@ class Login extends AdminBase
                 $this->jsonReturn(-1,[],lang('Login failed'),['error'=>$this->errorMsg]);
               }
               // $checkActiveRes = ['code'=>0];
-              if($checkActiveRes['code'] !== 0 ){
+              if($checkActiveRes['code'] === 10003 ){
                 $AdminLog->add('后台用户登入失败，用户关联的capool账号已离职 username ='.$data['username'],-1);
                 $this->jsonReturn(-1,lang('This account employee has left'));
               }
