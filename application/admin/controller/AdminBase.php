@@ -8,7 +8,6 @@ use think\facade\Cache;
 use think\Response;
 use app\common\controller\Base;
 use think\Db;
-use think\facade\Session;
 use my\RedisData;
 use my\DeptAuth;
 use think\facade\Hook;
@@ -17,6 +16,8 @@ use app\user\model\Department;
 use think\facade\Env;
 use think\facade\Lang;
 use think\facade\Cookie;
+use think\facade\Session;
+use app\admin\service\Admin as AdminService;
 
 
 /**
@@ -225,43 +226,17 @@ class AdminBase extends Base
      */
     public function checkToken()
     {
-        $Authorization = request()->header('Authorization');
-        $temp_array    = explode('Bearer ',$Authorization);
-		    $Authorization = count($temp_array)>1 ? $temp_array[1] : '';
-        $Authorization = $Authorization ? $Authorization : cookie('admin_token');
-        $Authorization = $Authorization ? $Authorization : input('request.admin_token');
-
-        if(!$Authorization){
-          if($this->request->isAjax()){
-            $this->jsonReturn(10004,'您尚未登入');
-          }else{
-            return $this->error('您尚未登入','admin/login/index');
-          }
+      $AdminService = new AdminService();
+      $res = $AdminService->checkToken();
+      if(!$res){
+        if($this->request->isAjax()){
+          $this->jsonReturn(10004,$AdminService->errorMsg);
         }else{
-          $jwtDecode = JWT::decode($Authorization, config('secret.admin_setting')['jwt_key'], array('HS256'));
-          $this->jwtInfo = $jwtDecode;
-          if(isset($jwtDecode->uid) && isset($jwtDecode->username) ){
-            $now = time();
-            if( $now  > $jwtDecode->exp){
-              if($this->request->isAjax()){
-                $this->jsonReturn(10004,'登入超时，请重新登入');
-              }else{
-                return $this->error('登入超时，请重新登入','admin/login/index');
-              }
-            }
-            $this->userBaseInfo  = array(
-              'username' => $jwtDecode->username,
-              'uid' => $jwtDecode->uid,
-            );
-            return true;
-          }else{
-            if($this->request->isAjax()){
-              $this->jsonReturn(10004,'您尚未登入');
-            }else{
-              return $this->error('您尚未登入','admin/login/index');
-            }
-          }
+          return $this->error($AdminService->errorMsg,'admin/login/index');
         }
+      }
+      $this->jwtInfo = $res;
+      return $res;
 
     }
 
