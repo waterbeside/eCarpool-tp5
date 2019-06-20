@@ -263,3 +263,40 @@ function getRandomString($len = 6)
   }
   return $output;
 }
+
+
+
+/**
+ * 请求数据
+ * @param  string $url  请求地址
+ * @param  array  $data 请求参数
+ * @param  string $type 请求类型
+ */
+function clientRequest($url, $data = [], $type = 'POST', $dataType = "json")
+{
+  try {
+    $client = new \GuzzleHttp\Client(['verify' => false]);
+    // $params = strtolower($type) == 'get' ? [
+    //   'query' => $data
+    // ] : [
+    //   'form_params' => $data
+    // ];
+    $params = $data;
+    $response = $client->request($type, $url, $params);
+
+    $contents = $response->getBody()->getContents();
+    if (mb_strtolower($dataType) == "json") {
+      $contents = json_decode($contents, true);
+    }
+    return $contents;
+  } catch (\GuzzleHttp\Exception\RequestException $exception) {
+    if ($exception->hasResponse()) {
+      $responseBody = $exception->getResponse()->getBody()->getContents();
+    }
+    $errorMsg = $exception->getMessage() ? $exception->getMessage()  : (isset($responseBody) ? $responseBody : '');
+    throw new \Exception($errorMsg);
+
+    return false;
+  }
+
+}
