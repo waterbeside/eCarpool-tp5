@@ -126,7 +126,7 @@ class SyncHr extends ApiBase
         $cacheKey =null;
         if ($code) {
             $tid = 0;
-            $cacheKey = "Carpool:user:sync_hr_single:".(strtolower($code));
+            $cacheKey = "carpool:user:sync_hr_single:isSync_{$is_sync}:".(strtolower($code));
             $do_res_str =  $redis->get($cacheKey);
             $do_res =  $do_res_str ? json_decode($do_res_str,true) : false;
             if($do_res && count($do_res)>2){                
