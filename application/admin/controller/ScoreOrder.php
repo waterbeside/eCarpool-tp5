@@ -256,7 +256,7 @@ class ScoreOrder extends AdminBase
     ];
     $data = OrderModel::alias('t')->field($fields)->join($join)->where('t.id',$id)->json(['content'])->find();
     if(!$data){
-      $this->error("订单不存在");
+      $this->error("No Data");
     }else{
       $this->checkDeptAuthByDid($data['region_id'],1); //检查地区权限
 
@@ -272,7 +272,7 @@ class ScoreOrder extends AdminBase
       $goods = [];
       $GoodsModel = new GoodsModel();
       foreach ($data['content'] as $gid => $num) {
-        $good = $GoodsModel->getFromRedis($gid);
+          $good = $GoodsModel->getItem($gid);
         if($good){
           $images = json_decode($good['images'],true);
           $good['thumb'] = $images ? $images[0] : "" ;
