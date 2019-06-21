@@ -53,7 +53,7 @@ class CheckDeptAuth
       }else{ // 如果所选的地区id > 0
         $filter_region_ids = $allow_region_ids ?  $allow_region_ids :  $auth_depts  ;
         if(!$allow_region_ids){
-          $controller->error("您所选择的地区/部门不在你的管理范围内，请返回");
+          $controller->error(lang('The region or department you selected is not within your management, please return'));
         }
       }
 
