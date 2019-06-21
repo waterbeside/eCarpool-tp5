@@ -39,7 +39,7 @@ class Login extends AdminBase
       $validate_result = $this->validate($data, 'Login');
       $AdminLog = new AdminLog();
       $AdminService = new AdminService();
-      
+
 
       if ($validate_result !== true) {
         $this->jsonReturn(-1, $validate_result);
@@ -66,18 +66,19 @@ class Login extends AdminBase
         $CarpoolUser = new CarpoolUser();
         $checkActiveRes = $CarpoolUser->checkDimission($user['carpool_account']);
         if (!$checkActiveRes) {
-          if($CarpoolUser->errorCode == 10003){
+          if ($CarpoolUser->errorCode == 10003) {
             $AdminLog->add('后台用户登入失败，用户关联的capool账号已离职 username =' . $data['username'], -1);
             $errorMsg = lang('This account employee has left');
-          }else{
-            $AdminLog->add($CarpoolUser->errorMsg.' username =' . $data['username'], -1);
+          } else {
+            $AdminLog->add($CarpoolUser->errorMsg . ' username =' . $data['username'], -1);
             $errorMsg = lang('Login failed');
           }
           $this->jsonReturn(-1, [], $errorMsg, ['error' => $CarpoolUser->errorMsg]);
         }
       }
 
-      $AdminService->setLoginData($res['data'],0); //设置session cookie等
+      $AdminService->setLoginData($res['data'], 0); //设置session cookie等
+      $AdminService->remUser($user['id'], $res['data']); //记录在线用户到缓存
       $AdminLog->add('后台用户登入成功 username =' . $data['username'], 0);
       $this->jsonReturn(0, ['token' => $token, 'user' => $user], lang('Sign in suceesfully'));
     }
@@ -88,9 +89,8 @@ class Login extends AdminBase
    */
   public function logout()
   {
-    Session::delete('admin_id');
-    Session::delete('admin_name');
-    Cookie::delete('admin_token');
+    $AdminService = new AdminService();
+    $AdminService->logout();
     $AdminLog = new AdminLog;
     // $AdminLog->add('后台用户登出成功',0);
     $this->success(lang('Sign out suceesfully'), 'admin/login/index');
