@@ -59,6 +59,17 @@ return [
   'Sign out suceesfully' => 'Thoát khỏi thành công',
 
 
+  //jwt 验证
+  'Permission denied' => 'Quyền bị từ chối',
+  'You are not logged in' =>'Bạn chưa đăng nhập',
+  'Login status expired, please login again' =>'Tình trạng đăng nhập đã hết hạn, vui lòng đăng nhập lại',
+  'You log in elsewhere, if...' => 'Bạn đã đăng nhập ở nơi khác. Nếu nó không phải là hoạt động của riêng bạn, Hãy chú ý đến bảo mật tài khoản, Đề xuất thay đổi mật khẩu.',
+  'You haven`t operated for a long time, please log in again' => 'Bạn đã không hoạt động quá lâu, vui lòng đăng nhập lại',
+
+  'You do not have permission to manage content in this region or department' => 'Bạn không có quyền quản lý nội dung trong khu vực hoặc bộ phận này',
+  'The region or department you selected is not within your management, please return' => 'Khu vực / bộ phận bạn chọn không nằm trong quản lý của bạn',
+
+
   //附件相关
   'Attachment information failed to be written' => 'Tệp đính kèm không hoàn thành',
   'Wrong format'=>'Định dạng không chính xác',

@@ -58,6 +58,16 @@ return [
   'Sign in suceesfully' => '登入成功',
   'Sign out suceesfully' => '登出成功',
 
+  //权限 验证
+  'Permission denied' => '无有权限',
+  'You are not logged in' =>'您尚未登入',
+  'Login status expired, please login again' =>'登录身份过期，请重新登入',
+  'You log in elsewhere, if...' => '你已在其它地方登入，若不是本人操作，请注意账号安全，建议更改密码',
+  'You haven`t operated for a long time, please log in again' => '你太久没操作，请重新登录',
+
+  'You do not have permission to manage content in this region or department' => '你没有管理该地区或部门内容的权限',
+  'The region or department you selected is not within your management, please return' => '您所选择的地区/部门不在你的管理范围内，请返回',
+
 
   //附件相关
   'Attachment information failed to be written' => '附件入库失败',
