@@ -22,10 +22,15 @@ class User extends BaseModel
    protected $connection = 'database_carpool';
    protected $pk = 'uid';
 
-   // public $errorMsg = '';
 
-   public function getDetail($account="",$uid=0){
-     if(!$account && !$uid){
+   /**
+    * 取得账号详情
+    *
+    * @param string 用户名
+    * @return void
+    */
+   public function getDetail($account=""){
+     if(!$account){
        return false;
      }
      $carpoolUser_jion =  [
@@ -35,6 +40,13 @@ class User extends BaseModel
    }
 
 
+   /**
+    * 加密密码
+    *
+    * @param [type] $password
+    * @param boolean $salt
+    * @return string
+    */
    public function hashPassword($password,$salt = false){
      if(is_string($salt)){
        return md5(md5($password).$salt);
@@ -44,6 +56,12 @@ class User extends BaseModel
    }
 
 
+   /**
+    * 创建加密后的密码
+    *
+    * @param string $password
+    * @return array
+    */
    public function createHashPassword($password){
      $salt = getRandomString(6);
      return [
@@ -56,9 +74,9 @@ class User extends BaseModel
 
    /**
     * 取工号数字部分并作为密码
-    * @param  [type]  $code [description]
-    * @param  integer $hash [description]
-    * @return [type]        [description]
+    * @param  string  $code 工号
+    * @param  integer $hash 1：加密， 2:不加密
+    * @return string  
     */
    public function createPasswordFromCode($code,$hash=1){
      $n = preg_match('/\d+/', $code ,$arr);
@@ -119,6 +137,12 @@ class User extends BaseModel
    }
 
 
+   /**
+    * 通过账号密码，取得用户信息
+    * @param  string $loginname 用户名
+    * @param  string $password  密码
+    * @return array||false
+    */
    public function checkInitPwd($loginname,$password){
      $scoreConfigs = (new Configs())->getConfigs("score");
      $url = config("secret.HR_api.checkPwd");
@@ -144,10 +168,11 @@ class User extends BaseModel
    }
 
 
-   /**
-    * 从temp拿到数
-    * @var [type]
-    */
+  /**
+   * 从临时表同步数据到正式库
+   *
+   * @param array $data
+   */
    public function syncDataFromTemp($data){
      $inputUserData = [
        "loginname"=> $data['code'],
@@ -217,6 +242,35 @@ class User extends BaseModel
        }
      }
    }
+
+
+  /**
+   * 验证用户是否离职
+   *
+   * @param [type] $username
+   * @return void
+   */
+  public function checkDimission($username){
+    $checkActiveUrl  = config('others.local_hr_sync_api.single');
+    $params = [
+      'query' => [
+        'code' => $username,
+        'is_sync' => 0,
+      ]
+    ];
+    $checkActiveRes = $this->clientRequest($checkActiveUrl, $params, 'GET');
+   
+    if (!$checkActiveRes) {
+      return false;
+    }
+    // $checkActiveRes = ['code'=>0];
+    if ($checkActiveRes['code'] === 10003) {
+      $this->errorMsg = "后台用户登入失败，用户关联的capool账号已离职";
+      $this->errorCode = 10003;
+      return false;
+    }
+    return $checkActiveRes;
+  }
 
 
 

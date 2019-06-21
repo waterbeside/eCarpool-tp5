@@ -9,7 +9,7 @@ if(typeof(GV)=="undefined"){
 GV['timezoneOffset'] = new Date().getTimezoneOffset();
 GV['config'] = {
   url : {
-    amapScript : 'http://webapi.amap.com/maps?v=1.4.6&key=a9c78e8c6c702cc8ab4e17f5085ffd2a'
+    amapScript : 'http://webapi.amap.com/maps?v=1.4.6&key='
   }
 }
 

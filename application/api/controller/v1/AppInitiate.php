@@ -8,6 +8,7 @@ use app\carpool\model\VersionDetails as VersionDetailsModel;
 use app\content\model\Ads as AdsModel;
 use app\common\model\Apps as AppsModel;
 use app\carpool\model\Grade as GradeModel;
+use app\carpool\model\Configs as ConfigsModel;
 use my\RedisData;
 
 use app\common\model\I18nLang as I18nLangModel;
@@ -31,7 +32,7 @@ class AppInitiate extends ApiBase
    * 启动时调用接口
    * @return mixed
    */
-  public function index($app_id = 0,$platform = 0,$version_code = 0)
+  public function index($app_id = 1,$platform = 0,$version_code = 0)
   {
     $lang = (new I18nLangModel())->formatLangCode($this->language);
     $lang = $lang ? $lang : "en";
@@ -153,6 +154,12 @@ class AppInitiate extends ApiBase
      }
 
      /**
+      * 取得carpool配置
+      */
+      $ConfigsModel = new ConfigsModel();
+      $configs = $ConfigsModel->getList(0);
+
+     /**
       * 按ip取得城市信息
       */
       $ip = request()->ip();
@@ -170,6 +177,7 @@ class AppInitiate extends ApiBase
       $isGrade = $GradeModel->isGrade('trips',$app_id);
       $gps_interval = config('trips.gps_interval') ? intval(config('trips.gps_interval'))  :  0;
       $returnData = [
+        'configs'=>$configs,
         'notices' => $notices,
         'ads' =>  $adsData,
         'version' => $returnVersionData,

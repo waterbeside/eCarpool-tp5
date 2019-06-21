@@ -1,12 +1,13 @@
 <?php
 namespace app\score\model;
 
-use think\Model;
+// use think\Model;
+use app\common\model\BaseModel;
 use app\common\model\Configs;
 use my\RedisData;
 use my\CurlRequest;
 
-class  Goods extends Model
+class  Goods extends BaseModel
 {
     // protected $insert = ['create_time'];
 
@@ -26,17 +27,36 @@ class  Goods extends Model
 
 
     /**
+     * 通过id取出商品详情
+     * @param  Int  $id 商品id
+     */
+    public function getItem($id,$ex = 60*60){
+      $good = $this->getFromRedis($id,1) ;
+      $cacheKey = "carpool_management:score:goods:".$id;
+      $good =  $good ? $good : $this->itemCache($cacheKey);
+      if(!$good){
+        $good = $this->find($id);
+        if($good){
+          $good = $good->toArray();
+          $this->itemCache($cacheKey,$good,$ex);
+        }
+      }
+      return $good;
+    }
+
+    /**
      * 从redis取出商品详情
      * @param  Int  $id 商品id
      */
-    public function getFromRedis($id)
+    public function getFromRedis($id,$type=0)
     {
       $redis = new RedisData();
-      $good = json_decode($redis->get("GOODS_".$id),true);
+      $cacheKey = $type ? "score:goods:".$id :  "carpool_management:score:goods:".$id;
+      $good = json_decode($redis->get($cacheKey),true);
       if(!$good){
         $res = $this->reBuildRedis($id);
         if(isset($res['code']) && $res['code']===0){
-          $good = json_decode($redis->get("GOODS_".$id),true);
+          $good = json_decode($redis->get($cacheKey),true);
           return $good;
         }else{
           return false;

@@ -54,8 +54,8 @@
 
 {/block}
 {block name="js"}
-<!-- <script type="text/javascript" src='http://webapi.amap.com/maps?v=1.4.7&key=a9c78e8c6c702cc8ab4e17f5085ffd2a'></script> -->
-<script type="text/javascript" src='http://webapi.amap.com/loca?key=a9c78e8c6c702cc8ab4e17f5085ffd2a'></script>
+
+<script type="text/javascript" src="http://webapi.amap.com/loca?key=<?php echo config('secret.amap_key.default') ?>"></script>
 <script src="__JS__/echarts.common.min-3.js"></script>
 <script src="__JS__/underscore-min.js"></script>
 

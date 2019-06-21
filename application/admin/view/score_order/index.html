@@ -9,7 +9,8 @@
             <li class="layui-this"><a href="{:url('admin/ScoreOrder/index')}"  showloading >{:lang('Order inquiry')}</a></li>
             <li ><a href="{:url('admin/ScoreOrder/goods')}"  showloading >{:lang('Goods order quantity statistics')}</a></li>
             <li class="btn-item-right">
-              <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="exportExcel()"  ><i class="fa fa-file-excel-o"></i> {:lang('Export table')}</a>
+              <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="exportExcel(0)"  ><i class="fa fa-file-excel-o"></i> {:lang('Export')} CSV</a>
+              <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="exportExcel(1)"  ><i class="fa fa-file-excel-o"></i> {:lang('Export')} XLS (GBK)</a>
             </li>
         </ul>
 
@@ -55,6 +56,7 @@
               <div class="layui-inline">
                 <input type="hidden" name="status" value="{$status}">
                 <input type="hidden" name="export" value="0">
+                <input type="hidden" name="encoding" value="0">
                 <input type="hidden" name="timezone_offset" class="J-local-timezoneOffset">
                   <button class="layui-btn"><i class="fa fa-search"></i></button>
               </div>
@@ -144,9 +146,10 @@
 {/block}
 {block name="script"}
 <script>
-function exportExcel(){
+function exportExcel(type){
   var form = $("#filter-form");
   form.find("input[name='export']").val(1);
+  form.find("input[name='encoding']").val(type);
   form.attr('target','_blank') ;
   form.submit();
   form.find("input[name='export']").val(0);

@@ -1,35 +1,44 @@
 {extend name="base" /}
 {block name="body"}
-<div class="amain-body">
+<div class="amain-body  P-admin-user-list">
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
-        <ul class="layui-tab-title">
-            <li class="layui-this">管理员</li>
-            <li class=""><a href="{:url('admin/admin_user/add')}" data-title="添加"  data-trigger="modal">添加管理员</a></li>
+        <ul class="amain-tool-bar">
+            <li class="layui-this"><a href="{:url('admin/admin_user/index')}">管理员</a></li>
+            <li class="btn-item btn-item-right">
+                <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/admin_user/add')}"  data-title="添加管理员"  data-trigger="modal" >
+                <i class="fa fa-plus"></i> 添加管理员</a>
+            </li>
         </ul>
         <div class="layui-tab-content">
             <div class="layui-tab-item layui-show">
-                <table class="layui-table">
+                <table lay-filter="listtable"  class="layui-table ">
                     <thead>
                     <tr>
-                        <th style="width: 30px;">ID</th>
-                        <th>用户名</th>
-                        <th>CA</th>
-                        <th>状态</th>
-                        <th>菜单组</th>
-                        <th>区域组</th>
-                        <th>创建时间</th>
-                        <th>最后登录时间</th>
-                        <th>最后登录IP</th>
-                        <th>操作</th>
+                        <th lay-data="{field:'id', width:100, fixed:'left'}" style="width: 30px;">ID</th>
+                        <th lay-data="{field:'username', width:120, fixed:'left'}">用户名</th>
+                        <th lay-data="{field:'carpool_account', minWidth:120}">CA</th>
+                        <th lay-data="{field:'nickname', width:120}">nickname</th>
+                        <th lay-data="{field:'status', width:90}">状态</th>
+                        <th lay-data="{field:'group_id', width:120}">菜单组</th>
+                        <th lay-data="{field:'dept_group_id', width:120}">区域组</th>
+                        <th lay-data="{field:'create_time', width:120}">创建时间</th>
+                        <th lay-data="{field:'last_login_time', width:150}">最后登录时间</th>
+                        <th lay-data="{field:'last_login_ip', width:140}">最后登录IP</th>
+                        <th lay-data="{field:'option', width:120, fixed:'right'}">操作</th>
                     </tr>
                     </thead>
                     <tbody>
                     {foreach name="lists" item="vo"}
                     <tr>
-                        <td>{$vo.id}</td>
+                        <td>
+                            <div <?php echo  ($vo['status']===0  ? 'class="status_0"' : ''); ?>>
+                            {$vo.id}
+                            </div>
+                        </td>
                         <td>{$vo.username}</td>
                         <td>{$vo.carpool_account}</td>
+                        <td>{$vo.nickname}</td>
                         <td>{php}echo $vo['status']==1 ? '启用' : '禁用';{/php}</td>
                         <td><?php echo isset($groups[$vo['group_id']]) ? $groups[$vo['group_id']]['title'] : $vo['group_id']; ?></td>
                         <td><?php echo isset($dept_groups[$vo['dept_group_id']]) ? $dept_groups[$vo['dept_group_id']]['title'] : $vo['dept_group_id']; ?></td>
@@ -49,4 +58,26 @@
         </div>
     </div>
 </div>
+{/block}
+{block name="script"}
+<script>
+PAGE_EXEC = {
+  init: function(){
+    initLayuiTable({ limit: {$pagesize} })
+    var $tableWrapper = $(".P-admin-user-list [lay-filter=LAY-table-1] .layui-table-box");
+    var $tableWrapper_main = $tableWrapper.find(".layui-table-main");
+    var $tr = $tableWrapper_main.find('tr');
+    var $tableWrapper_l = $tableWrapper.find(".layui-table-fixed .layui-table-body");
+    $tr.each(function(index, el) {
+      if($(el).find("[data-field=id]").find('.status_0').length > 0){
+        $(el).addClass('delete');
+        $(el).find('.ajax-delete').hide();
+        $tableWrapper_l.find('tr').eq(index).addClass('delete')
+      }
+    });
+  }
+}
+PAGE_EXEC.init()
+
+</script>
 {/block}

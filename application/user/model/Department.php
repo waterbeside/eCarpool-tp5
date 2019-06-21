@@ -338,4 +338,30 @@ class Department extends Model
     }
     return true;
   }
+
+  /**
+   * 通过deep取得
+   */
+  public function getListByDeep($deep,$top_pid = 1){
+    $cacheKey = "carpool:department:list:php:deep_{$deep}_tpid_{$top_pid}";
+    $redis = $this->redis();
+    $cacheData = $redis->get($cacheKey);
+    if($cacheData){
+      $res = json_decode($cacheData, true);
+      if($res){
+        return $res;
+      }
+    }
+    $map = [
+      ['deep','=',$deep],
+      ['','exp', Db::raw("FIND_IN_SET($top_pid,path)")]
+    ];
+    $order = 'name ASC';
+    $res = $this->where($map)->order($order)->select();
+    if($res){
+      $cacheData = $redis->setex($cacheKey,3600,json_encode($res));
+    }
+    return $res;
+
+  }
 }

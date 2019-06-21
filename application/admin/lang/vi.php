@@ -6,18 +6,23 @@ return [
   ',' => '，',
   'Add' => 'Cộng',
   'All' => 'Tất cả',
+  'Available Car' => 'Phương tiện sẵn có',
   'Cancel' => 'Hủy bỏ',
   'Cancel selection' => 'Bỏ chọn',
   'Captcha' => 'Mã xác minh',
-  'Current' =>'Hiện tại',
   'Change password'=>  'Thay đổi mật khẩu',
   'Click to change' => 'Nhấn vào đây để thay thế',
+  'Creation time' =>'Thời gian sáng tạo',
+  'Current' =>'Hiện tại',
   'Details' => 'Chi tiết',
   'Done' => 'Hoàn thành',
+  'Driver' => 'Tài xế',
   'Export table' => 'Hình thức xuất khẩu',
+  'Export' => 'Export',
   'Failed' => 'Thất bại',
   'keyword'=> 'Từ khóa',
   'keywords'=> 'Từ khóa',
+  'License plate'=>'Biển số xe',
   'Menu'      => 'thực đơn',
   'Minus' => 'Trừ đi',
   'No' => 'Không',
@@ -25,6 +30,7 @@ return [
   'Operate' =>'Hoạt động',
   'Participant'=>'Người tham gia',
   'Participation time'=>'Thời gian tham gia',
+  'Passenger' => 'Hành khách',
   'Number of participation' => 'Số lượng tham gia',
   'Reason' => 'Lý do',
   'Region' => 'Khu vực',
@@ -51,6 +57,17 @@ return [
   'This account employee has left' => 'Nhân viên tài khoản này đã rời đi',
   'Sign in suceesfully' => 'Đăng nhập thành công',
   'Sign out suceesfully' => 'Thoát khỏi thành công',
+
+
+  //jwt 验证
+  'Permission denied' => 'Quyền bị từ chối',
+  'You are not logged in' =>'Bạn chưa đăng nhập',
+  'Login status expired, please login again' =>'Tình trạng đăng nhập đã hết hạn, vui lòng đăng nhập lại',
+  'You log in elsewhere, if...' => 'Bạn đã đăng nhập ở nơi khác. Nếu nó không phải là hoạt động của riêng bạn, Hãy chú ý đến bảo mật tài khoản, Đề xuất thay đổi mật khẩu.',
+  'You haven`t operated for a long time, please log in again' => 'Bạn đã không hoạt động quá lâu, vui lòng đăng nhập lại',
+
+  'You do not have permission to manage content in this region or department' => 'Bạn không có quyền quản lý nội dung trong khu vực hoặc bộ phận này',
+  'The region or department you selected is not within your management, please return' => 'Khu vực / bộ phận bạn chọn không nằm trong quản lý của bạn',
 
 
   //附件相关
@@ -126,8 +143,9 @@ return [
   'Refresh failed'=>'Làm mới thất bại',
 
   // filter
-  'Account keyword' => 'Từ khóa người dùng',
-  'Department keyword' => 'Từ khóa bộ',
+  'Account keyword' => 'Người dùng',
+  'Department keyword' => 'Sở',
+  'Address keyword' => 'Địa chỉ',
   'Unlimited' => 'Không giới hạn',
   'Please enter keywords' => 'Vui lòng nhập một từ khóa',
   'Points range' =>'Phạm vi điểm số',
@@ -163,6 +181,22 @@ return [
   'You have selected the parent of the department, please do not select' => 'Bạn đã chọn cha mẹ của bộ, xin vui lòng không chọn',
   'Please select a region or department' => 'Vui lòng chọn một khu vực hoặc bộ phận',
 
+  //行程相关 trips
+  'Driver department'=>'Driver department',
+  'Passenger department'=>'Passenger department',
+  'Departure time' => 'Thời gian khởi hành',
+  'Destination' => 'Điểm đến',
+  'Departure station' => 'Nơi khởi hành',
+  'trips:cancel'=>'Cancelled',
+  'trips:success'=>'Successful',
+  'trips:failed'=>'Failed',
+  'trips:空座位管理'=>'Phương tiện sẵn có',
+  'trips:行程管理'=>'Trips',
+  'trip:filter:hr'=>'H',
+  'trip:filter:u'=>'Q',
+  'trip:空位数'=>'Empty seats',
+  'trip:乘客数'=>'Passengers',
+
   //积分账号页
   'Points' => 'Điểm',
   'Carpool account' => 'CarpoolSố tài khoản',
@@ -181,6 +215,7 @@ return [
   'Account' => 'Số tài khoản',
   'Company' => 'Công ty',
   'Department' => 'Sở',
+  'Email' => 'Email',
   'Female' => 'Nữ',
   'Full name'=>'Tên',
   'Male' => 'Tên',
@@ -191,6 +226,10 @@ return [
   'Username' => 'Tên đăng nhập',
   'User detail'=>'Chi tiết người dùng',
   'User Info' => 'Thông tin người dùng',
+  'User:Phone'=> 'Phone',
+  'User:Mobile'=> 'Mobile',
+  'User:Show name'=> 'Hiển thị tên',
+  'User:Real name'=> 'Tên thật',
 
 
   //商品页

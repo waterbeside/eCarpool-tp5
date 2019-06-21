@@ -9,6 +9,7 @@ use app\user\model\Department;
 use app\user\model\UserTemp ;
 use my\RedisData;
 use think\Db;
+use function GuzzleHttp\json_encode;
 
 /**
  * 同步hr系统
@@ -106,6 +107,7 @@ class SyncHr extends ApiBase
 
     /**
      * 同步单用户接口
+     * 
      * @param  integer $code    员工号，使用该参数后，会先从HR拉取信息到临时表t_user_temp并马上执行同步到正式表
      * @param  integer $tid      t_user_temp表的行id，使用该参数后，直接从t_user_temp表执行同步到正式表。当使用参数code时，tid参数无效。
      * @param  integer $is_sync 当为1时，执行同步 ，默认为0，不执行同步，只查询。
@@ -113,21 +115,29 @@ class SyncHr extends ApiBase
     public function single($code=0, $tid=0, $is_sync=0)
     {
         if (!$this->check_localhost() && !$this->checkPassport()) {
-            // return $this->jsonReturn(30001, [], lang('Illegal access'));
+            return $this->jsonReturn(30001, [], lang('Illegal access'));
         }
         if (!$code && !$tid) {
             return $this->jsonReturn(992, [], lang('Parameter error'));
         }
         $DepartmentModel = new Department();
         $userTempModel = new UserTemp();
+        $redis = new RedisData();
+        $cacheKey =null;
         if ($code) {
             $tid = 0;
+            $cacheKey = "carpool:user:sync_hr_single:isSync_{$is_sync}:".(strtolower($code));
+            $do_res_str =  $redis->get($cacheKey);
+            $do_res =  $do_res_str ? json_decode($do_res_str,true) : false;
+            if($do_res && count($do_res)>2){                
+                return  $this->jsonReturn($do_res[0], $do_res[1], $do_res[2]);
+            }
             $res = $userTempModel->pullUserFromHr($code, $is_sync);
             if (!$res) {
-                $this->jsonReturn(-1, $userTempModel->errorMsg);
+                return $this->jsonReturn_setCache([-1,[],$userTempModel->errorMsg],$cacheKey);
             }
             if($userTempModel->errorCode == 30006){
-                $this->jsonReturn(30006, $res, $userTempModel->errorMsg);
+                return $this->jsonReturn_setCache([30006, $res, $userTempModel->errorMsg],$cacheKey);
             }
         }
         if ($tid) {
@@ -141,19 +151,19 @@ class SyncHr extends ApiBase
         }
 
         if ($res['code'] == -2) {
-            return $this->jsonReturn(-1, $res, $userTempModel->errorMsg);
+            return $this->jsonReturn_setCache([-1, $res, $userTempModel->errorMsg],$cacheKey);
         }
 
         if ($res['code'] == -1) {
             $userData = OldUserModel::where('loginname', $code)->find();
             if (!$userData) {
-                return $this->jsonReturn(20002, $res, "用户不存在");
+                return $this->jsonReturn_setCache([20002, $res, "用户不存在"],$cacheKey);
             }
             if ($userData && $DepartmentModel->checkIsCheckLeave($userData)) {
                 // if($is_sync) OldUserModel::where('uid',$userData['uid'])->update(['is_active'=>0,'modifty_time'=>date("Y-m-d H:i:s")]);
-                return $this->jsonReturn(10003, $res, "用户已离积");
+                return $this->jsonReturn_setCache([10003, $res, "用户已离积"],$cacheKey);
             }
-            return $this->jsonReturn(20002, $res, "用户不存在");
+            return $this->jsonReturn_setCache([20002, $res, "用户不存在"],$cacheKey);
         }
         if ($is_sync) {
             try{
@@ -164,20 +174,39 @@ class SyncHr extends ApiBase
             }catch(\Exception $e){
                 return $this->jsonReturn(-1, ['status'=>$res['status']], '同步失败', ['errorMsg'=>$e->getMessage()]);
             } 
-            $this->jsonReturn(0, $res_toPrimary, "同步成功");
+            $this->jsonReturn_setCache([0, $res_toPrimary, "同步成功"],$cacheKey);
         } else {
-            $this->jsonReturn(0, $res, "success");
+            $this->jsonReturn_setCache([0, $res, "success"],$cacheKey);
         }
         exit;
     }
 
+    /**
+     * 输出json数据，拼对数据缓存
+     *
+     * @param array $data 数据数组 [code,data,msg]
+     * @param string $cacheKey  缓存的key;
+     */
+    protected function jsonReturn_setCache($data,$cacheKey=null){
+        $code = $data[0];
+        if(is_string($data[1])){
+            $resData = null;
+            $msg = $data[1];
+        }else{
+            $resData = $data[1];
+            $msg = isset($data[2]) ? $data[2] : null;
+        }
+        if($cacheKey){
+            $redis = new RedisData();
+            $redis->setex($cacheKey,3600*18,json_encode([$code,$resData,$msg]));
+        }
+        return $this->jsonReturn($code,$resData,$msg);
 
+    }
 
     /**
      * 推用户数据到主库比较并更新
-     * @param  string $code [description]
-     * @param  [type] $data [description]
-     * @return [type]       [description]
+     * @param  string $code 工号
      */
     public function to_primary($code='')
     {
