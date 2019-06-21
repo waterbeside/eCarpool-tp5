@@ -4,6 +4,7 @@ namespace app\api\controller;
 use think\facade\Env;
 use think\Controller;
 use think\facade\Session;
+use app\admin\service\Admin;
 
 /**
  * 通用上传接口
@@ -15,7 +16,10 @@ class Upload extends Controller
     protected function initialize()
     {
         parent::initialize();
-        if (!Session::has('admin_id')) {
+
+        $Admin = new Admin();
+        $admin_id = $Admin->getAdminID();
+        if(!$admin_id){
             $result = [
                 'error'   => 1,
                 'message' => '未登录'

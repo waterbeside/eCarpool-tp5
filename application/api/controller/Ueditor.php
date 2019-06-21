@@ -6,6 +6,7 @@ use think\facade\Env;
 use app\common\controller\Base;
 use org\UeditorUpload;
 use think\facade\Session;
+use app\admin\service\Admin;
 
 /**
  * Ueditor编辑器统一上传接口
@@ -20,8 +21,9 @@ class Ueditor extends Base
     protected function initialize()
     {
         parent::initialize();
-
-        if(!Session::get('admin_id')){
+        $Admin = new Admin();
+        $admin_id = $Admin->getAdminID();
+        if(!$admin_id){
             $result = [
                 'state' => 'ERROR'
             ];
