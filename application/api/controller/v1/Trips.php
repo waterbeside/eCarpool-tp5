@@ -40,7 +40,7 @@ class Trips extends ApiBase
 
         if (!$type) {
           $cacheKey = "carpool:trips:my:u{$uid}:pz{$pagesize}_p{$page}_fd{$fullData}";
-          $cacheExp = 5;
+          $cacheExp = 8;
           $cacheData = $redis->get($cacheKey);
           if($cacheData){
             if($cacheData == "-1"){
