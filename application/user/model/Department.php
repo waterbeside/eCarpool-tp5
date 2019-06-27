@@ -2,6 +2,7 @@
 namespace app\user\model;
 
 use think\Model;
+use app\carpool\model\Company;
 use my\RedisData;
 use think\Db;
 
@@ -39,8 +40,12 @@ class Department extends Model
     }
 
     $array = explode('/', $department_str);
+
+    //计算company_id;
     if(is_array($array) && count($array)>1 ){
-      $company_id = mb_strtolower($array[1]) == "vietnam" ? 11 : 1;
+      $CompanyModel = new Company();
+      $company_id = $CompanyModel->bulidIdByRegion($array[1]);
+      $company_id = $company_id ? $company_id : 1;
     }
 
     $lists = [];

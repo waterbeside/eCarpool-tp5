@@ -28,7 +28,7 @@ class Trips
   /**
    * 创件状态筛选map
    */
-  public function buildStatusMap($status, $t = "t")
+  public function buildStatusMap($status, $alias = "t")
   {
     $statusExp = '=';
     if (is_string($status) && strpos($status, '|')) {
@@ -47,9 +47,9 @@ class Trips
       $statusExp = "in";
     }
     if (in_array(mb_strtolower($statusExp), ['=', '<=', '>=', '<', '>', '<>', 'in', 'eq', 'neq', 'not in', 'lt', 'gt', 'egt', 'elt'])) {
-      return [$t . '.status', $statusExp, $status];
+      return [$alias . '.status', $statusExp, $status];
     } else {
-      return [$t . '.status', "=", $status];
+      return [$alias . '.status', "=", $status];
     }
   }
 
@@ -71,13 +71,13 @@ class Trips
   /**
    * 创件要select的地址字段
    */
-  public function buildAddressFields($fields = "", $start_latlng = false)
+  public function buildAddressFields($fields = "", $alias = 't')
   {
-    $fields .= ',t.startpid, t.endpid';
-    $fields .= ', x(t.start_latlng) as start_lng, y(t.start_latlng) as start_lat';
-    $fields .= ', x(t.end_latlng) as end_lng, y(t.end_latlng) as end_lat';
-    $fields .= ', t.startname , t.start_gid ';
-    $fields .= ', t.endname , t.end_gid ';
+    $fields .= ",{$alias}.startpid, {$alias}.endpid";
+    $fields .= ", x({$alias}.start_latlng) as start_lng, y({$alias}.start_latlng) as start_lat";
+    $fields .= ", x({$alias}.end_latlng) as end_lng, y({$alias}.end_latlng) as end_lat";
+    $fields .= ", {$alias}.startname , {$alias}.start_gid ";
+    $fields .= ", {$alias}.endname , {$alias}.end_gid ";
     $fields .= ',s.addressname as start_addressname, s.latitude as start_latitude, s.longtitude as start_longitude';
     $fields .= ',e.addressname as end_addressname, e.latitude as end_latitude, e.longtitude as end_longitude';
     return $fields;
@@ -89,7 +89,7 @@ class Trips
    * @param  string|array $filter
    * @return array
    */
-  public function buildTripJoins($filter = "d,p,s,e,department")
+  public function buildTripJoins($filter = "d,p,s,e,department",$alias = 't')
   {
     if (is_string($filter)) {
       $filter = explode(",", $filter);
@@ -100,19 +100,25 @@ class Trips
         $filter[$key] = mb_strtolower($value);
       }
       if (in_array('s', $filter) || in_array('start', $filter)) {
-        $join[] = ['address s', 's.addressid = t.startpid', 'left'];
+        $join[] = ['address s', "s.addressid = {$alias}.startpid", 'left'];
       }
       if (in_array('e', $filter) || in_array('end', $filter)) {
-        $join[] = ['address e', 'e.addressid = t.endpid', 'left'];
+        $join[] = ['address e', "e.addressid = {$alias}.endpid", 'left'];
       }
       if (in_array('d', $filter) || in_array('driver', $filter)) {
-        $join[] = ['user d', 'd.uid = t.carownid', 'left'];
+        $join[] = ['user d', "d.uid = {$alias}.carownid", 'left'];
         if (in_array('department', $filter)) {
           $join[] = ['t_department dd', 'dd.id = d.department_id', 'left'];
         }
       }
+      if (in_array('u', $filter) || in_array('driver', $filter)) {
+        $join[] = ['user u', "u.uid = {$alias}.userid", 'left'];
+        if (in_array('department', $filter)) {
+          $join[] = ['t_department ud', 'ud.id = u.department_id', 'left'];
+        }
+      }
       if (in_array('p', $filter) || in_array('passenger', $filter)) {
-        $join[] = ['user p', 'p.uid = t.passengerid', 'left'];
+        $join[] = ['user p', "p.uid = {$alias}.passengerid", 'left'];
         if (in_array('department', $filter)) {
           $join[] = ['t_department pd', 'pd.id = p.department_id', 'left'];
         }
@@ -360,21 +366,21 @@ class Trips
   /**
    * 创建查询的字段
    */
-  public function buildQueryFields($type = 'all')
+  public function buildQueryFields($type = 'all',$alias = 't')
   {
-    $fields = 't.time, t.status , t.subtime';
-    $fields .= $type == 'all' ? ', t.infoid , t.love_wall_ID ,  t.trip_type ,  t.passengerid, t.carownid , t.seat_count,   t.map_type ' : '';
+    $fields = "{$alias}.time, {$alias}.status , {$alias}.subtime";
+    $fields .= $type == 'all' ? ", {$alias}.infoid , {$alias}.love_wall_ID ,  {$alias}.trip_type ,  {$alias}.passengerid, {$alias}.carownid ,  {$alias}.seat_count,   {$alias}.map_type " : '';
 
-    $fields .= $type == 'wall_list'   ?   ', t.seat_count' : '';
-    $fields .= $type == 'wall_list'   ?   ', t.love_wall_ID as id,   t.carownid as driver_id ' : '';
+    $fields .= $type == 'wall_list'   ?   ", {$alias}.seat_count" : '';
+    $fields .= $type == 'wall_list'   ?   ", {$alias}.love_wall_ID as id,   {$alias}.carownid as driver_id " : '';
 
-    $fields .= $type == 'info_list'   ?   ', t.infoid as id, t.love_wall_ID ,  t.carownid as driver_id , t.passengerid as passenger_id ' : '';
+    $fields .= $type == 'info_list'   ?   ", {$alias}.infoid as id, {$alias}.love_wall_ID ,  {$alias}.carownid as driver_id , {$alias}.passengerid as passenger_id " : '';
 
-    $fields .= $type == 'wall_detail' ?   ', t.seat_count, t.map_type, t.im_tid, t.im_chat_tid' : '';
-    $fields .= $type == 'wall_detail' ?   ', t.love_wall_ID as id ,t.love_wall_ID ,t.carownid as driver_id ' : '';
+    $fields .= $type == 'wall_detail' ?   ", {$alias}.seat_count, {$alias}.map_type, {$alias}.im_tid, {$alias}.im_chat_tid" : '';
+    $fields .= $type == 'wall_detail' ?   ", {$alias}.love_wall_ID as id ,{$alias}.love_wall_ID ,{$alias}.carownid as driver_id " : '';
 
-    $fields .= $type == 'info_detail' ?   ', t.map_type' : '';
-    $fields .= $type == 'info_detail' ?   ', t.infoid as id, t.infoid , t.love_wall_ID , t.subtime , t.carownid as driver_id, t.passengerid as passenger_id ' : '';
+    $fields .= $type == 'info_detail' ?   ", {$alias}.map_type" : '';
+    $fields .= $type == 'info_detail' ?   ", {$alias}.infoid as id, {$alias}.infoid , {$alias}.love_wall_ID , {$alias}.subtime , {$alias}.carownid as driver_id, {$alias}.passengerid as passenger_id " : '';
 
 
     if (in_array($type, ['all', 'wall_list', 'wall_detail', 'info_detail'])) {

@@ -54,6 +54,8 @@ Route::group([], function () {
   Route::rule('api/:version/trips/:from','api/:version.trips/add','POST');
   Route::rule('api/:version/trips/:from/:id','api/:version.trips/change','PATCH');
   Route::rule('api/:version/trips/:from/:id','api/:version.trips/cancel','DELETE');
+  Route::rule('api/:version/trip_active/gps','api/:version.trip_active/gps','GET');
+
 
 
   //地址相关
@@ -79,6 +81,7 @@ Route::group([], function () {
   Route::rule('api/:version/publics/comments','api/:version.publics.comments/index','GET');
   Route::rule('api/:version/app/url','api/:version.app/get_url','GET');
   Route::rule('api/:version/publics/reports/trips_summary','api/:version.publics.reports/trips_summary','GET');
+  Route::rule('api/:version/publics/reports/month_statis','api/:version.publics.reports/month_statis','GET');
 
 
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();

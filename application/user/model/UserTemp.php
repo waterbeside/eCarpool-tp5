@@ -256,6 +256,7 @@ class UserTemp extends Model
     $department_data = $DepartmentModel->create_department_by_str($data['department']);
     $department_fullname_array  = explode(",",$department_data['fullname']);
     $data['department_id'] = $department_data['id'];
+    $data['company_id'] = $department_data['company_id'];
     $data['department_city'] = isset($department_fullname_array[1])? $department_fullname_array[1]: "";
     $department_format_data = $DepartmentModel->formatFullName($department_data['fullname']);
     $data['department_branch'] = $department_format_data['branch'];
@@ -276,6 +277,7 @@ class UserTemp extends Model
         'department'=> $data_o['department'],
         'email'=> $data_o['email'],
         'modifty_time'=> $data_o['modifty_time'],
+        'company_id'=> $data['company_id'],
         // 'uids' => [$res_old['uid'],$res_new['uid']],
       ];
     }else{
