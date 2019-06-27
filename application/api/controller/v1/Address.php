@@ -96,8 +96,8 @@ class Address extends ApiBase
     }
     $res['longitude'] = $res['longtitude'];
     unset($res['longtitude']);
-    if (isset($data['company_id'])) $data['company_id'] = intval($data['company_id']);
-    if (isset($data['ordernum'])) $data['ordernum'] = intval($data['ordernum']);
+    if (isset($res['company_id'])) $res['company_id'] = intval($res['company_id']);
+    if (isset($res['ordernum'])) $res['ordernum'] = intval($res['ordernum']);
     return $this->jsonReturn(0, $res, 'success');
   }
 
