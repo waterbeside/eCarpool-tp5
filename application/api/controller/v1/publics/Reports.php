@@ -60,14 +60,18 @@ class Reports extends ApiBase
     $start =  date('Ym010000', strtotime($filter['start'] . '-01'));
     $end =  date('Ym010000', strtotime("+1 month", strtotime(str_replace('.', '-', $filter['end']) . '-01')));
 
-    $show_type = explode(',', $filter['show_type']);
+    // $show_type = explode(',', $filter['show_type']);
     $department = explode(',', $filter['department']);
+
+    if(!in_array($filter['show_type'],[1,2,3,4])){
+      return $this->jsonReturn(992,$returnData,'successful');
+    }
 
 
     $TripsReport = new TripsReportService();
     $TripsService = new TripsService();
 
-    $monthArray = $TripsReport->getMonthArray($filter['start'], $filter['end'],'Y.m'); //取得所有月分作为x轴;
+    $monthArray = $TripsReport->getMonthArray($filter['start'], $filter['end'],'Y-m'); //取得所有月分作为x轴;
     $monthNum = count($monthArray);
 
     $listData = [];
@@ -84,10 +88,9 @@ class Reports extends ApiBase
           'show_type'=> $filter['show_type'],
           'month'=> $value,
         ];
-
-        $listData[$key]['sum'][$did] =  $TripsReport->getMonthSum($paramData) ;
+        $listData[$value][$did] =  $TripsReport->getMonthSum($paramData) ;
       }
-      $listData[$key]['month'] = $value;
+      $listData[$value]['month'] = $value;
     }
     $returnData = [
       'months' => $monthArray,
