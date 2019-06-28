@@ -99,13 +99,13 @@ class TripsReport extends Service
   {
     $yearMonth_current = date("Y-m"); //当前年月
     $month = $data['month'];
-    $show_type = $data['show_type'];
+    $show_type = $data['show_type'] ? $data['show_type'] : 1;
     $department = $data['department'];
     $cacheKey = "carpool:reports:trips:month_{$month}:department_{$department},showType_{$show_type}";
     $redis = $this->redis();
     $itemData = $redis->cache($cacheKey);
-    if (!$itemData) {
-
+    if ($itemData === false) {
+      $c = false;
       $cacheExp = 3600 * 24 * 30;
       if ($yearMonth_current ==  str_replace('.', '-', $month)) {
         $cacheExp = 3600 * 1;
@@ -118,7 +118,6 @@ class TripsReport extends Service
         ['t.time', '<', $period[1]],
       ];
       $join = [];
-
       //取得有效行程数
       if ($show_type == 1) {
         $map_base[] =  ['t.status', 'in', [1, 3, 4]];
@@ -138,7 +137,7 @@ class TripsReport extends Service
           $map_j[] = ['', 'exp', Db::raw("( FIND_IN_SET($department,ud.path) OR $department = u.department_id)")];
           $join = $TripsService->buildTripJoins('u,department','j');
         }
-    
+
         $viewSql_info_d = InfoModel::alias('t')->field('carownid as userid')->where($map_base)->group('carownid')->buildSql();
         $viewSql_wall_d = WallModel::alias('t')->field('carownid as userid')->where($map_base)->group('carownid')->buildSql();
         $viewSql_info_p = InfoModel::alias('t')->field('passengerid as userid')->where($map_base)->group('passengerid')->buildSql();
@@ -147,19 +146,18 @@ class TripsReport extends Service
         //参与司机人数
         if ($show_type == 2) {
           $baseSql_u = "($viewSql_info_d UNION $viewSql_wall_d )";
-          $baseSql = Db::table($baseSql_u)->alias('j')->field('userid')->join($join)->where($map_j)->group('j.userid')->buildSql();
+          $baseSql = Db::connect('database_carpool')->table($baseSql_u)->alias('j')->field('userid')->join($join)->where($map_j)->group('j.userid')->buildSql();
         }
 
         //参与乘客数
         if ($show_type == 3) {
-          $baseSql = Db::table($viewSql_info_p)->alias('j')->field('userid')->join($join)->where($map_j)->group('j.userid')->buildSql();
+          $baseSql = Db::connect('database_carpool')->table($viewSql_info_p)->alias('j')->field('userid')->join($join)->where($map_j)->group('j.userid')->buildSql();
         }
 
         //参与乘客数
         if ($show_type == 4) {
           $baseSql_u = "($viewSql_info_d UNION $viewSql_wall_d  UNION $viewSql_info_p)";
-
-          $baseSql = Db::table($viewSql_info_p)->alias('j')->field('userid')->join($join)->where($map_j)->group('j.userid')->buildSql();
+          $baseSql = Db::connect('database_carpool')->table($baseSql_u)->alias('j')->field('userid')->join($join)->where($map_j)->group('j.userid')->buildSql();
         }
         $map= [['', 'exp', Db::raw('un.userid IS NOT NULL AND un.userid > 0')]];
         $c = Db::connect('database_carpool')->table($baseSql)->alias('un')->field('userid')->where($map)->group('un.userid')->count();
