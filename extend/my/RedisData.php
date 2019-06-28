@@ -45,7 +45,7 @@ class RedisData extends Redis
       }
     } else {
       $str =  $this->get($cacheKey);
-      $redData = $str ? json_decode($str, true) : false;
+      $redData = $str  !== false ? json_decode($str, true) : false;
       return $redData;
     }
   }
