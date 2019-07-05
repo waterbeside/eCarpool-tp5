@@ -1,0 +1,124 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <ul class="  amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/ScoreHistory/trips_group_user')}" showloading>拼车得分用户分组合计查询</a></li>
+
+        </ul>
+        <div class="layui-tab-content">
+                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreHistory/trips_group_user')}" method="get" >
+                    <div class="layui-inline">
+                        <input type="hidden" name="pagesize" value="{$pagesize}">
+                        <!-- <div class="layui-input-inline">
+                          <select name="filter[reason]" lay-verify="required" lay-search>
+                            <option value="">{:lang('Reason')}</option>
+                            {foreach name="reasons" key="key" item="vo"}
+                            {php} if(in_array($key,[100,-100])){ {/php}
+                             <option value="{$key}" {php}echo isset($filter['reason']) && $filter['reason']== "$key" ? 'selected' : ''; {/php} ><?php echo $key > 0 ? "+" : "-" ; ?> {:lang("sl:".$vo)}</option>
+                            {php} } {/php}
+                            {/foreach}
+                           </select>
+                        </div> -->
+                    </div>
+                    <div class="layui-input-inline">
+                      <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="{:lang('Time range')}" value="{$filter.time}"  style="width:200px">
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
+                        <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" >
+                          {$regionData ? str_replace(',',' / ',$regionData['fullname']) : lang('Region or department')}
+                        </a>
+                    </div>
+                    <!-- <div class="layui-inline">
+                      &nbsp;&nbsp;&nbsp;&nbsp;{:lang('Points range')}:
+                      <div class="layui-input-inline">
+                        <input type="number" name="filter[floor]" value="{:isset($filter['floor']) ? $filter['floor'] : 0 }" placeholder="" class="layui-input"  style="width:82px" >
+                      </div>
+                      〜
+                      <div class="layui-input-inline">
+                        <input type="number" name="filter[ceiling]" value="{:isset($filter['ceiling']) ? $filter['ceiling'] : '' }" placeholder="{:lang('unlimited')}" class="layui-input"  style="width:82px" >
+                      </div>
+                    </div> -->
+                    <div class="layui-inline">
+                        <button class="layui-btn"  ><i class="fa fa-search"></i></button>
+                    </div>
+                </form>
+                <hr>
+                
+
+                <table  class="layui-table">
+                    <thead>
+                    <tr >
+                        <th>{:lang('User')}</th>
+                        <th>{:lang('balance')}</th>
+                        <th>{:lang('Reason')}</th>
+                        <th>{:lang('Department')}</th>
+                        <th class="t-number">{:lang('Points Change')}</th>
+                        <th>{:lang('Success')}</th>
+                        <th>{:lang('Failed')}</th>
+                        <th>{:lang('Count')}</th>
+                        <!-- <th>R</th> -->
+                        <th>{:lang('Time')}</th>
+                        
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {foreach name="lists" item="vo"}
+                    <tr>
+                        <td>
+                          {php}
+                            if($vo['account_id']){
+                              $ac_url = url('admin/ScoreAccount/detail',['type'=>0,'account_id'=>$vo['account_id']]) ;
+                            }else{
+                              $ac_url = url('admin/ScoreAccount/detail',['type'=>2,'account'=>$vo['carpool_account']]) ;
+                            }
+                          {/php}
+                          <a onclick="openLayer('{$ac_url}','{:lang('User detail')}');" href="javascript:void(0);" >
+                          {$vo.carpool_account}{php}echo $vo['account_id'] ? ' <i class="text-red fa fa-id-card"></i>' : '';{/php}
+                          </a>
+                        </td>
+                        <td>{$vo.balance}</td>
+                        
+                        <td>{php}echo isset($reasons[$vo['reason']]) ? $reasons[$vo['reason']] : $vo['reason'] ; {/php}</td>
+                        <td>{$vo.full_department|str_replace=","," / ",###}</td>
+
+                        <td class="t-number">{php}echo $vo['reason']>=0 ? "<b class='text-green'>+ ".$vo['operand_sum']."</b>" : "<b  class='text-red'>- ".$vo['operand_sum']."</b>"; {/php}</td>
+                        <td>{$vo.count_success}</td>
+                        <td>{$vo.count_failed}</td>
+                        <td>{$vo.total}</td>
+                        <!-- <td>{$vo.rate}</td> -->
+                        
+                        <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($vo.max_time)*1000}</span></td>
+
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+                <!--分页-->
+                {$lists|raw}
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+// initLayuiTable({ limit: {$pagesize} })
+// var laydate = layui.laydate;
+  //执行一个laydate实例
+  laydate.render({
+    elem: '#filter_time'
+    ,lang:'{$active_lang == "zh-cn" ? "cn" : "en"}'
+    ,range: '~' //或 range: '~' 来自定义分割字符
+  });
+
+
+
+
+</script>
+{/block}
