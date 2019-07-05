@@ -173,11 +173,13 @@ class AdminBase extends Base
       $authDeptData = $this->authDeptData;
       $region_id = $authDeptData['region_id'];
       $regionData = $authDeptData['region_datas'] ? $authDeptData['region_datas'][0] : null;
+
+      $this->assign('regionData', $regionData);
       $this->assign('region_id', $region_id);
       $this->assign('region_datas', $authDeptData['region_datas']);
 
       if ($action == 'index') {
-        $this->assign('regionData', $regionData);
+        // 
       } else if (in_array($action, ['add', 'edit'])) {
         if (!$this->request->isPost()) {
           if (count($this->userBaseInfo['auth_depts']) > 0 || $this->userBaseInfo['auth_depts_isAll']) {
