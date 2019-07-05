@@ -98,6 +98,12 @@ function admin_init(){
     layer.load(2);
   })
 
+  $("form").submit(function(){
+    layer.load(2);
+    return;
+  })
+  
+
   /**
    * 通用表单提交(AJAX方式)
    */
