@@ -16,7 +16,7 @@ use app\carpool\service\TripsDetail as TripsDetailService;
 
 /**
  * 拼车行程管理
- * Class Link
+ * Class CarpoolTrips
  * @package app\admin\controller
  */
 class CarpoolTrips extends AdminBase
