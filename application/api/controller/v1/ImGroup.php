@@ -334,6 +334,12 @@ class ImGroup extends ApiBase
       $this->jsonReturn($UserModel->errorCode, $UserModel->errorMsg);
     }
 
+    $returnData = [
+      'loginname' => $userData['loginname'],
+      'im_id' => $userData['im_id'],
+      'name' => $userData['name'],
+      'department' => $userData['Department'],
+    ];
 
     $uid = $userData['uid'];
 
@@ -360,10 +366,10 @@ class ImGroup extends ApiBase
         $rs_r = $this->NIM_OBJ->updateUserToken($imid);
         if ($rs_r['code'] == 200) {
           UserModel::where('uid', $uid)->update(array('im_id' => $imid, 'im_md5password' => $rs_r['info']['token']));
-          $this->jsonReturn(0, $userData, 'success');
+          $this->jsonReturn(0, $returnData, 'success');
           $result = $this->createUserFromInvitation($cData, $link_code, 2);
           if ($result) {
-            $this->jsonReturn(0, $userData, 'success');
+            $this->jsonReturn(0, $returnData, 'success');
           } else {
             $this->jsonReturn(-1, [], 'create user fail');
           }
@@ -374,11 +380,11 @@ class ImGroup extends ApiBase
 
       if ($rs['code'] == 200) {
         UserModel::where('uid', $uid)->update(array('im_id' => $imid, 'im_md5password' => $rs_r['info']['token']));
-        $this->jsonReturn(0, $userData, 'success');
+        $this->jsonReturn(0, $returnData, 'success');
 
         $result = $this->createUserFromInvitation($cData, $link_code, 2);
         if ($result) {
-          $this->jsonReturn(0, $userData, 'success');
+          $this->jsonReturn(0, $returnData, 'success');
         } else {
           $this->jsonReturn(-1, [], 'create user fail');
         }
@@ -386,7 +392,7 @@ class ImGroup extends ApiBase
     } else {
       $result = $this->createUserFromInvitation($cData, $link_code, 2);
       if ($result) {
-        $this->jsonReturn(0, $userData, 'success');
+        $this->jsonReturn(0, $returnData, 'success');
       } else {
         $this->jsonReturn(-1, [], 'create user fail');
       }
