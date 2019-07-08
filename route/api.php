@@ -70,12 +70,23 @@ Route::group([], function () {
 
   //用户相关
   Route::resource('api/:version/user','api/:version.user');
+  Route::rule('api/:version/user/recommendation','api/:version.user/recommendation','GET');
   Route::rule('api/:version/user/:id/position','api/:version.user_position/read','GET');
   Route::rule('api/:version/user/:id/position','api/:version.user_position/save','POST');
 
   //部门相关
   Route::rule('api/:version/department/selects','api/:version.department/selects','GET');
 
+  //im_group
+  Route::rule('api/:version/im_group/placeholders','api/:version.im_group/placeholders','GET');
+  Route::rule('api/:version/im_group/invitation','api/:version.im_group/invitation','GET');
+  Route::rule('api/:version/im_group/external_invite','api/:version.im_group/external_invite','POST');
+  Route::rule('api/:version/im_group/external_invite_writeback','api/:version.im_group/external_invite_writeback','POST');
+  Route::rule('api/:version/im_group/kick_placeholder','api/:version.im_group/kick_placeholder','DELETE');
+  Route::rule('api/:version/im_group/signin_invitation','api/:version.im_group/signin_invitation','POST');
+  
+  
+  
   //*********公开的
   Route::resource('api/:version/publics/idle','api/:version.publics.idle');
   Route::rule('api/:version/publics/comments','api/:version.publics.comments/index','GET');
