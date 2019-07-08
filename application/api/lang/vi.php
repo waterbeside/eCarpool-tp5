@@ -94,4 +94,8 @@ return [
   //评分
   "You can't rate this"=> "Bạn không thể đánh giá điều này",
   "You have already rated this" => "Bạn đã đánh giá điều này",
+
+  //im
+  'invites you to join the group' => 'mời bạn tham gia nhóm',
+
 ];

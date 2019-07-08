@@ -93,4 +93,7 @@ return [
   //评分
   "You can't rate this"=> "你不能对此评分",
   "You have already rated this" => "你已经对此评过分",
+
+  //im
+  'invites you to join the group' => '邀请你加入',
 ];
