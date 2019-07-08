@@ -64,7 +64,7 @@ class Reports extends ApiBase
     $department = explode(',', $filter['department']);
 
     if(!in_array($filter['show_type'],[1,2,3,4])){
-      return $this->jsonReturn(992,$returnData,'successful');
+      return $this->jsonReturn(992,[],'Error param');
     }
 
 
