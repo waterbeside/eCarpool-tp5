@@ -1,0 +1,107 @@
+{extend name="base" /}
+{block name="body"}
+<div class="layui-tab-content P-npdNav-detail-form">
+
+  <form class="layui-form " action="{:url('admin/npdNav/edit')}" method="post" id="editForm" data-jump-target="parent">
+
+    <div class="layui-form-item">
+      <label class="layui-form-label">上级导航</label>
+      <div class="layui-input-block">
+        <select name="pid" required lay-verify="required">
+          <option value="0">一级导航</option>
+            {foreach name="nav_level_list" item="vo"}
+            <option value="{$vo.id}" {if condition="$data.id==$vo.id"} disabled="disabled"{/if} {if condition="$data.pid==$vo.id"} selected="selected"{/if}>{neq name="vo.level" value="1"}|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----';}{/php}{/neq} {$vo.name}</option>
+            {/foreach} 
+        </select> 
+      </div> 
+    </div> 
+
+    <div class="layui-form-item">
+      <label class="layui-form-label">导航名称</label>
+      <div class="layui-input-block">
+        <input type="text" name="name" value="{$data.name}" required lay-verify="required" placeholder="请输入导航名称"
+          class="layui-input">
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">导航名称(EN)</label>
+      <div class="layui-input-block">
+        <input type="text" name="name_en" value="{$data.name_en}" required lay-verify="required" placeholder="请输入导航英文名称"
+          class="layui-input">
+      </div>
+    </div>
+    <!-- <div class="layui-form-item">
+      <label class="layui-form-label">别名</label>
+      <div class="layui-input-block">
+        <input type="text" name="alias" value="{$data.alias}" placeholder="（选填）请输入导航别名" class="layui-input">
+      </div>
+    </div> -->
+    <div class="layui-form-item">
+      <label class="layui-form-label">链接</label>
+      <div class="layui-input-block">
+        <input type="text" name="link" value="{$data.link}" placeholder="（选填）请输入导航链接" class="layui-input">
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">链接方式</label>
+      <div class="layui-input-block">
+        <input type="radio" name="link_type" value="0" title="不跳转" {if condition="$data.link_type === 0 " } checked="checked" {/if}> 
+        <input type="radio" name="link_type" value="1" title="内部连接(不写http://)" {if condition="$data.link_type== 1 " } checked="checked" {/if}> 
+        <input type="radio" name="link_type" value="2" title="外部连接(要写http://)" {if condition="$data.link_type== 2 " } checked="checked" {/if}> 
+      </div> 
+    </div> 
+    <!-- <div class="layui-form-item">
+      <label class="layui-form-label">图标</label>
+      <div class="layui-input-block">
+        <input type="text" name="icon" value="{$data.icon}" placeholder="（选填）如：fa fa-home" class="layui-input">
+      </div>
+    </div> -->
+    <div class="layui-form-item">
+      <label class="layui-form-label">状态</label>
+      <div class="layui-input-block">
+        <input type="radio" name="status" value="1" title="显示" {if condition="$data.status==1" } checked="checked" {/if}>
+          <input type="radio" name="status" value="0" title="隐藏" {if condition="$data.status==0" } checked="checked"
+          {/if}> 
+      </div> 
+    </div> 
+    <div class="layui-form-item">
+      <label class="layui-form-label">打开方式</label>
+      <div class="layui-input-block">
+        <input type="radio" name="target" value="_self" title="默认" {if condition="$data.target=='_self'" }
+          checked="checked" {/if}> <input type="radio" name="target" value="_blank" title="新窗口" {if
+          condition="$data.target=='_blank'" } checked="checked" {/if}> 
+      </div> 
+    </div> 
+    <div class="layui-form-item">
+      <label class="layui-form-label">排序</label>
+      <div class="layui-input-block">
+          <input type="number" name="sort" value="{$data.sort}" required lay-verify="required" class="layui-input">
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <div class="layui-input-block">
+        <input type="hidden" name="id" value="{$data.id}">
+        <button class="layui-btn" lay-submit lay-filter="*">更新</button>
+        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+      </div>
+    </div>
+  </form>
+
+</div>
+{/block}
+{block name="js"}
+
+{/block}
+{block name="script"}
+<script>
+  FORM_PAGE_EXEC = {
+    upload: layui.upload,
+    init: function () {
+
+      form.render();
+    },
+
+  }
+  FORM_PAGE_EXEC.init();
+</script>
+{/block}

@@ -63,6 +63,12 @@ class NpdCategory extends AdminBase
         if(!isset($data['parent_id']) || !is_numeric($data['parent_id'])){
           $data['parent_id'] = 0 ;
         }
+        if(empty($data['content'])){
+          unset($data['content']);
+        }
+        if(empty($data['content_en'])){
+          unset($data['content_en']);
+        }
         if ($this->category_model->allowField(true)->save($data)) {
           $this->category_model->deleteListCache();
           $this->updateDataVersion($this->cacheVersionKey);
@@ -104,6 +110,12 @@ class NpdCategory extends AdminBase
         if (in_array($data['parent_id'], $children)) {
           $this->jsonReturn(-1,'不能移动到自己的子分类');
         } else {
+          if(empty($data['content'])){
+            $data['content'] = null;
+          }
+          if(empty($data['content_en'])){
+            $data['content_en'] = null;
+          }
           if ($this->category_model->allowField(true)->save($data, $id) !== false) {
             $this->category_model->deleteListCache();
             $this->updateDataVersion($this->cacheVersionKey);
