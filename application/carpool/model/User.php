@@ -121,7 +121,7 @@ class User extends BaseModel
         return $userData;
       } else {
         $this->errorCode = 10001;
-        // $this->errorMsg = lang('User name or password error');
+        $this->errorMsg = lang('User name or password error');
         return false;
       }
     }
@@ -142,16 +142,16 @@ class User extends BaseModel
 
 
   /**
-   * 通过账号密码，取得用户信息
+   * 验证hr系统账号密码是否正确
    * @param  string $loginname 用户名
    * @param  string $password  密码
-   * @return array||false
+   * @return balean 
    */
   public function checkInitPwd($loginname, $password)
   {
-    $scoreConfigs = (new Configs())->getConfigs("score");
+    // $scoreConfigs = (new Configs())->getConfigs("score");
+    // $token =  $scoreConfigs['score_token'];
     $url = config("secret.HR_api.checkPwd");
-    $token =  $scoreConfigs['score_token'];
     $postData = [
       'code' => $loginname,
       'pwd' => $password,
