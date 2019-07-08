@@ -44,7 +44,7 @@ class TripActive extends ApiBase
       return $this->jsonReturn(20002,["lists"=>[]] , "No info data");
     }
     $trip_time = strtotime($infoData['time'].'00');
-    $cacheExp = $trip_time < time() + 3600 * 24 ? 3600 * 24 * 2 : ( $trip_time <  3600 * 2 ?   3600 * 1 : 60 * 5 );
+    $cacheExp = $trip_time < time() + 3600 * 24 * 3 ? 3600 * 24 * 2 : ( $trip_time <  time() + 3600 * 3 ?   60 * 30 : 60 * 5 );
    
     // 取得司机座标
     if($role == "driver"){
