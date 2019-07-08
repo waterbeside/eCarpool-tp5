@@ -82,18 +82,18 @@ class Category extends Model
 
     /**
      * 取得列表，如果redis有
-     * @param  integer $recache [description]
-     * @return [type]           [description]
+     * @param  integer $exp 过期时间
+     * @return array           
      */
-    public function getList($recache = 0)
+    public function getList($exp = 3600 * 2 )
     {
       $rKey = "NPD:category:list";
       $redis = new RedisData();
       $data = json_decode($redis->get($rKey),true);
 
-      if(!$data || $recache){
+      if(!$data || $exp === -1){
         $data  = $this->where([['is_delete','=',0]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
-        $redis->set($rKey,json_encode($data));
+        $redis->setex($rKey,$exp,json_encode($data));
       }
       return $data;
     }
@@ -107,11 +107,11 @@ class Category extends Model
     }
 
 
-    public function getListByModel($model=''){
+    public function getListByModel($model='',$status = false){
       $res = $this->getList();
       $returnList = [];
       foreach($res as $key=>$value){
-        if($model === '' || $value['model'] == $model){
+        if( ($model === '' || $value['model'] == $model) && ($status === false || $value['status'] == $status) ){
           $returnList[] = $value;
         }
       }
