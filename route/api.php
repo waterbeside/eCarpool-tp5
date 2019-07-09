@@ -91,8 +91,11 @@ Route::group([], function () {
   Route::resource('api/:version/publics/idle','api/:version.publics.idle');
   Route::rule('api/:version/publics/comments','api/:version.publics.comments/index','GET');
   Route::rule('api/:version/app/url','api/:version.app/get_url','GET');
+  //报表相关
   Route::rule('api/:version/publics/reports/trips_summary','api/:version.publics.reports/trips_summary','GET');
   Route::rule('api/:version/publics/reports/month_statis','api/:version.publics.reports/month_statis','GET');
+  Route::rule('api/:version/publics/reports/month_ranking','api/:version.publics.reports/month_ranking','GET');
+  Route::rule('api/:version/publics/reports/today_info','api/:version.publics.reports/today_info','GET');
 
 
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
