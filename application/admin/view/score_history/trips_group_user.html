@@ -60,13 +60,13 @@
                         <th>{:lang('Success')}</th>
                         <th>{:lang('Failed')}</th>
                         <th>{:lang('Count')}</th>
-                        <!-- <th>R</th> -->
+                        <th>成功率</th>
                         <th>{:lang('Time')}</th>
                         
 
                     </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="list-wrapper">
                     {foreach name="lists" item="vo"}
                     <tr>
                         <td>
@@ -87,10 +87,10 @@
                         <td>{$vo.full_department|str_replace=","," / ",###}</td>
 
                         <td class="t-number">{php}echo $vo['reason']>=0 ? "<b class='text-green'>+ ".$vo['operand_sum']."</b>" : "<b  class='text-red'>- ".$vo['operand_sum']."</b>"; {/php}</td>
-                        <td>{$vo.count_success}</td>
-                        <td>{$vo.count_failed}</td>
-                        <td>{$vo.total}</td>
-                        <!-- <td>{$vo.rate}</td> -->
+                        <td class="count_success">{$vo.count_success}</td>
+                        <td class="count_failed">{$vo.count_failed}</td>
+                        <td class="total">{$vo.total}</td>
+                        <td class="rate">{:round($vo.count_success/$vo.total,2)*100}%</td>
                         
                         <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($vo.max_time)*1000}</span></td>
 
@@ -116,8 +116,6 @@
     ,lang:'{$active_lang == "zh-cn" ? "cn" : "en"}'
     ,range: '~' //或 range: '~' 来自定义分割字符
   });
-
-
 
 
 </script>
