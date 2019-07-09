@@ -92,6 +92,8 @@ class ImGroup extends ApiBase
     $signature     = input('request.signature');
     $group         = input('request.group');
     $duration      = input('request.duration');
+    $is_overseas      = input('request.is_overseas',0);
+    
     $now           = time();
     $baseInvitationUrl = $this->baseInvitationUrl;
 
@@ -131,6 +133,9 @@ class ImGroup extends ApiBase
       'link_code' => $link_code,
       'desc' => $inventMsg,
     );
+    if($is_overseas){
+      $returnData['url'] .= '&s='.$is_overseas;
+    }
 
 
     // ---------- start 检查是否已有重复数据；
@@ -166,6 +171,9 @@ class ImGroup extends ApiBase
         ];
         $rowCount = $ImGroupInvitation->where('id', $data_check['id'])->update($data_update);
         $returnData['url'] = $baseInvitationUrl . '?lc=' . $data_check['link_code'];
+        if($is_overseas){
+          $returnData['url'] .= '&s='.$is_overseas;
+        }
         $returnData['link_code'] = $data_check['link_code'];
         return $this->jsonReturn(0, $returnData, 'Successful');
       }
@@ -339,6 +347,7 @@ class ImGroup extends ApiBase
       'im_id' => $userData['im_id'],
       'name' => $userData['name'],
       'department' => $userData['Department'],
+      'company_id' => $userData['company_id'],
     ];
 
     $uid = $userData['uid'];
