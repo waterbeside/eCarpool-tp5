@@ -145,10 +145,10 @@ class ImGroup extends ApiBase
       ['source', '=', $source],
     ];
     if ($signature) {
-      $map_check = ['signature', '=', $signature];
+      $map_check[] = ['signature', '=', $signature];
     }
     if ($group) {
-      $map_check = ['im_group', '=', $group];
+      $map_check[] = ['im_group', '=', $group];
     }
 
     $data_check = $ImGroupInvitation->where($map_check)->find();
@@ -221,8 +221,8 @@ class ImGroup extends ApiBase
     $userData = $this->getUserData(1);
     $uid =  $userData['uid'];
 
-    $signature     = input('repuest.signature');
-    $group         = input('repuest.group/s');
+    $signature     = input('request.signature');
+    $group         = input('request.group/s');
 
     if (!$signature || !$group) {
       $this->jsonReturn(992, [], 'Empty signature or group');
@@ -255,8 +255,8 @@ class ImGroup extends ApiBase
     $userData = $this->getUserData(1);
     $uid =  $userData['uid'];
 
-    $owner     = input('repuest.owner');
-    $group     = input('repuest.group');
+    $owner     = input('request.owner');
+    $group     = input('request.group');
     $now       = time();
 
     $placeholder_users = $this->placeholder_users;
