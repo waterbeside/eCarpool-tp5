@@ -80,8 +80,8 @@ Route::group([], function () {
   //im_group
   Route::rule('api/:version/im_group/placeholders','api/:version.im_group/placeholders','GET');
   Route::rule('api/:version/im_group/invitation','api/:version.im_group/invitation','GET');
-  Route::rule('api/:version/im_group/external_invite','api/:version.im_group/external_invite','POST');
   Route::rule('api/:version/im_group/external_invite_writeback','api/:version.im_group/external_invite_writeback','POST');
+  Route::rule('api/:version/im_group/external_invite','api/:version.im_group/external_invite','POST');
   Route::rule('api/:version/im_group/kick_placeholder','api/:version.im_group/kick_placeholder','DELETE');
   Route::rule('api/:version/im_group/signin_invitation','api/:version.im_group/signin_invitation','POST');
   
