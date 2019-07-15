@@ -31,6 +31,8 @@ return [
 
   'User does not exist'=>'User does not exist',
   'User already exists'=>'User already exists',
+  'User does not exist or has resigned'=>'User does not exist or has resigned',
+  
   'Already bound, please enter a new phone number' => 'Already bound, please enter a new phone number',
   'The mobile phone number has been marked with a new account, whether to merge?' => 'The mobile phone number has been marked with a new account, whether to merge?',
   'No need to merge' => 'No need to merge',

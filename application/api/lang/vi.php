@@ -31,6 +31,8 @@ return [
 
   'User does not exist'=>'Người dùng không tồn tại',
   'User already exists'=>'Người dùng đã tồn tại',
+  'User does not exist or has resigned'=>'Người dùng không tồn tại hoặc đã từ chức',
+
   'Already bound, please enter a new phone number' => 'Đã bị ràng buộc, vui lòng nhập số điện thoại mới',
   'The mobile phone number has been marked with a new account, whether to merge?' => 'Số điện thoại di động đã được đánh dấu bằng một tài khoản mới, hợp nhất không?',
   'No need to merge' => 'Không cần phải hợp nhất',

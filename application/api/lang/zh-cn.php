@@ -31,6 +31,8 @@ return [
 
   'User does not exist'=>'用户不存在',
   'User already exists'=>'用户已存在',
+  'User does not exist or has resigned'=>'用户不存在或已离职',
+
   'Already bound, please enter a new phone number' => '已绑定,请输入新的手机号',
   'The mobile phone number has been marked with a new account, whether to merge?' => '该手机号已注新账号，是否合并?',
   'No need to merge' => '无须再合并',
