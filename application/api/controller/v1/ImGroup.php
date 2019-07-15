@@ -6,6 +6,7 @@ use app\api\controller\ApiBase;
 use app\carpool\model\ImGroupInvitation;
 use app\carpool\model\User as UserModel;
 use com\Nim as NimServer;
+use my\RedisData;
 
 use think\Db;
 
@@ -54,22 +55,48 @@ class ImGroup extends ApiBase
       $this->jsonReturn(992, 'Error params');
     }
     $now       = time();
+    $redis = new RedisData();
+    $cacheKey = "carpool:im_group:invitation:$link_code";
+    $cacheData = $redis->cache($cacheKey);
+    if($cacheData){
+      $this->jsonReturn(0, $cacheData, 'Successful');
+    }
     $row  = ImGroupInvitation::where([['link_code', '=', $link_code]])->order('id desc')->find();
-
+    $data = [
+      'status'=>1,
+      'group_detail'=>null,
+      'inviter'=>null,
+    ];
     if ($row) {
-      // $data = json_decode(CJSON::encode($row),true);
-      $inviterData = UserModel::find($row['inviter_uid']);
+      $data['status'] = $row['status'];
+      if ($now > $row['expiration_time']) {
+        $data['status'] = 0;
+      }
 
+      //验证该群是否还存在
+      $group = $row['im_group']; //群id
+      $groupDetail = $this->NIM_OBJ->queryGroup([$group],0);
+      if($groupDetail && $groupDetail['code'] === 200){
+        $data['group_detail'] = isset($groupDetail['tinfos'][0]) ? $groupDetail['tinfos'][0] : null;
+      }else{
+        $data['group_detail'] = null;
+      }
+      if(!$data['group_detail']){
+        $data['status'] = 0;
+      }
+      
+      //查找邀请者的用户信息
+      $inviterData = UserModel::find($row['inviter_uid']);
       $data['inviter'] = array(
         'uid' => $inviterData['uid'],
         'name' => $inviterData['name'],
         'imgpath' => $inviterData['imgpath'],
       );
-      $data['status'] = $row['status'];
-      if ($now > $row['expiration_time']) {
-        $data['status'] = 0;
-      }
+      
       $data['type'] = $row['type'];
+      $cacheExp = $data['type'] ? 120 : 20;
+      $cacheData = $redis->cache($cacheKey,$data, $cacheExp);
+
       $this->jsonReturn(0, $data, 'Successful');
     } else {
       $this->jsonReturn(20002, [], 'No data');
@@ -324,22 +351,28 @@ class ImGroup extends ApiBase
   /**
    * 邀请登入提交
    */
-  public function signin_invitation($link_code = false)
+  public function signin_invitation($link_code = false,$type = 0)
   {
 
     if (!$link_code) {
       $this->jsonReturn(992, 'Error Params');
     }
 
-    $username = input('post.username');
-    $password = input('post.password');
-
     $UserModel = new UserModel();
+    $username = input('post.username');
 
-    // validate user input and redirect to the previous page if valid
-    $userData = $UserModel->checkedPassword($username, $password);
-    if (!$userData) {
-      $this->jsonReturn($UserModel->errorCode, $UserModel->errorMsg);
+    if($type == 1){
+      $userData = $UserModel->where([['loginname','=',$username],['is_delete','=',0],['is_active','=',1]])->find();
+      if (!$userData) {
+        $this->jsonReturn(10004, lang('User does not exist or has resigned'));
+      }
+    }else{
+      $password = input('post.password');
+      $userData = $UserModel->checkedPassword($username, $password);
+      if (!$userData) {
+        $this->jsonReturn($UserModel->errorCode, $UserModel->errorMsg);
+      }
+
     }
 
     $returnData = [
@@ -366,11 +399,12 @@ class ImGroup extends ApiBase
         'accid' => $userData['loginname'],
         'name' => $userData['name'],
         'icon' => $userData['imgpath'] ? $avatarBasePath . $userData['imgpath'] : $avatarBasePath . 'im/default.png',
-
       ];
       $imid       =  $userData['loginname'];
       $rs         =  $this->NIM_OBJ->createUserId($upNimData);
       $cData["im_id"] = $imid;
+      $returnData['im_id'] = $imid;
+
       if ($rs['code'] == 414) { //创建云信帐号失败，则尝试看是否已存在此im_id，如果是，更新一次im_md5password.
         $rs_r = $this->NIM_OBJ->updateUserToken($imid);
         if ($rs_r['code'] == 200) {
@@ -459,4 +493,5 @@ class ImGroup extends ApiBase
       }
     }
   }
+
 }
