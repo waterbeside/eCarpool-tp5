@@ -838,6 +838,25 @@ class Nim {
         return $result;
     }
 
+
+    /**
+     * 群组功能（高级群）-群信息查询
+     * @param  $tid       [群tid]
+     * @return $result      [返回array数组对象]
+     */
+    public function queryGroupDetail($tid){
+        $url = 'https://api.netease.im/nimserver/team/queryDetail.action';
+        $data= array(
+            'tid' => $tid,
+        );
+        if($this->RequestType=='curl'){
+            $result = $this->postDataCurl($url,$data);
+        }else{
+            $result = $this->postDataFsockopen($url,$data);
+        }
+        return $result;
+    }
+
     /**
      * 群组功能（高级群）-移交群主
      * @param  $tid       [云信服务器产生，群唯一标识，创建群时会返回，最大长度128字节]
