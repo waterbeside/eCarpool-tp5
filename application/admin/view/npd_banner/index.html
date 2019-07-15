@@ -1,0 +1,100 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <ul class="amain-tool-bar">
+            <li class="layui-this"><a href="{:url('admin/NpdBanner/index')}">Banner管理</a></li>
+            <li class="btn-item btn-item-add">
+
+                <a href="{:url('admin/NpdBanner/add')}" data-title="添加Banner" data-trigger="modal" title="添加Banner"
+                    class="layui-btn layui-btn-sm layui-btn-success   "><i class="fa fa-plus"></i> 添加Banner</a>
+            </li>
+        </ul>
+        <div class="layui-tab-content">
+
+            <form class="layui-form layui-form-pane" action="{:url('admin/NpdBanner/index')}" method="get">
+
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="filter[keyword]" value="{$filter.keyword}" placeholder="请输入关键词"
+                            class="layui-input">
+                    </div>
+                </div>
+                
+                <div class="layui-inline">
+                    <button class="layui-btn">搜索</button>
+                </div>
+            </form>
+            <hr>
+
+            <form action="" method="post" class="ajax-form">
+                <div class="layui-tab-item layui-show">
+                    <table class="layui-table">
+                        <thead>
+                            <tr>
+
+                                <th style="width: 30px;">ID</th>
+                                <th>图</th>
+                                <th>标题</th>
+                                <th>分类</th>
+
+                                <th>状态</th>
+
+
+                                <th>创建时间</th>
+                                <th>更新时间</th>
+                                <th>Language</th>
+                                <th style="width: 100px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {foreach name="lists" item="vo"}
+                            <tr>
+                                <td>{$vo.id}</td>
+                                <td>
+                                    <div class="cover-pic-wrapper"
+                                        style=" float: left;width:30px;height:30px;background-image:url('{$vo.thumb}')">
+                                    </div>
+                                </td>
+                                <td>
+                                    {$vo.title}
+                                </td>
+                                <td>{php}echo isset($typeList[$vo['type']]) ? $typeList[$vo['type']]: $vo['type'] ;
+                                    {/php}</td>
+
+                                <td>{php}echo $vo['status']==1 ? '<b class="text-red">显示</b>' : '<b
+                                        class="text-gray">不显示</b>';{/php}</td>
+
+                                <td>{$vo.create_time}</td>
+                                <td>
+                                    {$vo.update_time}
+                                </td>
+                                <td>
+                                    {$vo.lang}
+                                </td>
+
+
+                                <td>
+                                    <a href="{:url('admin/NpdBanner/edit',['id'=>$vo['id']])}" data-title="編輯 #{$vo.id}"
+                                        data-trigger="modal" title="編輯 #{$vo.id}"
+                                        class=" layui-btn   layui-btn-xs    ">
+                                        <i class="layui-icon">&#xe642;</i> 編輯
+                                    </a>
+                                    <a href="{:url('admin/NpdBanner/delete',['id'=>$vo['id']])}"
+                                        class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除">
+                                        <i class="layui-icon">&#xe640;</i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                    <!--分页-->
+                    {$lists|raw}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{/block}
