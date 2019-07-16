@@ -4,7 +4,7 @@
 
     <div class="layui-tab-content">
 
-      <form class="layui-form  " action="{:url('admin/Ads/add')}" method="post" style="margin-right:15px;"
+      <form class="layui-form  " action="{:url('admin/NpdBanner/add')}" method="post" style="margin-right:15px;"
         id="editForm">
 
 
@@ -51,15 +51,16 @@
           <div class="layui-input-block">
             <select name="link_type">
               <option value="0">不跳转</option>
-              <option value="1"> 连接跳转</option>
-              <option value="2"> 路由跳转</option>
+              <option value="1">路由</option>
+              <option value="2">连接</option>
             </select>
           </div>
         </div>
         <div class="layui-form-item">
           <label class="layui-form-label">跳转连接</label>
           <div class="layui-input-block">
-            <input type="text" name="link" value="" placeholder="跳转连接或内页映射名" class="layui-input">
+            <input type="text" name="link" value="" placeholder="跳转连接或路由名" class="layui-input">
+            <div class="layui-form-mid layui-word-aux">当跳转类型为“连接”时，请填写包含http://的完整连接内容</div>
           </div>
         </div>
 
@@ -103,8 +104,6 @@
 
 <script>
   PAGE_EXEC = {
-
-
     datas: {
       langs: [{
           code: 'zh-cn',
@@ -121,7 +120,6 @@
 
     getLangs: function (success) {
       var _this = this;
-
       _this.renderLangs(_this.datas.langs);
       if (typeof (success) == "function") {
         success(res);
@@ -133,10 +131,7 @@
         } else {
           $("#language_code").hide();
         }
-        console.log(data.value); //得到被选中的值
-        console.log(data.othis); //得到美化后的DOM对象
       });
-
     },
 
     renderLangs: function (listData) {
