@@ -57,8 +57,9 @@
           <label class="layui-form-label">所属模型</label>
           <div class="layui-input-block">
             <select name="model">
-              <option value="">模型类型-不设置</option>
-              <option value="product"> product</option>
+            {foreach name="category_model_list" item="vo" }
+              <option value="{$vo.value}" > {$vo.name}</option>
+            {/foreach}
             </select>
           </div>
         </div>
