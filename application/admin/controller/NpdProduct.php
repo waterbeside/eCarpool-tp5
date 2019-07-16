@@ -68,7 +68,7 @@ class NpdProduct extends AdminBase
      * @param string $pid
      * @return mixed
      */
-    public function add($pid = '')
+    public function add()
     {
       if ($this->request->isPost()) {
         $data            = $this->request->param();
@@ -107,7 +107,7 @@ class NpdProduct extends AdminBase
         }
         $category_level_list = array2level($category_level_list);
         $this->assign('category_level_list', $category_level_list);
-        return $this->fetch('add', ['pid' => $pid]);
+        return $this->fetch();
       }
     }
 
