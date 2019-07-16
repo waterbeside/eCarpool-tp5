@@ -79,7 +79,6 @@ class NpdBanner extends AdminBase
           }
 
           $upData = [
-            'region_id' => $data['region_id'] ? $data['region_id'] : 0,
             'title' =>   iconv_substr($data['title'],0,100) ,
             'status' => $data['status'],
             'type' => $data['type'],
@@ -138,7 +137,6 @@ class NpdBanner extends AdminBase
             return $this->jsonReturn(-1,$validate_result);
           }
           $upData = [
-            'region_id' => $data['region_id'] ? $data['region_id'] : 0,
             'title' =>   iconv_substr($data['title'],0,100) ,
             'status' => $data['status'],
             'type' => $data['type'],
