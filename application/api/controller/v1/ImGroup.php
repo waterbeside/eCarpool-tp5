@@ -94,7 +94,7 @@ class ImGroup extends ApiBase
       );
       
       $data['type'] = $row['type'];
-      $cacheExp = $data['type'] ? 120 : 20;
+      $cacheExp = $data['type'] ? 60 : 20;
       $cacheData = $redis->cache($cacheKey,$data, $cacheExp);
 
       $this->jsonReturn(0, $data, 'Successful');
