@@ -188,7 +188,7 @@ class ScoreHistory extends AdminBase
       ['t_account ac', 't.account_id = ac.id', 'left'],
     ];
     $map = [];
-    $map[] = ['t.is_delete', '<>', 1];
+    $map[] = ['t.is_delete', '=', 0];
     $map[] = ['t.reason', '=', 100];
     $map[] = ['', 'exp', Db::raw('t.account_id IS NOT NULL')];
 
@@ -252,25 +252,27 @@ class ScoreHistory extends AdminBase
     // ->fetchSql()->select();
     // dump($lists);exit;
 
+    $map_c_base  = [
+      ['time', '>=', $time_arr[0]],
+      ['time', '<', $time_arr[1]],
+      ['is_delete', '=', 0],
+      ['reason', '=', 100],
+    ];
+    // if (isset($authDeptData['region_map'])) {
+    //   $map_c_base[] = $authDeptData['region_map'];
+    // }
     foreach ($lists as $key => $value) {
       // 创建 子map
-      $map_c1 = [
-        ['time', '>=', $time_arr[0]],
-        ['time', '<', $time_arr[1]],
-        ['operand', '>', 0],
-        ['reason', '=', 100],
-        ['account_id', '=', $value['account_id']],
-        // ['','exp',Db::raw('account_id = t.account_id')]
-      ];
+      $map_c = $map_c_base;
+      $map_c[] = ['account_id', '=', $value['account_id']];
+      $map_c[] = ['region_id', '=', $value['region_id']];
+
+      $map_c1 = $map_c;
+      $map_c1[] = ['operand', '>', 0];
       $lists[$key]['count_success'] = HistoryModel::where($map_c1)->count();
-      $map_c2 = [
-        ['time', '>=', $time_arr[0]],
-        ['time', '<', $time_arr[1]],
-        ['operand', '=', 0],
-        ['reason', '=', 100],
-        ['account_id', '=', $value['account_id']],
-        // ['','exp',Db::raw('account_id = t.account_id')]
-      ];
+
+      $map_c2 = $map_c;
+      $map_c2[] = ['operand', '=', 0];
       $lists[$key]['count_failed']  = HistoryModel::where($map_c2)->count();
     }
 
