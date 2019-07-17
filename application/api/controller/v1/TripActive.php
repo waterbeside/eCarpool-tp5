@@ -31,7 +31,7 @@ class TripActive extends ApiBase
       return $this->jsonReturn(992,'参数错误');
     }
 
-    $cacheKey = "carpool:tripGps:{$infoid}:{$role}";
+    $cacheKey = "carpool:tripGps:v1:{$infoid}:{$role}";
     $redis = new RedisData();
     $cacheData = $redis->cache($cacheKey);
     if ($cacheData !== false ) {
@@ -44,7 +44,8 @@ class TripActive extends ApiBase
       return $this->jsonReturn(20002,["lists"=>[]] , "No info data");
     }
     $trip_time = strtotime($infoData['time'].'00');
-    $cacheExp = $trip_time < time() + 3600 * 24 * 3 ? 3600 * 24 * 2 : ( $trip_time <  time() + 3600 * 3 ?   60 * 30 : 60 * 5 );
+    // $cacheExp = $trip_time < time() - 3600 * 24 * 3 ? 3600 * 24 * 2 : ( $trip_time <  time() - 3600 * 3 ?   60 * 30 : 60 * 5 );
+    $cacheExp = 30;
    
     // 取得司机座标
     if($role == "driver"){
