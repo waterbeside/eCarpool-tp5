@@ -108,14 +108,23 @@ function admin_init(){
    * 通用表单提交(AJAX方式)
    */
   form.on('submit(*)', function (data) {
+    var $form = $(data.form);
+    var beforeSubmit = $form.attr('beforeSubmit');
+    if(typeof(beforeSubmit) != "undefined"){
+      console.log(typeof(eval(beforeSubmit)));
+      if(typeof(eval(beforeSubmit)) == "function"){
+        eval(beforeSubmit)(data);
+      }
+    }
+    
     ajaxSubmit({
       url: data.form.action,
       dataType:'json',
       type: data.form.method,
-      data: $(data.form).serialize(),
-      unrefresh: $(data.form).data('unrefresh') ? $(data.form).data('unrefresh') : false,
-      jump : $(data.form).data('jump') ? $(data.form).data('jump') : "" ,
-      jumpWin: $(data.form).data('jump-target') == "parent" ? parent : null
+      data: $form.serialize(),
+      unrefresh: $form.data('unrefresh') ? $(data.form).data('unrefresh') : false,
+      jump : $form.data('jump') ? $(data.form).data('jump') : "" ,
+      jumpWin: $form.data('jump-target') == "parent" ? parent : null
     });
     return false;
   });

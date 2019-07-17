@@ -311,6 +311,11 @@ function ajaxSubmit(setting){
       type: opt.type,
       data: opt.data,
       success: function (res) {
+        if(typeof(res)=='undefined'){
+          layer.msg(myLang.r('network error, please try again later'));
+          GV.lockForm = false;
+          return false;
+        }
         if (res.code === 0) {
           if(opt.unrefresh!=1 || opt.jump!=""){
             setTimeout(function () {
