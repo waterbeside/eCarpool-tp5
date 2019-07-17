@@ -55,8 +55,11 @@ class Configs extends Model
       }
     }
     return $list;
+  }
 
-
+  public function deleteListCache($type){
+    $cacheKey = 'Carpool:config:list:type_'.$type;
+    Cache::rm($cacheKey);
   }
   
 
