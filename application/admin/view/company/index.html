@@ -29,7 +29,6 @@
                   <tr>
                       <th style="width: 30px;">ID</th>
                       <th>公司名</th>
-                      <th>缩写</th>
                       <th>国别</th>
                       <th width="100">操作</th>
                   </tr>
@@ -39,12 +38,11 @@
                   <tr>
                     <td>{$vo.company_id}</td>
                     <td>{$vo.company_name}</td>
-                    <td>{$vo.short_name}</td>
                     <td>{$vo.country}</td>
-                      <td>
+                      <!-- <td>
                           <a href="{:url('admin/company/edit',['id'=>$vo['company_id']])}" class="layui-btn   layui-btn-sm " data-title="編輯"  data-trigger="modal" ><i class="layui-icon">&#xe642;</i></a>
                           <a href="{:url('admin/company/delete',['id'=>$vo['company_id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete"><i class="layui-icon">&#xe640;</i></a>
-                      </td>
+                      </td> -->
                   </tr>
                   {/foreach}
                   </tbody>
