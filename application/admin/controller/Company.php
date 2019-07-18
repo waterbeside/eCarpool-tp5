@@ -32,7 +32,7 @@ class Company extends AdminBase
     {
         $map = [];
         if ($keyword) {
-            $map[] = ['company_name|short_name','like', "%{$keyword}%"];
+            $map[] = ['company_name','like', "%{$keyword}%"];
         }
         $lists = $this->company_model->where($map)->order('company_id ASC , company_name ')->paginate(50, false,['query'=>['keyword'=>$keyword]]);
 
@@ -127,13 +127,14 @@ class Company extends AdminBase
      */
     public function delete($id)
     {
-        if ($this->company_model->destroy($id)) {
-            Cache::tag('public')->rm('companys');
-            $this->log('删除公司成功，id='.$id,0);
-            $this->jsonReturn(0,'删除成功');
-        } else {
-            $this->log('删除公司失败，id='.$id,-1);
-            $this->jsonReturn(-1,'删除失败');
-        }
+            $this->jsonReturn(-1,'删除功能已关闭');
+        // if ($this->company_model->destroy($id)) {
+        //     Cache::tag('public')->rm('companys');
+        //     $this->log('删除公司成功，id='.$id,0);
+        //     $this->jsonReturn(0,'删除成功');
+        // } else {
+        //     $this->log('删除公司失败，id='.$id,-1);
+        //     $this->jsonReturn(-1,'删除失败');
+        // }
     }
 }
