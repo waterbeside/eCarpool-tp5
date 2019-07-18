@@ -48,24 +48,24 @@ class Contacts extends AdminBase
         case 'contacts_rule':
           $allow_cache_deep_list = input('allow_cache_deep_list');
           $monitor_deep_list = input('monitor_deep_list');
-          $monitor_access_max_number = input('monitor_access_max_number');
-          $monitor_screenshots_max_number = input('monitor_screenshots_max_number');
-          $monitor_review_cycle = input('monitor_review_cycle');
+          $monitor_access_max_number = input('monitor_access_max_number/d');
+          $monitor_screenshots_max_number = input('monitor_screenshots_max_number/d');
+          $monitor_review_cycle = input('monitor_review_cycle/d');
           
           $contacts_rule_old = $ConfigsModel->where('name','contacts_rule')->value('value');
           $contacts_rule_old = json_decode($contacts_rule_old,true);
 
           $allow_cache_deep_list_format = [];
           foreach(explode(',',$allow_cache_deep_list) as $key => $value){
-            if(!in_array($value,$allow_cache_deep_list_format)){
-              $allow_cache_deep_list_format[] = $value;
+            if(is_numeric($value) && !in_array($value,$allow_cache_deep_list_format)){
+              $allow_cache_deep_list_format[] = intval($value);
             }
           }
 
           $monitor_deep_list_format = [];
           foreach(explode(',',$monitor_deep_list) as $key => $value){
-            if(!in_array($value,$monitor_deep_list_format)){
-              $monitor_deep_list_format[] = $value;
+            if(is_numeric($value) && !in_array($value,$monitor_deep_list_format)){
+              $monitor_deep_list_format[] = intval($value);
             }
           }
           $upData = [
