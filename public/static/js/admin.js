@@ -98,7 +98,7 @@ function admin_init(){
     layer.load(2);
   })
 
-  $("form").submit(function(){
+  $("form[showloading]").submit(function(){
     layer.load(2);
     return;
   })

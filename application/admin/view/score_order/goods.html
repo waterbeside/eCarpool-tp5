@@ -11,9 +11,7 @@
         </ul>
 
         <div class="amain-content">
-
-
-          <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreOrder/goods')}" method="get" >
+          <form class="layui-form layui-form-pane" id="filter-form" showloading action="{:url('admin/ScoreOrder/goods')}" method="get" >
               <div class="layui-inline">
                   <label class="layui-form-label">{:lang('Order time')}</label>
                   <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="{:lang('Time range')}" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">

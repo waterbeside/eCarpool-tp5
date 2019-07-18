@@ -12,7 +12,7 @@
 
         <div class="amain-content">
 
-          <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreSpecialWinner/index')}" method="get" onsubmit="submitForm()">
+          <form class="layui-form layui-form-pane" id="filter-form" showLoading action="{:url('admin/ScoreSpecialWinner/index')}" method="get" onsubmit="submitForm()">
               <div class="layui-inline">
                   <div class="layui-input-inline">
                       <input type="text" name="filter[keyword_prize]" value="{$filter['keyword_prize'] ? $filter['keyword_prize'] :''}" placeholder="奖品名" class="layui-input">
