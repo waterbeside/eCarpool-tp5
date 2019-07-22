@@ -25,23 +25,8 @@ class Product extends Service
    */
   public function getCateChildrenIds($pid, $exp = 3600 * 24)
   {
-    $redis = new RedisData();
-    $cacheKey = "NPD:category:children_id,id:model_product:pid_{$pid}";
-    $cacheData = $redis->cache($cacheKey);
-    if ($cacheData) {
-      return $cacheData;
-    }
     $CategoryModel = new Category();
-    $map = [
-      ['is_delete', '=', 0],
-      ['status', '=', 1],
-      ['model', '=', 'product']
-    ];
-    $cate_Ids = $CategoryModel->getChildrensId($pid, 0, $map);
-    if ($cate_Ids) {
-      $redis->cache($cacheKey, $cate_Ids, $exp);
-    }
-    return $cate_Ids;
+    return $CategoryModel->getCateChildrenIds($pid,'product',$exp);
   }
 
 
