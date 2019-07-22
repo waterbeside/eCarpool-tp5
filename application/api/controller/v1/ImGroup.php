@@ -112,8 +112,8 @@ class ImGroup extends ApiBase
     $userData = $this->getUserData(1);
     $uid =  $userData['uid'];
 
-    $owner         = input('request.owner/d', 0);
-    $type          = input('request.owner', 1);
+    $owner         = input('request.owner');
+    $type          = input('request.type/d', 1);
     $source        = input('request.source');
     $identifier    = input('request.identifier');
     $signature     = input('request.signature');
