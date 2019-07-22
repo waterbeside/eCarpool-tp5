@@ -64,6 +64,13 @@
                 </div>
 
                 <div class="layui-form-item">
+                  <label class="layui-form-label">发布时间</label>
+                  <div class="layui-input-block">
+                    <input type="text" class="layui-input" id="j-publish_time" name="publish_time" value="{:date('Y-m-d H:i:s')}" />
+                  </div>
+                </div>
+
+                <div class="layui-form-item">
                   <label class="layui-form-label">排序</label>
                   <div class="layui-input-block">
                     <input type="number" name="sort" value="0" required lay-verify="required" class="layui-input">
@@ -92,85 +99,5 @@
 <script src="__JS__/ueditor/ueditor.all.min.js"></script>
 {/block}
 {block name="script"}
-<script>
-  PAGE_EXEC = {
-
-
-    datas: {
-      langs: [{
-          code: 'zh-cn',
-          name: '中文',
-        },
-        {
-          code: 'en',
-          name: '英文',
-        },
-      ],
-      lang: ''
-    },
-
-    init: function () {
-      var _this = this;
-      /** thumb upload **/
-      var $thumbInput = cRenderUploadBtn({
-        wrapper: '.j-upload-thumb',
-        inputName: 'thumb',
-        url: "{:url('admin/Uploader/images')}",
-        data: {
-          "module": "admin/NPD/article/thumb"
-        },
-      })
-      this.getLangs();
-      form.render();
-
-      element.init();
-
-    },
-    getLangs: function (success) {
-      var _this = this;
-      _this.renderLangs(_this.datas.langs);
-      if (typeof (success) == "function") {
-        success(res);
-      }
-      form.render();
-    },
-
-    renderLangs: function (listData) {
-      var options = '';
-      var lang = this.datas.lang;
-
-      $(listData).each(function (index, el) {
-        var selected = el.code == 'zh-cn' ? "selected" : '';
-        options += '<option value="' + el.code + '"  ' + selected + '>【' + el.code + "】" + el.name +
-          '</option>';
-      });
-      $("#editForm select[name='lang']").html(options)
-    },
-
-
-  }
-
-
-  $(function () {
-    var photoListItem,
-      uploadImage;
-    var url = "{:url('/api/ueditor')}";
-    var ue = UE.getEditor('content', {
-      serverUrl: url,
-      toolbars: [
-        ['undo', 'redo', '|', 'forecolor', 'backcolor', 'underline', 'strikethrough', 'bold', 'italic',
-          'subscript', 'superscript', '|', 'justifyleft', 'justifyright', 'justifycenter', '|',
-          'simpleupload', '|', 'blockquote', 'pasteplain', 'inserttable', 'autotypeset', 'removeformat'
-        ]
-      ],
-      topOffset: 0,
-      wordCount: true,
-      maximumWords: 8000,
-      //默认的编辑区域高度
-      initialFrameHeight: 300,
-    })
-    PAGE_EXEC.init();
-
-  });
-</script>
+  {include file="/npd_article/_form_js" /}
 {/block}
