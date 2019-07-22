@@ -8,6 +8,7 @@ Route::group([], function () {
   Route::rule('npd/api/:version/banner','npd/api.:version.banner/index','get');
 
   Route::resource('npd/api/:version/product','npd/api.:version.product');
+  Route::resource('npd/api/:version/article','npd/api.:version.article');
  
 
 })->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
