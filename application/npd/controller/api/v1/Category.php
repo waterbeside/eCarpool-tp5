@@ -4,7 +4,7 @@ namespace app\npd\controller\api\v1;
 use app\api\controller\ApiBase;
 
 use app\npd\model\Category as CateModel;
-use my\tree;
+use my\Tree;
 
 
 use think\Db;

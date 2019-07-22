@@ -6,7 +6,6 @@ use app\api\controller\ApiBase;
 use app\npd\model\Banner as BannerModel;
 use app\common\model\I18nLang as I18nLangModel;
 use my\RedisData;
-use my\tree;
 
 
 use think\Db;

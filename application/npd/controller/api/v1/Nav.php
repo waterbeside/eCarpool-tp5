@@ -5,7 +5,7 @@ use app\api\controller\ApiBase;
 
 use app\npd\model\Nav as NavModel;
 use my\RedisData;
-use my\tree;
+use my\Tree;
 
 
 use think\Db;
