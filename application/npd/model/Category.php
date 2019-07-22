@@ -88,6 +88,36 @@ class Category extends Model
 
 
   /**
+   * 取得栏目的所有子栏目id
+   *
+   * @param integer $pid 当前栏目id
+   * @param integer $exp 缓存时间
+   * @return array 
+   */
+  public function getCateChildrenIds($pid,$model, $exp = 3600 * 24)
+  {
+    $redis = new RedisData();
+    $cacheKey = "NPD:category:children_id,id:model_$model:pid_{$pid}";
+    $cacheData = $redis->cache($cacheKey);
+    if ($cacheData) {
+      return $cacheData;
+    }
+    $CategoryModel = new Category();
+    $map = [
+      ['is_delete', '=', 0],
+      ['status', '=', 1],
+      ['model', '=', $model]
+    ];
+    $cate_Ids = $CategoryModel->getChildrensId($pid, 0, $map);
+    if ($cate_Ids) {
+      $redis->cache($cacheKey, $cate_Ids, $exp);
+    }
+    return $cate_Ids;
+  }
+
+
+
+  /**
    * 取得列表，如果redis有
    * @param  integer $exp 过期时间
    * @return array           
