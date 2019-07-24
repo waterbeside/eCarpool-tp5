@@ -1,0 +1,74 @@
+<div class="amain-body">
+
+
+  <?php
+    if($data['u_is_delete']){
+      echo '<blockquote class="layui-elem-quote">该账号已被逻辑删除</blockquote>';
+    }
+    ?>
+
+  <table class="layui-table">
+    <tbody>
+      <tr>
+        <td class="label" width="130">{:lang('Account')}</td>
+        <td>{$data.loginname}</td>
+      </tr>
+
+      <tr>
+        <td class="label">{:lang('User:Show name')}</td>
+        <td>{$data.name}</td>
+      </tr>
+      <tr>
+        <td class="label">{:lang('User:Real name')}</td>
+        <td>{$data.nativename}</td>
+      </tr>
+
+      <tr>
+        <td class="label">行为</td>
+        <td>{$data.type==2 ? '截图' : '过度访问'}</td>
+      </tr>
+
+      <tr>
+        <td class="label">设备</td>
+        <td>
+          {$data.platform == 1 ? '<i class="fa fa-apple"></i> ' : $data.platform == 2 ? '<i class="fa fa-android"></i> '
+          :''}
+          {$data.device}
+          [{$data.os}]
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  {php} if($history){ 
+    {/php}
+  <h4></h4>
+  <table lay-filter="listtable" class="layui-table">
+      <thead>
+        <tr>
+          <th>时间</th>
+          <th>次数</th>
+          <th>节点</th>
+        </tr>
+      </thead>
+      <tbody class="block_list">
+        {foreach name="$history" item="vo"}
+        <tr class="item" >
+          <td>
+              <span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{$vo.time*1000}</span>
+          </td>
+          <td>{$vo.count}</td>
+          <td>{$vo.node.fullname}</td>
+        </tr>
+        {/foreach}
+      </tbody>
+    </table>
+  {php} } {/php}
+
+
+</div>
+
+<script>
+    cRenderTimes();
+</script>

@@ -1,0 +1,93 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+
+  <!--tab标签-->
+  <div class="layui-tab layui-tab-brief">
+
+    <ul class="  amain-tool-bar">
+      <li class="layui-this"><a href="{:url('admin/contacts_reporting/index')}">用户操作报告</a></li>
+    </ul>
+
+    <div class="layui-tab-content">
+      <form class="layui-form layui-form-pane" action="{:url('admin/contacts_reporting/index')}" method="get">
+        <div class="layui-inline">
+          <label class="layui-form-label">检索</label>
+          <div class="layui-input-inline">
+            <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
+          </div>
+          <div class="layui-input-inline">
+            <input type="text" name="filter[uid]" value="{$filter['uid'] ? $filter['uid'] :''}" placeholder="用户UID" class="layui-input" style="width:140px" >
+          </div>
+          <div   class="layui-input-inline"  style="width:100px">
+            <select name="filter[is_delete]"  >
+              <option value="" {php}echo !isset($filter['is_delete']) || !is_numeric($filter['is_delete']) ? 'selected' : ''; {/php}>全部</option>
+              <option value="0" {php}echo isset($filter['is_delete']) &&  is_numeric($filter['is_delete']) && $filter['is_delete'] == 0 ? 'selected' : ''; {/php}>正常</option>
+              <option value="1" {php}echo isset($filter['is_delete']) &&  $filter['is_delete'] === '1' ? 'selected' : ''; {/php}>删除</option>
+            </select>
+          </div>
+        </div>
+        <div class="layui-inline">
+            <input type="hidden" name="export" value="0">
+            <button class="layui-btn"><i class="fa fa-search"></i></button>
+        </div>
+      </form>
+      <hr>
+
+      <table lay-filter="listtable" class="layui-table">
+        <thead>
+          <tr>
+            <th  >#</th>
+            <th  >UID</th>
+            <th >行为</th>
+            <th >用户名</th>
+            <th >姓名</th>
+            <th >时间</th>
+            <th >设备</th>
+            <th >操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {foreach name="lists" item="vo"}
+          <tr class="{$vo.is_delete ? 'list-item-weak' : ''}">
+            <td>{$vo.id}</td>
+            <td>{$vo.uid}</td>
+            <td>{$vo.type==2 ? '截图' : '过度访问'}</td>
+            <td>
+              <a href="{:url('admin/User/public_detail',['id'=>$vo['uid']])}" data-title="用户详情" data-trigger="modal" title="用户详情">
+                {$vo.loginname}
+              </a>
+            </td>
+            <td>{$vo.name}</td>
+            <th >{$vo.start_time|date="Y-m-d H:i:s"}</th>
+            <td>
+               {$vo.platform == 1 ? '<i class="fa fa-apple"></i> ' : $vo.platform == 2 ? '<i class="fa fa-android"></i> ' :''} 
+               {$vo.device}
+            </td>
+            <td>
+              <a href="{:url('admin/ContactsReporting/detail',['id'=>$vo['id']])}" data-title="详情" data-trigger="modal" class="layui-btn layui-btn-default layui-btn-xs "  >
+                详情
+              </a>
+              {php} if(!$vo['is_delete']){ {/php}
+              <a href="{:url('admin/ContactsReporting/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除" ><i class="layui-icon">&#xe640;</i></a>
+              {php} } {/php}
+            </td>
+          </tr>
+          {/foreach}
+        </tbody>
+      </table>
+      {$lists|raw}
+
+
+    </div>
+  </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+  PAGE_EXEC = {
+
+  }
+</script>
+{/block}
