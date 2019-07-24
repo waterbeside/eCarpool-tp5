@@ -280,8 +280,10 @@ body {background:#FFF; color:$color-black-l1}
 
 
 .amain-body {
-  .list_status_0 { background: $color-dark-white; color: $color-silver-l1}
-  .list-item-weak { background:  $color-dark-white; color: $color-silver-l2}
+  .list_status_0 { background: $color-dark-white; color: $color-silver-l1;}
+  .list-item-weak {  background:  $color-dark-white; color: $color-silver-l2;
+    a:not(.layui-btn) { color: $color-silver-l2;}
+  }
 }
 
 
