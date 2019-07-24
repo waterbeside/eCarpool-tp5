@@ -1,7 +1,7 @@
 <?php
 namespace app\admin\controller;
 
-use app\Npd\model\Banner as BannerModel;
+use app\npd\model\Banner as BannerModel;
 use app\admin\controller\AdminBase;
 use app\user\model\Department ;
 use think\Db;
