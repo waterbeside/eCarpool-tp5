@@ -71,7 +71,7 @@ class UserTemp extends Model
       $this->errorMsg ='该日期数据已经同步过';
       return false;
     }*/
-    $redis->setex($isloadingKey,60*4,1);
+    $redis->setex($isloadingKey,60*5,1);
     $dataArray = $this->clientRequest(config('secret.HR_api.getUserlist'), ['modiftytime' => $date]);
     // dump($dataArray);
     if(!$dataArray){
@@ -188,6 +188,12 @@ class UserTemp extends Model
     $oldData = $this->where($oldDataMap)->find();
     if($oldData){
       $this->errorMsg ='无新数据';
+      return false;
+    }
+    $UserModel = new OldUserModel();
+    $checkDiffRes = $UserModel->checkUserDifferent($resData,1);
+    if( $checkDiffRes === false){
+      $this->errorMsg ='无新数据!';
       return false;
     }
     $data = [
