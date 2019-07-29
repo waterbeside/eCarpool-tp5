@@ -7,7 +7,7 @@
       <li class="layui-this"><a href="{:url('admin/NpdArticle/index')}">文章管理</a></li>
       <li class="btn-item btn-item-add">
         <a class="layui-btn layui-btn-sm layui-btn-success "
-          onclick="openLayer('{:url('admin/NpdArticle/add')}',{area: ['96%', '90%'], title:'添加产品'});"
+          onclick="openLayer('{:url('admin/NpdArticle/add')}',{area: ['96%', '90%'], title:'添加文章'});"
           href="javascript:void(0);">
           <i class="fa fa-plus"></i> 添加文章</a>
       </li>
@@ -38,12 +38,13 @@
           <table class="layui-table">
             <thead>
               <tr>
-                <th style="width: 30px;">ID</th>
+                <th style="width: 40px;">ID</th>
                 <th style="width: 50px;">封面图</th>
-                <th>标题</th>
+                <th style="width: 40px;">语言</th>
+                <th style="min-width: 120px;">标题</th>
                 <th>分类</th>
                 <th>状态</th>
-                <th>创建时间</th>
+                <th width="100">创建时间</th>
                 <th>排序</th>
                 <th>操作</th>
               </tr>
@@ -54,8 +55,9 @@
                 <td>{$vo.id}</td>
                 <td>
                   <div class="cover-pic-wrapper"
-                    style=" float: left;width:20px;height:20px;background-image:url('{$vo.thumb}')"></div>
+                    style=" float: left;width:40px;height:40px;background-image:url('{$vo.thumb}')"></div>
                 </td>
+                <td>{$vo.lang}</td>
                 <td>{$vo.title}</td>
                 <td>{$vo.c_name}</td>
                 <td>{php}echo $vo['status']==1 ? '显示' : '不显示';{/php}</td>
@@ -68,8 +70,6 @@
                   <a href="{:url('admin/NpdArticle/delete',['id'=>$vo['id']])}"
                     class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除"><i
                       class="layui-icon">&#xe640;</i></a>
-                  <a href="{:url('npd/Product/detail',['id'=>$vo['id']])}" target="_blank"
-                    class="layui-btn layui-btn-primary layui-btn-xs" title="view"><i class="fa fa-eye"></i></a>
                 </td>
               </tr>
               {/foreach}
