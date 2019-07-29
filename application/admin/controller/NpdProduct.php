@@ -13,7 +13,7 @@ use think\Db;
 
 /**
  * 产品管理
- * Class Product
+ * Class NpdProduct
  * @package app\admin\controller
  */
 class NpdProduct extends AdminBase
@@ -47,7 +47,7 @@ class NpdProduct extends AdminBase
         $join = [
           ['t_category c','t.cid = c.id', 'left'],
         ];
-        $lists  = ProductModel::field($field)->alias('t')->join($join)->where($map)->order('t.cid DESC , t.create_time DESC')
+        $lists  = ProductModel::field($field)->alias('t')->join($join)->where($map)->order('t.sort DESC , t.create_time DESC , t.cid DESC ')
         // ->fetchSql()->select();
         ->paginate(15, false, ['page' => $page]);
 
