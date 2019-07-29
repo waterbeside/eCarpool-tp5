@@ -264,7 +264,24 @@ function getRandomString($len = 6)
   return $output;
 }
 
-
+/**
+ * 从数组中随机取得一个值
+ *
+ * @param array $arr 要处理的数组。
+ * @param integer $len 取值个数，当>1时则返回数组。
+ */
+function getRandValFromArray($arr,$len=1){
+  $keys = array_rand($arr,$len);
+  if(is_array($keys)){
+    $newData = [];
+    foreach($keys as $key => $value){
+      $newData[] = $arr[$value];
+    }
+    return $newData;
+  }else{
+    return $arr[$keys];
+  }
+}
 
 /**
  * 请求数据
