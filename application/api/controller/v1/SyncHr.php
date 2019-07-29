@@ -39,7 +39,7 @@ class SyncHr extends ApiBase
     {
         $this->check_localhost(1);
         ini_set('memory_limit', '128M');
-        ini_set('max_execution_time', '180');
+        ini_set('max_execution_time', '240');
 
         $userTempModel = new UserTemp();
         if ($type == 1) {
@@ -198,7 +198,8 @@ class SyncHr extends ApiBase
         }
         if($cacheKey){
             $redis = new RedisData();
-            $redis->setex($cacheKey,3600*18,json_encode([$code,$resData,$msg]));
+            $randExp = getRandValFromArray([2,4,6,8,10,12,14,16,18]);
+            $redis->setex($cacheKey,3600*$randExp,json_encode([$code,$resData,$msg]));
         }
         return $this->jsonReturn($code,$resData,$msg);
 
