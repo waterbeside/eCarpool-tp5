@@ -19,16 +19,16 @@
             </div>
           </div>
           
-          <div class="layui-form-item">
+          <div class="layui-form-item ">
             <label class="layui-form-label">内容</label>
             <div class="layui-input-block">
-              <textarea name="content" placeholder=""   id="content">{$data.content}</textarea>
+              <textarea class="layui-textarea" name="desc" placeholder=""   id="content">{$data.desc}</textarea>
             </div>
           </div>
-          <div class="layui-form-item">
+          <div class="layui-form-item ">
             <label class="layui-form-label">内容EN</label>
             <div class="layui-input-block">
-              <textarea name="content_en" placeholder=""   id="content_en">{$data.content_en}</textarea>
+              <textarea class="layui-textarea" name="desc_en" placeholder=""   id="content_en">{$data.desc_en}</textarea>
             </div>
           </div>
         
@@ -92,28 +92,7 @@
   FORM_PAGE_EXEC = {
     upload : layui.upload,
     init: function(){
-      /** UE **/
-      var url="{:url('/api/ueditor')}";
-      var toolbars = [['undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript','|'
-        ,'justifyleft','justifyright','justifycenter','|','simpleupload','|','blockquote','pasteplain','inserttable','autotypeset','removeformat']];
-      var ue = UE.getEditor('content',{
-        serverUrl :url,
-        toolbars:toolbars,
-        topOffset:0,
-        wordCount:true,
-        maximumWords:8000,
-        //默认的编辑区域高度
-        initialFrameHeight:300,
-      })
-      var ue2 = UE.getEditor('content_en',{
-        serverUrl :url,
-        toolbars:toolbars,
-        topOffset:0,
-        wordCount:true,
-        maximumWords:8000,
-        //默认的编辑区域高度
-        initialFrameHeight:300,
-      })
+     
       
       /** thumb upload **/
       var $thumbInput =  cRenderUploadBtn({
