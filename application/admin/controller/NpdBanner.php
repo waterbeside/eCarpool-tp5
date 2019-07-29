@@ -9,7 +9,7 @@ use think\Db;
 
 /**
  * Npd Banner管理
- * Class Npd
+ * Class NpdBanner
  * @package app\admin\controller
  */
 class NpdBanner extends AdminBase

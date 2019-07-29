@@ -10,7 +10,7 @@ use think\Db;
 
 /**
  * Npd文章管理
- * Class Category
+ * Class NpdArticle
  * @package app\admin\controller
  */
 class NpdArticle extends AdminBase
@@ -110,10 +110,10 @@ class NpdArticle extends AdminBase
       } else {
         $article_model = new Article();
         if ($article_model->allowField(true)->save($data, $id) !== false) {
-          $this->log('编辑文档成功', 0);
+          $this->log('编辑NPD文档成功', 0);
           $this->jsonReturn(0, '修改成功');
         } else {
-          $this->log('编辑文档失败', -1);
+          $this->log('编辑NPD文档失败', -1);
           $this->jsonReturn(-1, '修改失败');
         }
       }

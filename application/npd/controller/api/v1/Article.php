@@ -5,14 +5,11 @@ namespace app\npd\controller\api\v1;
 use app\api\controller\ApiBase;
 
 use app\npd\model\Article as ArticleModel;
-use app\npd\model\Customer as CustomerModel;
 use app\npd\model\Category;
-
-use think\Db;
 
 /**
  * Api Article
- * Class Product
+ * Class Article
  * @package app\npd\controller\api\v1
  */
 class Article extends ApiBase
@@ -66,7 +63,7 @@ class Article extends ApiBase
   }
 
   /**
-   * 取得产品详情
+   * 取得文章详情
    *
    * @param integer $id
    */
