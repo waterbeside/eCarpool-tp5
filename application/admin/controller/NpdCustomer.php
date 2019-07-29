@@ -9,7 +9,7 @@ use my\RedisData;
 
 /**
  * 客户管理
- * Class Slide
+ * Class NpdCustomer
  * @package app\admin\controller
  */
 class NpdCustomer extends AdminBase
@@ -62,6 +62,10 @@ class NpdCustomer extends AdminBase
             'thumb' => $data['thumb'],
           ];
           
+          if($data['is_recommend']){
+            $upData['is_recommend'] = $data['is_recommend'];
+          }
+
           $CustomerModel = new CustomerModel();
 
           $id = $CustomerModel->insertGetId($upData);
@@ -106,6 +110,11 @@ class NpdCustomer extends AdminBase
             'name' => iconv_substr($data['name'],0,250) ,
             'thumb' => $data['thumb'],
           ];
+
+          if($data['is_recommend']){
+            $upData['is_recommend'] = $data['is_recommend'];
+          }
+
           $CustomerModel = new CustomerModel();
           
           if ($CustomerModel->where('id',$id)->update($upData) !== false) {
