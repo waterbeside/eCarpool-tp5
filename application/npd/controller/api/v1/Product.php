@@ -30,6 +30,9 @@ class Product extends ApiBase
    */
   public function index($cid = 0, $pagesize = 30)
   {
+    $keyword = input('keyword', '');
+    $mapExp = '';
+    $orderBy = 'is_top DESC , sort DESC';
     $map = [
       ['is_delete', '=', 0],
       ['status', '=', 1],
@@ -44,10 +47,21 @@ class Product extends ApiBase
       $map[] = ['cid', 'in', $cate_Ids];
     }
 
+
     if ((is_numeric($cid) && $cid == -1) ||  $cid === 'recommend') {
       $map[] = ['is_recommend', '=', 1];
     }
-    $lists_res = ProductModel::where($map)->order('is_top DESC , sort DESC')->paginate($pagesize, false,  ['query' => request()->param()]);
+    if ($keyword) {
+      // $map()
+      $mapExp = " match(`title`,`title_en`,`desc`) against ('*$keyword*' IN BOOLEAN MODE) ";
+      $orderBy = null;
+    }
+    $lists_res = ProductModel::where($map)->where($mapExp)->order($orderBy)
+      ->paginate($pagesize, false,  ['query' => request()->param()]);
+    // ->fetchSql()->select();
+    // dump($lists_res);
+    // exit;
+
 
     $pagination = [
       'total' => $lists_res->total(),
