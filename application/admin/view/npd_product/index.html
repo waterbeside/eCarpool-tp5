@@ -67,7 +67,7 @@
                   <div class="cover-pic-wrapper"
                     style=" float: left;width:20px;height:20px;background-image:url('{$vo.thumb}')"></div>
                 </td>
-                <td>{$vo.title}</td>
+                <td>{$vo.is_recommend ? '<i class="fa fa-flag text-red"></i>': ''} {$vo.title}</td>
                 <td>{$vo.c_name}</td>
                 <td>{php}echo $vo['status']==1 ? '显示' : '不显示';{/php}</td>
                 <td>{$vo.sort}</td>

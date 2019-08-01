@@ -42,6 +42,7 @@
                 <th style="width: 30px;">ID</th>
                 <th>图</th>
                 <th>名称</th>
+                <th>推荐</th>
                 <th style="width: 100px;">操作</th>
               </tr>
             </thead>
@@ -55,6 +56,9 @@
                 </td>
                 <td>
                   {$vo.name}
+                </td>
+                <td>
+                  {$vo.is_recommend ? '<i class="fa fa-flag text-red"></i>': '否'}
                 </td>
                 <td>
                   <a href="{:url('admin/NpdCustomer/edit',['id'=>$vo['id']])}" data-title="編輯 #{$vo.id}"
