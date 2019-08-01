@@ -30,7 +30,7 @@ class Product extends ApiBase
    */
   public function index($cid = 0, $pagesize = 30)
   {
-    $keyword = input('keyword', '');
+    $keyword = input('keyword', '','addslashes');
     $mapExp = '';
     $orderBy = 'is_top DESC , sort DESC';
     $map = [
