@@ -31,6 +31,9 @@ class NpdCustomer extends AdminBase
         if (isset($filter['keyword']) && $filter['keyword'] ){
           $map[] = ['name','like', "%{$filter['keyword']}%"];
         }
+        if (isset($filter['is_recommend'])  && is_numeric($filter['is_recommend']) ){
+          $map[] = ['is_recommend','=', $filter['is_recommend']];
+        }
        
         $lists  = CustomerModel::where($map)->order(['sort' => 'DESC', 'id' => 'DESC'])->paginate($pagesize, false, ['page' => $page]);
         $this->assign('lists', $lists);

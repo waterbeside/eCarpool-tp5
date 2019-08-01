@@ -28,11 +28,10 @@ class NpdProduct extends AdminBase
      * @param int    $page
      * @return mixed
      */
-    public function index($cid = 0, $keyword = '', $page = 1)
+    public function index($cid = 0, $filter = ['keyword'=>''] , $page = 1)
     {
         $map   = [];
         $map[] = ['t.is_delete','=',0];
-
         $field = 't.*,c.name as c_name';
         $CategoryModel = new CategoryModel();
         if ($cid > 0) {
@@ -40,8 +39,12 @@ class NpdProduct extends AdminBase
           $map[] = ['cid','in',$cids];
         }
 
-        if (!empty($keyword)) {
-            $map[] = ['title','like', "%{$keyword}%"];
+        if (isset($filter['keyword']) && $filter['keyword'] ){
+          $map[] = ['title|title_en','like', "%{$filter['keyword']}%"];
+        }
+
+        if (isset($filter['is_recommend'])  && is_numeric($filter['is_recommend']) ){
+          $map[] = ['is_recommend','=', $filter['is_recommend']];
         }
 
         $join = [
@@ -51,7 +54,6 @@ class NpdProduct extends AdminBase
         // ->fetchSql()->select();
         ->paginate(15, false, ['page' => $page]);
 
-        //
         $category_level_list       = $CategoryModel->getListByModel('product');
         foreach ($category_level_list as $key => $value) {
           $category_level_list[$key]['pid'] = $value['parent_id'];
@@ -59,7 +61,7 @@ class NpdProduct extends AdminBase
         $category_level_list = array2level($category_level_list);
         $this->assign('category_level_list', $category_level_list);
 
-        return $this->fetch('index', ['lists' => $lists, 'cid' => $cid, 'keyword' => $keyword]);
+        return $this->fetch('index', ['lists' => $lists, 'cid' => $cid, 'filter' => $filter]);
     }
 
 
