@@ -1,7 +1,6 @@
 {extend name="base" /}
 {block name="body"}
 <div class="amain-body P-scoreConfigs-awards">
-
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
 
@@ -30,7 +29,6 @@
                <p> 点击保存即生成. </p>
              </blockquote>
              <div class="blank10"></div>
-
           <?php } ?>
 
           <blockquote class="layui-elem-quote layui-elem-quote-danger">注意，当奖励设为小于-100时，则为抽取实物，请填写实物价绍和对应的价值</blockquote>
@@ -91,24 +89,24 @@
 {block name="script"}
 
 <script id="item-template" type="text/html">
-    <li  class="item" data-index="{{ d.index }}">
-      <div class="f-box f-index"><div class="inner">{{ d.index + 1 }}</div></div>
-      <div class="f-box f-grade"><div class="inner"> <input type="number" name="grade" value="{{ d.item.grade }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/> </div></div>
-      <div class="f-box f-rate"><div class="inner"><input type="float" name="rate" value="{{ d.item.rate }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
-      <div class="f-box f-cost"><div class="inner"><input type="number" name="cost" value="{{ d.item.cost }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
-      <!-- <div class="f-box f-desc"><div class="inner"><input type="text" name="desc" value="{{ d.item.desc }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div> -->
-      <div class="f-box f-desc"><div class="inner"><textarea  name="desc"   placeholder="" class="layui-textarea" style="min-height:60px; " onkeyup="PAGE_EXEC.changeData(this)">{{ d.item.desc }}</textarea></div></div>
-      <div class="f-box f-full_desc"><div class="inner"><textarea  name="full_desc"   placeholder="" class="layui-textarea" style="min-height:60px" onkeyup="PAGE_EXEC.changeData(this)">{{ d.item.full_desc }}</textarea></div></div>
-      <div class="f-box f-bulletin_count"><div class="inner"><input type="number" name="bulletin_count" value="{{ d.item.bulletin_count }}" placeholder="" class="layui-input"   onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
-      <!-- <div class="f-box f-extend"><div class="inner"></div></div> -->
-      <div class="f-box f--"><div class="inner">
-        <button class="layui-btn layui-btn-xs layui-btn-primary " title="按奖例积分自动填充" onclick="return PAGE_EXEC.autoFill(this); ">Fill</button>
-        <!-- <button class="layui-btn layui-btn-xs layui-btn-primary " title="随机生成奖项" onclick="return PAGE_EXEC.randomFill(this); ">Random</button> -->
-        &nbsp;<input type="checkbox" name="is_show" value="1" lay-skin="switch" lay-filter="is_show_{{ d.index }}" lay-text="* 使用|不使用" {{# if(d.item.status){ }} checked="checked"{{#  } }}>&nbsp;
-        &nbsp;<input type="checkbox" name="is_bulletin" value="1" lay-skin="switch" lay-filter="is_bulletin_{{ d.index }}" lay-text="* 公示|不公示" {{# if(d.item.is_bulletin){ }} checked="checked"{{#  } }}>&nbsp;
-        <button class="layui-btn layui-btn-xs layui-btn-primary " title="删除" onclick="return PAGE_EXEC.delete(this); "><i class="fa fa-trash"></i></button>
-
-      </div></div>
+  <li  class="item" data-index="{{ d.index }}">
+    <div class="f-box f-index"><div class="inner">{{ d.index + 1 }}</div></div>
+    <div class="f-box f-grade"><div class="inner"> <input type="number" name="grade" value="{{ d.item.grade }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/> </div></div>
+    <div class="f-box f-rate"><div class="inner"><input type="float" name="rate" value="{{ d.item.rate }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
+    <div class="f-box f-cost"><div class="inner"><input type="number" name="cost" value="{{ d.item.cost }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
+    <!-- <div class="f-box f-desc"><div class="inner"><input type="text" name="desc" value="{{ d.item.desc }}" placeholder="" class="layui-input" onkeyup="PAGE_EXEC.changeData(this)"/></div></div> -->
+    <div class="f-box f-desc"><div class="inner"><textarea  name="desc"   placeholder="" class="layui-textarea" style="min-height:60px; " onkeyup="PAGE_EXEC.changeData(this)">{{ d.item.desc }}</textarea></div></div>
+    <div class="f-box f-full_desc"><div class="inner"><textarea  name="full_desc"   placeholder="" class="layui-textarea" style="min-height:60px" onkeyup="PAGE_EXEC.changeData(this)">{{ d.item.full_desc }}</textarea></div></div>
+    <div class="f-box f-bulletin_count"><div class="inner"><input type="number" name="bulletin_count" value="{{ d.item.bulletin_count }}" placeholder="" class="layui-input"   onkeyup="PAGE_EXEC.changeData(this)"/></div></div>
+    <!-- <div class="f-box f-extend"><div class="inner"></div></div> -->
+    <div class="f-box f--"><div class="inner">
+      <button class="layui-btn layui-btn-xs layui-btn-primary " title="按奖例积分自动填充" onclick="return PAGE_EXEC.autoFill(this); ">Fill</button>
+      <!-- <button class="layui-btn layui-btn-xs layui-btn-primary " title="随机生成奖项" onclick="return PAGE_EXEC.randomFill(this); ">Random</button> -->
+      &nbsp;<input type="checkbox" name="is_show" value="1" lay-skin="switch" lay-filter="is_show_{{ d.index }}" lay-text="* 使用|不使用" {{# if(d.item.status){ }} checked="checked"{{#  } }}>&nbsp;
+      &nbsp;<input type="checkbox" name="is_bulletin" value="1" lay-skin="switch" lay-filter="is_bulletin_{{ d.index }}" lay-text="* 公示|不公示" {{# if(d.item.is_bulletin){ }} checked="checked"{{#  } }}>&nbsp;
+      <button class="layui-btn layui-btn-xs layui-btn-primary " title="删除" onclick="return PAGE_EXEC.delete(this); "><i class="fa fa-trash"></i></button>
+    </div> </div>
+  </li>
 </script>
 <script>
 var laytpl = layui.laytpl;
