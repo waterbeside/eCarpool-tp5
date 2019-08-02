@@ -91,7 +91,7 @@
                             <th lay-data="{field:'subtime', width:120}">{:lang('Creation time')}</th>
                             <th lay-data="{field:'love_wall_ID', width:100}">WALL_ID</th>
                             <th lay-data="{field:'map_type', width:60}">map_type</th>
-                            <th lay-data="{field:'options', width:140,fixed: 'right'}">{:lang('Operate')}</th>
+                            <th lay-data="{field:'options', width:190,fixed: 'right'}">{:lang('Operate')}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -139,8 +139,16 @@
                             <td>{$vo.map_type}</td>
 
                             <td>
-                              <a onclick="openLayer('{:url('admin/CarpoolTrips/detail',['id'=>$vo['infoid'],'type'=>0])}',{area:['500px','90%'],title:'Trip：{$vo.start_addressname} > {$vo.end_addressname}'});" href="javascript:void(0);"  class="layui-btn  layui-btn-xs " >{:lang('Details')}</a>
-                              <a onclick="openLayer('http://gitsite.net/carpool/shuttle/tripline.html?info_id={$vo.infoid}&lang={$active_lang}',{area:['500px','90%'],title:'GPS {$vo.start_addressname} > {$vo.end_addressname}'});" href="javascript:void(0);"  class="layui-btn layui-btn-primary  layui-btn-xs " >GPS</a>
+                              <div class="option-wrapper option-id-{$vo['infoid']}">
+                                <a onclick="openLayer('{:url('admin/CarpoolTrips/detail',['id'=>$vo['infoid'],'type'=>0])}',{area:['500px','90%'],title:'Trip：{$vo.start_addressname} > {$vo.end_addressname}'});" href="javascript:void(0);"  class="layui-btn  layui-btn-xs " >{:lang('Details')}</a>
+                                <a onclick="openLayer('http://gitsite.net/carpool/shuttle/tripline.html?info_id={$vo.infoid}&lang={$active_lang}',{area:['500px','90%'],title:'GPS {$vo.start_addressname} > {$vo.end_addressname}'});" href="javascript:void(0);"  class="layui-btn layui-btn-primary  layui-btn-xs " >
+                                  <i class="fa fa-map-signs"></i>
+                                </a>
+                                <a onclick="openLayer('{:url('admin/CarpoolTrips/public_activeline_list',['infoid'=>$vo['infoid']])}',{area:['90%','90%'],title:'GPS {$vo.start_addressname} > {$vo.end_addressname}'});" href="javascript:void(0);"  class="layui-btn layui-btn-primary  layui-btn-xs " >
+                                  <i class="fa fa-location-arrow"></i>
+                                </a>
+                                <a href="{:url('admin/CarpoolTrips/public_check_compliant',['infoid'=>$vo['infoid']])}"   data-title="验证行程是否合法(check compliant) " title="验证行程是否合法(check compliant)"  data-trigger="modal"  class="layui-btn layui-btn-primary  layui-btn-xs btn-check"><i class="fa fa-check"></i></a>
+                              </div>
                             </td>
                         </tr>
                         {/foreach}
@@ -187,6 +195,16 @@ function submitForm(){
     layer.load(1);
   }
 }
+
+function checkCompliantRes(id,res){
+  let btnsWrapper = $('.option-id-'+id);
+  console.log(btnsWrapper);
+
+  btnsWrapper.addClass('check-'+res.code);
+  btnsWrapper.find('.btn-check').text(res.code);
+
+}
+
 // initLayuiTable({ limit: {$pagesize} })
 laydate.render({
   elem: '#filter_time'

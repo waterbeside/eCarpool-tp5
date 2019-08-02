@@ -1,0 +1,29 @@
+<div class="layui-tab-content">
+  <div class="layui-tab-item layui-show">
+    <div></div>
+    <table class="layui-table">
+      <tbody>
+        <tr>
+            <td class="label" width="130">#</td>
+            <td>{$infoid}</td>
+          </tr>
+        <tr>
+          <td class="label" width="130">{:lang('Code')}</td>
+          <td>{$res.code}</td>
+        </tr>
+        <tr>
+          <td class="label">{:lang('Message')}</td>
+          <td>{$res.message}</td>
+        </tr>
+       
+      </tbody>
+    </table>
+  </div>
+</div>
+<script>
+if(typeof(checkCompliantRes)=='function'){
+  var infoid = {$infoid};
+  var res = {:json_encode($res)};
+  checkCompliantRes('{$infoid}',res);
+}
+</script>
