@@ -939,3 +939,27 @@ body {background:#FFF; color:$color-black-l1}
     }
   }
 } 
+
+/** P-trips-list **/
+.P-trips-list {
+  $checked-code-color: (
+    0: $color-green,
+    711: $color-red, //司机和乘客都没有上传GPS数据点
+    712: $color-red, //行程中符合最低速度要求(10公里/小时)的GPS数据点少于两个
+    713: $color-red, //行程中乘客和司机距离过远
+    714: $color-red, //乘客没有上传GPS数据点
+    715: $color-red, //司机没有上传GPS数据点
+    716: $color-red, //乘客的移动速度过慢
+  );
+  .option-wrapper {
+    @each $code,$color in $checked-code-color {
+      &.check-#{$code} {
+        .btn-check {
+          color:$color;
+          border-color: $color;
+        }
+      }
+    }
+
+  }
+}
