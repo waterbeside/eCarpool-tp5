@@ -311,7 +311,9 @@ class ScoreOrder extends AdminBase
    */
   public function goods($filter=['status'=>0]){
     $map = [];
-    $map[] = ['o.is_delete','<>', 1];
+    $map[] = ['o.is_delete','=', 0];
+    $map[] = ['t.is_delete', '=', 0];
+
     //筛选状态
     if(is_numeric($filter['status'])){
       $map[] = ['o.status','=', $filter['status']];
@@ -427,7 +429,7 @@ class ScoreOrder extends AdminBase
 
     $map = [];
     $map[] = ['t.gid', '=', $gid];
-    $map[] = ['o.is_delete','<>', 1];
+    $map[] = ['o.is_delete','=', 0];
     //筛选状态
     if(is_numeric($status)){
       $map[] = ['o.status','=', $status];
