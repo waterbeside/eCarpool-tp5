@@ -73,11 +73,11 @@ class AccountMix extends AccountModel
         }
       }else if($type=='2'||$type=="carpool"){ //从拼车帐号取
         $accountInfo = $this->where([['carpool_account','=',$account],['is_delete','<>', 1]])->find();
+        $accountInfo = $accountInfo ? $accountInfo->toArray() :[];
         if($returnAll){
           $accountInfo['carpool'] = $this->getCarpoolAccount($account);
         }
       }
-      $accountInfo['carpool']['full_department'] = DepartmentModel::where('id',$accountInfo['carpool']['department_id'])->value('fullname');
       return $accountInfo;
     }
 
