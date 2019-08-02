@@ -251,7 +251,7 @@ class CarpoolReports extends AdminBase
         break;
       case 'day':
         $time = "DATE_FORMAT(concat(`time`,'00'),'%Y-%m-%d')";
-        $whereTime = " AND time >= ".date("YmdHi",time() - 24*60*60*365*3)." AND time < ".$now;
+        $whereTime = " AND time >= ".date("YmdHi",time() - 24*60*60*365*1)." AND time < ".$now;
         break;
       default:
         $time  = "YEAR(concat(`time`,'00'))";
@@ -264,7 +264,7 @@ class CarpoolReports extends AdminBase
       $this->jsonReturn(0,['lists'=>$lists]);
     }
 
-    $where_base =  " i.status IN(1,3)  AND carownid IS NOT NULL AND carownid >0  $whereTime ";
+    $where_base =  " i.status IN(1,3,4)  AND carownid IS NOT NULL AND carownid >0  $whereTime ";
     $from = "SELECT distinct startpid,endpid,time,carownid,passengerid FROM info as i  where  $where_base ";
 
     if($type == 'trips'){
