@@ -238,10 +238,10 @@ class Department extends Model
   /**
    * 取子部门id
    * @param  integer  $pid  父ID
-   * @param  integer $type 0时，从path字段截取，1时历遍取.
+   * @param  integer $cache_time 0时，从path字段截取，1时历遍取.
    * @return string        "id,id,id"
    */
-  public function getChildrenIds($pid, $cache_time = 3600 * 24 * 2)
+  public function getChildrenIds($pid, $cache_time = 3600 * 12)
   {
     $data =  $this->itemChildrenCache($pid);
     $ids = $this->itemChildrenCache($pid);
@@ -330,17 +330,20 @@ class Department extends Model
     $department_id  = $userData['department_id'];
     $company_id     = $userData['company_id'];
     $department     = $userData['Department'];
-    if(!in_array($company_id, [1,11]) || in_array($department, ['李宁','高明常安花园','高明一中','佛山市政府','中国联通'])){
+    $check_companys = [1,11,12,14,15,16,17,18];
+    $check_Dpt = ['李宁','高明常安花园','高明一中','佛山市政府','中国联通','TEST'];
+    if(!in_array($company_id, $check_companys) || in_array($department, $check_Dpt)){
       return false;
     }
-    $deptsItemData = $this->getItem($department_id);
-    if($deptsItemData){
-      $path = $deptsItemData['path'];
-      $path_arr = explode(',',$path);
-      if(in_array('1740',$path_arr) || $department_id == '1740'){
-        return false;
-      }
-    }
+    //对部分Department_id 进行同步排除
+    // $deptsItemData = $this->getItem($department_id);
+    // if($deptsItemData){
+    //   $path = $deptsItemData['path'];
+    //   $path_arr = explode(',',$path);
+    //   if(in_array('1740',$path_arr) || $department_id == '1740'){
+    //     return false;
+    //   }
+    // }
     return true;
   }
 
