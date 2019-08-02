@@ -18,7 +18,7 @@ use think\facade\Lang;
 use think\facade\Cookie;
 use think\facade\Session;
 use app\admin\service\Admin as AdminService;
-
+use app\admin\behavior\CheckDeptAuth;
 
 /**
  * 后台公用基础控制器
@@ -349,16 +349,8 @@ class AdminBase extends Base
    */
   public function buildRegionMapSql($region_id, $as = 'd')
   {
-    $region_id_array = is_array($region_id) ? $region_id : explode(",", $region_id);
-    $region_id_array = $this->arrayUniq($region_id_array);
-    $region_map_sql = "";
-    foreach ($region_id_array as   $value) {
-      if (is_numeric($value) && $value > 0) {
-        $or = $region_map_sql ? " OR " : "";
-        $region_map_sql .= $or . " ( FIND_IN_SET($value,{$as}.path) OR {$as}.id = $value ) ";
-      }
-    }
-    return $region_map_sql;
+    return (new CheckDeptAuth())->buildRegionMapSql($region_id,$as);
+    // return Hook::exec(['app\\admin\\behavior\\CheckDeptAuth','buildRegionMapSql'], $region_id, $as);
   }
 
   /**
