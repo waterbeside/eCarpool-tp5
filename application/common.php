@@ -243,11 +243,14 @@ function check_mobile_number($mobile)
  * 产生一个指定长度的随机字符串,并返回给用户
  * @access public
  * @param int $len 产生字符串的位数
+ * @param int $type 0: 生成数字或字母，1：只生成数字
  * @return string
  */
-function getRandomString($len = 6)
+function getRandomString($len = 6, $type = 0)
 {
-  $chars = array(
+  $chars =  $type ? array(
+    "0", "1", "2","3", "4", "5", "6", "7", "8", "9"
+  ) : array(
     "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
     "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
     "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G",
@@ -263,6 +266,7 @@ function getRandomString($len = 6)
   }
   return $output;
 }
+
 
 /**
  * 从数组中随机取得一个值
