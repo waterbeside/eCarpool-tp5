@@ -1026,19 +1026,24 @@ class Nim {
 
     /**
      * 发送短信验证码
-     * @param  $templateid    [模板编号(由客服配置之后告知开发者)]
+     * @param  $templateid    [模板编号(由客服配置之后告知开发者)] , 如果该参数为数组，则直接作为云信接口请求的提交参数
      * @param  $mobile       [目标手机号]
      * @param  $deviceId     [目标设备号，可选参数]
      * @return $codeLen      [验证码长度,范围4～10，默认为4]
      */
-    public function sendSmsCode($templateid,$mobile,$deviceId='',$codeLen){
+    public function sendSmsCode($templateid,$mobile= null,$deviceId='',$codeLen = 6){
         $url = 'https://api.netease.im/sms/sendcode.action';
-        $data= array(
-            'templateid' => $templateid,
-            'mobile' => $mobile,
-            'deviceId' => $deviceId,
-            'codeLen' => $codeLen
-        );
+        if(is_array($templateid)){
+            $data = $templateid;
+        }else{
+            $data= array(
+                'templateid' => $templateid,
+                'mobile' => $mobile,
+                'deviceId' => $deviceId,
+                'codeLen' => $codeLen
+            );
+        }
+        
         if($this->RequestType=='curl'){
             $result = $this->postDataCurl($url,$data);
         }else{
@@ -1046,6 +1051,8 @@ class Nim {
         }
         return $result;
     }
+
+
 
 
     /**
