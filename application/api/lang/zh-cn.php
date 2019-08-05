@@ -43,8 +43,9 @@ return [
   //短信
   'Verification code cannot be empty' => '验证码不能为空',
   'Verification code error' => '验证码错误',
-
-
+  'The number of verification codes sent to this mobile phone number has reached the upper limit today' => '今天对该手机号可发送验证码的次数已达上限',
+  'Phone number format is not correct' => '手机号格式不正确',
+  
   //字段相关
   'Please select date and time' => '请选择日期时间',
   'Please enter content' => '请填写内容',

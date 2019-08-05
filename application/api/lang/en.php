@@ -43,6 +43,8 @@ return [
   //短信
   'Verification code cannot be empty' => 'Verification code cannot be empty',
   'Verification code error' => 'Verification code error',
+  'The number of verification codes sent to this mobile phone number has reached the upper limit today' => 'The number of verification codes sent to this mobile phone number has reached the upper limit today',
+  'Phone number format is not correct' => 'Phone number format is not correct',
 
 
   //字段相关

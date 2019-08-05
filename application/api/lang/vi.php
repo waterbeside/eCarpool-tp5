@@ -43,6 +43,8 @@ return [
   //短信
   'Verification code cannot be empty' => 'Mã xác minh không thể để trống',
   'Verification code error' => 'Lỗi mã xác minh',
+  'The number of verification codes sent to this mobile phone number has reached the upper limit today' => 'Số mã xác minh được gửi đến số điện thoại di động này đã đạt đến giới hạn trên ngày hôm nay.',
+  'Phone number format is not correct' => 'Định dạng số điện thoại không chính xác',
 
 
   //字段相关
