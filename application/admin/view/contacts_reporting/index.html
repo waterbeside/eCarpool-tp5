@@ -61,7 +61,12 @@
             <td>{$vo.name}</td>
             <th >{$vo.start_time|date="Y-m-d H:i:s"}</th>
             <td>
-               {$vo.platform == 1 ? '<i class="fa fa-apple"></i> ' : $vo.platform == 2 ? '<i class="fa fa-android"></i> ' :''} 
+              {eq name="vo['platform']" value="1"}
+                <i class="fa fa-apple"></i>
+              {/eq}
+              {eq name="vo['platform']" value="2"}
+                <i class="fa fa-android"></i>
+              {/eq}
                {$vo.device}
             </td>
             <td>

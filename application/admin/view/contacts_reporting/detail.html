@@ -31,10 +31,14 @@
       <tr>
         <td class="label">设备</td>
         <td>
-          {$data.platform == 1 ? '<i class="fa fa-apple"></i> ' : $data.platform == 2 ? '<i class="fa fa-android"></i> '
-          :''}
+          {eq name="data['platform']" value="1"}
+            <i class="fa fa-apple"></i>
+          {/eq}
+          {eq name="data['platform']" value="2"}
+            <i class="fa fa-android"></i>
+          {/eq}
           {$data.device}
-          [{$data.os}]
+          --- {$data.os}
         </td>
       </tr>
 
