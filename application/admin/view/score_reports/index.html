@@ -7,22 +7,25 @@
 
         <ul class="amain-tool-bar layui-tab-title" >
           <li class="layui-this" > <a href="{:url('index')}"  >积分期报</a> </li>
-          <li class="btn-item btn-item-right ">
-            {include file="_components/select_ruleNumber" /}
-          </li>
-          <!-- <li > 走势图表 </li> -->
         </ul>
 
         <div class="amain-content layui-tab-content">
           <!-- **************  s : 积分期报 ************** -->
           <div class="layui-tab-item layui-show">
-            <form class="layui-form layui-form-pane" id="filter-form" showloading action="{:url('admin/ScoreReports/index',['rule_number'=>$rule_number])}" method="get">
+            <form class="layui-form layui-form-pane" id="filter-form" showloading action="{:url('admin/ScoreReports/index')}" method="get">
                 <!-- <div class="blank10">  </div> -->
                 <div class="layui-inline">
                   <label class="layui-form-label" style="width:160px">时间范围选择</label>
-                    <div class="layui-input-inline">
-                      <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
-                    </div>
+                  <div class="layui-input-inline">
+                    <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
+                  </div>
+                  <div class="layui-input-inline">
+                    <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly   >
+                    <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择显示区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary"
+                      data-target="region_id:id" data-tips="选择显示区域" data-title="选择显示区域" data-tips-position="3" data-auto-submit="true"   >
+                      {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择显示区域"}
+                    </a>
+                  </div>
                 </div>
                 <div class="layui-inline">
                   <input type="hidden" name="export" value="0">
@@ -191,7 +194,7 @@ PAGE_EXEC = {
        * @param String type driver|passenger|user : 司机人次|乘客人次|参与人数
        */
       sumNum : function(type,is_minus){
-        var url = "{:url('admin/ScoreReports/public_count',['rule_number'=>$rule_number])}";
+        var url = "{:url('admin/ScoreReports/public_count',['region_id'=>$region_id])}";
         var dtd = $.Deferred();
         $.getJSON(url,{timeStr:_this.data.timeStr,type:type,is_minus:is_minus}).then(function(res, textStatus) {
             if(res.code===0){
@@ -260,8 +263,6 @@ PAGE_EXEC = {
     var sumNum =  pmType == 'diff' ?  this.data.totals[type]['add'] - this.data.totals[type]['minus'] :  this.data.totals[type][pmType] ;
     $valueBox.text(sumNum);
   },
-
-
 
 
 

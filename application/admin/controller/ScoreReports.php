@@ -24,37 +24,42 @@ class ScoreReports extends AdminBase
    * [index description]
    *
    */
-  public function index($filter=[],$rule_number=NULL)
+  public function index($filter=[],$region_id=NULL)
   {
     $timeStr = isset($filter['time'])?$filter['time']:0;
     $period = $this->get_period(isset($filter['time'])?$filter['time']:0);
     $filter['time'] = date('Y-m-d',strtotime($period[0]))." ~ ".date('Y-m-d',strtotime($period[1])- 24*60*60);
-    return $this->fetch('index',['filter'=>$filter,'rule_number'=>$rule_number]);
+    return $this->fetch('index',['filter'=>$filter,'region_id'=>$region_id]);
   }
 
   /**
    * 统计积分数
    */
-  public function public_count($timeStr = NULL,$type = 'total' , $is_minus = 0, $uid = 0,$rule_number = NULL)
+  public function public_count($timeStr = NULL,$type = 'total' , $is_minus = 0, $uid = 0,$region_id = NULL)
   {
     $period = $this->get_period($timeStr);
-    $baseMap = [];
-    $where_base = " is_delete = 0  AND time >=  '".$period[0]."' AND time < '".$period[1]."' ";
+    $join = '';
+    $where_base = " t.is_delete = 0  AND t.time >=  '".$period[0]."' AND t.time < '".$period[1]."' ";
 
-    if (is_numeric($rule_number)) {
-      $where_base .= "rule_number = $rule_number ";
-    }
+    // if (is_numeric($rule_number)) {
+    //   $where_base .= "rule_number = $rule_number ";
+    // }
     if($uid){
       $loginname = CarpoolUserModel::where('uid',$uid)->value('loginname');
-      $account_id = ScoreAccountModel::where('carpool_account',$account_id)->value('id');
-      $where_base .= " AND (account_id = $account_id OR carpool_account = $loginname ) ";
+      $account_id = ScoreAccountModel::where('carpool_account',$loginname)->value('id');
+      $where_base .= " AND (t.account_id = $account_id OR t.carpool_account = $loginname ) ";
     }else{
       $exclude_scoreAccounnt_id_str = implode(",", $this->exclude_scoreAccounnt_id);
       $exclude_carpoolAccounnt_str = '"'.implode("\",\"", $this->exclude_carpoolAccounnt).'"';
-      $where_base .= " AND (account_id NOT IN($exclude_scoreAccounnt_id_str) OR account_id IS NULL ) ";
-      $where_base .= " AND (carpool_account NOT IN($exclude_carpoolAccounnt_str) OR carpool_account IS NULL ) ";
+      $where_base .= " AND (t.account_id NOT IN($exclude_scoreAccounnt_id_str) OR t.account_id IS NULL ) ";
+      $where_base .= " AND (t.carpool_account NOT IN($exclude_carpoolAccounnt_str) OR t.carpool_account IS NULL ) ";
+    }
+    if($region_id > 0){
+      $where_base .= ' AND'. $this->buildRegionMapSql($region_id);
+      $join .= " LEFT JOIN carpool.t_department as d ON t.region_id = d.id ";
     }
 
+    
     // $baseMap[] = $is_minus ? ['reason','<',0] : ['reason','>',0] ;
     // "-99"=>"管理员操作",
     // "-100"=>"拼车不合法",
@@ -80,16 +85,16 @@ class ScoreReports extends AdminBase
         case 'total':
           break;
         case 'carpool':
-          $where_base .= $is_minus ? " AND reason IN(-100)" : " AND reason IN(100,101,102)";
+          $where_base .= $is_minus ? " AND reason = '-100' " : " AND reason >= 100 AND reason <= 102";
           break;
         case 'turnplate':
-          $where_base .= $is_minus ? " AND reason IN(-201)" : " AND reason IN(201)";
+          $where_base .= $is_minus ? " AND reason = '-201' " : " AND reason = 201 ";
           break;
         case 'lottery':
-          $where_base .= $is_minus ? " AND reason IN(-202)" : " AND reason IN(202)";
+          $where_base .= $is_minus ? " AND reason = '-202' " : " AND reason = 202";
           break;
         case 'goods':
-          $where_base .= $is_minus ? " AND reason IN(-200)" : " AND reason IN(200)";
+          $where_base .= $is_minus ? " AND reason = '-200' " : " AND reason = 200 ";
           break;
         default:
           // code...
@@ -98,14 +103,14 @@ class ScoreReports extends AdminBase
 
     }
 
-    $sql_base = "SELECT * FROM t_history where $where_base";
+    $feilds = 't.id , t.region_id , t.account_id , t.carpool_account , t.time , t.reason , operand';
+    $sql_base = "SELECT $feilds  FROM t_history as t $join where $where_base";
     $sql = "SELECT SUM(operand) as total FROM ( $sql_base ) as t";
+    // dump($sql_base);exit;
 
 // dump($sql);exit;
     $datas = Db::connect('database_score')->query($sql);
-
     $returnNum = $datas[0]['total'] ? $datas[0]['total'] : 0 ;
-
     return $this->jsonReturn(0,['total'=>$returnNum]);
 
   }
