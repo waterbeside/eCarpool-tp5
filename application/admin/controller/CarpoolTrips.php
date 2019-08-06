@@ -449,7 +449,7 @@ class CarpoolTrips extends AdminBase
    *
    * @param integer $infoid 行程id
    */
-  public function public_check_compliant($infoid)
+  public function public_check_compliant($infoid,$returnType =1 )
   {
     $result = Db::connect('database_carpool')->query("call mine_trip(:infoid)", [
       'infoid' => $infoid,
@@ -466,7 +466,6 @@ class CarpoolTrips extends AdminBase
       'infoid' => $infoid,
       'res' => $res,
     ];
-
-    return $this->fetch('public_check_compliant', $returnData);
+    return $returnType ? $this->fetch('public_check_compliant', $returnData) : $this->jsonReturn(0,$returnData);
   }
 }

@@ -21,9 +21,9 @@
   </div>
 </div>
 <script>
-if(typeof(checkCompliantRes)=='function'){
+if(typeof(PAGE_EXEC)!="undefined" && (PAGE_EXEC.checkCompliantRes)=='function'){
   var infoid = {$infoid};
   var res = {:json_encode($res)};
-  checkCompliantRes('{$infoid}',res);
+  PAGE_EXEC.checkCompliantRes('{$infoid}',res);
 }
 </script>
