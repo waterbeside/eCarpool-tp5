@@ -52,6 +52,12 @@ class User extends BaseModel
       ['t_department d', 'u.department_id = d.id', 'left'],
     ];
     $res = $this->alias('u')->field($field)->join($carpoolUser_jion)->where($map)->find();
+    if(!$res){
+      $map = [
+        ['loginname', '=', $account],
+      ];
+      $res = $this->alias('u')->field($field)->join($carpoolUser_jion)->where($map)->find();
+    }
 
     if ($res) {
       $res = $res->toArray();
