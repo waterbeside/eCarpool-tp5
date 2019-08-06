@@ -24,6 +24,7 @@ return [
   'Name error' => '姓名错误',
   'The user is banned' => '该用户被封禁',
   'The user is deleted' => '该用户被封禁',
+  'The phone number you entered is not the phone number of the current account' => '你输入的手机号不是当前账号绑定的手机号。',
 
   'Please enter the correct old password' => '请输入正确的旧密码',
   'Two passwords are different'=>'两次密码不一至',

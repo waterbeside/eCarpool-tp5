@@ -163,8 +163,8 @@ class Sms extends ApiBase
           break;
         case 102: //重置密码
           $userData = $this->getUserData();
-          if ($userData && $userData['uid'] != $phoneUserData['uid']) {
-            $this->jsonReturn(10001, [], lang('The phone number you entered is incorrect'));
+          if ($userData && $userData['phone'] != $phone) {
+            $this->jsonReturn(10001, [], lang('The phone number you entered is not the phone number of the current account'));
           }
           if (!$phoneUserData) { //验证手机号是否存在。
             $this->jsonReturn(10002, [], lang('User does not exist'));
@@ -314,7 +314,7 @@ class Sms extends ApiBase
         if (isset($_POST['password'])) {
           $userData = $this->getUserData();
           if ($userData && $userData['phone'] != $phone) {
-            $this->jsonReturn(10001, [], lang('The phone number you entered is incorrect'));
+            $this->jsonReturn(10001, [], lang('The phone number you entered is not the phone number of the current account'));
           }
           $password = input('post.password');
           if (strlen($password) < 6) {

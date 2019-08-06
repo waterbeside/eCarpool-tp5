@@ -24,6 +24,8 @@ return [
   'The phone number you entered is incorrect' => 'Số điện thoại bạn nhập không chính xác',
   'Name error' => 'Tên không chính xác',
   'The user is banned' => 'Người dùng bị cấm',
+  'The user is deleted' => 'The user is deleted',
+  'The phone number you entered is not the phone number of the current account' => 'Số điện thoại bạn đã nhập không phải là số điện thoại của tài khoản hiện tại.',
 
   'Please enter the correct old password' => 'Vui lòng nhập mật khẩu cũ chính xác',
   'Two passwords are different'=>'Hai mật khẩu khác nhau',
