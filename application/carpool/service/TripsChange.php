@@ -224,6 +224,9 @@ class TripsChange
     }
 
     //执行推送
+    if(!isset($sendTarget)){
+      return true;
+    }
     $TripsService = new TripsService();
     $TripsService->pushMsg($sendTarget, $push_msg, $appid);
     if($TripsService->errorMsg){
