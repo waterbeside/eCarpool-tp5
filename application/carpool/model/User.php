@@ -61,7 +61,7 @@ class User extends BaseModel
 
     if ($res) {
       $res = $res->toArray();
-      $exp_offset = getRandValFromArray([0, 3, 6, 9, 11, 13, 15]);
+      $exp_offset = getRandValFromArray([0, 5, 10, 15, 20, 25, 30]);
       $exp +=  $exp_offset * 60;
       $cacheData = $redis->cache($cacheKey, $res, $exp);
     }
