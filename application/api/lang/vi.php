@@ -41,6 +41,7 @@ return [
   'The phone number has been bound to this account, no need to merge.' => 'Số điện thoại đã bị ràng buộc vào tài khoản này, không cần phải hợp nhất',
   'The phone number has been registered for another account'=>'Số điện thoại đã được đăng ký một tài khoản khác',
   'Please log in directly to the employee number to perform the binding operation' => 'Vui lòng đăng nhập trực tiếp vào số nhân viên để ràng buộc',
+  'The mobile phone number has no associated employee account' => 'Số điện thoại di động không có tài khoản nhân viên liên quan',
 
   //短信
   'Verification code cannot be empty' => 'Mã xác minh không thể để trống',

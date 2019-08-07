@@ -40,6 +40,7 @@ return [
   'The phone number has been bound to this account, no need to merge.' => 'The phone number has been bound to this account, no need to merge.',
   'The phone number has been registered for another account'=>'The phone number has been registered for another account',
   'Please log in directly to the employee number to perform the binding operation' => 'Please log in directly to the employee number to perform the binding operation',
+  'The mobile phone number has no associated employee account' => 'The mobile phone number has no associated employee account',
 
   //短信
   'Verification code cannot be empty' => 'Verification code cannot be empty',

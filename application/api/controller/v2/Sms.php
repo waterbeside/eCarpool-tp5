@@ -153,7 +153,7 @@ class Sms extends ApiBase
       switch ($usage) {
         case 100: //登入
           if (!$phoneUserData) { //登入验证手机号是否存在。
-            $this->jsonReturn(10002, [], lang('User does not exist'));
+            $this->jsonReturn(10002, [], lang('The mobile phone number has no associated employee account'));
           }
           break;
         case 101: //注册
@@ -167,7 +167,7 @@ class Sms extends ApiBase
             $this->jsonReturn(10001, [], lang('The phone number you entered is not the phone number of the current account'));
           }
           if (!$phoneUserData) { //验证手机号是否存在。
-            $this->jsonReturn(10002, [], lang('User does not exist'));
+            $this->jsonReturn(10002, [], lang('The mobile phone number has no associated employee account'));
           }
           break;
         case 103: //重绑定
