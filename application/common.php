@@ -36,9 +36,9 @@ function get_articles_by_cid($cid, $limit = 10, $where = [], $order = [], $filed
   $ids = Db::name('category')->where(['path' => ['like', "%,{$cid},%"]])->column('id');
   $ids = (!empty($ids) && is_array($ids)) ? implode(',', $ids) . ',' . $cid : $cid;
 
-  $fileds = array_merge(['id', 'cid', 'title', 'introduction', 'thumb', 'reading', 'publish_time'], (array)$filed);
-  $map    = array_merge(['cid' => ['IN', $ids], 'status' => 1, 'publish_time' => ['<= time', date('Y-m-d H:i:s')]], (array)$where);
-  $sort   = array_merge(['is_top' => 'DESC', 'sort' => 'DESC', 'publish_time' => 'DESC'], (array)$order);
+  $fileds = array_merge(['id', 'cid', 'title', 'introduction', 'thumb', 'reading', 'publish_time'], (array) $filed);
+  $map    = array_merge(['cid' => ['IN', $ids], 'status' => 1, 'publish_time' => ['<= time', date('Y-m-d H:i:s')]], (array) $where);
+  $sort   = array_merge(['is_top' => 'DESC', 'sort' => 'DESC', 'publish_time' => 'DESC'], (array) $order);
 
   $article_list = Db::name('article')->where($map)->field($fileds)->order($sort)->limit($limit)->select();
 
@@ -63,9 +63,9 @@ function get_articles_by_cid_paged($cid, $page_size = 15, $where = [], $order = 
   $ids = Db::name('category')->where(['path' => ['like', "%,{$cid},%"]])->column('id');
   $ids = (!empty($ids) && is_array($ids)) ? implode(',', $ids) . ',' . $cid : $cid;
 
-  $fileds = array_merge(['id', 'cid', 'title', 'introduction', 'thumb', 'reading', 'publish_time'], (array)$filed);
-  $map    = array_merge(['cid' => ['IN', $ids], 'status' => 1, 'publish_time' => ['<= time', date('Y-m-d H:i:s')]], (array)$where);
-  $sort   = array_merge(['is_top' => 'DESC', 'sort' => 'DESC', 'publish_time' => 'DESC'], (array)$order);
+  $fileds = array_merge(['id', 'cid', 'title', 'introduction', 'thumb', 'reading', 'publish_time'], (array) $filed);
+  $map    = array_merge(['cid' => ['IN', $ids], 'status' => 1, 'publish_time' => ['<= time', date('Y-m-d H:i:s')]], (array) $where);
+  $sort   = array_merge(['is_top' => 'DESC', 'sort' => 'DESC', 'publish_time' => 'DESC'], (array) $order);
 
   $article_list = Db::name('article')->where($map)->field($fileds)->order($sort)->paginate($page_size);
 
@@ -249,7 +249,7 @@ function check_mobile_number($mobile)
 function getRandomString($len = 6, $type = 0)
 {
   $chars =  $type ? array(
-    "0", "1", "2","3", "4", "5", "6", "7", "8", "9"
+    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
   ) : array(
     "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
     "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
@@ -267,6 +267,39 @@ function getRandomString($len = 6, $type = 0)
   return $output;
 }
 
+/**
+ * 通过数字取英文字母
+ *
+ * @param integer||string $num 序号 (当=='all'时，返回全部数组)
+ * @param integer $isToUpper
+ * @return string||array
+ */
+function getAlphabet($num = -1, $isToUpper = 0)
+{
+
+  $list = [
+    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
+    "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
+    "w", "x", "y", "z"
+  ];
+
+  if ($num === 'all') {
+    return $isToUpper ? array_walk($list, function (&$v, $k) {
+      $v = strtoupper($v);
+    }) : $list;
+  }
+  if ($num < 0) {
+    return false;
+  }
+  if ($num > 25) {
+    $n = $num%26;
+    $m = floor($num / 26) - 1;
+    return getAlphabet($m, $isToUpper) . getAlphabet($n, $isToUpper);
+  } else {
+
+    return $isToUpper ? strtoupper($list[$num]) : $list[$num];
+  }
+}
 
 /**
  * 从数组中随机取得一个值
@@ -274,15 +307,16 @@ function getRandomString($len = 6, $type = 0)
  * @param array $arr 要处理的数组。
  * @param integer $len 取值个数，当>1时则返回数组。
  */
-function getRandValFromArray($arr,$len=1){
-  $keys = array_rand($arr,$len);
-  if(is_array($keys)){
+function getRandValFromArray($arr, $len = 1)
+{
+  $keys = array_rand($arr, $len);
+  if (is_array($keys)) {
     $newData = [];
-    foreach($keys as $key => $value){
+    foreach ($keys as $key => $value) {
       $newData[] = $arr[$value];
     }
     return $newData;
-  }else{
+  } else {
     return $arr[$keys];
   }
 }
@@ -319,5 +353,4 @@ function clientRequest($url, $data = [], $type = 'POST', $dataType = "json")
 
     return false;
   }
-
 }
