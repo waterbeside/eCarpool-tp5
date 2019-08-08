@@ -6,6 +6,7 @@ use app\carpool\model\User as UserModel_o;
 use app\carpool\model\Department as DepartmentModel_o;
 use app\user\model\Department as DepartmentModel;
 use app\user\model\User as UserModel;
+use app\user\model\JwtToken;
 use com\Nim as NimServer;
 use app\carpool\model\Address;
 use Firebase\JWT\JWT;
@@ -185,6 +186,12 @@ class Passport extends ApiBase
           $hashPassword = md5($pw_new); //加密后的密码
           $status = UserModel_o::where("uid",$uid)->update(['md5password'=>$hashPassword]);
           if($status!==false){
+
+            //TODO: 单点登入如果开启，则执行踢出工动作。
+            $jwt = $this->getJwt();
+            $JwtToken = new JwtToken();
+            $JwtToken->invalidate($jwt, -4);
+
             return $this->jsonReturn(0,[],"success");
             // $this->success('修改成功');
           }else{

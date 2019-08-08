@@ -2,8 +2,10 @@
 
 namespace app\api\controller\v2;
 
+use think\facade\Log;
 use app\api\controller\ApiBase;
 use app\carpool\model\User as UserModel;
+use app\user\model\JwtToken;
 use app\score\model\AccountMix as ScoreAccountModel;
 use my\RedisData;
 use com\Nim as NimServer;
@@ -144,7 +146,7 @@ class Sms extends ApiBase
 
     /******* 非群发的验证场景 ******/
     if (in_array($usage, array(100, 101, 102, 103, 104, 201, 200))) {
-      $phoneUserData = UserModel::where([['phone', '=', $phone]])->find();
+      $phoneUserData = UserModel::where([['phone', '=', $phone],['is_delete','=',0]])->find();
 
       if (in_array($usage, array(103, 200, 201))) { // 验证是否登入
         $userData = $this->getUserData(1);
@@ -311,6 +313,7 @@ class Sms extends ApiBase
 
         /******** 重置密码 *********/
       case 102:
+
         if (isset($_POST['password'])) {
           $userData = $this->getUserData();
           if ($userData && $userData['phone'] != $phone) {
@@ -321,10 +324,19 @@ class Sms extends ApiBase
             return $this->jsonReturn(992, [], lang('The new password should be no less than 6 characters'));
           }
           $hashPassword = md5($password); //加密后的密码
-          $status = UserModel::where([['phone', '=', $phone], ['is_delete', '<>', 1], ['is_active', '=', 1]])->update(['md5password' => $hashPassword]);
+          $status = UserModel::where([['phone', '=', $phone], ['is_delete', '=', 0]])->update(['md5password' => $hashPassword]);
           // dump($status);
           if ($status !== false) {
             $step = 0;
+            //TODO: 单点登入如果开启，则执行踢出工动作。
+            $jwt = $this->getJwt();
+            $JwtToken = new JwtToken();
+            if(!$jwt){
+              $phoneUserData = UserModel::where([['phone', '=', $phone],['is_delete','=',0]])->find();
+              $JwtToken->invalidateByUid($phoneUserData['uid'],-4,['iOS','Android','1','2']);
+            }else{
+              $JwtToken->invalidate($jwt, -4);
+            }
             break;
           } else {
             return $this->jsonReturn(-1, [], "fail");
