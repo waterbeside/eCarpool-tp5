@@ -10,6 +10,7 @@ class BaseModel extends Model
   protected $redisObj = null;
   public $errorMsg = null;
   public $errorCode = 0;
+  public $errorData = null;
 
   /**
    * 创建redis对像
