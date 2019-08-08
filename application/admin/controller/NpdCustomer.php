@@ -63,11 +63,9 @@ class NpdCustomer extends AdminBase
             'remark' =>   iconv_substr($data['remark'],0,250) ,
             'name' => iconv_substr($data['name'],0,250) ,
             'thumb' => $data['thumb'],
+            'is_recommend' => isset($data['is_recommend']) ? $data['is_recommend'] : 0
           ];
           
-          if($data['is_recommend']){
-            $upData['is_recommend'] = $data['is_recommend'];
-          }
 
           $CustomerModel = new CustomerModel();
 
@@ -114,7 +112,7 @@ class NpdCustomer extends AdminBase
             'thumb' => $data['thumb'],
           ];
 
-          if($data['is_recommend']){
+          if(isset($data['is_recommend'])){
             $upData['is_recommend'] = $data['is_recommend'];
           }
 
