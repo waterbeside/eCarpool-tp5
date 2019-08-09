@@ -146,7 +146,7 @@ class Sms extends ApiBase
 
     /******* 非群发的验证场景 ******/
     if (in_array($usage, array(100, 101, 102, 103, 104, 201, 200))) {
-      $phoneUserData = UserModel::where([['phone', '=', $phone],['is_delete','=',0]])->find();
+      $phoneUserData = UserModel::where([['phone', '=', $phone], ['is_delete', '=', 0]])->find();
 
       if (in_array($usage, array(103, 200, 201))) { // 验证是否登入
         $userData = $this->getUserData(1);
@@ -164,9 +164,12 @@ class Sms extends ApiBase
           }
           break;
         case 102: //重置密码
-          $userData = $this->getUserData();
-          if ($userData && $userData['phone'] != $phone) {
-            $this->jsonReturn(10001, [], lang('The phone number you entered is not the phone number of the current account'));
+          $jwt = $this->getJwt();
+          if ($jwt) {
+            $userData = $this->getUserData(1);
+            if ($userData && $userData['phone'] != $phone) {
+              $this->jsonReturn(10001, [], lang('The phone number you entered is not the phone number of the current account'));
+            }
           }
           if (!$phoneUserData) { //验证手机号是否存在。
             $this->jsonReturn(10002, [], lang('The mobile phone number has no associated employee account'));
@@ -315,9 +318,12 @@ class Sms extends ApiBase
       case 102:
 
         if (isset($_POST['password'])) {
-          $userData = $this->getUserData();
-          if ($userData && $userData['phone'] != $phone) {
-            $this->jsonReturn(10001, [], lang('The phone number you entered is not the phone number of the current account'));
+          $jwt = $this->getJwt();
+          if ($jwt) {
+            $userData = $this->getUserData(1);
+            if ($userData && $userData['phone'] != $phone) {
+              $this->jsonReturn(10001, [], lang('The phone number you entered is not the phone number of the current account'));
+            }
           }
           $password = input('post.password');
           if (strlen($password) < 6) {
@@ -329,14 +335,15 @@ class Sms extends ApiBase
           if ($status !== false) {
             $step = 0;
             //TODO: 单点登入如果开启，则执行踢出工动作。
-            $jwt = $this->getJwt();
             $JwtToken = new JwtToken();
-            if(!$jwt){
-              $phoneUserData = UserModel::where([['phone', '=', $phone],['is_delete','=',0]])->find();
-              $JwtToken->invalidateByUid($phoneUserData['uid'],-4,['iOS','Android','1','2']);
-            }else{
-              $JwtToken->invalidate($jwt, -4);
+            if ($jwt) {
+              $uid = $userData['uid'];
+              // $JwtToken->invalidate($jwt, -4);              
+            } else {
+              $phoneUserData = UserModel::where([['phone', '=', $phone], ['is_delete', '=', 0]])->find();
+              $uid = $phoneUserData['uid'];
             }
+            $JwtToken->invalidateByUid($uid, -4, []);
             break;
           } else {
             return $this->jsonReturn(-1, [], "fail");
