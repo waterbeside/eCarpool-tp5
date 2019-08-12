@@ -5,9 +5,6 @@ FORM_PAGE_EXEC = {
     
     init: function(){
       var _this = this;
-      var toolbars = ['undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript','|'
-        ,'justifyleft','justifyright','justifycenter','|','blockquote','pasteplain','inserttable','autotypeset','removeformat'];
-      var toolbars_u = toolbars.concat(['|','simpleupload'])
       var url="{:url('/api/ueditor')}";
 
       this.getCustomers().then(function(res){})
@@ -111,20 +108,27 @@ FORM_PAGE_EXEC = {
      */
     renderUeditor:function(target_id,type){
       type = type || 0;
-      var toolbars = ['undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript','|'
-        ,'justifyleft','justifyright','justifycenter','|','blockquote','pasteplain','inserttable','autotypeset','removeformat'];
+      var toolbars = [
+        ['undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript',
+        '|','justifyleft','justifyright','justifycenter','|','blockquote','pasteplain','autotypeset'],
+        ['inserttable','insertrow','insertcol', 'mergeright', 'mergedown',  'deleterow',  'deletecol',  'splittorows', 'splittocols', 'splittocells', 
+       'inserttitle', 'mergecells', 
+        ,'|', 'removeformat','horizontal','|']
+      ];
       var url="{:url('/api/ueditor')}";
       var maximumWords = 3000;
       var initialFrameHeight = 300;
       if(type == 1){
-        toolbars = toolbars.concat(['|','simpleupload']);
+        toolbars.push(['simpleupload','insertimage','imagenone', 'imageleft', 'imageright','imagecenter','wordimage', '|','fullscreen','source']);
         maximumWords = 8000;
         initialFrameHeight = 500;
       }
 
+
+
       var ue = UE.getEditor(target_id,{
         serverUrl :url,
-        toolbars:[toolbars],
+        toolbars: toolbars,
         topOffset:0,
         wordCount:true,
         maximumWords:maximumWords,
