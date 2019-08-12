@@ -25,7 +25,7 @@ return [
       'vi' => 'Tiếng việt',
     ],
     //是否开启单点登入
-    'is_single_sign' => false,
+    'is_single_sign' => true,
     //是否过度第一批单点登入用户
     'is_smooth_single_sign' => true,
 ];
