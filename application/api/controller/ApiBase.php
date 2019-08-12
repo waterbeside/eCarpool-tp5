@@ -79,6 +79,17 @@ class ApiBase extends Base
         $msg =  $e->getMessage();
       } catch (\Firebase\JWT\ExpiredException $e) {  // token过期
         $msg =  $e->getMessage();
+        //TODO:如果过期，则同时处理记录在服务端的token为失效; 
+        // if (config('others.is_single_sign')) {
+        //   $JwtToken = new JwtToken();
+        //   $JwtToken->invalidate($Authorization,-3);
+        // }
+        // $errorData = [
+        //   'invalid_type' => -3,
+        //   'invalid_time' => time(),
+        // ];
+        // $this->passportError = [10004, $msg, $errorData];
+        // return $returnType ? $this->jsonReturn(10004, $errorData, $this->passportError[1]) : false;
       } catch (\Exception $e) {  //其他错误
         $msg =  $e->getMessage();
       } catch (\DomainException $e) {  //其他错误
@@ -94,8 +105,9 @@ class ApiBase extends Base
           $this->passportError = [10004, lang('Login status expired, please login again')];
           return $returnType ? $this->jsonReturn(10004, $this->passportError[1]) : false;
         }
-        // 单点登入验证
-        if (config('others.is_single_sign')) {
+        // 单点登入验证  && 
+        // dump($jwtDecode); 
+        if (config('others.is_single_sign') && strtolower($jwtDecode->client) != 'h5') {
           $JwtToken = new JwtToken();
           if (!$JwtToken->checkActive($jwtDecode->uid, $Authorization)) { 
             //XXX:如果第一次进行单点登入，把token记下来以平滑过度
@@ -128,7 +140,7 @@ class ApiBase extends Base
    */
   public function createPassportJwt($data)
   {
-    $exp = in_array($data['client'], ['ios', 'android']) ? (time() + 36 * 30 * 86400) : (time() + 30 * 86400);
+    $exp = in_array(strtolower($data['client']), ['ios', 'android']) ? (time() + 36 * 30 * 86400) : (time() + 48 * 3600);
     $jwtData  = array(
       'exp' => $exp, //过期时间
       'iat' => time(), //发行时间
