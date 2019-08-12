@@ -193,8 +193,9 @@ class Ueditor extends Base
         $end   = $start + $size;
 
         /* 获取文件列表 */
-        $path  = $_SERVER['DOCUMENT_ROOT'] . (substr($path, 0, 1) == "/" ? "" : "/") . $path;
-        $files = $this->getFiles($path, $allowFiles);
+        $path  = $_SERVER['DOCUMENT_ROOT'] . (substr($path, 0, 1) == "/" ? "" : "/") . $path ;
+        $files = $this->getFiles($path,$allowFiles);
+
         if (!count($files)) {
             return [
                 "state" => "no match file",
