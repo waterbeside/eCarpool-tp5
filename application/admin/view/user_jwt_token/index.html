@@ -1,0 +1,128 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body P-user-list">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+      <ul class="amain-tool-bar" >
+          <li class="layui-this"><a href="{:url('admin/UserJwtToken/index')}"  >JWT管理</a></li>
+      </ul>
+
+
+      <div class="layui-tab-content">
+        <form class="layui-form layui-form-pane" action="{:url('admin/UserJwtToken/index')}" method="get">
+          <div class="layui-inline">
+            <label class="layui-form-label">检索</label>
+            <div class="layui-input-inline">
+              <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
+            </div>
+            <div class="layui-input-inline">
+                <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
+                <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" >
+                  {$regionData ? str_replace(',',' / ',$regionData['fullname']) : lang('Region or department')}
+                </a>
+            </div>
+            <div class="layui-input-inline">
+                <select name="filter[is_delete]">
+                    <option value="all"  > 是否失效：不限</option>
+                    <option value="0" <?php if(isset($filter['is_delete']) && is_numeric($filter['is_delete']) && $filter['is_delete'] == 0 ){echo 'selected="selected"';} ?>> 正常</option>
+                    <option value="1" <?php if(isset($filter['is_delete']) && is_numeric($filter['is_delete']) && $filter['is_delete'] == 1 ){echo 'selected="selected"';} ?>> 失效</option>
+                </select>
+              </div>
+          </div>
+          <div class="layui-inline">
+              <input type="hidden" name="export" value="0">
+              <button class="layui-btn"><i class="fa fa-search"></i></button>
+          </div>
+        </form>
+        <hr>
+
+        <table lay-filter="listtable" class="layui-table">
+          <thead>
+            <tr>
+                <th lay-data="{field:'id', width:80, fixed:'left'}" >#</th>
+                <th lay-data="{field:'uid', width:80, fixed:'left'}">UID</th>
+                <th lay-data="{field:'loginname', width:100, fixed:'left'}">用户名</th>
+                <th lay-data="{field:'name', width:100}">名称</th>
+                <th lay-data="{field:'token', minWidth:100}">TOKEN</th>
+                <th lay-data="{field:'company_name', width:80}">厂部</th>
+                <th lay-data="{field:'client', width:80}">设备类型</th>
+                
+                <!-- <th lay-data="{field:'ttl', width:120}">剩余</th> -->
+                
+                <th lay-data="{field:'invalid_type', width:100}">失效类型</th>
+                <th lay-data="{field:'iat', width:120}">发行时间</th>
+                <th lay-data="{field:'exp', width:120}">过期时间</th>
+                <th lay-data="{field:'invalid_time', width:120}">踢出时间</th>
+                <th lay-data="{field:'options', width:120,  fixed:'right'}">...</th>
+            </tr>
+          </thead>
+          <tbody>
+          {foreach name="lists" item="vo"}
+          <tr>
+            <td>
+              <div <?php echo  ($vo['is_delete']  ? 'class="is_delete"' : ''); ?>>
+                {$vo.id}
+              </div>
+            </td>
+            <td>
+              <div <?php echo  ($vo['is_delete']  ? 'class="is_delete"' : ''); ?>>
+                {$vo.uid}
+              </div>
+            </td>
+            <td>
+              <a href="{:url('admin/User/public_detail',['id'=>$vo['uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
+                {$vo.loginname}
+              </a>
+            </td>
+            <td>{$vo.name} # <small>{$vo.nativename}</small> </td>
+            <td>{$vo.token}</td>
+            <td>{$vo.companyname}</td>
+            <td>{$vo.client}</td>
+            
+            <!-- <td></td> -->
+            <td><span class="{$vo.invalid_type != 0 ? '' : 'text-green'}" >{$vo.invalid_type_str}</span></td>
+            <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$vo.iat * 1000}</span></td>
+            <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$vo.exp  * 1000 }</span></td>
+            <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$vo.invalid_time ? $vo.invalid_time  * 1000 : '-' }</span></td>
+           
+            <td>
+              {eq name="vo['is_delete']" value="1"}
+                <i class="fa fa-times text-red"></i>
+              {else/}
+                <a href="{:url('admin/UserJwtToken/kick_out',['id'=>$vo['id']])}" class="layui-btn  layui-btn-xs ajax-delete" title="踢出用户登入" data-hint="是否强行让该用户退出?"><i class="layui-icon layui-icon-face-surprised"></i> 踢出</a>
+              {/eq}
+            </td>
+          </tr>
+          {/foreach}
+          </tbody>
+        </table>
+        <!--分页-->
+        {$lists|raw}
+
+      </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+PAGE_EXEC = {
+  init: function(){
+    initLayuiTable({ limit: {$pagesize} })
+    var $tableWrapper = $(".P-user-list [lay-filter=LAY-table-1] .layui-table-box");
+    var $tableWrapper_main = $tableWrapper.find(".layui-table-main");
+    var $tr = $tableWrapper_main.find('tr');
+    var $tableWrapper_l = $tableWrapper.find(".layui-table-fixed .layui-table-body");
+    $tr.each(function(index, el) {
+      if($(el).find("[data-field=uid]").find('.is_delete').length > 0){
+        $(el).addClass('delete');
+        $(el).find('.ajax-delete').hide();
+        $tableWrapper_l.find('tr').eq(index).addClass('delete')
+      }
+    });
+  }
+}
+PAGE_EXEC.init()
+
+</script>
+{/block}
