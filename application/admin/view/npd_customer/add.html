@@ -1,50 +1,63 @@
-<div class="amain-body " >
+<div class="amain-body ">
   <div class="layui-tab layui-tab-brief">
-
     <div class="layui-tab-content">
 
-      <form class="layui-form  " action="{:url('admin/NpdCustomer/add')}" method="post" style="margin-right:15px;" id="editForm" >
-        
-          <div class="layui-form-item">
-              <label class="layui-form-label">名称</label>
-              <div class="layui-input-block">
-                  <input type="text" name="name" value="" required  lay-verify="required" placeholder="请输入名称" class="layui-input">
-              </div>
-          </div>
+      <form class="layui-form  " action="{:url('admin/NpdCustomer/add')}" method="post" style="margin-right:15px;" id="editForm">
 
-          <div class="layui-form-item">
-            <label class="layui-form-label">缩略图</label>
-            <div class="layui-input-block j-upload-thumb"> </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">分组</label>
+          <div class="layui-input-block">
+            <select name="r_group">
+              <option value=""  >未设分组</option>
+              {foreach name="groups" item="vo"}
+                <option value="{$vo}">{:lang('sl:'.$vo)}</option>
+              {/foreach}
+            </select> 
           </div>
+        </div>
 
-          <div class="layui-form-item">
-              <label class="layui-form-label">备注</label>
-              <div class="layui-input-block">
-                  <textarea name="remark" lay-verify="remark" placeholder=""   id="remark" class="layui-textarea" style="height:200px"></textarea>
-              </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">名称</label>
+          <div class="layui-input-block">
+            <input type="text" name="name" value="" required lay-verify="required" placeholder="请输入名称"
+              class="layui-input">
           </div>
-          <div class="layui-form-item">
-            <label class="layui-form-label">排序</label>
-            <div class="layui-input-block">
-              <input type="number" name="sort" value="0" placeholder="排序，越大越前" class="layui-input">
-              <div class="layui-form-mid layui-word-aux"> 数字越大，排序越前</div>
-            </div>
-          </div>
+        </div>
 
-          <div class="layui-form-item">
-            <label class="layui-form-label">其它</label>
-            <div class="layui-input-block">
-              <input type="checkbox" name="is_recommend" value='1' title="推荐" > 
-            </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">缩略图</label>
+          <div class="layui-input-block j-upload-thumb"> </div>
+        </div>
+
+        <div class="layui-form-item">
+          <label class="layui-form-label">备注</label>
+          <div class="layui-input-block">
+            <textarea name="remark" lay-verify="remark" placeholder="" id="remark" class="layui-textarea"
+              style="height:200px"></textarea>
           </div>
+        </div>
+        <div class="layui-form-item">
+          <label class="layui-form-label">排序</label>
+          <div class="layui-input-block">
+            <input type="number" name="sort" value="0" placeholder="排序，越大越前" class="layui-input">
+            <div class="layui-form-mid layui-word-aux"> 数字越大，排序越前</div>
+          </div>
+        </div>
+
+        <div class="layui-form-item">
+          <label class="layui-form-label">其它</label>
+          <div class="layui-input-block">
+            <input type="checkbox" name="is_recommend" value='1' title="推荐">
+          </div>
+        </div>
 
 
-          <div class="layui-form-item">
-              <div class="layui-input-block">
-                  <button class="layui-btn" lay-submit lay-filter="*">保存</button>
-                  <button type="reset" class="layui-btn layui-btn-primary">重置</button>
-              </div>
+        <div class="layui-form-item">
+          <div class="layui-input-block">
+            <button class="layui-btn" lay-submit lay-filter="*">保存</button>
+            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
           </div>
+        </div>
       </form>
 
     </div>
@@ -53,22 +66,23 @@
 
 <script>
   FORM_PAGE_EXEC = {
-    upload : layui.upload,
-    init: function(){
-     
+    upload: layui.upload,
+    init: function () {
+
       /** thumb upload **/
-      var $thumbInput =  cRenderUploadBtn({
-        wrapper:'.j-upload-thumb',
-        inputName:'thumb',
+      var $thumbInput = cRenderUploadBtn({
+        wrapper: '.j-upload-thumb',
+        inputName: 'thumb',
         url: "{:url('admin/Uploader/images')}",
-        data: {"module":"admin/NPD/customer/thumb"},
+        data: {
+          "module": "admin/NPD/customer/thumb"
+        },
       })
       form.render();
     },
 
   }
-  $(function(){
-    FORM_PAGE_EXEC.init(); 
+  $(function () {
+    FORM_PAGE_EXEC.init();
   })
-
 </script>

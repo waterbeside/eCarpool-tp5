@@ -25,8 +25,17 @@
               <option value=""  {if condition="!isset($filter['is_recommend']) || !is_numeric($filter['is_recommend'])" } selected="selected" {/if}>不限推荐</option>
               <option value="1" {if condition="isset($filter['is_recommend']) && is_numeric($filter['is_recommend']) && $filter['is_recommend'] == 1" } selected="selected" {/if}>推荐</option>
               <option value="0" {if condition="isset($filter['is_recommend']) && is_numeric($filter['is_recommend']) && $filter['is_recommend'] == 0" } selected="selected" {/if}>非推荐</option>
-            </select> 
+            </select>
           </div>
+          <div class="layui-input-inline">
+            <select name="filter[r_group]">
+              <option value=""  {if condition="!isset($filter['r_group']) || $filter['r_group'] == ''" } selected="selected" {/if}>不限分组</option>
+              {foreach name="groups" item="vo"}
+                <option value="{$vo}" {if condition="isset($filter['r_group']) && $filter['r_group'] == $vo" } selected="selected" {/if}>{:lang('sl:'.$vo)}</option>
+              {/foreach}
+            </select>
+          </div>
+
         </div>
         <div class="layui-inline">
           <button class="layui-btn">搜索</button>
@@ -43,6 +52,7 @@
                 <th>图</th>
                 <th>名称</th>
                 <th>推荐</th>
+                <th>分组</th>
                 <th style="width: 100px;">操作</th>
               </tr>
             </thead>
@@ -59,6 +69,9 @@
                 </td>
                 <td>
                   {$vo.is_recommend ? '<i class="fa fa-flag text-red"></i>': '否'}
+                </td>
+                <td>
+                  {$vo.r_group}
                 </td>
                 <td>
                   <a href="{:url('admin/NpdCustomer/edit',['id'=>$vo['id']])}" data-title="編輯 #{$vo.id}"
