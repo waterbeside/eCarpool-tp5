@@ -236,6 +236,7 @@ class TripsChange
         }
         $this->errorCode = 0;
         $this->errorMsg = '';
+        $this->data = ['sendTarget' => $sendTarget];
         return true;
     }
 
