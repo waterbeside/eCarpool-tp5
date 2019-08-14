@@ -113,11 +113,7 @@ class CheckDeptAuth
      */
     public function buildRegionMapSql($region_id,$as = 'd')
     {
-      if(is_array($region_id)){
-        $region_id_array = $region_id;
-      }else{
-        $region_id_array = explode(",",$region_id);
-      }
+      $region_id_array = is_array($region_id) ? $region_id : explode(",", $region_id);
       $region_id_array = array_values(array_unique($region_id_array));
       $region_map_sql = "";
       foreach ($region_id_array as   $value) {

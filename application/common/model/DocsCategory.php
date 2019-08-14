@@ -1,4 +1,5 @@
 <?php
+
 namespace app\common\model;
 
 use think\Db;
@@ -17,6 +18,4 @@ class DocsCategory extends Model
     {
         return date('Y-m-d H:i:s');
     }
-
-    
 }

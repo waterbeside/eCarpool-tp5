@@ -6,105 +6,105 @@
     <div class="layui-tab layui-tab-brief">
 
         <div class="layui-tab-content">
-          <blockquote class="layui-elem-quote layui-quote-nm" style="background:#FFF">
-            <div>
+            <blockquote class="layui-elem-quote layui-quote-nm" style="background:#FFF">
+                <div>
 
-              <?php if(is_numeric($status)){ ?>
-                <h4 class="layui-badge goodOrder-status_{$status}"><?php echo $statusList[$status] ? lang("sl:".$statusList[$status]): $status; ?> </h4>
-              <?php  }elseif($status == 'all_01' ){ ?>
-                <h4 class="layui-badge goodOrder-status_{$status}">{:lang('Not redeemed or redeemed')} </h4>
-              <?php  }else{ ?>
-                <h4 class="layui-badge goodOrder-status_{$status}">{:lang('All')} </h4>
-              <?php  } ?>
-              &nbsp;&nbsp;<?php echo str_replace("+"," ",$time) ; ?>
-            </div>
-            <hr />
+                <?php if(is_numeric($status)){ ?>
+                    <h4 class="layui-badge goodOrder-status_{$status}"><?php echo $statusList[$status] ? lang("sl:".$statusList[$status]): $status; ?> </h4>
+                <?php  }elseif($status == 'all_01' ){ ?>
+                    <h4 class="layui-badge goodOrder-status_{$status}">{:lang('Not redeemed or redeemed')} </h4>
+                <?php  }else{ ?>
+                    <h4 class="layui-badge goodOrder-status_{$status}">{:lang('All')} </h4>
+                <?php  } ?>
+                &nbsp;&nbsp;<?php echo str_replace("+"," ",$time) ; ?>
+                </div>
+                <hr />
 
-            <div class="goods-table-list">
-              <div class="good-item">
-                  <div  class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
-                  <span class="layui-elip">{$good.name}</span>
-              </div>
-            </div>
-            <hr />
-            <div>
-              <span class="label">{:lang('Region or department')}：</span>{$good.full_department|str_replace=","," / ",###}
-            </div>
-            <hr />
-            <div class="layui-row statistics-bar">
-              <div class="statistics-item">
-                <span class="label">{:lang('Redeem points')}</span>
-                <b> {$good.price} </b>
-              </div>
-              <div class="statistics-item">
-                <span class="label">{:lang('Purchase price')}</span>
-                <b> {$good.amount} </b>
-              </div>
-              <div class="statistics-item">
-                <span class="label">{:lang('Number of people')}</span>
-                <b> {$total}</b>
-              </div>
-              <div class="statistics-item">
-                <span class="label">{:lang('Quantity')}</span>
-                <b> {$sum}</b>
-              </div>
-              <div class="statistics-item">
-                <span class="label">{:lang('Total price')}</span>
-                <b> {$sum*$good.amount}</b>
-              </div>
-            </div>
-          </blockquote>
-
-
+                <div class="goods-table-list">
+                <div class="good-item">
+                    <div  class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
+                    <span class="layui-elip">{$good.name}</span>
+                </div>
+                </div>
+                <hr />
+                <div>
+                <span class="label">{:lang('Region or department')}：</span>{$good.full_department|str_replace=","," / ",###}
+                </div>
+                <hr />
+                <div class="layui-row statistics-bar">
+                <div class="statistics-item">
+                    <span class="label">{:lang('Redeem points')}</span>
+                    <b> {$good.price} </b>
+                </div>
+                <div class="statistics-item">
+                    <span class="label">{:lang('Purchase price')}</span>
+                    <b> {$good.amount} </b>
+                </div>
+                <div class="statistics-item">
+                    <span class="label">{:lang('Number of people')}</span>
+                    <b> {$total}</b>
+                </div>
+                <div class="statistics-item">
+                    <span class="label">{:lang('Quantity')}</span>
+                    <b> {$sum}</b>
+                </div>
+                <div class="statistics-item">
+                    <span class="label">{:lang('Total price')}</span>
+                    <b> {$sum*$good.amount}</b>
+                </div>
+                </div>
+            </blockquote>
 
 
-          <div class="blank20"></div>
-          <!-- <h3>下单用户：</h3> -->
-          <div class="blank10"></div>
-                <form class="layui-form layui-form-pane" action="{:url('admin/ScoreOrder/good_owners',['gid'=>$good['id'],'time'=>$time])}" method="get">
-                    <div class="layui-input-inline">
-                      <input type="text" name="filter[keyword]" class="layui-input"  placeholder="{:lang('User keyword')}" value="{$filter.keyword}"  >
-                    </div>
-                    <div class="layui-inline">
-                        <button class="layui-btn"><i class="fa fa-search"></i></button>
-                    </div>
-                </form>
-                <hr>
 
-                <table  lay-filter="listtable"  class="layui-table">
-                    <thead>
+
+            <div class="blank20"></div>
+            <!-- <h3>下单用户：</h3> -->
+            <div class="blank10"></div>
+            <form class="layui-form layui-form-pane" action="{:url('admin/ScoreOrder/good_owners',['gid'=>$good['id'],'time'=>$time])}" method="get">
+                <div class="layui-input-inline">
+                <input type="text" name="filter[keyword]" class="layui-input"  placeholder="{:lang('User keyword')}" value="{$filter.keyword}"  >
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn"><i class="fa fa-search"></i></button>
+                </div>
+            </form>
+            <hr>
+
+            <table  lay-filter="listtable"  class="layui-table">
+                <thead>
                     <tr >
-                      <th lay-data="{field:'uid', width:70,fixed:'left'}" >#</th>
-                      <th lay-data="{field:'loginname',width:120,fixed:'left'}">{:lang('Username')}</th>
-                      <th lay-data="{field:'name', width:120}">{:lang('Full name')}</th>
-                      <th lay-data="{field:'phone', width:130}">{:lang('Phone')}</th>
-                      <th lay-data="{field:'Department', width:120}">{:lang('Department')}</th>
-                      <th lay-data="{field:'company_name', width:110}">{:lang('Company')}</th>
-                      <!-- <th lay-data="{field:'companyname', width:100}">分厂</th> -->
-                      <th lay-data="{field:'num', width:100, fixed:'right'}">{:lang('m:s_o:Count')}</th>
+                        <th lay-data="{field:'uid', width:70,fixed:'left'}" >#</th>
+                        <th lay-data="{field:'loginname',width:120,fixed:'left'}">{:lang('Username')}</th>
+                        <th lay-data="{field:'name', width:120}">{:lang('Full name')}</th>
+                        <th lay-data="{field:'phone', width:130}">{:lang('Phone')}</th>
+                        <th lay-data="{field:'Department', width:120}">{:lang('Department')}</th>
+                        <th lay-data="{field:'company_name', width:110}">{:lang('Company')}</th>
+                        <!-- <th lay-data="{field:'companyname', width:100}">分厂</th> -->
+                        <th lay-data="{field:'num', width:100, fixed:'right'}">{:lang('m:s_o:Count')}</th>
                     </tr>
-                    </thead>
-                    <tbody>
+                </thead>
+                <tbody>
                     {foreach name="lists" item="vo"}
                     <tr>
-                      <td>{$vo.uid}</td>
-                      <td>
-                        <a href="{:url('admin/User/public_detail',['id'=>$vo['uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}">
-                        {$vo.loginname}
-                        </a>
-                      </td>
-                      <td>{$vo.name}</td>
-                      <td>{$vo.phone}</td>
-                      <td>{$vo.Department}</td>
-                      <td><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></td>
-                      <!-- <td>{$vo.companyname}</td> -->
-                      <td  ><b style="font-size:14px; color:#943e3e">{$vo.num}</b></td>
+                        <td>{$vo.uid}</td>
+                        <td>
+                            <a href="{:url('admin/User/public_detail',['id'=>$vo['uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}">
+                            {$vo.loginname}
+                            </a>
+                        </td>
+                        <td>{$vo.name}</td>
+                        <td>{$vo.phone}</td>
+                        <td>{$vo.Department}</td>
+                        <td><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></td>
+                        <!-- <td>{$vo.companyname}</td> -->
+                        <td  ><b style="font-size:14px; color:#943e3e">{$vo.num}</b></td>
                     </tr>
                     {/foreach}
-                    </tbody>
-                </table>
-                <!--分页-->
-                {$lists|raw}
+                </tbody>
+            </table>
+            <!--分页-->
+            {$lists|raw}
 
         </div>
     </div>

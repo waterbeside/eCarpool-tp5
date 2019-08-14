@@ -1,5 +1,7 @@
 <?php
+
 namespace app\admin\controller;
+
 use think\facade\Config;
 use app\admin\controller\AdminBase;
 use think\Db;
@@ -46,6 +48,6 @@ class Index extends AdminBase
     {
         $this->getMenu();
         $admin_user = $this->userBaseInfo;
-        return $this->fetch('index',['admin_user'=>$admin_user]);
+        return $this->fetch('index', ['admin_user' => $admin_user]);
     }
 }

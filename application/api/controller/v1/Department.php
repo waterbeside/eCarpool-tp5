@@ -1,4 +1,5 @@
 <?php
+
 namespace app\api\controller\v1;
 
 use app\api\controller\ApiBase;
@@ -23,33 +24,24 @@ class Department extends ApiBase
         // $this->checkPassport(1);
     }
 
-    /**
-     * 
-     */
-    public function selects($deep = 2){
-        if($deep > 4){
-            return $this->jsonReturn(30001,'无法查询');
+    public function selects($deep = 2)
+    {
+        if ($deep > 4) {
+            return $this->jsonReturn(30001, '无法查询');
         }
         $DepartmentModel = new DepartmentModel();
         $res = $DepartmentModel->getListByDeep($deep);
-        if(!$res){
-            return $this->jsonReturn(20002,["lists"=>[]],'没有数据');
+        if (!$res) {
+            return $this->jsonReturn(20002, ["lists" => []], '没有数据');
         }
         $list = [];
-        foreach($res as $key => $value){
+        foreach ($res as $key => $value) {
             $list[] = [
                 'id' => $value['id'],
                 'name' => $value['name'],
                 'fullname' => $value['fullname'],
             ];
         }
-        return $this->jsonReturn(0,["lists"=>$list],'Successfully');
-
-
+        return $this->jsonReturn(0, ["lists" => $list], 'Successfully');
     }
-
-
-
-
-
 }

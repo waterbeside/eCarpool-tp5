@@ -6,8 +6,8 @@
         <ul class="amain-tool-bar" >
             <li class="layui-this"><a href="{:url('index')}"  >推送消息</a></li>
             <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('add')}"  data-title="添加推送"  data-trigger="modal" >
-              <i class="fa fa-plus"></i> 添加推送</a>
+                <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('add')}"  data-title="添加推送"  data-trigger="modal" >
+                <i class="fa fa-plus"></i> 添加推送</a>
             </li>
         </ul>
         <div class="layui-tab-content">
@@ -42,32 +42,32 @@
                     <tr>
                         <td>{$vo.id}</td>
                         <td>
-                          <h3><a href="{:url('detail',['id'=>$vo['id']])}"  data-title="详情"  data-trigger="modal" >{$vo.title}</a></h3>
-                          <div>
-                            {$vo.body}
-                          </div>
+                            <h3><a href="{:url('detail',['id'=>$vo['id']])}"  data-title="详情"  data-trigger="modal" >{$vo.title}</a></h3>
+                            <div>
+                                {$vo.body}
+                            </div>
                         </td>
                         <td title="{$vo.uid}">{$vo.loginname}</td>
                         <td>
-                          <?php
-                          switch ($vo['push_status']) {
-                            case 0:
-                              echo "未发送";
-                              break;
-                            case 1:
-                              echo "发送成功";
-                              break;
-                            case -1:
-                              echo "发送失败";
-                              break;
-                            default:
-                              break;
-                          }
-                          ?>
+                            <?php
+                            switch ($vo['push_status']) {
+                                case 0:
+                                echo "未发送";
+                                break;
+                                case 1:
+                                echo "发送成功";
+                                break;
+                                case -1:
+                                echo "发送失败";
+                                break;
+                                default:
+                                break;
+                            }
+                            ?>
                         </td>
                         <td>
-                          创:{$vo.create_time|date="Y-m-d H:i"}  <br />
-                          推:<?php echo $vo['push_time'] ? date("Y-m-d H:i",strtotime($vo['push_time'])) : "-" ?>
+                            创:{$vo.create_time|date="Y-m-d H:i"}  <br />
+                            推:<?php echo $vo['push_time'] ? date("Y-m-d H:i",strtotime($vo['push_time'])) : "-" ?>
                         </td>
 
                         <!-- <td>   </td> -->

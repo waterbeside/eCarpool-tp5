@@ -1,126 +1,126 @@
 
 <div class="layui-tab-content goods-item-edit P-prize-detail-form ">
-  <div class="progress layui-progress layui-progress-big" lay-showPercent="true">
-    <div class="layui-progress-bar " lay-percent="{$data.real_count} /{$data.total_count}"></div>
-  </div>
+    <div class="progress layui-progress layui-progress-big" lay-showPercent="true">
+        <div class="layui-progress-bar " lay-percent="{$data.real_count} /{$data.total_count}"></div>
+    </div>
     <div>
         <form class="layui-form form-container" action="{:url('admin/ScorePrize/edit')}" method="post" onsubmit="return FORM_PAGE_EXEC.submitForm(this);">
 
-              <div class="layui-form-item">
-                  <label class="layui-form-label">{:lang('Region or department')}</label>
-                  <div class="layui-input-block">
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('Region or department')}</label>
+                <div class="layui-input-block">
 
                     <?php if( in_array($data['status'],[-1,-2])){ ?>
                     <div class="J-dept-select-wrapper">   </div>
                     <input type="hidden" name="p_region_id" value="{$data.p_region_id}"  class="layui-input layui-input-inline " readonly  >
                     <a onclick="FORM_PAGE_EXEC.openDeptDialog()" href="javascript:void(0);"  class="layui-btn  layui-btn-primary layui-btn-sm"   >
-                      <i class="fa fa-book"></i> <span >{:lang('Region or department')}</span>
+                    <i class="fa fa-book"></i> <span >{:lang('Region or department')}</span>
                     </a>
                     <?php }else{ ?>
-                      <div class="item my-tag-item" data-id="{$data.p_region_id}" title="{$data.fullname}"><span>{$data.fullname}</span></div>
-                   <?php   } ?>
-                  </div>
-              </div>
+                    <div class="item my-tag-item" data-id="{$data.p_region_id}" title="{$data.fullname}"><span>{$data.fullname}</span></div>
+                <?php   } ?>
+                </div>
+            </div>
 
-              <div class="layui-form-item">
-                  <label class="layui-form-label">{:lang('Prize name')}</label>
-                  <div class="layui-input-block">
-                      <input type="text" name="name" value="{$data.name}" required   placeholder="{:lang('Please enter a prize name')}" class="layui-input" <?php if( !in_array($data['status'],[-1,-2])){echo 'readonly disabled';  } ?>>
-                  </div>
-              </div>
-              <div class="layui-form-item">
-                  <label class="layui-form-label">{:lang('Issue number')}</label>
-                  <div class="layui-input-block">
-                      <input type="number"  value="{$data.publication_number}"  placeholder="{:lang('Issue number')}" class="layui-input" readonly disabled>
-                  </div>
-              </div>
-              <div class="layui-form-item">
-                  <label class="layui-form-label">{:lang('Description')}</label>
-                  <div class="layui-input-block">
-                     <textarea name="desc" placeholder="{:lang('Please enter a description')}" class="layui-textarea">{$data.desc}</textarea>
-                  </div>
-              </div>
-              <div class="layui-form-item">
-                  <label class="layui-form-label">{:lang('Image')}</label>
-                  <div class="layui-input-block">
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('Prize name')}</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" value="{$data.name}" required   placeholder="{:lang('Please enter a prize name')}" class="layui-input" <?php if( !in_array($data['status'],[-1,-2])){echo 'readonly disabled';  } ?>>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('Issue number')}</label>
+                <div class="layui-input-block">
+                    <input type="number"  value="{$data.publication_number}"  placeholder="{:lang('Issue number')}" class="layui-input" readonly disabled>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('Description')}</label>
+                <div class="layui-input-block">
+                    <textarea name="desc" placeholder="{:lang('Please enter a description')}" class="layui-textarea">{$data.desc}</textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('Image')}</label>
+                <div class="layui-input-block">
                     <input type="text" name="thumb" value="{$data.thumb}" class="layui-input">
                     <a   class="amain-uploadImgBtn" <?php if( $data['status'] > -2){echo 'id="upload-btn"';  } ?>" >
-                       <img class="layui-upload-img" id="item-thumb" src="{$data.thumb}" >
-                       <div class="text <?php if( $data['status'] < -1){echo 'layui-hide';  } ?>"   >
-                         <i class="fa fa-upload"></i>{:lang('Upload image')}
-                       </div>
+                    <img class="layui-upload-img" id="item-thumb" src="{$data.thumb}" >
+                    <div class="text <?php if( $data['status'] < -1){echo 'layui-hide';  } ?>"   >
+                        <i class="fa fa-upload"></i>{:lang('Upload image')}
+                    </div>
                     </a>
                     <p id="uploadText"></p>
 
-                  </div>
-              </div>
-               <div class="layui-form-item">
-                  <label class="layui-form-label">{:lang('Purchase price')}</label>
-                  <div class="layui-input-block">
-                      <input type="text" name="amount" value="{$data.amount}"  required  lay-verify="required" placeholder="{:lang('Purchase price')}" class="layui-input">
-                  </div>
-              </div>
-              <div class="layui-form-item">
-                  <label class="layui-form-label">{:lang('Lottery unit price')}</label>
-                  <div class="layui-input-block">
-                      <input type="text" name="price" value="{$data.price}"  required  lay-verify="required" placeholder="{:lang('Lottery unit price')}" class="layui-input" <?php if( !in_array($data['status'],[-1,-2])){echo 'readonly disabled';  } ?>>
-                      <div class="layui-form-mid layui-word-aux"  >{:lang('Points consumed per draw')}</div>
-                  </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('Purchase price')}</label>
+                <div class="layui-input-block">
+                    <input type="text" name="amount" value="{$data.amount}"  required  lay-verify="required" placeholder="{:lang('Purchase price')}" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('Lottery unit price')}</label>
+                <div class="layui-input-block">
+                    <input type="text" name="price" value="{$data.price}"  required  lay-verify="required" placeholder="{:lang('Lottery unit price')}" class="layui-input" <?php if( !in_array($data['status'],[-1,-2])){echo 'readonly disabled';  } ?>>
+                    <div class="layui-form-mid layui-word-aux"  >{:lang('Points consumed per draw')}</div>
+                </div>
 
-              </div>
+            </div>
 
-              <div class="layui-form-item">
-                  <label class="layui-form-label">{:lang('Expected number')}</label>
-                  <div class="layui-input-block">
-                      <input type="number" name="total_count"  value="{$data.total_count}"  required  lay-verify="required" placeholder="{:lang('Expected number')}" class="layui-input" <?php if( !in_array($data['status'],[-1,-2])){echo 'readonly disabled';  } ?>>
-                      <div class="layui-form-mid layui-word-aux"  >{:lang('Winning the prize when the number of participation is reached')}</div>
-                  </div>
-              </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('Expected number')}</label>
+                <div class="layui-input-block">
+                    <input type="number" name="total_count"  value="{$data.total_count}"  required  lay-verify="required" placeholder="{:lang('Expected number')}" class="layui-input" <?php if( !in_array($data['status'],[-1,-2])){echo 'readonly disabled';  } ?>>
+                    <div class="layui-form-mid layui-word-aux"  >{:lang('Winning the prize when the number of participation is reached')}</div>
+                </div>
+            </div>
 
-              <div class="layui-form-item">
-                  <label class="layui-form-label">{:lang('Prize level')}</label>
-                  <div class="layui-input-block">
-                      <input type="number" name="level" min="-1" value="{$data.level}"  required  lay-verify="required" placeholder="{:lang('Prize level')}" class="layui-input">
-                  </div>
-              </div>
-              <?php if( $data['status'] > -3 ){ ?>
-              <div class="layui-form-item">
-                  <label class="layui-form-label">{:lang('Status')}</label>
-                  <div class="layui-input-block">
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('Prize level')}</label>
+                <div class="layui-input-block">
+                    <input type="number" name="level" min="-1" value="{$data.level}"  required  lay-verify="required" placeholder="{:lang('Prize level')}" class="layui-input">
+                </div>
+            </div>
+            <?php if( $data['status'] > -3 ){ ?>
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('Status')}</label>
+                <div class="layui-input-block">
                     <select name="status"  >
 
-                      <?php if($data['status']==-1  ){ ?>
+                    <?php if($data['status']==-1  ){ ?>
                         <option value="-2" {php}echo $data['status'] == -2  ? 'selected' : ''; {/php}>{:lang('sl:下架')}</option>
-                      <?php } ?>
-                      <?php if( in_array($data['status'],[-1]) || $data['real_count'] < 1 ){ ?>
+                    <?php } ?>
+                    <?php if( in_array($data['status'],[-1]) || $data['real_count'] < 1 ){ ?>
                         <option value="-1" {php}echo $data['status'] == -1  ? 'selected' : ''; {/php}>{:lang('sl:准备中')}</option>
-                      <?php } ?>
-                      <option value="0" {php}echo $data['status'] == 0  ? 'selected' : ''; {/php}>{:lang('sl:进行中')}（{:lang('sl:正常')}）</option>
-                      <option value="1" {php}echo $data['status'] == 1  ? 'selected' : ''; {/php}>{:lang('sl:进行中')}（{:lang('sl:推荐')}）</option>
-                       <option value="2" {php}echo $data['status'] == 2  ? 'selected' : ''; {/php}>{:lang('sl:进行中')}（{:lang('sl:置顶')}）</option>
-                     </select>
-                     <div class="layui-form-mid layui-word-aux">{:lang('The default is “Preparing”. Once the lucky draw is set to be in progress or off the shelf, it is not allowed to modify the prize information again. Please think twice.')}</div>
+                    <?php } ?>
+                    <option value="0" {php}echo $data['status'] == 0  ? 'selected' : ''; {/php}>{:lang('sl:进行中')}（{:lang('sl:正常')}）</option>
+                    <option value="1" {php}echo $data['status'] == 1  ? 'selected' : ''; {/php}>{:lang('sl:进行中')}（{:lang('sl:推荐')}）</option>
+                    <option value="2" {php}echo $data['status'] == 2  ? 'selected' : ''; {/php}>{:lang('sl:进行中')}（{:lang('sl:置顶')}）</option>
+                    </select>
+                    <div class="layui-form-mid layui-word-aux">{:lang('The default is “Preparing”. Once the lucky draw is set to be in progress or off the shelf, it is not allowed to modify the prize information again. Please think twice.')}</div>
 
-                  </div>
-              </div>
-              <?php } ?>
-              <?php if( $data['status'] > -2 ){ ?>
-              <div class="layui-form-item">
-                  <label class="layui-form-label">{:lang('Automatically release the next issue')}</label>
-                  <div class="layui-input-block">
-                      <input type="checkbox" name="un_shelves" value="1" lay-skin="switch" lay-text="{:lang('Yes')}|{:lang('No')}" {if condition="$data.is_shelves === 0 "} checked="checked"{/if}>
-                      <div class="layui-form-mid layui-word-aux" >{:lang('After the lottery, and whether to automatically start the next issue of prize')}</div>
-                  </div>
-              </div>
-              <?php } ?>
-              <?php if( in_array($data['status'],[-1,-2])){ ?>
-              <div class="layui-form-item">
-                  <label class="layui-form-label">{:lang("Is visible?")}</label>
-                  <div class="layui-input-block">
-                      <input type="checkbox" name="is_show" value="1" lay-skin="switch" lay-text="{:lang('Visible')}|{:lang('Not visible')}" {if condition="$data.is_delete === 0"} checked="checked"{/if}>
-                  </div>
-              </div>
-              <?php } ?>
+                </div>
+            </div>
+            <?php } ?>
+            <?php if( $data['status'] > -2 ){ ?>
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang('Automatically release the next issue')}</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="un_shelves" value="1" lay-skin="switch" lay-text="{:lang('Yes')}|{:lang('No')}" {if condition="$data.is_shelves === 0 "} checked="checked"{/if}>
+                    <div class="layui-form-mid layui-word-aux" >{:lang('After the lottery, and whether to automatically start the next issue of prize')}</div>
+                </div>
+            </div>
+            <?php } ?>
+            <?php if( in_array($data['status'],[-1,-2])){ ?>
+            <div class="layui-form-item">
+                <label class="layui-form-label">{:lang("Is visible?")}</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="is_show" value="1" lay-skin="switch" lay-text="{:lang('Visible')}|{:lang('Not visible')}" {if condition="$data.is_delete === 0"} checked="checked"{/if}>
+                </div>
+            </div>
+            <?php } ?>
 
 
 
@@ -130,7 +130,7 @@
             <div class="layui-btn-container layui-row">
                 <input type="hidden" name="id" value="{$data.id}">
                 <button class="layui-btn layui-btn-lg layui-col-xs12 " <?php if( $data['status'] < -1){echo 'disabled';  } ?> >
-                  <?php echo $data['status'] > -2 ? lang('SUBMIT') : (isset($prize_status[$data['status']])? lang('sl:'.$prize_status[$data['status']]) : lang('SUBMIT')) ; ?>
+                <?php echo $data['status'] > -2 ? lang('SUBMIT') : (isset($prize_status[$data['status']])? lang('sl:'.$prize_status[$data['status']]) : lang('SUBMIT')) ; ?>
                 </button>
             </div>
 
@@ -138,128 +138,130 @@
     </div>
 </div>
 <script>
+    FORM_PAGE_EXEC = {
+        datas: {
+            status: <?php echo isset($data['status']) ? $data['status'] : -2 ?>,
+            depts: {
+                'fullname': "{$data.fullname}",
+                'id': "{$data.p_region_id}",
+            }
+        },
+        upload: layui.upload,
+        init: function () {
+            this.setDeptItem();
 
-
-FORM_PAGE_EXEC = {
-  datas : {
-    status: <?php echo isset($data['status']) ? $data['status'] : -2 ?>,
-    depts: {
-      'fullname': "{$data.fullname}",
-      'id'      : "{$data.p_region_id}",
+            var $thumbInput = $('.goods-item-edit').find("input[name=thumb]");
+            //普通图片上传
+            var uploadInst = this.upload.render({
+                elem: '#upload-btn',
+                url: "{:url('admin/Uploader/images')}",
+                data: {
+                    "module": "admin/ScorePrize"
+                },
+                before: function (obj) {
+                    //预读本地文件示例，不支持ie8
+                    obj.preview(function (index, file, result) {
+                        // $('#item-thumb').attr('src', result); //图片链接（base64）
+                    });
+                },
+                done: function (res) {
+                    console.log(res);
+                    //如果上传失败
+                    if (res.code > 0) {
+                        return layer.msg('{:lang("Upload failed")}');
+                    }
+                    if (res.code === 0) {
+                        layer.msg('{:lang("Upload successful")}');
+                        $('#item-thumb').attr('src', res.data.img_url); //图片链接（base64）
+                        $thumbInput.val(res.data.img_url);
+                    } else {
+                        layer.msg(res.desc);
+                    }
+                },
+                error: function () {
+                    //演示失败状态，并实现重传
+                    var $uploadText = $('#uploadText');
+                    var html =
+                        '<span style="color: #FF5722;">{:lang("Upload failed, please try again later")}</span>';
+                    // html += '<a class="layui-btn layui-btn-xs reUpload">重试</a>';
+                    $uploadText.html(html);
+                    /*$uploadText.find('.reUpload').on('click', function(){
+                      uploadInst.upload();
+                    });*/
+                }
+            });
+            $thumbInput.keyup(function (event) {
+                /* Act on the event */
+                var thumbPath = $thumbInput.val();
+                $('#item-thumb').attr('src', thumbPath);
+            });
+            element.render();
+            form.render();
+        },
+        submitForm(form) {
+            var $form = $(form);
+            if (this.datas.status < -1) {
+                layer.msg('{:lang("The prize has been closed or removed and cannot be modified")}');
+                return false
+            }
+            ajaxSubmit({
+                data: $form.serialize(),
+                url: $form.attr('action'),
+            })
+            return false;
+        },
+        /**
+         * 关闭已选项功作
+         */
+        closeItem: function () {
+            var e = e || event
+            var $target = $(e.target);
+            var $item = $target.closest('.item');
+            var id = $item.data('id');
+            this.datas.depts = null;
+            $(".P-prize-detail-form input[name='p_region_id']").val('');
+            $item.addClass('delete');
+            setTimeout(function () {
+                $item.remove();
+            }, 400);
+        },
+        /**
+         * 已选项item模板
+         */
+        deptItemTemplate: function (data) {
+            var title = data.fullname.replace(/\,/g, ' / ');
+            var html = '<div class="item my-tag-item" data-id="' + data.id + '" title="' + data.fullname +
+                '"><a class="close" onclick="FORM_PAGE_EXEC.closeItem()"><i class="fa fa-close"></i></a><span>' +
+                title + '</span></div>';
+            return html;
+        },
+        setDeptItem: function () {
+            if (this.datas.depts) {
+                var deptsData = this.datas.depts;
+                var itemHtml = this.deptItemTemplate(deptsData);
+                $('.P-prize-detail-form .J-dept-select-wrapper').html(itemHtml);
+            }
+        },
+        openDeptDialog: function () {
+            openLayer('{:url('
+                admin / Department / list_dialog ')}', '{:lang("Region or department")}');
+        },
+        clearDept: function () {
+            $(".P-prize-detail-form input[name='p_region_id']").val('');
+            $('.P-prize-detail-form .J-dept-select-wrapper').html('');
+        },
+        select_dept: function (data) {
+            var $input = $(".P-prize-detail-form input[name='p_region_id']");
+            this.datas.depts = data;
+            if (typeof (data.cancelSelected) != "undefined" && data.cancelSelected) {
+                this.clearDept();
+            } else {
+                this.setDeptItem();
+                $input.val(data.id);
+            }
+        }
     }
-  },
-  upload : layui.upload,
-  init: function(){
-    this.setDeptItem();
-
-    var $thumbInput = $('.goods-item-edit').find("input[name=thumb]");
-    //普通图片上传
-     var uploadInst = this.upload.render({
-       elem: '#upload-btn'
-       ,url: "{:url('admin/Uploader/images')}"
-       ,data: {"module":"admin/ScorePrize"}
-       ,before: function(obj){
-         //预读本地文件示例，不支持ie8
-         obj.preview(function(index, file, result){
-           // $('#item-thumb').attr('src', result); //图片链接（base64）
-         });
-       }
-       ,done: function(res){
-         console.log(res);
-         //如果上传失败
-         if(res.code > 0){
-           return layer.msg('{:lang("Upload failed")}');
-         }
-         if(res.code===0){
-           layer.msg('{:lang("Upload successful")}');
-           $('#item-thumb').attr('src', res.data.img_url); //图片链接（base64）
-           $thumbInput.val(res.data.img_url);
-         }else{
-           layer.msg(res.desc);
-         }
-       }
-       ,error: function(){
-         //演示失败状态，并实现重传
-         var $uploadText = $('#uploadText');
-         var html = '<span style="color: #FF5722;">{:lang("Upload failed, please try again later")}</span>';
-         // html += '<a class="layui-btn layui-btn-xs reUpload">重试</a>';
-         $uploadText.html(html);
-         /*$uploadText.find('.reUpload').on('click', function(){
-           uploadInst.upload();
-         });*/
-       }
-     });
-     $thumbInput.keyup(function(event) {
-       /* Act on the event */
-       var thumbPath = $thumbInput.val();
-       $('#item-thumb').attr('src', thumbPath);
-     });
-     element.render();
-     form.render();
-  },
-  submitForm(form){
-    var $form = $(form);
-    if(this.datas.status < -1){
-      layer.msg('{:lang("The prize has been closed or removed and cannot be modified")}');
-      return false
-    }
-    ajaxSubmit({
-      data: $form.serialize(),
-      url:$form.attr('action'),
-    })
-    return false;
-  },
-  /**
-   * 关闭已选项功作
-   */
-  closeItem: function(){
-    var e = e || event
-    var $target = $(e.target);
-    var $item = $target.closest('.item');
-    var id = $item.data('id');
-    this.datas.depts = null;
-    $(".P-prize-detail-form input[name='p_region_id']").val('');
-    $item.addClass('delete');
-    setTimeout(function(){
-      $item.remove();
-    },400);
-  },
-  /**
-   * 已选项item模板
-   */
-  deptItemTemplate: function(data){
-    var title = data.fullname.replace(/\,/g,' / ');
-    var html = '<div class="item my-tag-item" data-id="'+data.id+'" title="'+data.fullname+'"><a class="close" onclick="FORM_PAGE_EXEC.closeItem()"><i class="fa fa-close"></i></a><span>'+title+'</span></div>';
-    return html;
-  },
-  setDeptItem:function(){
-    if(this.datas.depts){
-      var deptsData = this.datas.depts;
-      var itemHtml = this.deptItemTemplate(deptsData);
-      $('.P-prize-detail-form .J-dept-select-wrapper').html(itemHtml);
-    }
-  },
-  openDeptDialog: function(){
-    openLayer('{:url('admin/Department/list_dialog')}','{:lang("Region or department")}');
-  },
-  clearDept: function(){
-    $(".P-prize-detail-form input[name='p_region_id']").val('');
-    $('.P-prize-detail-form .J-dept-select-wrapper').html('');
-  },
-  select_dept: function(data){
-    var $input = $(".P-prize-detail-form input[name='p_region_id']");
-    this.datas.depts = data;
-    if(typeof(data.cancelSelected)!="undefined" && data.cancelSelected){
-      this.clearDept();
-    }else{
-      this.setDeptItem();
-      $input.val(data.id);
-    }
-  }
-}
 
 
-FORM_PAGE_EXEC.init();
-
-
+    FORM_PAGE_EXEC.init();
 </script>

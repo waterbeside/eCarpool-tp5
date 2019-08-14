@@ -1,4 +1,5 @@
 <?php
+
 namespace app\score\validate;
 
 use think\Validate;
@@ -6,10 +7,10 @@ use think\Validate;
 class Prize extends Validate
 {
     protected $rule = [
-      'name'  => 'require',
-      'price'  => 'require|float',
-      'amount'  => 'require|float',
-      'total_count'  => 'require|float',
+        'name'  => 'require',
+        'price'  => 'require|float',
+        'amount'  => 'require|float',
+        'total_count'  => 'require|float',
 
     ];
 
@@ -23,6 +24,4 @@ class Prize extends Validate
         'amount.float'     => '价格必须为数字',
 
     ];
-
-
 }

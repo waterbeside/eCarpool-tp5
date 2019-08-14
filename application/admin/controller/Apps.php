@@ -1,4 +1,5 @@
 <?php
+
 namespace app\admin\controller;
 
 use app\admin\controller\AdminBase;
@@ -38,25 +39,23 @@ class Apps extends AdminBase
      */
     public function edit($id)
     {
-      if ($this->request->isPost()) {
-          $data            = $this->request->param();
-          $validate_result = $this->validate($data, 'Apps');
-          if ($validate_result !== true) {
-              $this->error($validate_result);
-          } else {
-              $AppsModel = new AppsModel();
-              if ($AppsModel->allowField(true)->save($data, $id) !== false) {
-                  $AppsModel->itemCache($id,null);
-                  $this->jsonReturn(0,'更新成功');
-              } else {
-                  $this->jsonReturn(-1,'更新失败');
-              }
-          }
-      }else{
-        $data = AppsModel::find($id);
-        return $this->fetch('edit', ['data' => $data]);
-      }
-
+        if ($this->request->isPost()) {
+            $data            = $this->request->param();
+            $validate_result = $this->validate($data, 'Apps');
+            if ($validate_result !== true) {
+                $this->error($validate_result);
+            } else {
+                $AppsModel = new AppsModel();
+                if ($AppsModel->allowField(true)->save($data, $id) !== false) {
+                    $AppsModel->itemCache($id, null);
+                    $this->jsonReturn(0, '更新成功');
+                } else {
+                    $this->jsonReturn(-1, '更新失败');
+                }
+            }
+        } else {
+            $data = AppsModel::find($id);
+            return $this->fetch('edit', ['data' => $data]);
+        }
     }
-
 }

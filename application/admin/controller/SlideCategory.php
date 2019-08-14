@@ -1,4 +1,5 @@
 <?php
+
 namespace app\admin\controller;
 
 use app\admin\controller\AdminBase;
@@ -14,7 +15,6 @@ class SlideCategory extends AdminBase
     protected function initialize()
     {
         parent::initialize();
-
     }
 
     /**
@@ -34,17 +34,17 @@ class SlideCategory extends AdminBase
      */
     public function add()
     {
-      if ($this->request->isPost()) {
-          $data = $this->request->post();
+        if ($this->request->isPost()) {
+            $data = $this->request->post();
 
-          if (Db::name('slide_category')->insert($data)) {
-            $this->jsonReturn(0,'保存成功');
-          } else {
-            $this->jsonReturn(-1,'保存失败');
-          }
-      }else{
-        return $this->fetch();
-      }
+            if (Db::name('slide_category')->insert($data)) {
+                $this->jsonReturn(0, '保存成功');
+            } else {
+                $this->jsonReturn(-1, '保存失败');
+            }
+        } else {
+            return $this->fetch();
+        }
     }
 
 
@@ -56,19 +56,18 @@ class SlideCategory extends AdminBase
      */
     public function edit($id)
     {
-      if ($this->request->isPost()) {
-          $data = $this->request->post();
+        if ($this->request->isPost()) {
+            $data = $this->request->post();
 
-          if (Db::name('slide_category')->update($data) !== false) {
-              $this->jsonReturn(0,'更新成功');
-          } else {
-              $this->jsonReturn(-1,'更新失败');
-          }
-      }else{
-        $slide_category = Db::name('slide_category')->find($id);
-        return $this->fetch('edit', ['slide_category' => $slide_category]);
-      }
-
+            if (Db::name('slide_category')->update($data) !== false) {
+                $this->jsonReturn(0, '更新成功');
+            } else {
+                $this->jsonReturn(-1, '更新失败');
+            }
+        } else {
+            $slide_category = Db::name('slide_category')->find($id);
+            return $this->fetch('edit', ['slide_category' => $slide_category]);
+        }
     }
 
 
@@ -80,9 +79,9 @@ class SlideCategory extends AdminBase
     public function delete($id)
     {
         if (Db::name('slide_category')->delete($id) !== false) {
-          $this->jsonReturn(0,'删除成功');
+            $this->jsonReturn(0, '删除成功');
         } else {
-          $this->jsonReturn(-1,'删除失败');
+            $this->jsonReturn(-1, '删除失败');
         }
     }
 }

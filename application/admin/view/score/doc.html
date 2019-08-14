@@ -3,15 +3,15 @@
 <div class="amain-body">
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
-      <ul class="amain-tool-bar" >
-          <li ><a href="{:url('admin/ScoreConfigs/index')}" >配置列表</a></li>
-          <li {php}if($cate=='score'){echo 'class="layui-this"';}{/php}><a href="{:url('admin/Score/doc',['cate'=>'score'])}"  >积分文档</a></li>
-          <li {php}if($cate=='lottery'){echo 'class="layui-this"';}{/php}><a href="{:url('admin/Score/doc',['cate'=>'lottery'])}"  >抽奖文档</a></li>
-          <li class="btn-item btn-item-add">
-            <a class="layui-btn layui-btn-sm layui-btn-success " onclick="openLayer('{:url('admin/Score/doc_add',['cate'=>$cate])}',{area: ['96%', '90%'], title:'添加文档'});" href="javascript:void(0);"   >
-            <i class="fa fa-plus"></i> 添加文档</a>
-          </li>
-      </ul>
+        <ul class="amain-tool-bar" >
+            <li ><a href="{:url('admin/ScoreConfigs/index')}" >配置列表</a></li>
+            <li {php}if($cate=='score'){echo 'class="layui-this"';}{/php}><a href="{:url('admin/Score/doc',['cate'=>'score'])}"  >积分文档</a></li>
+            <li {php}if($cate=='lottery'){echo 'class="layui-this"';}{/php}><a href="{:url('admin/Score/doc',['cate'=>'lottery'])}"  >抽奖文档</a></li>
+            <li class="btn-item btn-item-add">
+                <a class="layui-btn layui-btn-sm layui-btn-success " onclick="openLayer('{:url('admin/Score/doc_add',['cate'=>$cate])}',{area: ['96%', '90%'], title:'添加文档'});" href="javascript:void(0);"   >
+                <i class="fa fa-plus"></i> 添加文档</a>
+            </li>
+        </ul>
 
         <div class="layui-tab-content">
 
@@ -43,7 +43,7 @@
                             <td>{php}echo $vo['status']==1 ? '显示' : '不显示';{/php}</td>
                             <td>{$vo.create_time}</td>
                             <td>
-                              <a onclick="openLayer('{:url('admin/Score/doc_edit',['id'=>$vo['id']])}',{area: ['96%', '90%'], title:'编辑文档 #{$vo.id}'});" href="javascript:void(0);" class="layui-btn layui-btn-sm "     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
+                                <a onclick="openLayer('{:url('admin/Score/doc_edit',['id'=>$vo['id']])}',{area: ['96%', '90%'], title:'编辑文档 #{$vo.id}'});" href="javascript:void(0);" class="layui-btn layui-btn-sm "     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
                             </td>
                         </tr>
                         {/foreach}

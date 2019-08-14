@@ -27,6 +27,6 @@ return [
     'app_end'      => [],
 
     'check_dept_auth' => [
-      'app\\admin\\behavior\\CheckDeptAuth',
+        'app\\admin\\behavior\\CheckDeptAuth',
     ]
 ];

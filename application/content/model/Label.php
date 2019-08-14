@@ -1,4 +1,5 @@
 <?php
+
 namespace app\content\model;
 
 use think\Db;
@@ -15,7 +16,6 @@ class Label extends Model
     protected static function init()
     {
         parent::init();
-
     }
 
 
@@ -37,26 +37,23 @@ class Label extends Model
      * @param  integer $recache [description]
      * @return [type]           [description]
      */
-    public function getList($recache = 0){
-      $rKey = "carpool:label:list";
-      $redis = new RedisData();
-      $data = json_decode($redis->get($rKey),true);
+    public function getList($recache = 0)
+    {
+        $rKey = "carpool:label:list";
+        $redis = new RedisData();
+        $data = json_decode($redis->get($rKey), true);
 
-      if(!$data || $recache){
-        $data  = $this->where([['is_delete','=',0]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
-        $redis->set($rKey,json_encode($data));
-      }
-      return $data;
+        if (!$data || $recache) {
+            $data  = $this->where([['is_delete', '=', 0]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+            $redis->set($rKey, json_encode($data));
+        }
+        return $data;
     }
 
 
-    public function deleteListCache(){
-      $redis = new RedisData();
-      $redis->delete("carpool:label:list");
-
+    public function deleteListCache()
+    {
+        $redis = new RedisData();
+        $redis->delete("carpool:label:list");
     }
-
-
-
-
 }

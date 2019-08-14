@@ -72,12 +72,12 @@
                     auth_rule_ids: auth_rule_ids
                 },
                 success: function (res) {
-                  if (res.code === 0) {
-                    setTimeout(function () {
-                      location.href = "{:url('admin/auth_group/index')}";
-                    }, 1000);
-                  }
-                  layer.msg(res.desc);
+                    if (res.code === 0) {
+                        setTimeout(function () {
+                        location.href = "{:url('admin/auth_group/index')}";
+                        }, 1000);
+                    }
+                    layer.msg(res.desc);
                 }
             });
         });

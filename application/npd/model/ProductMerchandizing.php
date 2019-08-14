@@ -1,4 +1,5 @@
 <?php
+
 namespace app\npd\model;
 
 use think\Db;
@@ -10,7 +11,4 @@ class ProductMerchandizing extends Model
 
     protected $connection = 'database_npd';
     protected $table = 't_product_merchandizing';
-
-   
-
 }

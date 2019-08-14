@@ -1,11 +1,11 @@
 <?php
+
 namespace app\score\model;
 
 use think\Model;
 use my\RedisData;
 
-
-class  Configs extends Model
+class Configs extends Model
 {
     // protected $insert = ['create_time'];
 
@@ -22,8 +22,4 @@ class  Configs extends Model
     protected $connection = 'database_score';
 
     protected $pk = 'id';
-
-
-
-
 }

@@ -1,82 +1,83 @@
 <div class="amain-body page-good-detail">
 
     <div style="text-align:center; margin:-40px 0 0;">
-      <div class="cp-avatar" style="background-image:url('{$data.userInfo.avatar}')"></div>
+        <div class="cp-avatar" style="background-image:url('{$data.userInfo.avatar}')"></div>
     </div>
 
     <h3>{:lang('m:s_l:Winning information')}</h3>
     <table class="layui-table">
-      <tbody>
-        <tr>
-          <td class="label" width="100">{:lang('m:s_l:Winning number')}</td>
-          <td> {$data.publish_number}</td>
-        </tr>
-        <tr>
-          <td class="label" width="100">{:lang('Prize name')}</td>
-          <td>
-            <div  class="cover-thumb " style=" display: inline-block; vertical-align:middle;  height:30px;width:40px; <?php echo $data['thumb'] ? 'background-image:url(\''.$data['thumb'].'\')' : ''; ?>"> </div>
-            <span class="layui-elip">【{:lang('Phase %d',[$data['publication_number']])}】 {$data.prize_name|iconv_substr=0,14} </span>
-          </td>
-        </tr>
+        <tbody>
+            <tr>
+            <td class="label" width="100">{:lang('m:s_l:Winning number')}</td>
+            <td> {$data.publish_number}</td>
+            </tr>
+            <tr>
+            <td class="label" width="100">{:lang('Prize name')}</td>
+            <td>
+                <div  class="cover-thumb " style=" display: inline-block; vertical-align:middle;  height:30px;width:40px; <?php echo $data['thumb'] ? 'background-image:url(\''.$data['thumb'].'\')' : ''; ?>"> </div>
+                <span class="layui-elip">【{:lang('Phase %d',[$data['publication_number']])}】 {$data.prize_name|iconv_substr=0,14} </span>
+            </td>
+            </tr>
 
-        <tr>
-          <td class="label">{:lang('Participation time')}</td>
-          <td>
-            {$data.buy_time}
-            <span style=" color: #ccc; margin-left:5px">
-              <?php echo  $data['platform']===2 ? '<i class="fa fa-android"></i>' : ($data['platform']===1 ? '<i class="fa fa-apple"></i>':''); ?>
-            </span>
-          </td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Lottery time')}</td>
-          <td>
-            {$data.end_time}
-          </td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Redeemed')}?</td>
-          <td>
-            {$data.exchange_time ? lang('Yes').' '.lang('Redemption time').':' : lang('No') }
-            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.exchange_time ? strtotime($data.exchange_time)*1000 : '-'}</span>
-          </td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Purchase price')}</td>
-          <td>{$data.amount}</td>
-        </tr>
+            <tr>
+            <td class="label">{:lang('Participation time')}</td>
+            <td>
+                {$data.buy_time}
+                <span style=" color: #ccc; margin-left:5px">
+                <?php echo  $data['platform']===2 ? '<i class="fa fa-android"></i>' : ($data['platform']===1 ? '<i class="fa fa-apple"></i>':''); ?>
+                </span>
+            </td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('Lottery time')}</td>
+            <td>
+                {$data.end_time}
+            </td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('Redeemed')}?</td>
+            <td>
+                {$data.exchange_time ? lang('Yes').' '.lang('Redemption time').':' : lang('No') }
+                <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.exchange_time ? strtotime($data.exchange_time)*1000 : '-'}</span>
+            </td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('Purchase price')}</td>
+            <td>{$data.amount}</td>
+            </tr>
 
-      </tbody>
-    </table>
-    <div class="blank10"></div>
+        </tbody>
+        </table>
+        <div class="blank10"></div>
 
 
-    <h3>{:lang('User Info')}</h3>
-    <table class="layui-table">
-      <tbody>
-        <tr>
-          <td class="label" width="100">{:lang('Username')}</td>
-          <td>{$data.userInfo.loginname}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Phone')}</td>
-          <td>{$data.userInfo.phone}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Name')}</td>
-          <td>{$data.userInfo.name}</td>
-        </tr>
+        <h3>{:lang('User Info')}</h3>
+        <table class="layui-table">
+        <tbody>
+            <tr>
+                <td class="label" width="100">{:lang('Username')}</td>
+                <td>{$data.userInfo.loginname}</td>
+            </tr>
+            <tr>
+                <td class="label">{:lang('Phone')}</td>
+                <td>{$data.userInfo.phone}</td>
+            </tr>
+            <tr>
+                <td class="label">{:lang('Name')}</td>
+                <td>{$data.userInfo.name}</td>
+            </tr>
 
-        <tr>
-          <td class="label">{:lang('Company')}</td>
-          <td><?php echo isset($companys[$data['userInfo']['company_id']]) ? $companys[$data['userInfo']['company_id']] : ''; ?></td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Department')}</td>
-          <!-- <td>{$data.userInfo.Department}</td> -->
-          <td>{$data.userInfo.department_id ? $data.userInfo.full_department|str_replace=","," / ",### : $data.userInfo.Department}</td>
-        </tr>
-      </tbody>
+            <tr>
+                <td class="label">{:lang('Company')}</td>
+                <td><?php echo isset($companys[$data['userInfo']['company_id']]) ? $companys[$data['userInfo']['company_id']] : ''; ?>
+                </td>
+            </tr>
+            <tr>
+                <td class="label">{:lang('Department')}</td>
+                <!-- <td>{$data.userInfo.Department}</td> -->
+                <td>{$data.userInfo.department_id ? $data.userInfo.full_department|str_replace=","," / ",### : $data.userInfo.Department}</td>
+            </tr>
+        </tbody>
     </table>
 
     <div class="blank10"></div>
@@ -95,39 +96,36 @@
 
 </div>
 
-
 <script>
-var RESOLVE_INIT = {
+    var RESOLVE_INIT = {
 
-  data : {
+        data: {
 
-  },
-  init : function(){
-    cRenderTimes();
-  },
-  finish : function(id){
-    // var order_no = $("input[name=order_no]").val();
-    // console.log(order_no)
-    layer.confirm("{:lang('Are you sure you want to end this redemption?')}",
-      {
-        closeBtn: 1,
-        btn: [myLang.r('Yes'),myLang.r('No')] //按钮
-      }, function(){
-        ajaxSubmit({
-          url:"<?php echo url('admin/ScoreWinners/finish');?>",
-          data:{id:id},
-          success:function(res){
-            console.log(res);
-          }
-        })
-      }
-    );
+        },
+        init: function () {
+            cRenderTimes();
+        },
+        finish: function (id) {
+            // var order_no = $("input[name=order_no]").val();
+            // console.log(order_no)
+            layer.confirm("{:lang('Are you sure you want to end this redemption?')}", {
+                closeBtn: 1,
+                btn: [myLang.r('Yes'), myLang.r('No')] //按钮
+            }, function () {
+                ajaxSubmit({
+                    url: "<?php echo url('admin/ScoreWinners/finish');?>",
+                    data: {
+                        id: id
+                    },
+                    success: function (res) {
+                        console.log(res);
+                    }
+                })
+            });
 
-  }
-
-
-}
-RESOLVE_INIT.init();
+        }
 
 
+    }
+    RESOLVE_INIT.init();
 </script>

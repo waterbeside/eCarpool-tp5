@@ -1,8 +1,10 @@
 <?php
+
 namespace app\carpool\model;
 
 use app\common\model\Configs;
 use app\common\model\BaseModel;
+use my\RedisData;
 // use think\Model;
 
 class User extends BaseModel
@@ -29,17 +31,126 @@ class User extends BaseModel
    * @param string 用户名
    * @return void
    */
-  public function getDetail($account = "")
+  public function getDetail($account = "", $exp = 3600)
   {
     if (!$account) {
       return false;
     }
+    $cacheKey = "carpool:user:detail:ac_" . strtolower($account);
+    $redis = new RedisData();
+    $cacheData = $redis->cache($cacheKey);
+    if ($cacheData) {
+      return $cacheData;
+    }
+    $field = "u.*, c.company_name, d.name as department_name , d.path, d.fullname as department_fullname ";
+    $map = [
+      ['loginname', '=', $account],
+      ['is_delete', '=', 0],
+    ];
     $carpoolUser_jion =  [
       ['company c', 'u.company_id = c.company_id', 'left'],
+      ['t_department d', 'u.department_id = d.id', 'left'],
     ];
-    return  $this->alias('u')->join($carpoolUser_jion)->where(['loginname' => $account])->find();
+    $res = $this->alias('u')->field($field)->join($carpoolUser_jion)->where($map)->find();
+    if(!$res){
+      $map = [
+        ['loginname', '=', $account],
+      ];
+      $res = $this->alias('u')->field($field)->join($carpoolUser_jion)->where($map)->find();
+    }
+
+    if ($res) {
+      $res = $res->toArray();
+      $exp_offset = getRandValFromArray([0, 5, 10, 15, 20, 25, 30]);
+      $exp +=  $exp_offset * 60;
+      $cacheData = $redis->cache($cacheKey, $res, $exp);
+    }
+    return $res;
   }
 
+  /**
+   * 删除用户详情数据
+   *
+   * @param string $account
+   * @return void
+   */
+  public function deleteDetailCache($account = "")
+  {
+    $cacheKey = "carpool:user:detail:ac_" . strtolower($account);
+    $redis = new RedisData();
+    $redis->delete($cacheKey);
+  }
+
+  /**
+   * 检查旧用户数据是否不同
+   *
+   * @param array $data 要比较的数据
+   * @param integer $ruleType 0：以key为字段比较，传什么比什么。1：比较HR的同步数据
+   * @return void
+   */
+  public function checkUserDifferent($data, $ruleType = 0)
+  {
+    $isDifferent = false;
+    $fields = [];
+
+    if (($ruleType && !isset($data['Code'])) || (!$ruleType && !isset($data['loginname']))) {
+      $this->errorCode = 992;
+      $this->errorMsg = '参数缺少用户名';
+      return false;
+    }
+
+    if ($ruleType) {
+      $checkData = [
+        "loginname" => $data['Code'],
+        "general_name" => $data['EmployeeName'],
+        "department_fullname" => str_replace('/', ',', $data['OrgFullName']),
+        "mail" => $data['EMail'] ?  $data['EMail'] : '',
+        "sex" => $data['Sex'],
+      ];
+      $modifty_time = $data['ModiftyTime'];
+    } else {
+      $checkData = $data;
+    }
+
+
+    //查出旧数据
+    $loginname = $checkData['loginname'];
+    $oldData = $this->getDetail($loginname);
+
+    if (!$oldData) {
+      $this->errorCode = 20002;
+      $this->errorMsg = '查无数据';
+      return true;
+    }
+
+    //开始比较新旧数据
+    foreach ($checkData as $key => $value) {
+      if ($key == 'loginname') {
+        continue;
+      }
+      if (!isset($oldData[$key])) {
+        continue;
+      }
+      if ($oldData[$key] != $value) {
+        $isDifferent = true;
+        $fields[] = $key;
+      }
+    }
+
+    if ($ruleType  && strtotime($oldData['modifty_time']) < strtotime($modifty_time)) {
+      if (count($fields) < 1) {
+        //TODO: 更新正式表的修改时间。（暂时不作修改）
+        // $this->where([['loginname','=',$loginname]])->update(['modifty_time'=>$modifty_time]);
+        // $this->deleteDetailCache($loginname);
+      }
+    }
+
+    if ($isDifferent) {
+      return $fields;
+    } else {
+      return false;
+    }
+  }
 
   /**
    * 加密密码
@@ -56,7 +167,6 @@ class User extends BaseModel
       return md5($password);
     }
   }
-
 
   /**
    * 创建加密后的密码
@@ -121,7 +231,7 @@ class User extends BaseModel
         return $userData;
       } else {
         $this->errorCode = 10001;
-        // $this->errorMsg = lang('User name or password error');
+        $this->errorMsg = lang('User name or password error');
         return false;
       }
     }
@@ -142,16 +252,16 @@ class User extends BaseModel
 
 
   /**
-   * 通过账号密码，取得用户信息
+   * 验证hr系统账号密码是否正确
    * @param  string $loginname 用户名
    * @param  string $password  密码
-   * @return array||false
+   * @return balean 
    */
   public function checkInitPwd($loginname, $password)
   {
-    $scoreConfigs = (new Configs())->getConfigs("score");
+    // $scoreConfigs = (new Configs())->getConfigs("score");
+    // $token =  $scoreConfigs['score_token'];
     $url = config("secret.HR_api.checkPwd");
-    $token =  $scoreConfigs['score_token'];
     $postData = [
       'code' => $loginname,
       'pwd' => $password,
@@ -226,6 +336,7 @@ class User extends BaseModel
         $inputUserData['uid'] = $returnId;
         $inputUserData['success'] = 1;
         $this->errorMsg = "user:添加成功。";
+        $this->deleteDetailCache($oldData['loginname']); //删除用户信息缓存
         return $inputUserData;
       } else {
         $this->errorMsg = "从临时库入库到正式库时，失败（旧）";
@@ -245,6 +356,7 @@ class User extends BaseModel
       } else {
         $inputUserData['success'] = 2;
         $this->errorMsg = "user:更新成功。";
+        $this->deleteDetailCache($oldData['loginname']); //删除用户信息缓存
         return $inputUserData;
       }
     }

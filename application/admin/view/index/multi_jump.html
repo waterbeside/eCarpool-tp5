@@ -4,13 +4,13 @@
 
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
-      <div class="blank20"></div>
-      <blockquote class="layui-elem-quote">{$msg|raw}</blockquote>
+        <div class="blank20"></div>
+        <blockquote class="layui-elem-quote">{$msg|raw}</blockquote>
     </div>
     <?php
-      if($url){
-        echo '<i class="fa fa-spinner fa-spin"></i> 正准备跳转下一页';
-      }
+        if($url){
+            echo '<i class="fa fa-spinner fa-spin"></i> 正准备跳转下一页';
+        }
     ?>
 </div>
 
@@ -19,9 +19,9 @@
 <script>
 var url = "<?php echo $url;?>";
 if(url!=""){
-  setTimeout(function(){
-    window.location.href="<?php echo $url;?>";
-  },100)
+    setTimeout(function(){
+        window.location.href="<?php echo $url;?>";
+    },100)
 }
 
 </script>

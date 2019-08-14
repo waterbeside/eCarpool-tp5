@@ -1,74 +1,78 @@
 <div class="amain-body P-user-detail">
 
     <div style="text-align:center; margin:-38px 0 10px;">
-      <div class="cp-avatar" style="background-image:url('{$data.avatar}')"></div>
+        <div class="cp-avatar" style="background-image:url('{$data.avatar}')"></div>
     </div>
     <?php
     if($data['is_delete']){
-      echo '<blockquote class="layui-elem-quote">该账号已被逻辑删除</blockquote>';
+        echo '<blockquote class="layui-elem-quote">该账号已被逻辑删除</blockquote>';
     }
     ?>
 
     <table class="layui-table">
-      <tbody>
-        <tr>
-          <td class="label" width="130">{:lang('Account')}</td>
-          <td>{$data.loginname}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('User:Phone')}</td>
-          <td>{$data.phone}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('User:Mobile')}</td>
-          <td>{$data.mobile}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('User:Show name')}</td>
-          <td>{$data.name}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('User:Real name')}</td>
-          <td>{$data.nativename}</td>
-        </tr>
-        <tr>
-          <td class="label">General Name</td>
-          <td>{$data.general_name}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Email')}</td>
-          <td>{$data.mail}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Sex')}</td>
-          <td>
-            {if condition="$data.sex==1"}{:lang('Male')}{/if}
-            {if condition="$data.sex==2"}{:lang('Female')}{/if}
-            {if condition="$data.sex==0"}-{/if}
-          </td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Company')}</td>
-          <td>{$companys[$data['company_id']] ? $companys[$data['company_id']] : $data['company_id'] }</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Department')}</td>
-          <td>{$data.Department}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Department')}(HR)</td>
-          <td>{$data.full_department}</td>
-        </tr>
-      </tbody>
+        <tbody>
+            <tr>
+            <td class="label" width="130">{:lang('Account')}</td>
+            <td>{$data.loginname}</td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('User:Phone')}</td>
+            <td>{$data.phone}</td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('User:Mobile')}</td>
+            <td>{$data.mobile}</td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('User:Show name')}</td>
+            <td>{$data.name}</td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('User:Real name')}</td>
+            <td>{$data.nativename}</td>
+            </tr>
+            <tr>
+            <td class="label">General Name</td>
+            <td>{$data.general_name}</td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('Email')}</td>
+            <td>{$data.mail}</td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('Sex')}</td>
+            <td>
+                {if condition="$data.sex==1"}{:lang('Male')}{/if}
+                {if condition="$data.sex==2"}{:lang('Female')}{/if}
+                {if condition="$data.sex==0"}-{/if}
+            </td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('Company')}</td>
+            <td>{$companys[$data['company_id']] ? $companys[$data['company_id']] : $data['company_id'] }</td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('Department')}</td>
+            <td>{$data.Department}</td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('Department')}(HR)</td>
+            <td>{$data.full_department}</td>
+            </tr>
+            <tr>
+                <td class="label">{:lang('is_delete')}</td>
+                <td>{$data.is_delete}</td>
+            </tr>
+        </tbody>
     </table>
     <div class="modal-bottom-btns-bar">
-      <button type="button" class="close layui-btn layui-btn-primary" data-dismiss="modal" aria-label="Close"><i class="fa fa-times"></i> {:lang('Cancel')}</button>
+        <button type="button" class="close layui-btn layui-btn-primary" data-dismiss="modal" aria-label="Close"><i class="fa fa-times"></i> {:lang('Cancel')}</button>
 
-      <?php if($auth['admin/pushmsg/add'] ){ ?>
-        <a href="{:url('admin/pushmsg/add',['uid'=>$data['uid']])}" class="layui-btn layui-btn-success " data-target="#modal-pushmsg" data-title="Push message" data-top="30px" data-width="580px"  data-trigger="modal" title="Push message">
-          <i class="fa fa-envelope"></i> 推送消息
-        </a>
-      <?php } ?>
+        <?php if($auth['admin/pushmsg/add'] ){ ?>
+            <a href="{:url('admin/pushmsg/add',['uid'=>$data['uid']])}" class="layui-btn layui-btn-success " data-target="#modal-pushmsg" data-title="Push message" data-top="30px" data-width="580px"  data-trigger="modal" title="Push message">
+            <i class="fa fa-envelope"></i> 推送消息
+            </a>
+        <?php } ?>
     </div>
 </div>
 

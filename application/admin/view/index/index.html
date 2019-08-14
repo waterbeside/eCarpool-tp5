@@ -25,8 +25,8 @@
     <!--头部-->
     <div class="layui-header header">
         <a href="">
-          <img class="logo" src="__STATIC__/images/admin_logo.png" alt="">
-          <!-- {:lang('Carpool Management')} -->
+            <img class="logo" src="__STATIC__/images/admin_logo.png" alt="">
+            <!-- {:lang('Carpool Management')} -->
         </a>
         <ul class="layui-nav" style="position: absolute;top: 0;right: 20px;background: none;">
             <!-- <li class="layui-nav-item"><a href="{:url('/')}" target="_blank">前台首页</a></li> -->
@@ -43,15 +43,15 @@
             <li class="layui-nav-item m-language-box">
 
                 <a href="javascript:;">
-                  <label><i class="fa fa-language"></i></label>
-                  <span>
-                    <?php echo $active_lang ? ( isset($langs_select_list[$active_lang]) ? "&nbsp;".$langs_select_list[$active_lang] : 'Language') : 'Language';?>
-                  </span>
+                    <label><i class="fa fa-language"></i></label>
+                    <span>
+                        <?php echo $active_lang ? ( isset($langs_select_list[$active_lang]) ? "&nbsp;".$langs_select_list[$active_lang] : 'Language') : 'Language';?>
+                    </span>
                 </a>
                 <dl class="layui-nav-child"> <!-- 二级菜单 -->
-                  {foreach name="langs_select_list" item="v" key="k"}
-                    <dd><a href="?lang={$k}" >{$v}</a></dd>
-                  {/foreach}
+                    {foreach name="langs_select_list" item="v" key="k"}
+                        <dd><a href="?lang={$k}" >{$v}</a></dd>
+                    {/foreach}
 
                 </dl>
             </li>
@@ -59,66 +59,66 @@
     </div>
 
     <div class="aframe-box">
-      <!--侧边栏-->
-      <div class="aframe-sidebox">
-        <div class="layui-side layui-bg-black">
-            <div class="layui-side-scroll">
-                <ul class="layui-nav layui-nav-tree" lay-filter="aside">
-                    <li class="layui-nav-title" data-target="showFull"  ><span class="aframe-icon"><i class="fa fa-list"></i></span>{:lang('Menu')}</li>
-                    <li class="layui-nav-item">
-                        <a href="javascript:;" data-href="{:url('admin/index/main')}" data-id="000"><span class="aframe-icon"><i class="fa fa-home"></i></span>{:lang('Welcome')}</a>
-                    </li>
-                    {foreach name="menu" item="vo"}
-                    {if condition="isset($vo['children'])"}
-                    <li class="layui-nav-item">
-                        <a href="javascript:;"><span class="aframe-icon"><i class="{$vo.icon}"></i></span>{$vo.title}</a>
-                        <dl class="layui-nav-child">
-                            {foreach name="vo['children']" item="v"}
-                            <dd><a  href="javascript:;" data-href="{:url($v.name)}" data-id={$v.id}>
-                              <span class="aframe-icon">{php} echo $v['icon'] ? '<i class="'.$v['icon'].'"></i>': '<i class="fa fa-caret-right"></i>' ; {/php}</span>
-                              {$v.title}</a>
-                            </dd>
-                            {/foreach}
-                        </dl>
-                    </li>
-                    {else /}
-                    <li class="layui-nav-item">
-                        <a href="javascript:;" data-href="{:url($vo.name)}" data-id={$vo.id}><span class="aframe-icon"><i class="{$vo.icon}"></i></span>{$vo.title}</a>
-                    </li>
-                    {/if}
-                    {/foreach}
+        <!--侧边栏-->
+        <div class="aframe-sidebox">
+            <div class="layui-side layui-bg-black">
+                <div class="layui-side-scroll">
+                    <ul class="layui-nav layui-nav-tree" lay-filter="aside">
+                        <li class="layui-nav-title" data-target="showFull"  ><span class="aframe-icon"><i class="fa fa-list"></i></span>{:lang('Menu')}</li>
+                        <li class="layui-nav-item">
+                            <a href="javascript:;" data-href="{:url('admin/index/main')}" data-id="000"><span class="aframe-icon"><i class="fa fa-home"></i></span>{:lang('Welcome')}</a>
+                        </li>
+                        {foreach name="menu" item="vo"}
+                        {if condition="isset($vo['children'])"}
+                        <li class="layui-nav-item">
+                            <a href="javascript:;"><span class="aframe-icon"><i class="{$vo.icon}"></i></span>{$vo.title}</a>
+                            <dl class="layui-nav-child">
+                                {foreach name="vo['children']" item="v"}
+                                <dd><a  href="javascript:;" data-href="{:url($v.name)}" data-id={$v.id}>
+                                <span class="aframe-icon">{php} echo $v['icon'] ? '<i class="'.$v['icon'].'"></i>': '<i class="fa fa-caret-right"></i>' ; {/php}</span>
+                                {$v.title}</a>
+                                </dd>
+                                {/foreach}
+                            </dl>
+                        </li>
+                        {else /}
+                        <li class="layui-nav-item">
+                            <a href="javascript:;" data-href="{:url($vo.name)}" data-id={$vo.id}><span class="aframe-icon"><i class="{$vo.icon}"></i></span>{$vo.title}</a>
+                        </li>
+                        {/if}
+                        {/foreach}
 
-                    <li class="layui-nav-item" style="height: 30px; text-align: center"></li>
-                </ul>
+                        <li class="layui-nav-item" style="height: 30px; text-align: center"></li>
+                    </ul>
+                </div>
             </div>
         </div>
-      </div>
-      <!--主体-->
+        <!--主体-->
 
-      <div class="layui-body aframe-con" id="container">
-        <div class="layui-tab" lay-allowClose="true" lay-filter="tab">
-          <ul class="layui-tab-title">
-              <li class="layui-this" lay-id="000">
-                  {:lang('Welcome')}
-              </li>
-          </ul>
-          <div class="aframe-tab-tool"><i class="fa fa-navicon"></i></div>
-          <div class="aframe-tab-tool-options layui-anim layui-anim-upbit"  >
-            <ul>
-              <li   data-target="refreshCurrent">{:lang('Refresh current tab')}</li>
-              <li  data-target="closeCurrent">{:lang('Close current tab')}</li>
-              <li   data-target="closeOther">{:lang('Close other tabs')}</li>
-              <!-- <li   data-target="closeAll">关闭所有选项卡</li> -->
+        <div class="layui-body aframe-con" id="container">
+            <div class="layui-tab" lay-allowClose="true" lay-filter="tab">
+            <ul class="layui-tab-title">
+                <li class="layui-this" lay-id="000">
+                    {:lang('Welcome')}
+                </li>
             </ul>
-          </div>
-          <div class="layui-tab-content">
-              <div class="layui-tab-item layui-show">
-                  <iframe src="{:url('admin/index/main')}" name="{:lang('Welcome')}" index="0"></iframe>
-              </div>
-          </div>
+            <div class="aframe-tab-tool"><i class="fa fa-navicon"></i></div>
+            <div class="aframe-tab-tool-options layui-anim layui-anim-upbit"  >
+                <ul>
+                <li   data-target="refreshCurrent">{:lang('Refresh current tab')}</li>
+                <li  data-target="closeCurrent">{:lang('Close current tab')}</li>
+                <li   data-target="closeOther">{:lang('Close other tabs')}</li>
+                <!-- <li   data-target="closeAll">关闭所有选项卡</li> -->
+                </ul>
+            </div>
+            <div class="layui-tab-content">
+                <div class="layui-tab-item layui-show">
+                    <iframe src="{:url('admin/index/main')}" name="{:lang('Welcome')}" index="0"></iframe>
+                </div>
+            </div>
 
+            </div>
         </div>
-      </div>
     </div>
 
 

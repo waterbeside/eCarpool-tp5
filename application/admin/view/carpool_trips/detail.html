@@ -1,104 +1,102 @@
 {extend name="base" /}
 {block name="body"}
 <div class="amain-body P-trip-detail">
-  <div class="P-trip-detail-inner" style="height: 50%">
-    <div class="trip-time"><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($data.time)*1000}</span></div>
-    <div class="trip-start-end">
-      <div class="start">
-        <i class='fa fa-map-marker'></i> {$data.start_addressname}
-      </div>
-      <div class="line">
-        >
-      </div>
-      <div class="end">
-        <i class='fa fa-map-marker'></i> {$data.end_addressname}
-      </div>
-    </div>
-    <div class="map-content" id='map-content' >
-        loading map <i class="fa fa-spinner fa-spin"></i>
-    </div>
-    <div class="member-bar">
-      <div class="member-bar-inner">
-        <a class="member-item driver" href="{:url('admin/User/public_detail',['id'=>$data['d_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}">
-          <div class="avatar" style="background-image:url('{$data.d_avatar}')"></div>
-          <div class="member-info ">
-              <p class="type">{:lang('Driver')}</p>
-              <p class="name layui-elip"><b title="{$data.d_name} / {$data.d_loginname}">{$data.d_name}</b></p>
-              <!-- <p class="loginname layui-elip"><small>{$data.d_loginname}</small></p> -->
+    <div class="P-trip-detail-inner" style="height: 50%">
+        <div class="trip-time"><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($data.time)*1000}</span></div>
+        <div class="trip-start-end">
+        <div class="start">
+            <i class='fa fa-map-marker'></i> {$data.start_addressname}
+        </div>
+        <div class="line">
+            >
+        </div>
+        <div class="end">
+            <i class='fa fa-map-marker'></i> {$data.end_addressname}
+        </div>
+        </div>
+        <div class="map-content" id='map-content' >
+            loading map <i class="fa fa-spinner fa-spin"></i>
+        </div>
+        <div class="member-bar">
+        <div class="member-bar-inner">
+            <a class="member-item driver" href="{:url('admin/User/public_detail',['id'=>$data['d_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}">
+            <div class="avatar" style="background-image:url('{$data.d_avatar}')"></div>
+            <div class="member-info ">
+                <p class="type">{:lang('Driver')}</p>
+                <p class="name layui-elip"><b title="{$data.d_name} / {$data.d_loginname}">{$data.d_name}</b></p>
+                <!-- <p class="loginname layui-elip"><small>{$data.d_loginname}</small></p> -->
 
-              <p class="phone">{$data.d_phone}</p>
-          </div>
-        </a>
-        <a class="member-item passenger" href="{:url('admin/User/public_detail',['id'=>$data['p_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}">
-          <div class="avatar" style="background-image:url('{$data.p_avatar}')"></div>
-          <div class="member-info ">
-              <p class="type">{:lang('Passenger')}</p>
-              <p class="name layui-elip"><b title="{$data.p_name} / {$data.p_loginname}">{$data.p_name}</b></p>
-              <!-- <p class="loginname layui-elip"><small>{$data.d_loginname}</small></p> -->
-
-              <p class="phone">{$data.d_phone}</p>
-          </div>
-        </a>
-
-      </div>
-    </div>
-
-  </div>
-
-    <table class="info-table layui-table">
-      <tbody>
-        <tr>
-          <td class="td-label" width="100">#</td>
-          <td>{$data.infoid}</td>
-        </tr>
-        <tr>
-          <td class="td-label">{:lang('Departure station')}</td>
-          <td><i class="fa fa-time"></i>{$data.start_addressname}</td>
-        </tr>
-        <tr>
-          <td class="td-label">{:lang('Destination')}</td>
-          <td>{$data.end_addressname}</td>
-        </tr>
-        <tr>
-          <td class="td-label">{:lang('Departure time')}</td>
-          <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($data.time)*1000}</span></td>
-        </tr>
-        <tr>
-          <td class="td-label">{:lang('Creation time')}</td>
-          <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($data.subtime)*1000}</span></td>
-        </tr>
-        <tr>
-          <td class="td-label" width="100">{:lang('Driver')}</td>
-          <td>
-            {php}echo $data['d_sex']==1 ? '<i class="fa fa-mars"></i>' : ($data['d_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
-            <a href="{:url('admin/User/public_detail',['id'=>$data['d_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}" style="color:#3d7ea3;">
-              {$data.d_name} ({$data.d_loginname})
+                <p class="phone">{$data.d_phone}</p>
+            </div>
             </a>
-            <p class="department">
-              {$data.d_department} / {php}echo $data['d_companyname']!='' ? $data['d_companyname'] : '-' ;{/php} /
-              <?php echo isset($companys[$data['d_company_id']]) ? $companys[$data['d_company_id']] : $data['d_company_id']; ?>
-            </p>
+            <a class="member-item passenger" href="{:url('admin/User/public_detail',['id'=>$data['p_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}">
+            <div class="avatar" style="background-image:url('{$data.p_avatar}')"></div>
+            <div class="member-info ">
+                <p class="type">{:lang('Passenger')}</p>
+                <p class="name layui-elip"><b title="{$data.p_name} / {$data.p_loginname}">{$data.p_name}</b></p>
+                <!-- <p class="loginname layui-elip"><small>{$data.d_loginname}</small></p> -->
 
-          </td>
-        </tr>
-        <tr>
-          <td class="td-label">{:lang('Passenger')}</td>
-          <td>
-            {php}echo $data['p_sex']==1 ? '<i class="fa fa-mars"></i>' : ($data['p_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
-            <a href="{:url('admin/User/public_detail',['id'=>$data['d_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}" style="color:#3d7ea3;">
-              {$data.p_name} ({$data.p_loginname})
+                <p class="phone">{$data.d_phone}</p>
+            </div>
             </a>
-            <p class="department">
-              {$data.p_department} / {php}echo $data['p_companyname']!='' ? $data['p_companyname'] : '-' ;{/php} /
-              <?php echo isset($companys[$data['p_company_id']]) ? $companys[$data['p_company_id']] : $data['p_company_id']; ?>
-            </p>
-          </td>
-        </tr>
 
-      </tbody>
+        </div>
+        </div>
+
+    </div>
+
+        <table class="info-table layui-table">
+        <tbody>
+            <tr>
+            <td class="td-label" width="100">#</td>
+            <td>{$data.infoid}</td>
+            </tr>
+            <tr>
+            <td class="td-label">{:lang('Departure station')}</td>
+            <td><i class="fa fa-time"></i>{$data.start_addressname}</td>
+            </tr>
+            <tr>
+            <td class="td-label">{:lang('Destination')}</td>
+            <td>{$data.end_addressname}</td>
+            </tr>
+            <tr>
+            <td class="td-label">{:lang('Departure time')}</td>
+            <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($data.time)*1000}</span></td>
+            </tr>
+            <tr>
+            <td class="td-label">{:lang('Creation time')}</td>
+            <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($data.subtime)*1000}</span></td>
+            </tr>
+            <tr>
+            <td class="td-label" width="100">{:lang('Driver')}</td>
+            <td>
+                {php}echo $data['d_sex']==1 ? '<i class="fa fa-mars"></i>' : ($data['d_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+                <a href="{:url('admin/User/public_detail',['id'=>$data['d_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}" style="color:#3d7ea3;">
+                {$data.d_name} ({$data.d_loginname})
+                </a>
+                <p class="department">
+                {$data.d_department} / {php}echo $data['d_companyname']!='' ? $data['d_companyname'] : '-' ;{/php} /
+                <?php echo isset($companys[$data['d_company_id']]) ? $companys[$data['d_company_id']] : $data['d_company_id']; ?>
+                </p>
+
+            </td>
+            </tr>
+            <tr>
+            <td class="td-label">{:lang('Passenger')}</td>
+            <td>
+                {php}echo $data['p_sex']==1 ? '<i class="fa fa-mars"></i>' : ($data['p_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+                <a href="{:url('admin/User/public_detail',['id'=>$data['d_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}" style="color:#3d7ea3;">
+                {$data.p_name} ({$data.p_loginname})
+                </a>
+                <p class="department">
+                {$data.p_department} / {php}echo $data['p_companyname']!='' ? $data['p_companyname'] : '-' ;{/php} /
+                <?php echo isset($companys[$data['p_company_id']]) ? $companys[$data['p_company_id']] : $data['p_company_id']; ?>
+                </p>
+            </td>
+            </tr>
+
+        </tbody>
     </table>
-
-
 </div>
 
 {/block}
@@ -109,44 +107,44 @@
 {block name="script"}
 <script>
 function showMap(targetId){
-  var lang = "{$active_lang}";
-  var map_type = "{$data.map_type}"
-  map_type = map_type === "1" ? 1 : 0;
-  var dataSetting = {
-        zoom: 12,
-        gridMapForeign: map_type,
-      };
-  
-  if(map_type){
-    dataSetting.features = ['bg','point','building'];
-  }
-  if(lang != 'zh-cn'){
-    // dataSetting.lang = 'en'
-  }else{
-    dataSetting.lang = 'zh'
-  }
-  var map = new AMap.Map(targetId,dataSetting);
-	
-  return map;
+    var lang = "{$active_lang}";
+    var map_type = "{$data.map_type}"
+    map_type = map_type === "1" ? 1 : 0;
+    var dataSetting = {
+            zoom: 12,
+            gridMapForeign: map_type,
+        };
+    
+    if(map_type){
+        dataSetting.features = ['bg','point','building'];
+    }
+    if(lang != 'zh-cn'){
+        // dataSetting.lang = 'en'
+    }else{
+        dataSetting.lang = 'zh'
+    }
+    var map = new AMap.Map(targetId,dataSetting);
+        
+    return map;
 }
 
 
 
 var data = {
-  start:["{$data.start_longitude}","{$data.start_latitude}"],
-  end:["{$data.end_longitude}","{$data.end_latitude}"]
+    start:["{$data.start_longitude}","{$data.start_latitude}"],
+    end:["{$data.end_longitude}","{$data.end_latitude}"]
 }
 var amapUrl = "<?php echo $data['map_type'] ? config('secret.amap_key.overseas') :  config('secret.amap_key.default'); ?>";
 cLoadScript(GV.config.url.amapScript+amapUrl,function(){
-  cLoadScript('__JS__/cAmap.js',function(){
-    var map = showMap('map-content');
-    cAmap.drawTripLine(data.start,data.end,{
-        map: map,
-        hideMarkers:true,
-    });
-    cAmap.addMarker(new AMap.LngLat(data.start[0], data.start[1]),map,{icon:"__IMAGES__/icon/map/start_point.png"})
-    cAmap.addMarker(new AMap.LngLat(data.end[0], data.end[1]),map,{icon:"__IMAGES__/icon/map/end_point.png"})
-  })
+    cLoadScript('__JS__/cAmap.js',function(){
+        var map = showMap('map-content');
+        cAmap.drawTripLine(data.start,data.end,{
+            map: map,
+            hideMarkers:true,
+        });
+        cAmap.addMarker(new AMap.LngLat(data.start[0], data.start[1]),map,{icon:"__IMAGES__/icon/map/start_point.png"})
+        cAmap.addMarker(new AMap.LngLat(data.end[0], data.end[1]),map,{icon:"__IMAGES__/icon/map/end_point.png"})
+    })
 });
 
 

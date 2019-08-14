@@ -1,0 +1,169 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <ul class="  amain-tool-bar">
+        <li class="layui-this"><a href="{:url('admin/contacts/configs')}">通讯录配置</a></li>
+        </ul>
+
+        <div class="layui-tab-content">
+
+        <div class="blank20"></div>
+        <div class="layui-card">
+            <div class="layui-card-header"><h3>通讯录组织架构状态</h3></div>
+            <div class="layui-card-body">
+            <form class="layui-form form-container"
+                action="{:url('admin/contacts/configs',['name'=>'contacts_tree_status'])}" method="post">
+                <div class="layui-input-inline">
+                <input type="number" name="val" value="{$contacts_tree_status}" required lay-verify="required"
+                    placeholder="通讯录组织架构状态" class="layui-input">
+
+                </div>
+                <button class="layui-btn layui-btn" lay-submit lay-filter="*">提交</button>
+            </form>
+            <div class="layui-form-mid layui-word-aux">
+                <p>0:允许查看整个通讯录</p>
+                <p>1:只允许查看工序之前的通讯录组织架构</p>
+                <p>2:完全不允许查看通讯录组织架构) </p>
+            </div>
+            </div>
+        </div>
+        <div class="blank10"></div>
+
+
+        <div class="layui-card">
+            <div class="layui-card-header"><h3>通讯录前端限制规则</h3></div>
+            <div class="layui-card-body">
+            <form class="layui-form form-container" action="{:url('admin/contacts/configs',['name'=>'contacts_rule'])}"
+                method="post" beforeSubmit="PAGE_EXEC.beforeSubmit">
+                <table class="layui-table">
+                <tbody>
+                    <tr>
+                    <td>allow_cache_deep_list</td>
+                    <td>
+
+                        <div class="allow_cache_deep_list_wrapper">
+                        {foreach name="contacts_rule.allow_cache_deep_list" item="vo" key="key"}
+                        <input class="allow_cache_deep_list_input layui-input layui-input-sm" type="number" value="{$vo}"
+                            style="width: 50px; display: inline-block;"
+                            ondblclick="PAGE_EXEC.del('allow_cache_deep_list')" />
+                        {/foreach}
+                        <a class="layui-btn  layui-btn-success layui-btn-sm"
+                            onclick="PAGE_EXEC.add_input('allow_cache_deep_list')"><i class="fa fa-plus"></i></a>
+                        </div>
+                        <div class="layui-word-aux">
+                        允许前端缓存的deep数组 用获取到的部门的deep判断是否在数组内 在数组内即允许缓存
+                        </div>
+                        <input type="hidden" name="allow_cache_deep_list"
+                        value="{:implode(',',$contacts_rule['allow_cache_deep_list'])}" />
+
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>monitor_deep_list</td>
+                    <td>
+
+                        <div class="allow_cache_deep_list_wrapper">
+                        {foreach name="contacts_rule.monitor_deep_list" item="vo" key="key"}
+                        <input class="monitor_deep_list_input layui-input layui-input-sm" type="number" value="{$vo}"
+                            style="width: 50px; display: inline-block;" ondblclick="PAGE_EXEC.del('monitor_deep_list')" />
+                        {/foreach}
+                        <a class="layui-btn  layui-btn-success layui-btn-sm"
+                            onclick="PAGE_EXEC.add_input('monitor_deep_list')"><i class="fa fa-plus"></i></a>
+                        </div>
+                        <div class="layui-word-aux">
+                        需要监听的的deep数组
+                        </div>
+                        <input type="hidden" name="monitor_deep_list"
+                        value="{:implode(',',$contacts_rule['monitor_deep_list'])}" />
+                    </td>
+                    </tr>
+
+                    <tr>
+                    <td>monitor_access_max_number</td>
+                    <td>
+                        <input type="number" name="monitor_access_max_number"
+                        value="{$contacts_rule.monitor_access_max_number}" required lay-verify="required"
+                        class="layui-input">
+                        <div class="layui-word-aux">
+                        在监听周期内访问 monitor_deep_list 的最大次数
+                        </div>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>monitor_screenshots_max_number</td>
+                    <td>
+                        <input type="number" name="monitor_screenshots_max_number"
+                        value="{$contacts_rule.monitor_screenshots_max_number}" required lay-verify="required"
+                        class="layui-input">
+                        <div class="layui-word-aux">
+                        在监听周期内进行截图的最大次数
+                        </div>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>monitor_review_cycle</td>
+                    <td>
+                        <input type="number" name="monitor_review_cycle" value="{$contacts_rule.monitor_review_cycle}"
+                        required lay-verify="required" class="layui-input">
+                        <div class="layui-word-aux">
+                        单个监听周期时长 秒为单位
+                        </div>
+                    </td>
+                    </tr>
+
+                </tbody>
+                </table>
+                <button class="layui-btn layui-btn" lay-submit lay-filter="*">提交</button>
+            </form>
+            </div>
+        </div>
+
+
+
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+PAGE_EXEC = {
+
+    del: function (name) {
+
+        var e = e || event;
+        var $obj = $(e.target)
+        if ($('.' + name + '_input').length < 2) {
+            return false;
+        }
+        $obj.remove();
+    },
+    add_input: function (name) {
+        var $input_last = $('.' + name + '_input:last');
+        var $input_clone = $input_last.clone();
+        $input_clone.val('');
+        $input_last.after($input_clone).after(' ');
+    },
+    setListVal: function (name) {
+        var str_val = '';
+        var $input = $('.' + name + '_input');
+        $input.each(function (index, item) {
+            var val = $(item).val();
+            if (val != '') {
+            str_val += str_val ? ',' + val : val;
+            }
+        })
+        $('input[name="' + name + '"]').val(str_val);
+    },
+    beforeSubmit: function (data) {
+        PAGE_EXEC.setListVal('allow_cache_deep_list');
+        PAGE_EXEC.setListVal('monitor_deep_list');
+    }
+}
+</script>
+{/block}

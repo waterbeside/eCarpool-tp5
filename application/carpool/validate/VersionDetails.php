@@ -1,4 +1,5 @@
 <?php
+
 namespace app\carpool\validate;
 
 use think\Validate;
@@ -6,10 +7,10 @@ use think\Validate;
 class VersionDetails extends Validate
 {
     protected $rule = [
-      'version_code'  => 'require',
-      'language_code'  => 'require',
-      'description'  => 'require',
-      'app_id'  => 'require|number',
+        'version_code'  => 'require',
+        'language_code'  => 'require',
+        'description'  => 'require',
+        'app_id'  => 'require|number',
 
     ];
 
@@ -25,6 +26,6 @@ class VersionDetails extends Validate
     // edit 验证场景定义
     public function sceneEdit()
     {
-      return $this->only(['language_code','description']);
+        return $this->only(['language_code', 'description']);
     }
 }

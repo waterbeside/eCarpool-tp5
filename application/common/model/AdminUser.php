@@ -1,4 +1,5 @@
 <?php
+
 namespace app\common\model;
 
 use think\Model;
@@ -22,7 +23,7 @@ class AdminUser extends Model
         return date('Y-m-d H:i:s');
     }
 
-   
+
 
     /**
      * 根据提示符(username)和未加密的密码(密码为空时不参与验证)获取本地用户信息
@@ -30,7 +31,8 @@ class AdminUser extends Model
      * @param type $password
      * @return 成功返回用户信息array()，否则返回布尔值false
      */
-    function getLocalUser($identifier, $password = null) {
+    public function getLocalUser($identifier, $password = null)
+    {
         if (empty($identifier)) {
             return false;
         }
@@ -48,12 +50,10 @@ class AdminUser extends Model
         if ($password) {
             //验证本地密码是否正确
             $hash = $user['password'];
-            if(!password_verify($password, $hash)){
-              return false;
+            if (!password_verify($password, $hash)) {
+                return false;
             }
         }
         return $user;
     }
-
-
 }

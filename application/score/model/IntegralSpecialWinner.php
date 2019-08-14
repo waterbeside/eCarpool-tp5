@@ -1,4 +1,5 @@
 <?php
+
 namespace app\score\model;
 
 use think\Model;
@@ -17,10 +18,7 @@ class IntegralSpecialWinner extends Model
     }*/
 
     // 直接使用配置参数名
-   protected $connection = 'database_score';
+    protected $connection = 'database_score';
 
-   protected $pk = 'id';
-
-
-
+    protected $pk = 'id';
 }

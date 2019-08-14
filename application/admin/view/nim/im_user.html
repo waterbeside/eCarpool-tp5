@@ -1,56 +1,56 @@
 <form class="layui-form form-container" action="{:url('admin/nim/update_token')}" method="post" >
-  <blockquote class="layui-elem-quote">已生成云信帐号</blockquote>
-  <div class="layui-form-item">
-      <label class="layui-form-label">im_id</label>
-      <div class="layui-input-block">
-          <input type="text" name="accid" value="{$nimData.accid}" required    class="layui-input " disabled>
-      </div>
-  </div>
-  <div class="layui-form-item">
-      <label class="layui-form-label">token</label>
-      <div class="layui-input-block">
-          <input type="text" name="im_md5password" value="{$userData.im_md5password}" required    class="layui-input " disabled>
-      </div>
-  </div>
+    <blockquote class="layui-elem-quote">已生成云信帐号</blockquote>
+    <div class="layui-form-item">
+        <label class="layui-form-label">im_id</label>
+        <div class="layui-input-block">
+            <input type="text" name="accid" value="{$nimData.accid}" required    class="layui-input " disabled>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">token</label>
+        <div class="layui-input-block">
+            <input type="text" name="im_md5password" value="{$userData.im_md5password}" required    class="layui-input " disabled>
+        </div>
+    </div>
 
-  <div class="layui-form-item">
-      <div class="layui-input-block">
-          <input type="hidden" name="isAction" value="1">
-          <input type="hidden" name="uid" value="{$userData.uid}">
-          <button class="layui-btn" lay-submit lay-filter="*.update_token">更新 Token</button>
-          <button   class="layui-btn layui-btn-primary" onclick="RESOLVE_INIT.closeModal(event)">返回</button>
-      </div>
-  </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <input type="hidden" name="isAction" value="1">
+            <input type="hidden" name="uid" value="{$userData.uid}">
+            <button class="layui-btn" lay-submit lay-filter="*.update_token">更新 Token</button>
+            <button   class="layui-btn layui-btn-primary" onclick="RESOLVE_INIT.closeModal(event)">返回</button>
+        </div>
+    </div>
 </form>
 
 
 <script>
 var RESOLVE_INIT = {
-  init:function(){
-    form.render();
-    /**
-     * 通用表单提交(AJAX方式)
-     */
-    form.on('submit(*.update_token)', function (data) {
-        $.ajax({
-            url: data.form.action,
-            type: data.form.method,
-            data: $(data.form).serialize(),
-            success: function (res) {
-                if (res.code === 0) {
-                  $("input[name='accid']").val(res.data.info.accid);
-                  $("input[name='im_md5password']").val(res.data.info.token);
+    init:function(){
+        form.render();
+        /**
+         * 通用表单提交(AJAX方式)
+         */
+        form.on('submit(*.update_token)', function (data) {
+            $.ajax({
+                url: data.form.action,
+                type: data.form.method,
+                data: $(data.form).serialize(),
+                success: function (res) {
+                    if (res.code === 0) {
+                        $("input[name='accid']").val(res.data.info.accid);
+                        $("input[name='im_md5password']").val(res.data.info.token);
+                    }
+                    layer.msg(res.desc);
                 }
-                layer.msg(res.desc);
-            }
+            });
+            return false;
         });
-        return false;
-    });
-  },
-  closeModal: function(event){
-    var $btn = $(event.target);
-    $btn.closest('.modal').trigger('close');
-  }
+    },
+    closeModal: function(event){
+        var $btn = $(event.target);
+        $btn.closest('.modal').trigger('close');
+    }
 }
 
 RESOLVE_INIT.init();

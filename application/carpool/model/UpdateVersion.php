@@ -1,4 +1,5 @@
 <?php
+
 namespace app\carpool\model;
 
 use think\Model;
@@ -6,14 +7,11 @@ use think\Model;
 class UpdateVersion extends Model
 {
 
-  // 设置当前模型对应的完整数据表名称
-  protected $table = 'update_version';
+    // 设置当前模型对应的完整数据表名称
+    protected $table = 'update_version';
 
-  // 直接使用配置参数名
-  protected $connection = 'database_carpool';
+    // 直接使用配置参数名
+    protected $connection = 'database_carpool';
 
-  protected $pk = 'update_version_id';
-
-
-
+    protected $pk = 'update_version_id';
 }

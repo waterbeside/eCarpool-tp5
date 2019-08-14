@@ -1,4 +1,5 @@
 <?php
+
 namespace app\content\model;
 
 use think\Db;
@@ -20,7 +21,7 @@ class CommonNotice extends Model
 
     /**
      * 自动生成时间
-     * @return bool|string
+     * @return bool|strings
      */
     protected function setCreateTimeAttr()
     {
@@ -35,26 +36,23 @@ class CommonNotice extends Model
      * @param  integer $recache [description]
      * @return [type]           [description]
      */
-    public function getList($recache = 0){
-      $rKey = "common:notice:list";
-      $redis = new RedisData();
-      $data = json_decode($redis->get($rKey),true);
+    public function getList($recache = 0)
+    {
+        $rKey = "common:notice:list";
+        $redis = new RedisData();
+        $data = json_decode($redis->get($rKey), true);
 
-      if(!$data || $recache){
-        $data  = $this->where([['is_delete','=',0]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
-        $redis->set($rKey,json_encode($data));
-      }
-      return $data;
+        if (!$data || $recache) {
+            $data  = $this->where([['is_delete', '=', 0]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+            $redis->set($rKey, json_encode($data));
+        }
+        return $data;
     }
 
 
-    public function deleteListCache(){
-      $redis = new RedisData();
-      $redis->delete("common:notice:list");
-
+    public function deleteListCache()
+    {
+        $redis = new RedisData();
+        $redis->delete("common:notice:list");
     }
-
-
-
-
 }

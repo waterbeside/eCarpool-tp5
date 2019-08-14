@@ -1,4 +1,5 @@
 <?php
+
 namespace app\score\model;
 
 use think\Model;
@@ -6,7 +7,7 @@ use app\common\model\Configs;
 use my\RedisData;
 use my\CurlRequest;
 
-class  Prize extends Model
+class Prize extends Model
 {
     // protected $insert = ['create_time'];
 
@@ -23,8 +24,4 @@ class  Prize extends Model
     protected $connection = 'database_score';
 
     protected $pk = 'id';
-
-    
-
-
 }

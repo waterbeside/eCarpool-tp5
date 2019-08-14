@@ -1,4 +1,5 @@
 <?php
+
 namespace app\admin\controller;
 
 use app\common\model\Docs as DocsModel;
@@ -35,17 +36,19 @@ class Docs extends AdminBase
         $field = 't.id,t.title,t.cid,t.update_time,t.create_time,t.listorder,t.status,t.lang';
 
         if ($cid > 0) {
-            $map[] = ['cid','=',$cid];
+            $map[] = ['cid', '=', $cid];
         }
 
         if (!empty($keyword)) {
-            $map[] = ['title','like', "%{$keyword}%"];
+            $map[] = ['title', 'like', "%{$keyword}%"];
         }
 
         $join = [
-          ['docs_category c','t.cid = c.id', 'left'],
+            ['docs_category c', 't.cid = c.id', 'left'],
         ];
-        $lists  = $this->docs_model->field($field)->alias('t')->join($join)->where($map)->order('t.cid DESC , t.create_time DESC')->paginate(15, false, ['page' => $page]);
+        $lists  = $this->docs_model->field($field)->alias('t')->join($join)
+        ->where($map)->order('t.cid DESC , t.create_time DESC')
+        ->paginate(15, false, ['page' => $page]);
         // $category_list = $this->category_model->field('id,name,title')->where([['is_delete','=',0]])->select();
         $category_list = $this->category_model->column('title', 'id');
         return $this->fetch('index', ['lists' => $lists, 'category_list' => $category_list, 'cid' => $cid, 'keyword' => $keyword]);
@@ -58,27 +61,26 @@ class Docs extends AdminBase
      */
     public function add()
     {
-      if ($this->request->isPost()) {
-          $data            = $this->request->param();
-          $validate_result = $this->validate($data, 'Docs');
-          $data['description'] = $data['description'] ? iconv_substr($data['description'],0,250) : '' ;
-          if ($validate_result !== true) {
-              $this->jsonReturn(-1,$validate_result);
-          } else {
-              if ($this->docs_model->allowField(true)->save($data)) {
-                  $this->log('保存文档成功',0);
-                  $this->jsonReturn(0,'保存成功');
-              } else {
-                  $this->log('保存文档失败',-1);
-                  $this->jsonReturn(-1,'保存失败');
-              }
-          }
-      }else{
-        $category_list = $this->category_model->column('title', 'id');
+        if ($this->request->isPost()) {
+            $data            = $this->request->param();
+            $validate_result = $this->validate($data, 'Docs');
+            $data['description'] = $data['description'] ? iconv_substr($data['description'], 0, 250) : '';
+            if ($validate_result !== true) {
+                $this->jsonReturn(-1, $validate_result);
+            } else {
+                if ($this->docs_model->allowField(true)->save($data)) {
+                    $this->log('保存文档成功', 0);
+                    $this->jsonReturn(0, '保存成功');
+                } else {
+                    $this->log('保存文档失败', -1);
+                    $this->jsonReturn(-1, '保存失败');
+                }
+            }
+        } else {
+            $category_list = $this->category_model->column('title', 'id');
 
-        return $this->assign('category_list',$category_list)->fetch();
-
-      }
+            return $this->assign('category_list', $category_list)->fetch();
+        }
     }
 
 
@@ -90,28 +92,27 @@ class Docs extends AdminBase
      */
     public function edit($id)
     {
-      if ($this->request->isPost()) {
-          $data            = $this->request->param();
-          $validate_result = $this->validate($data, 'Docs');
-          $data['description'] = $data['description'] ? iconv_substr($data['description'],0,250) : '' ;
-          if ($validate_result !== true) {
-              $this->jsonReturn(-1,$validate_result);
-          } else {
-              if ($this->docs_model->allowField(true)->save($data, $id) !== false) {
-                  $this->log('编辑文档成功',0);
-                  $this->jsonReturn(0,'修改成功');
-              } else {
-                  $this->log('编辑文档失败',-1);
-                  $this->jsonReturn(-1,'修改失败');
-              }
-          }
-      }else{
-        $data = $this->docs_model->find($id);
-        $category_list = $this->category_model->column('title', 'id');
+        if ($this->request->isPost()) {
+            $data            = $this->request->param();
+            $validate_result = $this->validate($data, 'Docs');
+            $data['description'] = $data['description'] ? iconv_substr($data['description'], 0, 250) : '';
+            if ($validate_result !== true) {
+                $this->jsonReturn(-1, $validate_result);
+            } else {
+                if ($this->docs_model->allowField(true)->save($data, $id) !== false) {
+                    $this->log('编辑文档成功', 0);
+                    $this->jsonReturn(0, '修改成功');
+                } else {
+                    $this->log('编辑文档失败', -1);
+                    $this->jsonReturn(-1, '修改失败');
+                }
+            }
+        } else {
+            $data = $this->docs_model->find($id);
+            $category_list = $this->category_model->column('title', 'id');
 
-        return $this->fetch('edit', ['data' => $data,'category_list'=>$category_list]);
-      }
-
+            return $this->fetch('edit', ['data' => $data, 'category_list' => $category_list]);
+        }
     }
 
 
@@ -126,13 +127,12 @@ class Docs extends AdminBase
         $id = $ids ? $ids : $id;
         if ($id) {
             if ($this->docs_model->destroy($id)) {
-                $this->jsonReturn(0,'删除成功');
+                $this->jsonReturn(0, '删除成功');
             } else {
-                $this->jsonReturn(-1,'删除失败');
+                $this->jsonReturn(-1, '删除失败');
             }
         } else {
-            $this->jsonReturn(-1,'请选择需要删除的文章');
+            $this->jsonReturn(-1, '请选择需要删除的文章');
         }
     }
-
 }

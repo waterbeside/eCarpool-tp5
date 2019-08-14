@@ -357,7 +357,8 @@ return [
   'sl:取消商品兑换' => 'Cancel product redemption',
   'sl:积分抽奖' => 'Points draw',
 
-
-
-
+  'sl:europe' => 'Europe',
+  'sl:asia' => 'Asia',
+  'sl:north america' => 'North America',
+  'sl:other' => 'other',
 ];

@@ -1,4 +1,5 @@
 <?php
+
 namespace app\carpool\validate;
 
 use think\Validate;
@@ -15,6 +16,6 @@ class Company extends Validate
     ];
 
     protected $scene = [
-       'edit'  =>  ['company_name'=>'require'],
-   ];
+        'edit'  =>  ['company_name' => 'require'],
+    ];
 }

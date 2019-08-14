@@ -3,75 +3,82 @@
 <div class="layui-tab-content P-npdCategory-detail-form">
 
     <form class="layui-form " action="{:url('admin/NpdCategory/edit')}" method="post" id="editForm" data-jump-target="parent">
-      <div class="layui-row">
-        <div class="layui-col-md8">
+        <div class="layui-row">
+            <div class="layui-col-md8">
 
-          <div class="layui-form-item">
-            <label class="layui-form-label">分类名称</label>
-            <div class="layui-input-block">
-              <input type="text" name="name" value="{$data.name}" required  lay-verify="required" placeholder="请输入分类名" class="layui-input">
+            <div class="layui-form-item">
+                <label class="layui-form-label">分类名称</label>
+                <div class="layui-input-block">
+                <input type="text" name="name" value="{$data.name}" required  lay-verify="required" placeholder="请输入分类名" class="layui-input">
+                </div>
             </div>
-          </div>
-          <div class="layui-form-item">
-            <label class="layui-form-label">分类名称 EN</label>
-            <div class="layui-input-block">
-              <input type="text" name="name_en" value="{$data.name_en}"  placeholder="请输入英文分类名" class="layui-input">
+            <div class="layui-form-item">
+                <label class="layui-form-label">分类名称 EN</label>
+                <div class="layui-input-block">
+                <input type="text" name="name_en" value="{$data.name_en}"  placeholder="请输入英文分类名" class="layui-input">
+                </div>
             </div>
-          </div>
-          
-          <div class="layui-form-item">
-            <label class="layui-form-label">内容</label>
-            <div class="layui-input-block">
-              <textarea name="content" placeholder=""   id="content">{$data.content}</textarea>
+            
+            <div class="layui-form-item ">
+                <label class="layui-form-label">内容</label>
+                <div class="layui-input-block">
+                <textarea class="layui-textarea" name="desc" placeholder=""   id="content">{$data.desc}</textarea>
+                </div>
             </div>
-          </div>
-        
+            <div class="layui-form-item ">
+                <label class="layui-form-label">内容EN</label>
+                <div class="layui-input-block">
+                <textarea class="layui-textarea" name="desc_en" placeholder=""   id="content_en">{$data.desc_en}</textarea>
+                </div>
+            </div>
+            
 
-        </div>
-        <div class="layui-col-md4">
-          <div class="layui-form-item">
-            <label class="layui-form-label">上级栏目</label>
-            <div class="layui-input-block">
-              <select name="parent_id" lay-verify="required">
-                <option value="0">根栏目</option>
-                {foreach name="category_level_list" item="vo"}
-                <option value="{$vo.id}" {if condition="$data.id==$vo.id"} disabled="disabled"{/if} {if condition="$data.parent_id==$vo.id"} selected="selected"{/if}>{neq name="vo.level" value="1"}|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----';}{/php}{/neq} {$vo.name}</option>
-                {/foreach}
-              </select>
             </div>
-          </div>
-          <div class="layui-form-item">
-              <label class="layui-form-label">所属模型</label>
-              <div class="layui-input-block">
-                <select name="model">
-                    <option value="">模型类型-不设置</option>
-                    <option value="product" {if condition="$data.model=='product'"} selected="selected"{/if}> product</option>
+            <div class="layui-col-md4">
+            <div class="layui-form-item">
+                <label class="layui-form-label">上级栏目</label>
+                <div class="layui-input-block">
+                <select name="parent_id" lay-verify="required">
+                    <option value="0">根栏目</option>
+                    {foreach name="category_level_list" item="vo"}
+                    <option value="{$vo.id}" {if condition="$data.id==$vo.id"} disabled="disabled"{/if} {if condition="$data.parent_id==$vo.id"} selected="selected"{/if}>{neq name="vo.level" value="1"}|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----';}{/php}{/neq} {$vo.name}</option>
+                    {/foreach}
                 </select>
-              </div>
-          </div>
-          <div class="layui-form-item">
-            <label class="layui-form-label">缩略图</label>
-            <div class="layui-input-block j-upload-thumb" data-default="{$data.thumb}">  </div>
-          </div>
-          <div class="layui-form-item">
-            <label class="layui-form-label">排序</label>
-            <div class="layui-input-block">
-              <input type="number" name="sort" value="{$data.sort}" placeholder="排序，越大越前" class="layui-input">
-              <div class="layui-form-mid layui-word-aux"> 数字越大，排序越前</div>
+                </div>
             </div>
-          </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">所属模型</label>
+                <div class="layui-input-block">
+                    <select name="model">
+                    {foreach name="category_model_list" item="vo" }
+                    <option value="{$vo.value}" {if condition="$data.model==$vo.value"} selected="selected"{/if}> {$vo.name}</option>
+                    {/foreach}
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">缩略图</label>
+                <div class="layui-input-block j-upload-thumb" data-default="{$data.thumb}">  </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">排序</label>
+                <div class="layui-input-block">
+                <input type="number" name="sort" value="{$data.sort}" placeholder="排序，越大越前" class="layui-input">
+                <div class="layui-form-mid layui-word-aux"> 数字越大，排序越前</div>
+                </div>
+            </div>
+
+            </div>
+
 
         </div>
-
-
-      </div>
-      
-      <div class="layui-form-item">
-          <div class="layui-input-block">
-              <input type="hidden" name="id" value="{$data.id}">
-              <button class="layui-btn" lay-submit lay-filter="*">保存</button>
-          </div>
-      </div>
+        
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <input type="hidden" name="id" value="{$data.id}">
+                <button class="layui-btn" lay-submit lay-filter="*">保存</button>
+            </div>
+        </div>
     </form>
 
 </div>
@@ -82,37 +89,26 @@
 {/block}
 {block name="script"}
 <script>
-  FORM_PAGE_EXEC = {
+FORM_PAGE_EXEC = {
     upload : layui.upload,
     init: function(){
-      /** UE **/
-      var url="{:url('/api/ueditor')}";
-      var ue = UE.getEditor('content',{
-        serverUrl :url,
-        toolbars:[['undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript','|'
-        ,'justifyleft','justifyright','justifycenter','|','simpleupload','|','blockquote','pasteplain','inserttable','autotypeset','removeformat']],
-        topOffset:0,
-        wordCount:true,
-        maximumWords:8000,
-        //默认的编辑区域高度
-        initialFrameHeight:300,
-      })
-      
-      /** thumb upload **/
-      var $thumbInput =  cRenderUploadBtn({
+        
+        
+        /** thumb upload **/
+        var $thumbInput =  cRenderUploadBtn({
         wrapper:'.j-upload-thumb',
         inputName:'thumb',
         url: "{:url('admin/Uploader/images')}",
         data: {"module":"admin/NPD/category/thumb"},
-      })
-      form.render();
+        })
+        form.render();
     },
 
-  }
-  FORM_PAGE_EXEC.init();
-  $(function(){
-    // var ue = UE.getEditor('content');
-    
-  })
+}
+FORM_PAGE_EXEC.init();
+$(function(){
+// var ue = UE.getEditor('content');
+
+})
 </script>
 {/block}

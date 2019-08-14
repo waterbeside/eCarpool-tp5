@@ -1,4 +1,5 @@
 <?php
+
 namespace app\admin\controller;
 
 use app\common\model\Docs as DocsModel;
@@ -21,7 +22,7 @@ class DocsCategory extends AdminBase
      */
     public function index()
     {
-      $lists = DocsCategoryModel::order('listorder Desc')->where('is_delete',0)->select();
+        $lists = DocsCategoryModel::order('listorder Desc')->where('is_delete', 0)->select();
         return $this->assign('lists', $lists)->fetch();
     }
 
@@ -32,24 +33,23 @@ class DocsCategory extends AdminBase
      */
     public function add()
     {
-      if ($this->request->isPost()) {
-          $data            = $this->request->param();
-          $validate_result = $this->validate($data, 'app\admin\validate\DocsCategory');
-          if ($validate_result !== true) {
-            return $this->jsonReturn(-1,$validate_result);
-          }
-          $model = new DocsCategoryModel();
-          if ($model->allowField(true)->save($data)) {
-              $this->log('添加文档分类成功',0);
-              $this->jsonReturn(0,'添加文档分类成功');
-          } else {
-              $this->log('添加文档分类失败',-1);
-              $this->jsonReturn(-1,'添加文档分类失败');
-          }
-
-      }else{
-        return $this->fetch('add');
-      }
+        if ($this->request->isPost()) {
+            $data            = $this->request->param();
+            $validate_result = $this->validate($data, 'app\admin\validate\DocsCategory');
+            if ($validate_result !== true) {
+                return $this->jsonReturn(-1, $validate_result);
+            }
+            $model = new DocsCategoryModel();
+            if ($model->allowField(true)->save($data)) {
+                $this->log('添加文档分类成功', 0);
+                $this->jsonReturn(0, '添加文档分类成功');
+            } else {
+                $this->log('添加文档分类失败', -1);
+                $this->jsonReturn(-1, '添加文档分类失败');
+            }
+        } else {
+            return $this->fetch('add');
+        }
     }
 
 
@@ -61,25 +61,24 @@ class DocsCategory extends AdminBase
      */
     public function edit($id)
     {
-      if ($this->request->isPost()) {
-          $data            = $this->request->param();
-          $validate_result = $this->validate($data, 'app\admin\validate\DocsCategory');
-          if ($validate_result !== true) {
-              $this->jsonReturn(-1,$validate_result);
-          }
-          $model = new DocsCategoryModel();
-          if ($model->allowField(true)->save($data, $id) !== false) {
-              $this->log('编辑文档分类成功',0);
-              $this->jsonReturn(0,'编辑成功');
-          } else {
-              $this->log('编辑文档分类失败',-1);
-              $this->jsonReturn(-1,'更新失败');
-          }
-
-      }else{
-        $data = DocsCategoryModel::find($id);
-        return $this->fetch('edit', ['data' => $data]);
-      }
+        if ($this->request->isPost()) {
+            $data            = $this->request->param();
+            $validate_result = $this->validate($data, 'app\admin\validate\DocsCategory');
+            if ($validate_result !== true) {
+                $this->jsonReturn(-1, $validate_result);
+            }
+            $model = new DocsCategoryModel();
+            if ($model->allowField(true)->save($data, $id) !== false) {
+                $this->log('编辑文档分类成功', 0);
+                $this->jsonReturn(0, '编辑成功');
+            } else {
+                $this->log('编辑文档分类失败', -1);
+                $this->jsonReturn(-1, '更新失败');
+            }
+        } else {
+            $data = DocsCategoryModel::find($id);
+            return $this->fetch('edit', ['data' => $data]);
+        }
     }
 
 
@@ -89,15 +88,15 @@ class DocsCategory extends AdminBase
      */
     public function delete($id)
     {
-      $model = new DocsCategoryModel();
-      $res = $model->where('id', $id)->update(['is_delete' => 1]);
+        $model = new DocsCategoryModel();
+        $res = $model->where('id', $id)->update(['is_delete' => 1]);
         // $res = $model->destroy($id);
         if ($res) {
-           $this->log('删除文档分类成功',0);
-           $this->jsonReturn(0,'删除成功');
+            $this->log('删除文档分类成功', 0);
+            $this->jsonReturn(0, '删除成功');
         } else {
-          $this->log('删除文档分类失败',-1);
-            $this->jsonReturn(-1,'删除失败');
+            $this->log('删除文档分类失败', -1);
+            $this->jsonReturn(-1, '删除失败');
         }
     }
 }

@@ -357,7 +357,10 @@ return [
   'sl:取消商品兑换' => '取消商品兑换',
   'sl:积分抽奖' => '积分抽奖',
 
-
+  'sl:europe' => '欧洲',
+  'sl:asia' => '亚洲',
+  'sl:north america' => '北美',
+  'sl:other' => '其它',
 
 
 ];

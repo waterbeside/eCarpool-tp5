@@ -1,0 +1,96 @@
+<script>
+    PAGE_EXEC = {
+
+
+        datas: {
+            langs: [{
+                    code: 'zh-cn',
+                    name: '中文',
+                },
+                {
+                    code: 'en',
+                    name: '英文',
+                },
+            ],
+            lang: '{php} if(isset($data)) echo $data["lang"]; {/php}'
+        },
+
+        init: function () {
+            var _this = this;
+            var $thumbInput = cRenderUploadBtn({
+                wrapper: '.j-upload-thumb',
+                inputName: 'thumb',
+                url: "{:url('admin/Uploader/images')}",
+                data: {
+                    "module": "admin/NPD/article/thumb"
+                },
+            })
+
+            var photoListItem,
+                uploadImage;
+            var url = "{:url('/api/ueditor')}";
+
+            var ue = UE.getEditor('content', {
+                serverUrl: url,
+                //这里可以选择自己需要的工具按钮名称,此处仅选择如下五个
+                toolbars: [
+                    ['undo', 'redo', '|', 'forecolor', 'backcolor', 'underline', 'strikethrough',
+                        'bold', 'italic',
+                        'subscript', 'superscript', '|', 'justifyleft', 'justifyright',
+                        'justifycenter', '|',
+                        'simpleupload', '|', 'blockquote', 'pasteplain', 'inserttable',
+                        'autotypeset', 'removeformat'
+                    ]
+                ],
+                wordCount: true,
+                topOffset: 0,
+                maximumWords: 8000,
+                //默认的编辑区域高度
+                initialFrameHeight: 300,
+            })
+
+            //执行一个laydate实例
+            layui.laydate.render({
+                type: 'datetime',
+                // value: cFormatDate(new Date(),'yyyy-mm-dd hh:ii:ss'),
+                elem: '#j-publish_time' //指定元素
+            });
+            this.getLangs();
+            form.render();
+
+            element.init();
+
+        },
+        getLangs: function (success) {
+            var _this = this;
+            _this.renderLangs(_this.datas.langs);
+            if (typeof (success) == "function") {
+                success(res);
+            }
+            form.render();
+        },
+
+        renderLangs: function (listData) {
+            var options = '';
+            var lang = this.datas.lang;
+
+            $(listData).each(function (index, el) {
+                var selected = el.code == lang ? "selected" : '';
+                options += '<option value="' + el.code + '"  ' + selected + '>【' + el.code + "】" + el
+                    .name +
+                    '</option>';
+            });
+            $("#editForm select[name='lang']").html(options)
+        },
+
+
+    }
+
+
+    $(function () {
+
+
+        PAGE_EXEC.init();
+
+    });
+</script>

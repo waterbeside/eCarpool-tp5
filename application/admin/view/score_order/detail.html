@@ -1,112 +1,113 @@
 <div class="amain-body page-good-detail">
 
     <div style="text-align:center; margin:-40px 0 0;">
-      <div class="cp-avatar" style="background-image:url('{$data.userInfo.avatar}')"></div>
+        <div class="cp-avatar" style="background-image:url('{$data.userInfo.avatar}')"></div>
     </div>
 
     <h3>{:lang("User Info")}</h3>
     <table class="layui-table">
-      <tbody>
-        <tr>
-          <td class="label" width="100">{:lang("Username")}</td>
-          <td>{$data.userInfo.loginname}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang("Phone")}</td>
-          <td>{$data.userInfo.phone}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang("Full name")}</td>
-          <td>{$data.userInfo.name}</td>
-        </tr>
+        <tbody>
+            <tr>
+                <td class="label" width="100">{:lang("Username")}</td>
+                <td>{$data.userInfo.loginname}</td>
+            </tr>
+            <tr>
+                <td class="label">{:lang("Phone")}</td>
+                <td>{$data.userInfo.phone}</td>
+            </tr>
+            <tr>
+                <td class="label">{:lang("Full name")}</td>
+                <td>{$data.userInfo.name}</td>
+            </tr>
 
-        <tr>
-          <td class="label">{:lang("Company")}</td>
-          <td><?php echo isset($companys[$data['userInfo']['company_id']]) ? $companys[$data['userInfo']['company_id']] : ''; ?></td>
-        </tr>
-        <tr>
-          <td class="label">{:lang("Department")}</td>
-          <td>{$data.userInfo.department_id ? $data.userInfo.full_department|str_replace=","," / ",### : $data.userInfo.Department}</td>
-        </tr>
-      </tbody>
+            <tr>
+                <td class="label">{:lang("Company")}</td>
+                <td><?php echo isset($companys[$data['userInfo']['company_id']]) ? $companys[$data['userInfo']['company_id']] : ''; ?>
+                </td>
+            </tr>
+            <tr>
+                <td class="label">{:lang("Department")}</td>
+                <td>{$data.userInfo.department_id ? $data.userInfo.full_department|str_replace=","," / ",### : $data.userInfo.Department}</td>
+            </tr>
+        </tbody>
     </table>
 
     <div class="blank10"></div>
 
     <h3>{:lang("Order information")}</h3>
     <table class="layui-table">
-      <tbody>
-        <tr>
-          <td class="label" width="100">{:lang("Order number")}</td>
-          <td> {$data.uuid|iconv_substr=0,8}/{$data.id}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang("Order time")}</td>
-          <td>
-            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.creation_time|strtotime}000</span>
-            <span style=" color: #ccc; margin-left:5px">
-              <?php echo  $data['platform']===1 ? '<i class="fa fa-android"></i>' : ($data['platform']===0 ? '<i class="fa fa-apple"></i>':''); ?>
-            </span>
-          </td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Last operation time')}</td>
-          <td>
-            <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.operation_time|strtotime}000</span>
-          </td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Order status')}</td>
-          <td><div class="layui-badge goodOrder-status_{$data.status}"><?php echo $statusList[$data['status']] ? lang("sl:".$statusList[$data['status']]): $data['status']; ?> </div></td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Consumption points')}</td>
-          <td>{$data.total}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Order department')}</td>
-          <td>{$data.region_id ? $data.full_department|str_replace=","," / ",### : $data.region_id}</td>
-        </tr>
+        <tbody>
+            <tr>
+            <td class="label" width="100">{:lang("Order number")}</td>
+            <td> {$data.uuid|iconv_substr=0,8}/{$data.id}</td>
+            </tr>
+            <tr>
+            <td class="label">{:lang("Order time")}</td>
+            <td>
+                <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.creation_time|strtotime}000</span>
+                <span style=" color: #ccc; margin-left:5px">
+                <?php echo  $data['platform']===1 ? '<i class="fa fa-android"></i>' : ($data['platform']===0 ? '<i class="fa fa-apple"></i>':''); ?>
+                </span>
+            </td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('Last operation time')}</td>
+            <td>
+                <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.operation_time|strtotime}000</span>
+            </td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('Order status')}</td>
+            <td><div class="layui-badge goodOrder-status_{$data.status}"><?php echo $statusList[$data['status']] ? lang("sl:".$statusList[$data['status']]): $data['status']; ?> </div></td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('Consumption points')}</td>
+            <td>{$data.total}</td>
+            </tr>
+            <tr>
+            <td class="label">{:lang('Order department')}</td>
+            <td>{$data.region_id ? $data.full_department|str_replace=","," / ",### : $data.region_id}</td>
+            </tr>
 
-      </tbody>
+        </tbody>
     </table>
     <div class="blank10"></div>
 
     <h3>{:lang('Goods information')}</h3>
     <table class="layui-table">
-      <thead>
-      <tr >
-          <th width="40">#</th>
-          <th>{:lang('Goods')}</th>
-          <th width="50">{:lang('Redeem points')}</th>
-          <th width="50">{:lang('Purchase price')}</th>
-          <th width="100" >{:lang('Quantity')}</th>
-      </tr>
-      </thead>
-      <tbody class="goods-table-list">
-      <?php foreach($data['goods'] as $good_i => $good){ ?>
-        <tr class="good-item">
-          <td class="label" >{$good.id}</td>
-          <td>
-            <div  class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
-            <span class="layui-elip">{$good.name}</span>
-          </td>
-          <td class="label" >{$good.price}</td>
-          <td class="label" >{$good.amount ? $good.amount : '-' }</td>
-          <td class="label" >&times; {$good.num}</td>
-
+        <thead>
+        <tr >
+            <th width="40">#</th>
+            <th>{:lang('Goods')}</th>
+            <th width="50">{:lang('Redeem points')}</th>
+            <th width="50">{:lang('Purchase price')}</th>
+            <th width="100" >{:lang('Quantity')}</th>
         </tr>
+        </thead>
+        <tbody class="goods-table-list">
+        <?php foreach($data['goods'] as $good_i => $good){ ?>
+            <tr class="good-item">
+                <td class="label" >{$good.id}</td>
+                <td>
+                    <div  class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
+                    <span class="layui-elip">{$good.name}</span>
+                </td>
+                <td class="label" >{$good.price}</td>
+                <td class="label" >{$good.amount ? $good.amount : '-' }</td>
+                <td class="label" >&times; {$good.num}</td>
+
+            </tr>
         <?php } ?>
 
 
-      </tbody>
+        </tbody>
     </table>
     <div class="blank10"></div>
     <?php if($auth['admin/ScoreOrder/finish'] && intval($data['status'])===0){ ?>
     <div style="text-align:right">
-      <!--<div class="layui-input-inline">
-          <input type="text" name="order_no" value="" placeholder="请输入订单号确认" class="layui-input">
-      </div>-->
+        <!--<div class="layui-input-inline">
+            <input type="text" name="order_no" value="" placeholder="请输入订单号确认" class="layui-input">
+        </div>-->
         <a class="layui-btn layui-btn-success" href="javascript:void(0);" onclick="DETAIL_PAGE_EXEC.finish({$data.id})">{:lang('End order')}</a>
 
     </div>
@@ -120,32 +121,32 @@
 <script>
 var DETAIL_PAGE_EXEC = {
 
-  data : {
+    data : {
 
-  },
-  init : function(){
-    cRenderTimes();
-  },
-  finish : function(id){
-    // var order_no = $("input[name=order_no]").val();
-    // console.log(order_no)
-    layer.confirm("{:lang('Are you sure you want to end this order?')}",
-      {
-        closeBtn: 1,
-        title:myLang.r('Tips'),
-        btn: [myLang.r('Yes'),myLang.r('No')] //按钮
-      }, function(){
-        ajaxSubmit({
-          url:"<?php echo url('admin/ScoreOrder/finish');?>",
-          data:{id:id},
-          success:function(res){
-            console.log(res);
-          }
-        })
-      }
-    );
+    },
+    init : function(){
+        cRenderTimes();
+    },
+    finish : function(id){
+        // var order_no = $("input[name=order_no]").val();
+        // console.log(order_no)
+        layer.confirm("{:lang('Are you sure you want to end this order?')}",
+        {
+            closeBtn: 1,
+            title:myLang.r('Tips'),
+            btn: [myLang.r('Yes'),myLang.r('No')] //按钮
+        }, function(){
+            ajaxSubmit({
+            url:"<?php echo url('admin/ScoreOrder/finish');?>",
+            data:{id:id},
+            success:function(res){
+                console.log(res);
+            }
+            })
+        }
+        );
 
-  }
+    }
 
 
 }

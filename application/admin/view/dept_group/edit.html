@@ -4,23 +4,24 @@
             <div class="layui-form-item">
                 <label class="layui-form-label">名称</label>
                 <div class="layui-input-block">
-                    <input type="text" name="title" value="{$data.title}" required lay-verify="required" placeholder="请输入权限组名称" class="layui-input">
+                    <input type="text" name="title" value="{$data.title}" required lay-verify="required"
+                        placeholder="请输入权限组名称" class="layui-input">
                 </div>
             </div>
             <div class="layui-form-item">
                 <label class="layui-form-label">授权区域</label>
                 <div class="layui-input-block">
-                  <input type="text" name="depts" value="{$data.depts}"  class="layui-input layui-input-inline " readonly  >
-                  <a onclick="FORM_PAGE_EXEC.openDeptDialog()" href="javascript:void(0);"  class="layui-btn  layui-btn-primary "   >
-                    <i class="fa fa-book"></i> <span >选择区域/部门</span>
-                  </a>
-                  <div class="J-dept-select-wrapper"></div>
+                    <input type="text" name="depts" value="{$data.depts}" class="layui-input layui-input-inline " readonly>
+                    <a onclick="FORM_PAGE_EXEC.openDeptDialog()" href="javascript:void(0);" class="layui-btn  layui-btn-primary ">
+                        <i class="fa fa-book"></i> <span>选择区域/部门</span>
+                    </a>
+                    <div class="J-dept-select-wrapper"></div>
                 </div>
             </div>
             <div class="layui-form-item">
                 <label class="layui-form-label">备注</label>
                 <div class="layui-input-block">
-                    <textarea name="remark"  class="layui-input" style="height:80px">{$data.remark}</textarea>
+                    <textarea name="remark" class="layui-input" style="height:80px">{$data.remark}</textarea>
                 </div>
             </div>
             <div class="layui-form-item">
@@ -41,99 +42,99 @@
     </div>
 </div>
 <script>
-
     FORM_PAGE_EXEC = {
-      init: function(){
-          form.render();
-          if(this.datas.deptsData){
+        init: function () {
+            form.render();
+            if (this.datas.deptsData) {
+                var deptsData = this.datas.deptsData;
+                for (var id in deptsData) {
+                    if (id) {
+                        var itemHtml = this.deptItemTemplate(deptsData[id]);
+                        $('.J-dept-select-wrapper').append(itemHtml);
+                    }
+                }
+            }
+        },
+        datas: {
+            depts: [],
+            deptsData: <?php echo json_encode($deptsData); ?>,
+        },
+        /**
+         * 已选项item模板
+         */
+        deptItemTemplate: function (data) {
+            var title = data.fullname.replace(/\,/g, ' / ');
+            var html = '<div class="item my-tag-item" data-id="' + data.id + '" title="' + data.fullname +
+                '"><a class="close" onclick="FORM_PAGE_EXEC.closeItem()"><i class="fa fa-close"></i></a><span>' +
+                title + '</span></div>';
+            return html;
+        },
+        select_dept: function (data) {
+            var _this = this;
+            if ($.isArray(data.id_list)) {
+                _this.datas.depts = data.id_list;
+                _this.datas.deptsData = data.list;
+                $(".P-deptGroup-form input[name='depts']").val(data.id_list.join(','));
+                console.log(data.id_list);
+                if (typeof (data.list) == "object") {
+                    $('.J-dept-select-wrapper').html('')
+                    for (id in data.list) {
+                        if (id) {
+                            var itemHtml = _this.deptItemTemplate(data.list[id]);
+                            $('.J-dept-select-wrapper').append(itemHtml);
+                        }
+
+                    }
+                }
+            }
+        },
+        openDeptDialog: function () {
+            this.buildCookie();
+            openLayer("{:url('admin / Department / list_dialog ',['multi '=>1])}", '选择区域/部门');
+        },
+
+        buildCookie: function () {
             var deptsData = this.datas.deptsData;
-            for(var id in deptsData){
-              if(id){
-                var itemHtml = this.deptItemTemplate(deptsData[id]);
-                $('.J-dept-select-wrapper').append(itemHtml);
-              }
+            if (deptsData) {
+                var newDataString = JSON.stringify(deptsData);
+                MyCookies.set('department_selected_list', newDataString, 120);
             }
-          }
-      },
-      datas : {
-        depts: [],
-        deptsData: <?php echo json_encode($deptsData); ?>,
+        },
+        /**
+         * 关闭已选项功作
+         */
+        closeItem: function () {
+            var e = e || event
+            var $target = $(e.target);
+            var $item = $target.closest('.item');
+            var id = $item.data('id');
+            var deptsData = typeof (this.datas.deptsData) == "object" ? this.datas.deptsData : {};
+            delete deptsData[id];
+            this.datas.deptsData = deptsData;
+            console.log(this.datas.deptsData);
+            this.rebuildDeptIds();
 
-      },
-      /**
-       * 已选项item模板
-       */
-      deptItemTemplate: function(data){
-        var title = data.fullname.replace(/\,/g,' / ');
-        var html = '<div class="item my-tag-item" data-id="'+data.id+'" title="'+data.fullname+'"><a class="close" onclick="FORM_PAGE_EXEC.closeItem()"><i class="fa fa-close"></i></a><span>'+title+'</span></div>';
-        return html;
-      },
-      select_dept: function(data){
-        var _this = this;
-        if($.isArray(data.id_list)){
-          _this.datas.depts = data.id_list;
-          _this.datas.deptsData = data.list;
-          $(".P-deptGroup-form input[name='depts']").val(data.id_list.join(','));
-          console.log(data.id_list);
-          if(typeof(data.list)=="object"){
-            $('.J-dept-select-wrapper').html('')
-            for(id in data.list){
-              if(id){
-                var itemHtml = _this.deptItemTemplate(data.list[id]);
-                $('.J-dept-select-wrapper').append(itemHtml);
-              }
-
+            $item.addClass('delete');
+            setTimeout(function () {
+                $item.remove();
+            }, 400);
+        },
+        /**
+         * 重建 datas里的id列表
+         */
+        rebuildDeptIds: function () {
+            var deptsData = this.datas.deptsData;
+            this.datas.depts = [];
+            for (var id in deptsData) {
+                if (id) {
+                    this.datas.depts.push(id);
+                }
             }
-          }
-        }
-      },
-      openDeptDialog: function(){
-        this.buildCookie();
-        openLayer('{:url('admin/Department/list_dialog',['multi'=>1])}','选择区域/部门');
-      },
-
-      buildCookie: function(){
-        var   deptsData = this.datas.deptsData;
-        if(deptsData){
-          var newDataString = JSON.stringify(deptsData);
-          MyCookies.set('department_selected_list',newDataString,120);
-        }
-      },
-      /**
-       * 关闭已选项功作
-       */
-      closeItem: function(){
-        var e = e || event
-        var $target = $(e.target);
-        var $item = $target.closest('.item');
-        var id = $item.data('id');
-        var deptsData = typeof(this.datas.deptsData) == "object"  ? this.datas.deptsData : {};
-        delete deptsData[id] ;
-        this.datas.deptsData = deptsData;
-        console.log(this.datas.deptsData);
-        this.rebuildDeptIds();
-
-        $item.addClass('delete');
-        setTimeout(function(){
-          $item.remove();
-        },400);
-      },
-      /**
-       * 重建 datas里的id列表
-       */
-      rebuildDeptIds: function(){
-        var deptsData = this.datas.deptsData;
-        this.datas.depts = [];
-        for(var id in deptsData){
-          if(id){
-            this.datas.depts.push(id);
-          }
-        }
-        $(".P-deptGroup-form input[name='depts']").val(this.datas.depts.join(','));
-      },
+            $(".P-deptGroup-form input[name='depts']").val(this.datas.depts.join(','));
+        },
 
 
     }
 
     FORM_PAGE_EXEC.init();
-  </script>
+</script>

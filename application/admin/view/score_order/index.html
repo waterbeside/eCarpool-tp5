@@ -9,135 +9,135 @@
             <li class="layui-this"><a href="{:url('admin/ScoreOrder/index')}"  showloading >{:lang('Order inquiry')}</a></li>
             <li ><a href="{:url('admin/ScoreOrder/goods')}"  showloading >{:lang('Goods order quantity statistics')}</a></li>
             <li class="btn-item-right">
-              <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="exportExcel(0)"  ><i class="fa fa-file-excel-o"></i> {:lang('Export')} CSV</a>
-              <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="exportExcel(1)"  ><i class="fa fa-file-excel-o"></i> {:lang('Export')} XLS (GBK)</a>
+                <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="exportExcel(0)"  ><i class="fa fa-file-excel-o"></i> {:lang('Export')} CSV</a>
+                <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="exportExcel(1)"  ><i class="fa fa-file-excel-o"></i> {:lang('Export')} XLS (GBK)</a>
             </li>
         </ul>
 
         <div class="amain-content">
-          <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreOrder/index')}" method="get" onsubmit="submitForm()">
-              <div class="layui-inline">
-                  <div class="layui-input-inline">
-                      <input type="text" name="filter[order_num]" value="{$filter['order_num'] ? $filter['order_num'] :''}" placeholder="{:lang('Order number')}" class="layui-input">
-                  </div>
-                  <div class="layui-input-inline">
-                      <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="{:lang('Account keyword')}" class="layui-input" style="width:140px" >
-                  </div>
-                  <!-- <div class="my-input-prebox" style="width:64px">
-                    <select name="filter[is_hr]"  >
-                      <option value="1" {php}echo isset($filter['is_hr']) &&  $filter['is_hr'] ? 'selected' : ''; {/php}>HR</option>
-                      <option value="0" {php}echo isset($filter['is_hr']) &&  $filter['is_hr'] == 0 ? 'selected' : ''; {/php}>旧</option>
-                    </select>
-                  </div>
-                  <div class="layui-input-inline">
-                      <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
-                  </div> -->
-                  <!-- <div class="my-input-prebox" style="width:84px">
-                    <select name="filter[region_type]"  >
-                      <option value="1" {php}echo isset($filter['region_type']) &&  $filter['region_type'] ? 'selected' : ''; {/php}>用户</option>
-                      <option value="0" {php}echo isset($filter['region_type']) &&  $filter['region_type'] == 0 ? 'selected' : ''; {/php}>订单</option>
-                    </select>
-                  </div> -->
-                  <div class="layui-input-inline">
-                      <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
-                      <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" >
-                        {$regionData ? str_replace(',',' / ',$regionData['fullname']) : lang('Region or department')}
-                      </a>
-                  </div>
-
-              </div>
-              <!-- <div class="blank10">  </div> -->
-              <div class="layui-inline">
-                  <div class="layui-input-inline">
-                    <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="{:lang('Time range')}" value="{$filter['time'] ? $filter['time'] :''}"  style="width:180px" autocomplete="off">
-                  </div>
-              </div>
-
-              <div class="layui-inline">
-                <input type="hidden" name="status" value="{$status}">
-                <input type="hidden" name="export" value="0">
-                <input type="hidden" name="encoding" value="0">
-                <input type="hidden" name="timezone_offset" class="J-local-timezoneOffset">
-                  <button class="layui-btn"><i class="fa fa-search"></i></button>
-              </div>
-          </form>
-
-          <hr>
-
-
-
-          <div class="layui-tab amain-content-tab">
-            <div class="tab-title-wrapper">
-              <ul class="layui-tab-title">
-                <li <?php echo !isset($status) || $status==="" || $status==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeStatus('all')" href="javascript:void(0);" >{:lang("All orders")}</a></li>
-                {foreach name="statusList" key="key" item="vo"}
-                <li <?php echo isset($status) && $status!=="all" && intval($status) === intval($key) ? 'a class="layui-this"' : 'b' ; ?> >
-                  <a onclick="changeStatus('<?php echo $key;?>')" href="javascript:void(0);">{:lang("sl:".$vo)}</a>
-                </li>
-                {/foreach}
-              </ul>
-              <!--<form id="form_filter_time" action="<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>">
-                <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
-              </form>-->
-            </div>
-
-
-            <div class="layui-tab-content" style="margin:0 -10px">
-              <div class="layui-tab-item layui-show">
-                <blockquote class="layui-elem-quote">  <?php echo lang('A total of %s data were found',['<b>'.$lists->total().'</b>']) ?></blockquote>
-
-
-                <div class="order-list">
-                  <form class="layui-form">
-                    {if !count($lists)>0}{:lang("No Data")}{/if}
-                    {foreach name="lists" item="vo"}
-                    <div class="am-card order-item ">
-                      <div class="am-card-padding-inner">
-                        <div class="am-card-heading">
-                          <h3># {$vo.uuid|iconv_substr=0,8}/{$vo.id}</h3>
-                          <h5><i class="fa fa-clock-o"></i> <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$vo.creation_time|strtotime}000</span></h5>
-                          <h4 class="layui-badge goodOrder-status_{$vo.status}"><?php echo $statusList[$vo['status']] ? lang("sl:".$statusList[$vo['status']]): $vo['status']; ?> </h4>
-                          <div class="layui-clear"></div>
-                        </div>
-                        <div class="user">
-                          <div class="user-item name">{:lang('Full name')}：<b>{$vo.name}</b></div>
-                          <div class="user-item" > {:lang('Phone')}：<b>{$vo.phone}</b> </div>
-                          <div class="user-item"> {:lang('Acount')}：<b>{$vo.loginname}</b>  </div>
-                          <div class="user-item"> {:lang('Company')}：<b><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></b>  </div>
-                          <div class="user-item" title="{$vo.Department}/{$vo.companyname}"> {:lang('Department')}：<b>{$vo.Department}</b>  </div>
-                        </div>
-                        <div class="am-card-body">
-                          <div class="goods">
-                            <?php foreach($vo['goods'] as $good_i => $good){ ?>
-                              <div class="good" title="{$good.name} &times; {$good.num}">
-                                <div class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
-                                <h5 class="layui-elip">{$good.name}</h5>
-                                <div class="num"> &times; {$good.num} </div>
-                              </div>
-                            <?php } ?>
-                          </div>
-                          <div class="btns-wrapper">
-                            <?php if($auth['admin/ScoreOrder/delete'] ){ ?>
-                              <a href="{:url('admin/ScoreOrder/delete',['id'=>$vo['id']])}" class="ibtn layui-btn-radius  layui-btn layui-btn-primary  layui-btn-xs ajax-delete" title="{:lang('Delete order')}" data-hint="{:lang('Are you sure to delete the order')}?"><i class="layui-icon">&#xe640;</i> {:lang('Delete order')}</a>
-                            <?php } ?>
-                            <?php if($auth['admin/ScoreOrder/cancel'] ){ ?>
-                              <a href="{:url('admin/ScoreOrder/cancel',['id'=>$vo['id']])}" class="ibtn layui-btn-radius  layui-btn layui-btn-danger layui-btn-xs ajax-delete" title="{:lang('Cancel order')}" data-hint="{:lang('Are you sure to cancel the order')}?"><i class="fa fa-undo"></i> {:lang('Cancel order')}</a>
-                            <?php } ?>
-                            <a href="{:url('admin/ScoreOrder/detail',['id'=>$vo['id']])}"  data-title="{:lang('Order details')} #{$vo.id}"  data-trigger="modal" title="{:lang('Order details')} #{$vo.id}" class="ibtn layui-btn layui-btn  layui-btn-radius   "> <i class="fa fa-list"></i> {:lang('Order details')}</a>
-                          </div>
-                        </div>
-                      </div>
+            <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreOrder/index')}" method="get" onsubmit="submitForm()">
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="filter[order_num]" value="{$filter['order_num'] ? $filter['order_num'] :''}" placeholder="{:lang('Order number')}" class="layui-input">
                     </div>
-                    {/foreach}
-                  </form>
+                    <div class="layui-input-inline">
+                        <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="{:lang('Account keyword')}" class="layui-input" style="width:140px" >
+                    </div>
+                    <!-- <div class="my-input-prebox" style="width:64px">
+                        <select name="filter[is_hr]"  >
+                        <option value="1" {php}echo isset($filter['is_hr']) &&  $filter['is_hr'] ? 'selected' : ''; {/php}>HR</option>
+                        <option value="0" {php}echo isset($filter['is_hr']) &&  $filter['is_hr'] == 0 ? 'selected' : ''; {/php}>旧</option>
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
+                    </div> -->
+                    <!-- <div class="my-input-prebox" style="width:84px">
+                        <select name="filter[region_type]"  >
+                        <option value="1" {php}echo isset($filter['region_type']) &&  $filter['region_type'] ? 'selected' : ''; {/php}>用户</option>
+                        <option value="0" {php}echo isset($filter['region_type']) &&  $filter['region_type'] == 0 ? 'selected' : ''; {/php}>订单</option>
+                        </select>
+                    </div> -->
+                    <div class="layui-input-inline">
+                        <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
+                        <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" >
+                            {$regionData ? str_replace(',',' / ',$regionData['fullname']) : lang('Region or department')}
+                        </a>
+                    </div>
+
+                </div>
+                <!-- <div class="blank10">  </div> -->
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="{:lang('Time range')}" value="{$filter['time'] ? $filter['time'] :''}"  style="width:180px" autocomplete="off">
+                    </div>
                 </div>
 
-              </div>
+                <div class="layui-inline">
+                    <input type="hidden" name="status" value="{$status}">
+                    <input type="hidden" name="export" value="0">
+                    <input type="hidden" name="encoding" value="0">
+                    <input type="hidden" name="timezone_offset" class="J-local-timezoneOffset">
+                    <button class="layui-btn"><i class="fa fa-search"></i></button>
+                </div>
+            </form>
 
+            <hr>
+
+
+
+            <div class="layui-tab amain-content-tab">
+                <div class="tab-title-wrapper">
+                <ul class="layui-tab-title">
+                    <li <?php echo !isset($status) || $status==="" || $status==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeStatus('all')" href="javascript:void(0);" >{:lang("All orders")}</a></li>
+                    {foreach name="statusList" key="key" item="vo"}
+                    <li <?php echo isset($status) && $status!=="all" && intval($status) === intval($key) ? 'a class="layui-this"' : 'b' ; ?> >
+                    <a onclick="changeStatus('<?php echo $key;?>')" href="javascript:void(0);">{:lang("sl:".$vo)}</a>
+                    </li>
+                    {/foreach}
+                </ul>
+                <!--<form id="form_filter_time" action="<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>">
+                    <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
+                </form>-->
+                </div>
+
+
+                <div class="layui-tab-content" style="margin:0 -10px">
+                <div class="layui-tab-item layui-show">
+                    <blockquote class="layui-elem-quote">  <?php echo lang('A total of %s data were found',['<b>'.$lists->total().'</b>']) ?></blockquote>
+
+
+                    <div class="order-list">
+                    <form class="layui-form">
+                        {if !count($lists)>0}{:lang("No Data")}{/if}
+                        {foreach name="lists" item="vo"}
+                        <div class="am-card order-item ">
+                        <div class="am-card-padding-inner">
+                            <div class="am-card-heading">
+                            <h3># {$vo.uuid|iconv_substr=0,8}/{$vo.id}</h3>
+                            <h5><i class="fa fa-clock-o"></i> <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$vo.creation_time|strtotime}000</span></h5>
+                            <h4 class="layui-badge goodOrder-status_{$vo.status}"><?php echo $statusList[$vo['status']] ? lang("sl:".$statusList[$vo['status']]): $vo['status']; ?> </h4>
+                            <div class="layui-clear"></div>
+                            </div>
+                            <div class="user">
+                            <div class="user-item name">{:lang('Full name')}：<b>{$vo.name}</b></div>
+                            <div class="user-item" > {:lang('Phone')}：<b>{$vo.phone}</b> </div>
+                            <div class="user-item"> {:lang('Acount')}：<b>{$vo.loginname}</b>  </div>
+                            <div class="user-item"> {:lang('Company')}：<b><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></b>  </div>
+                            <div class="user-item" title="{$vo.Department}/{$vo.companyname}"> {:lang('Department')}：<b>{$vo.Department}</b>  </div>
+                            </div>
+                            <div class="am-card-body">
+                            <div class="goods">
+                                <?php foreach($vo['goods'] as $good_i => $good){ ?>
+                                <div class="good" title="{$good.name} &times; {$good.num}">
+                                    <div class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
+                                    <h5 class="layui-elip">{$good.name}</h5>
+                                    <div class="num"> &times; {$good.num} </div>
+                                </div>
+                                <?php } ?>
+                            </div>
+                            <div class="btns-wrapper">
+                                <?php if($auth['admin/ScoreOrder/delete'] ){ ?>
+                                <a href="{:url('admin/ScoreOrder/delete',['id'=>$vo['id']])}" class="ibtn layui-btn-radius  layui-btn layui-btn-primary  layui-btn-xs ajax-delete" title="{:lang('Delete order')}" data-hint="{:lang('Are you sure to delete the order')}?"><i class="layui-icon">&#xe640;</i> {:lang('Delete order')}</a>
+                                <?php } ?>
+                                <?php if($auth['admin/ScoreOrder/cancel'] ){ ?>
+                                <a href="{:url('admin/ScoreOrder/cancel',['id'=>$vo['id']])}" class="ibtn layui-btn-radius  layui-btn layui-btn-danger layui-btn-xs ajax-delete" title="{:lang('Cancel order')}" data-hint="{:lang('Are you sure to cancel the order')}?"><i class="fa fa-undo"></i> {:lang('Cancel order')}</a>
+                                <?php } ?>
+                                <a href="{:url('admin/ScoreOrder/detail',['id'=>$vo['id']])}"  data-title="{:lang('Order details')} #{$vo.id}"  data-trigger="modal" title="{:lang('Order details')} #{$vo.id}" class="ibtn layui-btn layui-btn  layui-btn-radius   "> <i class="fa fa-list"></i> {:lang('Order details')}</a>
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+                        {/foreach}
+                    </form>
+                    </div>
+
+                </div>
+
+                </div>
             </div>
-         </div>
-          <!--分页-->
-          {$lists|raw}
+            <!--分页-->
+            {$lists|raw}
 
         </div>
     </div>
@@ -147,47 +147,47 @@
 {block name="script"}
 <script>
 function exportExcel(type){
-  var form = $("#filter-form");
-  form.find("input[name='export']").val(1);
-  form.find("input[name='encoding']").val(type);
-  form.attr('target','_blank') ;
-  form.submit();
-  form.find("input[name='export']").val(0);
-  form.attr('target','_self') ;
+    var form = $("#filter-form");
+    form.find("input[name='export']").val(1);
+    form.find("input[name='encoding']").val(type);
+    form.attr('target','_blank') ;
+    form.submit();
+    form.find("input[name='export']").val(0);
+    form.attr('target','_self') ;
 }
 function changeStatus(status){
-  var form = $("#filter-form");
-  form.find("input[name='status']").val(status);
-  form.submit();
+    var form = $("#filter-form");
+    form.find("input[name='status']").val(status);
+    form.submit();
 }
 function submitForm(){
-  var form = $("#filter-form");
-  var isExport = form.find("input[name='export']").val();
-  if(isExport!=1){
-    layer.load(1);
-  }
+    var form = $("#filter-form");
+    var isExport = form.find("input[name='export']").val();
+    if(isExport!=1){
+        layer.load(1);
+    }
 }
 // initLayuiTable({ limit: {$pagesize} })
 laydate.render({
-  elem: '#filter_time'
-  ,range: '~' //或 range: '~' 来自定义分割字符
-  ,lang:'{$active_lang == "zh-cn" ? "cn" : "en"}'
-  ,done: function(value, date, endDate){
-    /*layer.load(1);
-    var url = "<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>";
-    // location.href = url;
-    var form = $("<form method='get'></form>");
-    form.attr({ "action": url });
-     var input = $("<input type='hidden'>");
-     input.attr({ "name": "filter[time]" });
-     input.val(value);
-     form.append(input);
-     $(document.body).append(form);
-    form.submit();*/
- }
+    elem: '#filter_time'
+    ,range: '~' //或 range: '~' 来自定义分割字符
+    ,lang:'{$active_lang == "zh-cn" ? "cn" : "en"}'
+    ,done: function(value, date, endDate){
+        /*layer.load(1);
+        var url = "<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>";
+        // location.href = url;
+        var form = $("<form method='get'></form>");
+        form.attr({ "action": url });
+        var input = $("<input type='hidden'>");
+        input.attr({ "name": "filter[time]" });
+        input.val(value);
+        form.append(input);
+        $(document.body).append(form);
+        form.submit();*/
+    }
 });
 $(".layui-tab-title li a").click(function(){
-  layer.load(1);
+    layer.load(1);
 })
 </script>
 {/block}

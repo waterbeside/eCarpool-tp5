@@ -1,4 +1,5 @@
 <?php
+
 namespace app\common\controller;
 
 use think\Controller;
@@ -8,7 +9,6 @@ use think\exception\HttpResponseException;
 use think\facade\Cache;
 use think\facade\Hook;
 
-
 /**
  * 后台公用基础控制器
  * Class AdminBase
@@ -17,9 +17,9 @@ use think\facade\Hook;
 class Base extends Controller
 {
 
-    public $systemConfig  = NULL;
+    public $systemConfig  = null;
     public $language  = 'zh-cn';
-    public $language_l = NULL;
+    public $language_l = null;
     public $errorMsg = '';
 
     protected function initialize()
@@ -35,8 +35,8 @@ class Base extends Controller
      */
     public function getLang($type = 0)
     {
-      $getLangRes =  Hook::exec('app\\common\\behavior\\GetLang', $this,[]);
-      return $getLangRes;
+        $getLangRes =  Hook::exec('app\\common\\behavior\\GetLang', $this, []);
+        return $getLangRes;
     }
 
     /**
@@ -46,8 +46,8 @@ class Base extends Controller
      */
     public function formatLangCode($language)
     {
-      $getLangRes =  Hook::exec(['app\\common\\behavior\\GetLang','formatLangCode'], $language);
-      return $getLangRes;
+        $getLangRes =  Hook::exec(['app\\common\\behavior\\GetLang', 'formatLangCode'], $language);
+        return $getLangRes;
     }
 
 
@@ -60,93 +60,91 @@ class Base extends Controller
      * @param  string $message [描述]
      * @param  array  $extra   [其它]
      */
-  	public function jsonReturn($code, $data, $message = '',$extra = array())
+    public function jsonReturn($code, $data, $message = '', $extra = array())
     {
-      if(is_string($data)){
-        $message = $data;
-        $data = [];
-      }
-      $data = empty($data) ? (object)array() : $data;
-      $extra = empty($extra) ? (object)array() : $extra;
-  		$data = array(
-  			'code'=>$code,
-  			'desc'=>$message,
-  			'data'=>$data,
-  			'date'=>date("Y-m-d H:i:s",time()),
-  			'extra'=>$extra
-  		);
-      // return json($data);
-      throw new HttpResponseException(json($data));
-  		// echo json_encode($data);
-  		// exit;
-  	}
+        if (is_string($data)) {
+            $message = $data;
+            $data = [];
+        }
+        $data = empty($data) ? (object) array() : $data;
+        $extra = empty($extra) ? (object) array() : $extra;
+        $data = array(
+            'code' => $code,
+            'desc' => $message,
+            'data' => $data,
+            'date' => date("Y-m-d H:i:s", time()),
+            'extra' => $extra
+        );
+        // return json($data);
+        throw new HttpResponseException(json($data));
+        // echo json_encode($data);
+        // exit;
+    }
 
     /**
-	   * 数组去重
-	   */
-	  public function arrayUniq($arr)
+     * 数组去重
+     */
+    public function arrayUniq($arr)
     {
-	    $arr = array_unique($arr);
-	    $arr = array_values($arr);
-	    return $arr;
-	  }
+        $arr = array_unique($arr);
+        $arr = array_values($arr);
+        return $arr;
+    }
 
-		 /**
-	   * 二维数组去重
-	   */
-		 public function arrayUniqByKey($arr,$key)
-     {
-         //建立一个目标数组
-         $res = array();
-         foreach ($arr as $value) {
+    /**
+     * 二维数组去重
+     */
+    public function arrayUniqByKey($arr, $key)
+    {
+        //建立一个目标数组
+        $res = array();
+        foreach ($arr as $value) {
             //查看有没有重复项
-            if(isset($res[$value[$key]])){
-                  //有：销毁
-                  unset($value[$key]);
+            if (isset($res[$value[$key]])) {
+                //有：销毁
+                unset($value[$key]);
+            } else {
+                $res[$value[$key]] = $value;
             }
-            else{
-                 $res[$value[$key]] = $value;
-            }
-         }
-         return $res;
-     }
-
-		/**
-	   * 清除数组内每个元素的两头空格
-	   * @return array||string
-	   */
-		public function trimArray($arr)
-    {
-	    if (!is_array($arr)){
-				  return trim($arr);
-			}
-    	return array_map("self::trimArray", $arr);
-		}
-
-
-    public function jump($isSuccess=1 , $msg = '', $url = null, $data = '', $wait = 3, array $header = [])
-    {
-      if (is_null($url)) {
-        if($isSuccess===1){
-          $url =  isset($_SERVER["HTTP_REFERER"]) ? $_SERVER["HTTP_REFERER"] : ((strpos($url, '://') || 0 === strpos($url, '/')) ? url($url) : '') ;
-        }else{
-          $url = $this->request->header('X-Requested-With')=="modal-html"  ? 'javascript:void(0);' : 'javascript:history.back(-1);';
-          // $url = $this->request->header('X-Requested-With')=="modal-html"  ? (isset($_SERVER["HTTP_REFERER"])?$_SERVER["HTTP_REFERER"]:'') : 'javascript:history.back(-1);';
         }
-      } elseif ('' !== $url) {
-          $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : url($url);
-      }
-      $tmpl = $isSuccess === 1 ? 'dispatch_success_tmpl' : 'dispatch_error_tmpl';
-      $result = [
-          'code' => $isSuccess,
-          'msg'  => $msg,
-          'data' => $data,
-          'url'  => $url,
-          'wait' => $wait,
-      ];
-      $response = Response::create($result, "jump")->header($header)->options(['jump_template' => config($tmpl)]);
-      throw new HttpResponseException($response);
+        return $res;
+    }
 
+    /**
+     * 清除数组内每个元素的两头空格
+     * @return array||string
+     */
+    public function trimArray($arr)
+    {
+        if (!is_array($arr)) {
+            return trim($arr);
+        }
+        return array_map("self::trimArray", $arr);
+    }
+
+
+    public function jump($isSuccess = 1, $msg = '', $url = null, $data = '', $wait = 3, array $header = [])
+    {
+        if (is_null($url)) {
+            if ($isSuccess === 1) {
+                $url =  isset($_SERVER["HTTP_REFERER"]) ? $_SERVER["HTTP_REFERER"] : ((strpos($url, '://') || 0 === strpos($url, '/')) ? url($url) : '');
+            } else {
+                $url = $this->request->header('X-Requested-With') == "modal-html"  ? 'javascript:void(0);' : 'javascript:history.back(-1);';
+                // $url = $this->request->header('X-Requested-With')=="modal-html"  ? (isset($_SERVER["HTTP_REFERER"])?$_SERVER["HTTP_REFERER"]:'') : 'javascript:history.back(-1);';
+            }
+        } elseif ('' !== $url) {
+            $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : url($url);
+        }
+        $tmpl = $isSuccess === 1 ? 'dispatch_success_tmpl' : 'dispatch_error_tmpl';
+        $result = [
+            'code' => $isSuccess,
+            'msg'  => $msg,
+            'data' => $data,
+            'url'  => $url,
+            'wait' => $wait,
+        ];
+        $response = Response::create($result, "jump")->header($header)->options(['jump_template' => config($tmpl)]);
+        throw new HttpResponseException($response);
     }
 
     /**
@@ -155,9 +153,9 @@ class Base extends Controller
      */
     public function getSystemConfigs()
     {
-      $ConfigsModel = new Configs();
-      $configs = $ConfigsModel->getConfigs();
-      return $configs;
+        $ConfigsModel = new Configs();
+        $configs = $ConfigsModel->getConfigs();
+        return $configs;
     }
 
     /**
@@ -172,17 +170,17 @@ class Base extends Controller
      */
     public function success($msg = '', $url = null, $data = '', $wait = 3, array $header = [])
     {
-      if($this->request->isAjax()){
-        $extra = is_array($wait) ? $wait :[];
-        if(!isset($extra['url']) &&   is_string($url) && !is_numeric($url) ){
-          $extra['url'] = $url;
+        if ($this->request->isAjax()) {
+            $extra = is_array($wait) ? $wait : [];
+            if (!isset($extra['url']) &&   is_string($url) && !is_numeric($url)) {
+                $extra['url'] = $url;
+            }
+            $code = is_numeric($url) ? intval($url) : (is_numeric($data) ? $data : 0);
+            $data = is_array($data) ? $data : [];
+            $this->jsonReturn($code, $data, $msg, $extra);
+        } else {
+            $this->jump(1, $msg, $url, $data, $wait, $header);
         }
-        $code = is_numeric($url) ? intval($url) : (is_numeric($data) ? $data : 0);
-        $data = is_array($data) ? $data : [];
-        $this->jsonReturn($code, $data, $msg ,$extra);
-      }else{
-        $this->jump(1 , $msg, $url, $data , $wait ,  $header );
-      }
     }
 
     /**
@@ -197,18 +195,17 @@ class Base extends Controller
      */
     public function error($msg = '', $url = null, $data = '', $wait = 3, array $header = [])
     {
-      if($this->request->isAjax()){
-        $extra = is_array($wait) ? $wait :[];
-        if(!isset($extra['url']) &&   is_string($url) && !is_numeric($url) ){
-          $extra['url'] = $url;
+        if ($this->request->isAjax()) {
+            $extra = is_array($wait) ? $wait : [];
+            if (!isset($extra['url']) &&   is_string($url) && !is_numeric($url)) {
+                $extra['url'] = $url;
+            }
+            $code = is_numeric($url) ? intval($url) : (is_numeric($data) ? $data : -1);
+            $data = is_array($data) ? $data : [];
+            $this->jsonReturn($code, $data, $msg, $extra);
+        } else {
+            $this->jump(0, $msg, $url, $data, $wait, $header);
         }
-        $code = is_numeric($url) ? intval($url) : (is_numeric($data) ? $data : -1);
-        $data = is_array($data) ? $data : [];
-        $this->jsonReturn($code, $data, $msg ,$extra);
-
-      }else{
-        $this->jump(0 , $msg, $url, $data , $wait ,  $header );
-      }
     }
 
 
@@ -218,32 +215,29 @@ class Base extends Controller
      * @param  array  $data 请求参数
      * @param  string $type 请求类型
      */
-    public function clientRequest($url,$data=[],$type='POST',$dataType="json"){
-      try {
-        $client = new \GuzzleHttp\Client(['verify'=>false]);
-        // $params = strtolower($type) == 'get' ? [
-        //   'query' => $data
-        // ] : [
-        //   'form_params' => $data
-        // ];
-        $params = $data;
-        $response = $client->request($type, $url, $params);
+    public function clientRequest($url, $data = [], $type = 'POST', $dataType = "json")
+    {
+        try {
+            $client = new \GuzzleHttp\Client(['verify' => false]);
+            // $params = strtolower($type) == 'get' ? [
+            //   'query' => $data
+            // ] : [
+            //   'form_params' => $data
+            // ];
+            $params = $data;
+            $response = $client->request($type, $url, $params);
 
-        $contents = $response->getBody()->getContents();
-        if(mb_strtolower($dataType)=="json"){
-          $contents = json_decode($contents,true);
+            $contents = $response->getBody()->getContents();
+            if (mb_strtolower($dataType) == "json") {
+                $contents = json_decode($contents, true);
+            }
+            return $contents;
+        } catch (\GuzzleHttp\Exception\RequestException $exception) {
+            if ($exception->hasResponse()) {
+                $responseBody = $exception->getResponse()->getBody()->getContents();
+            }
+            $this->errorMsg = $exception->getMessage() ? $exception->getMessage()  : (isset($responseBody) ? $responseBody : '');
+            return false;
         }
-        return $contents;
-      } catch (\GuzzleHttp\Exception\RequestException $exception) {
-        if ($exception->hasResponse()) {
-          $responseBody = $exception->getResponse()->getBody()->getContents();
-        }
-        $this->errorMsg = $exception->getMessage() ? $exception->getMessage()  :(isset($responseBody) ? $responseBody : '')  ;
-        return false;
-      }
-
     }
-
-
-
 }

@@ -1,0 +1,167 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body P-scorePivot-orederGoods">
+
+    <!--tab标签-->
+    <div class="layui-tab ">
+
+        <ul class="  amain-tool-bar">
+        <li class="layui-this"><a href="{:url('admin/ScorePivot/order_goods')}" showloading>{:lang('Order pivot')}</a></li>
+        <li class="btn-item-right">
+            <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="PAGE_EXCE.exportExcel(0)"><i class="fa fa-file-excel-o"></i> {:lang('Export')} CSV</a>
+            <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="PAGE_EXCE.exportExcel(1)"><i class="fa fa-file-excel-o"></i> {:lang('Export')} XLS (GBK)</a>
+        </li>
+        </ul>
+
+        <div class="amain-content">
+        <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScorePivot/order_goods')}" method="get" onsubmit="return PAGE_EXCE.submitForm()">
+            <div class="layui-inline">
+            <label class="layui-form-label">{:lang('Order time')}</label>
+            <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="{:lang('Time range')}" value="{$filter['time'] ? $filter['time'] :''}" style="width:200px" autocomplete="off">
+            </div>
+            <div class="layui-input-inline">
+            <input type="hidden" name="region_id" value="{$region_id}" class="layui-input layui-input-inline " readonly>
+            <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);" class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" data-auto-submit="true">
+                {$region_datas ? str_replace(',',' / ',$region_datas[0]['fullname']) : lang('Region or department')}
+            </a>
+            </div>
+            <input type="hidden" name="filter[status]" value="{$filter.status}">
+            <input type="hidden" name="export" value="0">
+            <input type="hidden" name="encoding" value="0">
+        </form>
+        <hr>
+
+        <div class="layui-tab amain-content-tab">
+            <div class="tab-title-wrapper">
+                <ul class="layui-tab-title">
+                    <li <?php echo $filter['status'] === "" || $filter['status'] === "all" ? 'class="layui-this"' : ''; ?>><a onclick="PAGE_EXCE.changeStatus('all')" href="javascript:void(0);">{:lang('All')}</a></li>
+                    <li <?php echo $filter['status'] === "all_01" ? 'class="layui-this"' : ''; ?>><a onclick="PAGE_EXCE.changeStatus('all_01')" href="javascript:void(0);">{:lang('Not redeemed or redeemed')}</a></li>
+                    {foreach name="statusList" key="key" item="vo"}
+                    <li <?php echo  is_numeric($filter['status']) && intval($filter['status']) === intval($key) ? 'class="layui-this"' : ''; ?>>
+                    <a onclick="PAGE_EXCE.changeStatus('<?php echo $key; ?>')" href="javascript:void(0);">{:lang("sl:".$vo)}</a>
+                    </li>
+                    {/foreach}
+                </ul>
+            </div>
+            <div class="layui-tab-content" style="margin:0 -10px">
+                <div class="layui-tab-item layui-show">
+                    <?php if ($lists && count($lists) > 0) { ?>
+                    <table lay-filter="listtable" class="layui-table">
+                        <thead>
+                            <tr>
+                                <th lay-data="{field:'id', width:60, fixed:'left'}">#</th>
+                                <th lay-data="{field:'uuid', width:100, fixed:'left'}">{:lang('Order number')}</th>
+                                <th lay-data="{field:'name', width:80, fixed:'left'}">{:lang('Name')}</th>
+                                <th lay-data="{field:'loginname', width:120, fixed:'left'}">{:lang('Account')}</th>
+                                <th lay-data="{field:'phone', width:100, fixed:'left'}">{:lang('Phone')}</th>
+                                <th lay-data="{field:'full_department', width:120, fixed:'left'}">{:lang('Region or department')}</th>
+                                <th lay-data="{field:'time', width:80}" width="50">{:lang('Order time')}</th>
+                                <th lay-data="{field:'total', width:80}" width="50">{:lang('Redeem points')}</th>
+                                {foreach name="goodsList" item="vo"}
+                                <th lay-data="{field:'gid_{$vo.id}', minWidth:100}">{$vo.id}#{$vo.name}</th>
+                                {/foreach}
+                            </tr>
+                        </thead>
+                        <tbody class="order-table-list">
+                        <?php foreach ($lists as $key => $item) { ?>
+                            <tr class="order-item">
+                                <td>{$item.id}</td>
+                                <td>
+                                    <span class="layui-elip">
+                                    {:iconv_substr($item['uuid'], 0, 8)} / {$item.id}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{:url('admin/User/public_detail',['id'=>$item['user']['uid']])}" data-title="用户详情" data-trigger="modal" title="用户详情">
+                                    {$item.user.nativename ? $item.user.nativename : $item.user.name }
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="{:url('admin/User/public_detail',['id'=>$item['user']['uid']])}" data-title="用户详情" data-trigger="modal" title="用户详情">
+                                    {$item.user.loginname}
+                                    </a>
+                                </td>
+                                <td>{$item.user.phone}</td>
+                                <td>
+                                    <p>{$item.full_department|str_replace=","," / ",###}</p>
+                                    <p>{$item.user.department_fullname|str_replace=","," / ",###}</p>
+                                </td>
+                                <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$item.creation_time|strtotime}000</span></td>
+                                <td><b class="total">{$item.total}</b></td>
+                                {foreach name="goodsList" item="vo"}
+                                <td text-align="right">
+                                    <?php if (isset($item['goods'][$vo['id']])) { ?>
+                                    <b>{$item['goods'][$vo['id']]['num']}</b>
+                                    <?php } else { ?>
+                                    <span class="text-gray">0</span>
+                                    <?php } ?>
+                                </td>
+                                {/foreach}
+                            </tr>
+                        <?php } ?>
+
+
+                        </tbody>
+                    </table>
+
+                    <?php } else {
+                    echo isset($filter['time']) && $filter['time'] ? lang('No Data') : lang('Please select a time period');
+                    } ?>
+                    {$lists|raw}
+
+                </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+PAGE_EXCE = {
+    changeStatus: function(status) {
+    var form = $("#filter-form");
+    form.find("input[name='filter[status]']").val(status);
+    form.submit();
+    },
+    exportExcel: function(type) {
+    var form = $("#filter-form");
+    form.find("input[name='export']").val(1);
+    form.find("input[name='encoding']").val(type);
+    form.attr('target', '_blank');
+    form.submit();
+    form.find("input[name='export']").val(0);
+    form.attr('target', '_self');
+    },
+    submitForm: function() {
+    var form = $("#filter-form");
+    var isExport = form.find("input[name='export']").val();
+    if (isExport != 1) {
+        layer.load(1);
+    }
+    },
+    init: function() {
+    initLayuiTable({
+        limit: '{$pagesize}'
+    })
+    laydate.render({
+        elem: '#filter_time',
+        range: '~' //或 range: '~' 来自定义分割字符
+        ,
+        lang: '{$active_lang == "zh-cn" ? "cn" : "en"}',
+        done: function(value, date, endDate) {
+        layer.load(2);
+        setTimeout(function() {
+            $("#filter_time").closest("form").submit();
+        }, 400)
+        }
+    });
+    }
+}
+
+PAGE_EXCE.init();
+</script>
+{/block}

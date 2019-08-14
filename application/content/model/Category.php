@@ -1,4 +1,5 @@
 <?php
+
 namespace app\content\model;
 
 use think\Db;
@@ -16,8 +17,6 @@ class Category extends Model
     protected static function init()
     {
         parent::init();
-
-
     }
 
 
@@ -38,15 +37,16 @@ class Category extends Model
      * @param  integer $pid  当前栏目id
      * @param  integer $deep  0 包抱当前栏目id， 1不包括
      */
-    public function getChildrensId($pid = 0, $deep = 0){
-      $data = $this->where([['parent_id','=', $pid]])->column('id');
-      foreach ($data as $key => $value) {
-        $children_next = $this->getChildrensId($value, $deep+1);
-        if($children_next){
-          $data = array_merge($data,$children_next);
+    public function getChildrensId($pid = 0, $deep = 0)
+    {
+        $data = $this->where([['parent_id', '=', $pid]])->column('id');
+        foreach ($data as $key => $value) {
+            $children_next = $this->getChildrensId($value, $deep + 1);
+            if ($children_next) {
+                $data = array_merge($data, $children_next);
+            }
         }
-      }
-      return  $deep ? $data : array_merge($data,[intval($pid)]) ;
+        return  $deep ? $data : array_merge($data, [intval($pid)]);
     }
 
 
@@ -55,26 +55,23 @@ class Category extends Model
      * @param  integer $recache [description]
      * @return [type]           [description]
      */
-    public function getList($recache = 0){
-      $rKey = "carpool:category:list";
-      $redis = new RedisData();
-      $data = json_decode($redis->get($rKey),true);
+    public function getList($recache = 0)
+    {
+        $rKey = "carpool:category:list";
+        $redis = new RedisData();
+        $data = json_decode($redis->get($rKey), true);
 
-      if(!$data || $recache){
-        $data  = $this->where([['is_delete','=',0]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
-        $redis->set($rKey,json_encode($data));
-      }
-      return $data;
+        if (!$data || $recache) {
+            $data  = $this->where([['is_delete', '=', 0]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+            $redis->set($rKey, json_encode($data));
+        }
+        return $data;
     }
 
 
-    public function deleteListCache(){
-      $redis = new RedisData();
-      $redis->delete("carpool:category:list");
-
+    public function deleteListCache()
+    {
+        $redis = new RedisData();
+        $redis->delete("carpool:category:list");
     }
-
-
-
-
 }

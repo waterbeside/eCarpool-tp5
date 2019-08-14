@@ -11,15 +11,15 @@
         </ul>
         <div class="layui-tab-content">
             <div class="layui-tab-item layui-show">
-              {php} if(!$deep){ {/php}
+                {php} if(!$deep){ {/php}
                 <form class="layui-form layui-form-pane" action="{:url('admin/department/index')}" method="get">
-                  <input type="hidden" name ="pid" value={$pid} />
-                  <div class="my-input-prebox" style="width:100px">
-                    <select name="filter[is_all]"  >
-                      <option value="0" {php}echo isset($filter['is_all']) &&  $filter['is_all'] == 0  ? 'selected' : ''; {/php}>检索当前</option>
-                      <option value="1" {php}echo isset($filter['is_all']) &&  $filter['is_all'] ? 'selected' : ''; {/php}>检索全部</option>
-                    </select>
-                  </div>
+                    <input type="hidden" name ="pid" value={$pid} />
+                    <div class="my-input-prebox" style="width:100px">
+                        <select name="filter[is_all]"  >
+                        <option value="0" {php}echo isset($filter['is_all']) &&  $filter['is_all'] == 0  ? 'selected' : ''; {/php}>检索当前</option>
+                        <option value="1" {php}echo isset($filter['is_all']) &&  $filter['is_all'] ? 'selected' : ''; {/php}>检索全部</option>
+                        </select>
+                    </div>
                     <div class="layui-inline">
                         <div class="layui-input-inline">
                             <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="关键词" class="layui-input" style="width:130px" >
@@ -34,12 +34,12 @@
 
                 <!-- 面包屑导行 -->
                 <div class="layui-breadcrumb">
-                  <?php if(count($path) >1){ foreach($path as $value){
-                    if($pid != $value['id']){ ?>
-                      <a href="{:url('index',['pid'=>$value['id']])}">{$value['name']}</a>
-                  <?php  }else{ ?>
-                    <a ><cite>{$value['name']}</cite></a>
-                  <?php }}} ?>
+                    <?php if(count($path) >1){ foreach($path as $value){
+                        if($pid != $value['id']){ ?>
+                        <a href="{:url('index',['pid'=>$value['id']])}">{$value['name']}</a>
+                    <?php  }else{ ?>
+                        <a ><cite>{$value['name']}</cite></a>
+                    <?php }}} ?>
                 </div>
                 <div class="blank10"> </div>
                 <!-- /面包屑导行 -->
@@ -66,23 +66,23 @@
                         <td><a href="{:url('index',['pid'=>$vo['id']])}">{$vo.name}</a></td>
                         {php} if($deep){ {/php}
                         <td class="layui-breadcrumb">
-                          {php}
-                          $item_full_array = explode(',',$vo['fullname']);
-                          $item_path_array = explode(',',$vo['path']);
-                          foreach($item_full_array as $k => $p ){
-                            $sep = $k ?  "/" : "";
-                            $pid = isset($item_path_array[$k+1]) ? $item_path_array[$k+1] : '';
-                            if($pid){
-                              echo '<a href="'.url('index',['pid'=>$pid]).'">'.$p.'</a>';
-                            }else{
-                              echo '<a href="'.url('index',['pid'=>$vo['id']]).'"><cite><b >'.$p.'</b></cite></a>';
+                            {php}
+                            $item_full_array = explode(',',$vo['fullname']);
+                            $item_path_array = explode(',',$vo['path']);
+                            foreach($item_full_array as $k => $p ){
+                                $sep = $k ?  "/" : "";
+                                $pid = isset($item_path_array[$k+1]) ? $item_path_array[$k+1] : '';
+                                if($pid){
+                                echo '<a href="'.url('index',['pid'=>$pid]).'">'.$p.'</a>';
+                                }else{
+                                echo '<a href="'.url('index',['pid'=>$vo['id']]).'"><cite><b >'.$p.'</b></cite></a>';
+                                }
                             }
-                          }
-                          {/php}
+                            {/php}
                         </td>
                         {php} } {/php}
                         <td>
-                           <!-- <a  href="{:url('admin/department/edit',['id'=>$vo['id']])}" class="layui-btn layui-btn-xs " data-title="編輯"  data-trigger="modal"     title="编辑" ><i class="layui-icon">&#xe642;</i></a> -->
+                            <!-- <a  href="{:url('admin/department/edit',['id'=>$vo['id']])}" class="layui-btn layui-btn-xs " data-title="編輯"  data-trigger="modal"     title="编辑" ><i class="layui-icon">&#xe642;</i></a> -->
                             <a  href="{:url('index',['pid'=>$vo['id']])}"  class="layui-btn  layui-btn-xs" ><i class="fa fa-eye"></i> 查看子部门</a>
                         </td>
                     </tr>

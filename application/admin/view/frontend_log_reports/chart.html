@@ -3,7 +3,7 @@
 <div class="amain-body P-eventLog-reports">
 
     <!--tab标签-->
-    <div class="layui-tab" >
+    <div class="layui-tab">
 
 
 
@@ -11,37 +11,44 @@
 
 
 
-          <!-- **************  s : 走势图表 ************** -->
-          <div class="layui-tab-item layui-show ">
-            <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreReports/index')}" method="get" style="float:right; margin-bottom:20px;">
-                <!-- <div class="blank10">  </div> -->
-                <div class="layui-inline">
-                  <label class="layui-form-label" style="width:160px">时间范围选择</label>
+            <!-- **************  s : 走势图表 ************** -->
+            <div class="layui-tab-item layui-show ">
+                <form class="layui-form layui-form-pane" id="filter-form" showloading
+                    action="{:url('admin/ScoreReports/index')}" method="get" style="float:right; margin-bottom:20px;">
+                    <!-- <div class="blank10">  </div> -->
+                    <div class="layui-inline">
+                        <label class="layui-form-label" style="width:160px">时间范围选择</label>
 
-                    <div class="layui-input-inline">
-                      <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[time]" class="layui-input" id="filter_time"
+                                placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}" style="width:200px"
+                                autocomplete="off">
+                        </div>
                     </div>
+
+                    <div class="layui-inline">
+                        <input type="hidden" name="export" value="0">
+                        <!-- <button class="layui-btn"><i class="fa fa-search"></i></button> -->
+                    </div>
+                </form>
+
+                <div class="time-options">
+                    <a class="time-item time-item-year " href="javascript:void(0)"
+                        onclick="return PAGE_EXEC.drawChart('year');">年</a>
+                    <a class="time-item  time-item-month " href="javascript:void(0)"
+                        onclick="return PAGE_EXEC.drawChart('month');">月</a>
+                    <a class="time-item time-item-day current" href="javascript:void(0)"
+                        onclick="return PAGE_EXEC.drawChart('day');">日</a>
+                    <a class="time-item time-item-hour " href="javascript:void(0)"
+                        onclick="return PAGE_EXEC.drawChart('hour');">时</a>
+                </div>
+                <div class="chart-wapper">
+                    <div id="chart" class="cp-chart-content" style="height:600px;"></div>
                 </div>
 
-                <div class="layui-inline">
-                  <input type="hidden" name="export" value="0">
-                    <!-- <button class="layui-btn"><i class="fa fa-search"></i></button> -->
-                </div>
-            </form>
 
-            <div class="time-options">
-              <a class="time-item time-item-year " href="javascript:void(0)"  onclick="return PAGE_EXEC.drawChart('year');">年</a>
-              <a class="time-item  time-item-month " href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('month');">月</a>
-              <a class="time-item time-item-day current"  href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('day');">日</a>
-              <a class="time-item time-item-hour " href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('hour');">时</a>
             </div>
-            <div class="chart-wapper">
-              <div id="chart"  class="cp-chart-content" style="height:600px;"></div>
-            </div>
-
-
-          </div>
-          <!-- **************  e / 走势图表 ************** -->
+            <!-- **************  e / 走势图表 ************** -->
 
 
 
@@ -57,235 +64,249 @@
 
 {block name="script"}
 <script>
+    PAGE_EXEC = {
+        data: {
+            type: '{$type}',
+            timeStr: '{$filter.time}',
+            timeStr_old: '{$filter.time}',
+            totals: {},
 
-PAGE_EXEC = {
-  data : {
-    type : '{$type}',
-    timeStr : '{$filter.time}',
-    timeStr_old : '{$filter.time}',
-    totals : {},
-
-    current_cycle : "day",
-    cycle : {
-      year:[],
-      month:[],
-      week:[],
-      day:[],
-      hour:[],
-    },
-    tableObj:[]
-  },
-  /**
-   * 取得数据
-   */
-  getData : function(){
-    var _this = this;
-    return {
+            current_cycle: "day",
+            cycle: {
+                year: [],
+                month: [],
+                week: [],
+                day: [],
+                hour: [],
+            },
+            tableObj: []
+        },
+        /**
+         * 取得数据
+         */
+        getData: function () {
+            var _this = this;
+            return {
 
 
-      /**
-       * 取得周期拼车数列表
-       * @type {[type]}
-       */
-      cycleList: function(cycle,reload){
-        var url = "{:url("public_cycle_datas")}";
-        var dtd = $.Deferred();
-        var type = _this.data.type;
-        // var loading = layer.load(2,{ shade: [0.2,'#fff']});
-        var loadingMsg = "加载中";
+                /**
+                 * 取得周期拼车数列表
+                 * @type {[type]}
+                 */
+                cycleList: function (cycle, reload) {
+                    var url = "{:url('public_cycle_datas')}";
+                    var dtd = $.Deferred();
+                    var type = _this.data.type;
+                    // var loading = layer.load(2,{ shade: [0.2,'#fff']});
+                    var loadingMsg = "加载中";
 
-        var loading = layer.msg(loadingMsg, {
-          icon: 16
-          ,shade: 0.01
-          ,time:0
-        });
-        reload = reload || 0;
-        if(typeof(_this.data.cycle[cycle][type])!="undefined" && _this.data.cycle[cycle][type].length > 0 && !reload){
-          setTimeout(function(){
-            layer.close(loading)
-          },300);
-          dtd.resolve(_this.data.cycle[cycle][type]);
-        }else{
+                    var loading = layer.msg(loadingMsg, {
+                        icon: 16,
+                        shade: 0.01,
+                        time: 0
+                    });
+                    reload = reload || 0;
+                    if (typeof (_this.data.cycle[cycle][type]) != "undefined" && _this.data.cycle[cycle][
+                            type
+                        ].length > 0 && !reload) {
+                        setTimeout(function () {
+                            layer.close(loading)
+                        }, 300);
+                        dtd.resolve(_this.data.cycle[cycle][type]);
+                    } else {
 
-          $.getJSON(url,{cycle:cycle,type:type,timeStr:_this.data.timeStr}).then(function(res, textStatus) {
-              setTimeout(function(){
-                layer.close(loading)
-              },300);
-              if(res.code===0){
-                _this.data.cycle[cycle][type] = res.data.lists;
-                _this.data.timeStr_old = _this.data.timeStr;
-                dtd.resolve(res.data.lists);
-              }else{
-                dtd.reject(typeof(res.desc)!="undefined" ? res.desc : '');
-              }
-          }).catch(function(error){
-              dtd.reject(error);
-          });
-        }
+                        $.getJSON(url, {
+                            cycle: cycle,
+                            type: type,
+                            timeStr: _this.data.timeStr
+                        }).then(function (res, textStatus) {
+                            setTimeout(function () {
+                                layer.close(loading)
+                            }, 300);
+                            if (res.code === 0) {
+                                _this.data.cycle[cycle][type] = res.data.lists;
+                                _this.data.timeStr_old = _this.data.timeStr;
+                                dtd.resolve(res.data.lists);
+                            } else {
+                                dtd.reject(typeof (res.desc) != "undefined" ? res.desc : '');
+                            }
+                        }).catch(function (error) {
+                            dtd.reject(error);
+                        });
+                    }
 
-        return dtd.promise();
+                    return dtd.promise();
 
-      }
+                }
+
+            }
+
+        },
+
+
+
+        /**
+         * 绘制图表
+         */
+        drawChart: function (cycle) {
+            cycle = cycle || this.data.current_cycle;
+            this.data.current_cycle = cycle;
+            var _this = this;
+
+
+            $('.time-options').find('.time-item-' + cycle).addClass('current').siblings('.time-item')
+                .removeClass('current');
+            var dataZoomStart = 50;
+            switch (cycle) {
+                case 'year':
+                    dataZoomStart = 0;
+                    break;
+                case 'week':
+                    dataZoomStart = 80;
+                    break;
+                case 'day':
+                    dataZoomStart = 70;
+                    break;
+
+            }
+
+
+            var myChart = echarts.init(document.getElementById('chart'));
+            var chartOption = {
+                title: {
+                    // text: '拼车统计',
+                    padding: [8, 4, 4, 8],
+                    textStyle: {
+                        color: "#74697e"
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'line',
+                        label: {
+                            backgroundColor: '#692290'
+                        },
+                    }
+                },
+                toolbox: {
+                    feature: {
+                        restore: {},
+                        saveAsImage: {}
+                    }
+                },
+                axisPointer: {
+                    link: {
+                        xAxisIndex: 'all'
+                    }
+                },
+                dataZoom: [{
+                        show: true,
+                        realtime: true,
+                        start: dataZoomStart,
+                        end: 100,
+                    },
+                    {
+                        type: 'inside',
+                        realtime: true,
+                        start: 0,
+                        end: 100,
+                    }
+                ],
+                legend: {
+                    top: 8,
+                    right: 100,
+                },
+                grid: [{
+                    left: 50,
+                    right: 50,
+                    height: '70%'
+                }],
+
+
+                xAxis: [{
+                        type: 'category',
+                        boundaryGap: true,
+                        axisLine: {
+                            onZero: true
+                        },
+                        data: ['2018', '2017']
+                    },
+
+                ],
+                yAxis: [{
+                        name: '数量',
+                        type: 'value',
+                    },
+
+                ],
+                series: [{
+                        type: 'line',
+                        name: '数量',
+                        areaStyle: {},
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'top',
+                                color: "#815ea7"
+                            }
+                        },
+                        itemStyle: {
+                            color: '#815ea7'
+                        },
+                        smooth: true,
+                        data: [0, 0]
+                    },
+
+                ]
+            }
+            var reload = _this.data.timeStr == _this.data.timeStr_old ? false : true;
+            _this.getData().cycleList(cycle, reload).then(function (data1) {
+                var data_x = [];
+                var data_y = [];
+                $(data1).each(function (index, el) {
+                    data_x.push(el.t)
+                    data_y.push(el.c)
+                });
+                console.log(data_x)
+                console.log(data_y)
+                chartOption.xAxis[0].data = data_x;
+
+                // console.log(chartOption)
+                chartOption.series[0].data = data_y;
+
+                myChart.setOption(chartOption);
+
+            })
+        },
+
+
+        /**
+         * 执行初始化
+         */
+
+        init: function () {
+            var _this = this;
+            _this.drawChart();
+            laydate.render({
+                elem: '#filter_time',
+                range: '~' //或 range: '~' 来自定义分割字符
+                    ,
+                calendar: true,
+                done: function (value, date, endDate) {
+                    _this.data.timeStr = value;
+                    _this.drawChart();
+                    // layer.load(1);
+                    // $("#filter-form").submit();
+                }
+            });
+        },
 
     }
 
-  },
 
 
 
-  /**
-     * 绘制图表
-     */
-    drawChart: function(cycle){
-      cycle = cycle || this.data.current_cycle;
-      this.data.current_cycle = cycle;
-      var _this = this;
-
-
-      $('.time-options').find('.time-item-'+cycle).addClass('current').siblings('.time-item').removeClass('current');
-      var dataZoomStart  = 50;
-      switch (cycle) {
-        case 'year':
-          dataZoomStart  = 0;
-          break;
-        case 'week':
-          dataZoomStart  = 80;
-          break;
-        case 'day':
-          dataZoomStart  = 70;
-          break;
-
-      }
-
-
-      var myChart = echarts.init(document.getElementById('chart'));
-      var chartOption = {
-        title: {
-            // text: '拼车统计',
-            padding: [8,4,4,8],
-            textStyle:{color:"#74697e"}
-        },
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-                type: 'line',
-                label: {
-                    backgroundColor: '#692290'
-                },
-            }
-        },
-        toolbox: {
-            feature: {
-                restore: {},
-                saveAsImage: {}
-            }
-        },
-        axisPointer: {
-            link: {xAxisIndex: 'all'}
-        },
-        dataZoom: [
-            {
-                show: true,
-                realtime: true,
-                start: dataZoomStart,
-                end: 100,
-            },
-            {
-                type: 'inside',
-                realtime: true,
-                start: 0,
-                end: 100,
-            }
-        ],
-        legend: {
-          top:8,
-          right:100,
-        },
-       grid: [{
-          left: 50,
-          right: 50,
-          height: '70%'
-        }],
-
-
-         xAxis : [
-            {
-                type : 'category',
-                boundaryGap : true,
-                axisLine: {onZero: true},
-                data: ['2018', '2017']
-            },
-
-        ],
-         yAxis : [
-            {
-                name : '数量',
-                type : 'value',
-            },
-
-        ],
-         series: [
-             {
-                 type: 'line',
-                 name: '数量',
-                 areaStyle: {},
-                 label: {
-                    normal: { show: true, position: 'top', color:"#815ea7" }
-                 },
-                 itemStyle: {    color: '#815ea7' },
-                  smooth: true,
-                 data: [0,0]
-             },
-
-         ]
-      }
-      var reload = _this.data.timeStr == _this.data.timeStr_old  ? false : true;
-      _this.getData().cycleList(cycle,reload).then(function(data1){
-        var data_x = [];
-        var data_y = [];
-        $(data1).each(function(index, el) {
-          data_x.push(el.t)
-          data_y.push(el.c)
-        });
-        console.log(data_x)
-        console.log(data_y)
-        chartOption.xAxis[0].data = data_x;
-
-        // console.log(chartOption)
-        chartOption.series[0].data = data_y;
-
-        myChart.setOption(chartOption);
-
-      })
-    },
-
-
-  /**
-   * 执行初始化
-   */
-
-  init: function(){
-    var _this = this;
-    _this.drawChart();
-    laydate.render({
-      elem: '#filter_time'
-      ,range: '~' //或 range: '~' 来自定义分割字符
-      ,calendar: true
-      ,done: function(value, date, endDate){
-        _this.data.timeStr = value;
-        _this.drawChart();
-        // layer.load(1);
-        // $("#filter-form").submit();
-     }
-    });
-  },
-
-}
-
-
-
-
-PAGE_EXEC.init()
-
+    PAGE_EXEC.init()
 </script>
 {/block}
