@@ -10,3 +10,4 @@ thinkphp
 /config/database.php
 /config/secret.php
 composer.lock
+/.vscode
