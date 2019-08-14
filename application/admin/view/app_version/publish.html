@@ -1,18 +1,18 @@
 <div class="layui-tab-content">
     <div class="layui-tab-item layui-show">
         <form class="layui-form form-container" action="{:url('admin/AppVersion/publish')}" method="post">
-          <div class="layui-form-item">
-              <label class="layui-form-label">版本</label>
-              <div class="layui-input-block">
-                <div class="layui-form-mid">
-                  <?php if($data['platform'] == 'iOS'){ ?>
-                    <i class="fa fa-apple"></i> iOS
-                  <?php }else{ ?>
-                    <i class="fa fa-android"></i> android
-                  <?php } ?>
+            <div class="layui-form-item">
+                <label class="layui-form-label">版本</label>
+                <div class="layui-input-block">
+                    <div class="layui-form-mid">
+                    <?php if($data['platform'] == 'iOS'){ ?>
+                        <i class="fa fa-apple"></i> iOS
+                    <?php }else{ ?>
+                        <i class="fa fa-android"></i> android
+                    <?php } ?>
+                    </div>
                 </div>
-              </div>
-          </div>
+            </div>
 
             <div class="layui-form-item">
                 <label class="layui-form-label">版本</label>
@@ -30,15 +30,15 @@
             <div class="layui-form-item">
                 <label class="layui-form-label">更新范围</label>
                 <div class="layui-input-block">
-                  <div class="layui-input-inline">
-                    <input type="text" name="min_versioncode" value="{$data.min_versioncode}" placeholder="" class="layui-input">
-                  </div>
-                  <div class="layui-form-mid">-</div>
-                  <div class="layui-input-inline">
-                    <input type="text" name="max_versioncode" value="{$data.max_versioncode}" placeholder="" class="layui-input">
-                  </div>
-                  <div class="layui-form-mid layui-word-aux">强制更新范围</div>
-              </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="min_versioncode" value="{$data.min_versioncode}" placeholder="" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">-</div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="max_versioncode" value="{$data.max_versioncode}" placeholder="" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">强制更新范围</div>
+                </div>
             </div>
             <div class="layui-form-item">
                 <label class="layui-form-label">is_new</label>
@@ -49,19 +49,19 @@
             </div>
 
             <div class="layui-form-item">
-              <label class="layui-form-label">URL</label>
-              <div class="layui-input-block">
-                  <input type="text" name="url" value="{$data.url}"  placeholder="" class="layui-input">
-                  <div class="layui-form-mid layui-word-aux">APP下载地址，暂时只有Android有效。 请打完整路径（包含http://）</div>
-              </div>
+            <label class="layui-form-label">URL</label>
+            <div class="layui-input-block">
+                <input type="text" name="url" value="{$data.url}"  placeholder="" class="layui-input">
+                <div class="layui-form-mid layui-word-aux">APP下载地址，暂时只有Android有效。 请打完整路径（包含http://）</div>
+            </div>
             </div>
 
             <div class="layui-form-item">
-              <label class="layui-form-label">URL2</label>
-              <div class="layui-input-block">
-                  <input type="text" name="url2" value="{$data.url2}"  placeholder="" class="layui-input">
-                  <div class="layui-form-mid layui-word-aux">海外版APP下载地址，暂时只有Android有效。 请打完整路径（包含http://）</div>
-              </div>
+            <label class="layui-form-label">URL2</label>
+            <div class="layui-input-block">
+                <input type="text" name="url2" value="{$data.url2}"  placeholder="" class="layui-input">
+                <div class="layui-form-mid layui-word-aux">海外版APP下载地址，暂时只有Android有效。 请打完整路径（包含http://）</div>
+            </div>
             </div>
 
             <div class="layui-form-item">

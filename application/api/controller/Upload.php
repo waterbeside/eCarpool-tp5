@@ -1,4 +1,5 @@
 <?php
+
 namespace app\api\controller;
 
 use think\facade\Env;
@@ -19,7 +20,7 @@ class Upload extends Controller
 
         $Admin = new Admin();
         $admin_id = $Admin->getAdminID();
-        if(!$admin_id){
+        if (!$admin_id) {
             $result = [
                 'error'   => 1,
                 'message' => '未登录'

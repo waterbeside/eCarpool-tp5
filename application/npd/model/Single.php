@@ -1,4 +1,5 @@
 <?php
+
 namespace app\npd\model;
 
 use think\Db;
@@ -9,7 +10,7 @@ class Single extends Model
     protected $connection = 'database_npd';
     protected $table = 't_single';
     protected $pk = 'id';
-  
+
     protected $insert = ['create_time'];
 
     /**
@@ -20,6 +21,4 @@ class Single extends Model
     {
         return date('Y-m-d H:i:s');
     }
-
-
 }

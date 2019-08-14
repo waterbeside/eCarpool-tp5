@@ -1,4 +1,5 @@
 <?php
+
 namespace app\api\controller;
 
 use think\facade\Env;
@@ -23,7 +24,7 @@ class Ueditor extends Base
         parent::initialize();
         $Admin = new Admin();
         $admin_id = $Admin->getAdminID();
-        if(!$admin_id){
+        if (!$admin_id) {
             $result = [
                 'state' => 'ERROR'
             ];
@@ -46,7 +47,7 @@ class Ueditor extends Base
                 $result = $this->config;
                 break;
 
-            /* 上传图片 */
+                /* 上传图片 */
             case 'uploadimage':
                 /* 上传涂鸦 */
             case 'uploadscrawl':
@@ -57,16 +58,16 @@ class Ueditor extends Base
                 $result = $this->upload();
                 break;
 
-            /* 列出图片 */
+                /* 列出图片 */
             case 'listimage':
                 $result = $this->getList();
                 break;
-            /* 列出文件 */
+                /* 列出文件 */
             case 'listfile':
                 $result = $this->getList();
                 break;
 
-            /* 抓取远程文件 */
+                /* 抓取远程文件 */
             case 'catchimage':
                 $result = $this->crawler();
                 break;
@@ -89,12 +90,12 @@ class Ueditor extends Base
             }
         } else {
             $systemConfig = $this->systemConfig;
-            $site_domain  = trim($systemConfig['site_upload_domain']) ? trim($systemConfig['site_upload_domain']) : $this->request->root(true) ;
-            if(isset($result['url'])){
+            $site_domain  = trim($systemConfig['site_upload_domain']) ? trim($systemConfig['site_upload_domain']) : $this->request->root(true);
+            if (isset($result['url'])) {
                 $result['path'] = $result['url'];
-                $result['url'] = $site_domain.$result['url'];
+                $result['url'] = $site_domain . $result['url'];
             }
-            
+
             return json($result);
         }
     }
@@ -172,13 +173,13 @@ class Ueditor extends Base
     {
         /* 判断类型 */
         switch ($this->action) {
-            /* 列出文件 */
+                /* 列出文件 */
             case 'listfile':
                 $allowFiles = $this->config['fileManagerAllowFiles'];
                 $listSize   = $this->config['fileManagerListSize'];
                 $path       = $this->config['fileManagerListPath'];
                 break;
-            /* 列出图片 */
+                /* 列出图片 */
             case 'listimage':
             default:
                 $allowFiles = $this->config['imageManagerAllowFiles'];
@@ -193,8 +194,8 @@ class Ueditor extends Base
         $end   = $start + $size;
 
         /* 获取文件列表 */
-        $path  = $_SERVER['DOCUMENT_ROOT'] . (substr($path, 0, 1) == "/" ? "" : "/") . $path ;
-        $files = $this->getFiles($path,$allowFiles);
+        $path  = $_SERVER['DOCUMENT_ROOT'] . (substr($path, 0, 1) == "/" ? "" : "/") . $path;
+        $files = $this->getFiles($path, $allowFiles);
 
         if (!count($files)) {
             return [
@@ -279,8 +280,12 @@ class Ueditor extends Base
      */
     private function getFiles($path, $allowFiles, &$files = [])
     {
-        if (!is_dir($path)) return null;
-        if (substr($path, strlen($path) - 1) != '/') $path .= '/';
+        if (!is_dir($path)) {
+            return null;
+        }
+        if (substr($path, strlen($path) - 1) != '/') {
+            $path .= '/';
+        }
         $handle = opendir($path);
         while (false !== ($file = readdir($handle))) {
             if ($file != '.' && $file != '..') {

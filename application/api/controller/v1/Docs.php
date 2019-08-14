@@ -1,4 +1,5 @@
 <?php
+
 namespace app\api\controller\v1;
 
 use app\api\controller\ApiBase;
@@ -24,26 +25,25 @@ class Docs extends ApiBase
      * 文档列表
      * @return mixed
      */
-    public function index($cate=NULL)
+    public function index($cate = null)
     {
 
         $field = 't.id,t.title,t.cid,t.update_time,t.create_time,t.listorder,t.status,t.lang, c.name , c.title as cate_title';
         $map   = [];
-        $map[] = ['status','=',1];
+        $map[] = ['status', '=', 1];
 
-        if ($cate ) {
-            $map[] = ['c.name','=',$cate];
+        if ($cate) {
+            $map[] = ['c.name', '=', $cate];
         }
 
         $join = [
-          ['docs_category c','t.cid = c.id', 'left'],
+            ['docs_category c', 't.cid = c.id', 'left'],
         ];
 
         $lists  = DocsModel::field($field)->alias('t')->join($join)->where($map)->order('t.cid DESC , t.create_time DESC')->select();
         // $category_list = $this->category_model->field('id,name,title')->where([['is_delete','=',0]])->select();
 
-        return $this->jsonReturn(0,['lists' => $lists]);
-
+        return $this->jsonReturn(0, ['lists' => $lists]);
     }
 
 
@@ -55,26 +55,25 @@ class Docs extends ApiBase
      */
     public function read($id)
     {
-      $field = 't.id,t.title,t.cid,t.update_time,t.create_time,t.content,t.listorder,t.status,t.lang, c.name, c.title as cate_title';
-      $map   = [];
-      $map[] = ['status','=',1];
-      if (is_numeric($id)) {
-        $map[] = ['t.id','=',$id];
-      }else{
-        $map[] = ['c.name','=',$id];
-      }
-      $lang = $this->language;
-      $whereLang = is_numeric($id) ? [] :['lang'=>$lang] ;
-      $join = [
-        ['docs_category c','t.cid = c.id', 'left'],
-      ];
-      $data  = DocsModel::field($field)->alias('t')->join($join)->where($map)->where($whereLang)->find();
-      if(!$data  && $lang !='zh-cn'){
-        $whereLang = is_numeric($id) ? [] :['lang'=>'zh-cn'] ;
+        $field = 't.id,t.title,t.cid,t.update_time,t.create_time,t.content,t.listorder,t.status,t.lang, c.name, c.title as cate_title';
+        $map   = [];
+        $map[] = ['status', '=', 1];
+        if (is_numeric($id)) {
+            $map[] = ['t.id', '=', $id];
+        } else {
+            $map[] = ['c.name', '=', $id];
+        }
+        $lang = $this->language;
+        $whereLang = is_numeric($id) ? [] : ['lang' => $lang];
+        $join = [
+            ['docs_category c', 't.cid = c.id', 'left'],
+        ];
         $data  = DocsModel::field($field)->alias('t')->join($join)->where($map)->where($whereLang)->find();
-      }
+        if (!$data  && $lang != 'zh-cn') {
+            $whereLang = is_numeric($id) ? [] : ['lang' => 'zh-cn'];
+            $data  = DocsModel::field($field)->alias('t')->join($join)->where($map)->where($whereLang)->find();
+        }
 
-      return $this->jsonReturn(0,$data);
+        return $this->jsonReturn(0, $data);
     }
-
 }

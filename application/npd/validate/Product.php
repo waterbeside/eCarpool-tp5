@@ -1,4 +1,5 @@
 <?php
+
 namespace app\npd\validate;
 
 use think\Validate;
@@ -17,6 +18,4 @@ class Product extends Validate
         'cid.min'     => '请选择分类',
 
     ];
-
-
 }

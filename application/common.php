@@ -9,13 +9,13 @@ use think\Db;
  */
 function get_category_children($cid)
 {
-  if (empty($cid)) {
-    return false;
-  }
+    if (empty($cid)) {
+        return false;
+    }
 
-  $children = Db::name('category')->where(['path' => ['like', "%,{$cid},%"]])->select();
+    $children = Db::name('category')->where(['path' => ['like', "%,{$cid},%"]])->select();
 
-  return array2tree($children);
+    return array2tree($children);
 }
 
 /**
@@ -29,20 +29,20 @@ function get_category_children($cid)
  */
 function get_articles_by_cid($cid, $limit = 10, $where = [], $order = [], $filed = [])
 {
-  if (empty($cid)) {
-    return false;
-  }
+    if (empty($cid)) {
+        return false;
+    }
 
-  $ids = Db::name('category')->where(['path' => ['like', "%,{$cid},%"]])->column('id');
-  $ids = (!empty($ids) && is_array($ids)) ? implode(',', $ids) . ',' . $cid : $cid;
+    $ids = Db::name('category')->where(['path' => ['like', "%,{$cid},%"]])->column('id');
+    $ids = (!empty($ids) && is_array($ids)) ? implode(',', $ids) . ',' . $cid : $cid;
 
-  $fileds = array_merge(['id', 'cid', 'title', 'introduction', 'thumb', 'reading', 'publish_time'], (array) $filed);
-  $map    = array_merge(['cid' => ['IN', $ids], 'status' => 1, 'publish_time' => ['<= time', date('Y-m-d H:i:s')]], (array) $where);
-  $sort   = array_merge(['is_top' => 'DESC', 'sort' => 'DESC', 'publish_time' => 'DESC'], (array) $order);
+    $fileds = array_merge(['id', 'cid', 'title', 'introduction', 'thumb', 'reading', 'publish_time'], (array) $filed);
+    $map    = array_merge(['cid' => ['IN', $ids], 'status' => 1, 'publish_time' => ['<= time', date('Y-m-d H:i:s')]], (array) $where);
+    $sort   = array_merge(['is_top' => 'DESC', 'sort' => 'DESC', 'publish_time' => 'DESC'], (array) $order);
 
-  $article_list = Db::name('article')->where($map)->field($fileds)->order($sort)->limit($limit)->select();
+    $article_list = Db::name('article')->where($map)->field($fileds)->order($sort)->limit($limit)->select();
 
-  return $article_list;
+    return $article_list;
 }
 
 /**
@@ -56,20 +56,20 @@ function get_articles_by_cid($cid, $limit = 10, $where = [], $order = [], $filed
  */
 function get_articles_by_cid_paged($cid, $page_size = 15, $where = [], $order = [], $filed = [])
 {
-  if (empty($cid)) {
-    return false;
-  }
+    if (empty($cid)) {
+        return false;
+    }
 
-  $ids = Db::name('category')->where(['path' => ['like', "%,{$cid},%"]])->column('id');
-  $ids = (!empty($ids) && is_array($ids)) ? implode(',', $ids) . ',' . $cid : $cid;
+    $ids = Db::name('category')->where(['path' => ['like', "%,{$cid},%"]])->column('id');
+    $ids = (!empty($ids) && is_array($ids)) ? implode(',', $ids) . ',' . $cid : $cid;
 
-  $fileds = array_merge(['id', 'cid', 'title', 'introduction', 'thumb', 'reading', 'publish_time'], (array) $filed);
-  $map    = array_merge(['cid' => ['IN', $ids], 'status' => 1, 'publish_time' => ['<= time', date('Y-m-d H:i:s')]], (array) $where);
-  $sort   = array_merge(['is_top' => 'DESC', 'sort' => 'DESC', 'publish_time' => 'DESC'], (array) $order);
+    $fileds = array_merge(['id', 'cid', 'title', 'introduction', 'thumb', 'reading', 'publish_time'], (array) $filed);
+    $map    = array_merge(['cid' => ['IN', $ids], 'status' => 1, 'publish_time' => ['<= time', date('Y-m-d H:i:s')]], (array) $where);
+    $sort   = array_merge(['is_top' => 'DESC', 'sort' => 'DESC', 'publish_time' => 'DESC'], (array) $order);
 
-  $article_list = Db::name('article')->where($map)->field($fileds)->order($sort)->paginate($page_size);
+    $article_list = Db::name('article')->where($map)->field($fileds)->order($sort)->paginate($page_size);
 
-  return $article_list;
+    return $article_list;
 }
 
 /**
@@ -81,16 +81,16 @@ function get_articles_by_cid_paged($cid, $page_size = 15, $where = [], $order = 
  */
 function array2level($array, $pid = 0, $level = 1)
 {
-  static $list = [];
-  foreach ($array as $v) {
-    if ($v['pid'] == $pid) {
-      $v['level'] = $level;
-      $list[]     = $v;
-      array2level($array, $v['id'], $level + 1);
+    static $list = [];
+    foreach ($array as $v) {
+        if ($v['pid'] == $pid) {
+            $v['level'] = $level;
+            $list[]     = $v;
+            array2level($array, $v['id'], $level + 1);
+        }
     }
-  }
 
-  return $list;
+    return $list;
 }
 
 /**
@@ -102,26 +102,26 @@ function array2level($array, $pid = 0, $level = 1)
  */
 function array2tree(&$array, $pid_name = 'pid', $child_key_name = 'children')
 {
-  $counter = array_children_count($array, $pid_name);
-  if (!isset($counter[0]) || $counter[0] == 0) {
-    return $array;
-  }
-  $tree = [];
-  while (isset($counter[0]) && $counter[0] > 0) {
-    $temp = array_shift($array);
-    if (isset($counter[$temp['id']]) && $counter[$temp['id']] > 0) {
-      array_push($array, $temp);
-    } else {
-      if ($temp[$pid_name] == 0) {
-        $tree[] = $temp;
-      } else {
-        $array = array_child_append($array, $temp[$pid_name], $temp, $child_key_name);
-      }
-    }
     $counter = array_children_count($array, $pid_name);
-  }
+    if (!isset($counter[0]) || $counter[0] == 0) {
+        return $array;
+    }
+    $tree = [];
+    while (isset($counter[0]) && $counter[0] > 0) {
+        $temp = array_shift($array);
+        if (isset($counter[$temp['id']]) && $counter[$temp['id']] > 0) {
+            array_push($array, $temp);
+        } else {
+            if ($temp[$pid_name] == 0) {
+                $tree[] = $temp;
+            } else {
+                $array = array_child_append($array, $temp[$pid_name], $temp, $child_key_name);
+            }
+        }
+        $counter = array_children_count($array, $pid_name);
+    }
 
-  return $tree;
+    return $tree;
 }
 
 /**
@@ -132,14 +132,14 @@ function array2tree(&$array, $pid_name = 'pid', $child_key_name = 'children')
  */
 function array_children_count($array, $pid)
 {
-  $counter = [];
-  foreach ($array as $item) {
-    $count = isset($counter[$item[$pid]]) ? $counter[$item[$pid]] : 0;
-    $count++;
-    $counter[$item[$pid]] = $count;
-  }
+    $counter = [];
+    foreach ($array as $item) {
+        $count = isset($counter[$item[$pid]]) ? $counter[$item[$pid]] : 0;
+        $count++;
+        $counter[$item[$pid]] = $count;
+    }
 
-  return $counter;
+    return $counter;
 }
 
 /**
@@ -152,15 +152,16 @@ function array_children_count($array, $pid)
  */
 function array_child_append($parent, $pid, $child, $child_key_name)
 {
-  foreach ($parent as &$item) {
-    if ($item['id'] == $pid) {
-      if (!isset($item[$child_key_name]))
-        $item[$child_key_name] = [];
-      $item[$child_key_name][] = $child;
+    foreach ($parent as &$item) {
+        if ($item['id'] == $pid) {
+            if (!isset($item[$child_key_name])) {
+                $item[$child_key_name] = [];
+            }
+            $item[$child_key_name][] = $child;
+        }
     }
-  }
 
-  return $parent;
+    return $parent;
 }
 
 /**
@@ -170,26 +171,26 @@ function array_child_append($parent, $pid, $child, $child_key_name)
  */
 function delete_dir_file($dir_name)
 {
-  $result = false;
-  if (is_dir($dir_name)) {
-    if ($handle = opendir($dir_name)) {
-      while (false !== ($item = readdir($handle))) {
-        if ($item != '.' && $item != '..') {
-          if (is_dir($dir_name . DIRECTORY_SEPARATOR . $item)) {
-            delete_dir_file($dir_name . DIRECTORY_SEPARATOR . $item);
-          } else {
-            unlink($dir_name . DIRECTORY_SEPARATOR . $item);
-          }
+    $result = false;
+    if (is_dir($dir_name)) {
+        if ($handle = opendir($dir_name)) {
+            while (false !== ($item = readdir($handle))) {
+                if ($item != '.' && $item != '..') {
+                    if (is_dir($dir_name . DIRECTORY_SEPARATOR . $item)) {
+                        delete_dir_file($dir_name . DIRECTORY_SEPARATOR . $item);
+                    } else {
+                        unlink($dir_name . DIRECTORY_SEPARATOR . $item);
+                    }
+                }
+            }
+            closedir($handle);
+            if (rmdir($dir_name)) {
+                $result = true;
+            }
         }
-      }
-      closedir($handle);
-      if (rmdir($dir_name)) {
-        $result = true;
-      }
     }
-  }
 
-  return $result;
+    return $result;
 }
 
 /**
@@ -198,29 +199,28 @@ function delete_dir_file($dir_name)
  */
 function is_mobile()
 {
-  static $is_mobile;
+    static $is_mobile;
 
-  if (isset($is_mobile)) {
+    if (isset($is_mobile)) {
+        return $is_mobile;
+    }
+
+    if (empty($_SERVER['HTTP_USER_AGENT'])) {
+        $is_mobile = false;
+    } elseif (strpos($_SERVER['HTTP_USER_AGENT'], 'Mobile') !== false
+        || strpos($_SERVER['HTTP_USER_AGENT'], 'Android') !== false
+        || strpos($_SERVER['HTTP_USER_AGENT'], 'Silk/') !== false
+        || strpos($_SERVER['HTTP_USER_AGENT'], 'Kindle') !== false
+        || strpos($_SERVER['HTTP_USER_AGENT'], 'BlackBerry') !== false
+        || strpos($_SERVER['HTTP_USER_AGENT'], 'Opera Mini') !== false
+        || strpos($_SERVER['HTTP_USER_AGENT'], 'Opera Mobi') !== false
+    ) {
+        $is_mobile = true;
+    } else {
+        $is_mobile = false;
+    }
+
     return $is_mobile;
-  }
-
-  if (empty($_SERVER['HTTP_USER_AGENT'])) {
-    $is_mobile = false;
-  } elseif (
-    strpos($_SERVER['HTTP_USER_AGENT'], 'Mobile') !== false
-    || strpos($_SERVER['HTTP_USER_AGENT'], 'Android') !== false
-    || strpos($_SERVER['HTTP_USER_AGENT'], 'Silk/') !== false
-    || strpos($_SERVER['HTTP_USER_AGENT'], 'Kindle') !== false
-    || strpos($_SERVER['HTTP_USER_AGENT'], 'BlackBerry') !== false
-    || strpos($_SERVER['HTTP_USER_AGENT'], 'Opera Mini') !== false
-    || strpos($_SERVER['HTTP_USER_AGENT'], 'Opera Mobi') !== false
-  ) {
-    $is_mobile = true;
-  } else {
-    $is_mobile = false;
-  }
-
-  return $is_mobile;
 }
 
 /**
@@ -230,12 +230,12 @@ function is_mobile()
  */
 function check_mobile_number($mobile)
 {
-  if (!is_numeric($mobile)) {
-    return false;
-  }
-  $reg = '#^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^17[0,6,7,8]{1}\d{8}$|^18[\d]{9}$#';
+    if (!is_numeric($mobile)) {
+        return false;
+    }
+    $reg = '#^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^17[0,6,7,8]{1}\d{8}$|^18[\d]{9}$#';
 
-  return preg_match($reg, $mobile) ? true : false;
+    return preg_match($reg, $mobile) ? true : false;
 }
 
 /**
@@ -248,23 +248,23 @@ function check_mobile_number($mobile)
  */
 function getRandomString($len = 6, $type = 0)
 {
-  $chars =  $type ? array(
-    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
-  ) : array(
-    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
-    "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
-    "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G",
-    "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R",
-    "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2",
-    "3", "4", "5", "6", "7", "8", "9"
-  );
-  $charsLen = count($chars) - 1;
-  shuffle($chars);    // 将数组打乱
-  $output = "";
-  for ($i = 0; $i < $len; $i++) {
-    $output .= $chars[mt_rand(0, $charsLen)];
-  }
-  return $output;
+    $chars =  $type ? array(
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+    ) : array(
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
+        "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
+        "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G",
+        "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R",
+        "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2",
+        "3", "4", "5", "6", "7", "8", "9"
+    );
+    $charsLen = count($chars) - 1;
+    shuffle($chars);    // 将数组打乱
+    $output = "";
+    for ($i = 0; $i < $len; $i++) {
+        $output .= $chars[mt_rand(0, $charsLen)];
+    }
+    return $output;
 }
 
 /**
@@ -277,28 +277,27 @@ function getRandomString($len = 6, $type = 0)
 function getAlphabet($num = -1, $isToUpper = 0)
 {
 
-  $list = [
-    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
-    "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
-    "w", "x", "y", "z"
-  ];
+    $list = [
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
+        "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
+        "w", "x", "y", "z"
+    ];
 
-  if ($num === 'all') {
-    return $isToUpper ? array_walk($list, function (&$v, $k) {
-      $v = strtoupper($v);
-    }) : $list;
-  }
-  if ($num < 0) {
-    return false;
-  }
-  if ($num > 25) {
-    $n = $num%26;
-    $m = floor($num / 26) - 1;
-    return getAlphabet($m, $isToUpper) . getAlphabet($n, $isToUpper);
-  } else {
-
-    return $isToUpper ? strtoupper($list[$num]) : $list[$num];
-  }
+    if ($num === 'all') {
+        return $isToUpper ? array_walk($list, function (&$v, $k) {
+            $v = strtoupper($v);
+        }) : $list;
+    }
+    if ($num < 0) {
+        return false;
+    }
+    if ($num > 25) {
+        $n = $num % 26;
+        $m = floor($num / 26) - 1;
+        return getAlphabet($m, $isToUpper) . getAlphabet($n, $isToUpper);
+    } else {
+        return $isToUpper ? strtoupper($list[$num]) : $list[$num];
+    }
 }
 
 /**
@@ -309,16 +308,16 @@ function getAlphabet($num = -1, $isToUpper = 0)
  */
 function getRandValFromArray($arr, $len = 1)
 {
-  $keys = array_rand($arr, $len);
-  if (is_array($keys)) {
-    $newData = [];
-    foreach ($keys as $key => $value) {
-      $newData[] = $arr[$value];
+    $keys = array_rand($arr, $len);
+    if (is_array($keys)) {
+        $newData = [];
+        foreach ($keys as $key => $value) {
+            $newData[] = $arr[$value];
+        }
+        return $newData;
+    } else {
+        return $arr[$keys];
     }
-    return $newData;
-  } else {
-    return $arr[$keys];
-  }
 }
 
 /**
@@ -329,28 +328,28 @@ function getRandValFromArray($arr, $len = 1)
  */
 function clientRequest($url, $data = [], $type = 'POST', $dataType = "json")
 {
-  try {
-    $client = new \GuzzleHttp\Client(['verify' => false]);
-    // $params = strtolower($type) == 'get' ? [
-    //   'query' => $data
-    // ] : [
-    //   'form_params' => $data
-    // ];
-    $params = $data;
-    $response = $client->request($type, $url, $params);
+    try {
+        $client = new \GuzzleHttp\Client(['verify' => false]);
+        // $params = strtolower($type) == 'get' ? [
+        //   'query' => $data
+        // ] : [
+        //   'form_params' => $data
+        // ];
+        $params = $data;
+        $response = $client->request($type, $url, $params);
 
-    $contents = $response->getBody()->getContents();
-    if (mb_strtolower($dataType) == "json") {
-      $contents = json_decode($contents, true);
-    }
-    return $contents;
-  } catch (\GuzzleHttp\Exception\RequestException $exception) {
-    if ($exception->hasResponse()) {
-      $responseBody = $exception->getResponse()->getBody()->getContents();
-    }
-    $errorMsg = $exception->getMessage() ? $exception->getMessage()  : (isset($responseBody) ? $responseBody : '');
-    throw new \Exception($errorMsg);
+        $contents = $response->getBody()->getContents();
+        if (mb_strtolower($dataType) == "json") {
+            $contents = json_decode($contents, true);
+        }
+        return $contents;
+    } catch (\GuzzleHttp\Exception\RequestException $exception) {
+        if ($exception->hasResponse()) {
+            $responseBody = $exception->getResponse()->getBody()->getContents();
+        }
+        $errorMsg = $exception->getMessage() ? $exception->getMessage()  : (isset($responseBody) ? $responseBody : '');
+        throw new \Exception($errorMsg);
 
-    return false;
-  }
+        return false;
+    }
 }

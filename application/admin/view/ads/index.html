@@ -6,9 +6,7 @@
         <ul class="amain-tool-bar">
             <li class="layui-this"><a href="{:url('admin/Ads/index')}"  >广告图管理</a></li>
             <li class="btn-item btn-item-add">
-
                 <a href="{:url('admin/Ads/add')}"  data-title="添加广告图 "  data-trigger="modal" title="添加广告图 " class="layui-btn layui-btn-sm layui-btn-success   "><i class="fa fa-plus"></i> 添加广告图</a>
-
             </li>
         </ul>
         <div class="layui-tab-content">
@@ -74,7 +72,7 @@
                             <td>{$vo.id}</td>
                             <td><div class="cover-pic-wrapper" style=" float: left;width:30px;height:30px;background-image:url('{$vo.thumb}')"></div></td>
                             <td>
-                              {$vo.title}
+                                {$vo.title}
                             </td>
                             <td>{php}echo isset($typeList[$vo['type']]) ? $typeList[$vo['type']]: $vo['type'] ; {/php}</td>
                             <td>
@@ -85,38 +83,38 @@
 
                             <td>{php}echo $vo['status']==1 ? '<b class="text-red">显示</b>' : '<b class="text-gray">不显示</b>';{/php}</td>
                             <td>
-                              {$vo.duration}
+                                {$vo.duration}
                             </td>
                             <td>{$vo.create_time}</td>
                             <td>
-                              {$vo.update_time}
+                            {$vo.update_time}
                             </td>
                             <td>
                                 {$vo.lang}
-                              </td>
+                            </td>
                             <td>
-                              <?php
-                              $platform_str = '';
-                              foreach($vo['platform_list'] as $v){
+                            <?php
+                            $platform_str = '';
+                            foreach($vo['platform_list'] as $v){
                                 $platform_str .= $platform_str ? '<br />' :'';
                                 $platform_str .= isset($platform_list[$v]) ? $platform_list[$v] : $v ;
-                              }
-                              echo $platform_str;
-                              ?>
+                            }
+                            echo $platform_str;
+                            ?>
                             </td>
                             <td>
-                              <?php
-                              $app_str = '';
-                              foreach($vo['app_id_list'] as $v){
+                            <?php
+                            $app_str = '';
+                            foreach($vo['app_id_list'] as $v){
                                 $app_str .= $app_str ? '<br />' :'';
                                 $app_str .= isset($app_id_list[$v]) ? $app_id_list[$v] : $v ;
-                              }
-                              echo $app_str;
-                              ?>
+                            }
+                            echo $app_str;
+                            ?>
                             </td>
                             <td>
-                              <a href="{:url('admin/Ads/edit',['id'=>$vo['id']])}"  data-title="編輯 #{$vo.id}"  data-trigger="modal" title="編輯 #{$vo.id}" class=" layui-btn   layui-btn-xs    "><i class="layui-icon">&#xe642;</i> 編輯</a>
-                              <a href="{:url('admin/Ads/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
+                                <a href="{:url('admin/Ads/edit',['id'=>$vo['id']])}"  data-title="編輯 #{$vo.id}"  data-trigger="modal" title="編輯 #{$vo.id}" class=" layui-btn   layui-btn-xs    "><i class="layui-icon">&#xe642;</i> 編輯</a>
+                                <a href="{:url('admin/Ads/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
 
                             </td>
                         </tr>

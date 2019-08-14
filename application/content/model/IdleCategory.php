@@ -1,4 +1,5 @@
 <?php
+
 namespace app\content\model;
 
 use think\Db;
@@ -14,15 +15,5 @@ class IdleCategory extends Model
     protected static function init()
     {
         parent::init();
-
-
     }
-
-
-
-
-
-
-
-
 }

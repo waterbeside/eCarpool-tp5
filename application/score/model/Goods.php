@@ -1,4 +1,5 @@
 <?php
+
 namespace app\score\model;
 
 // use think\Model;
@@ -7,7 +8,7 @@ use app\common\model\Configs;
 use my\RedisData;
 use my\CurlRequest;
 
-class  Goods extends BaseModel
+class Goods extends BaseModel
 {
     // protected $insert = ['create_time'];
 
@@ -30,40 +31,41 @@ class  Goods extends BaseModel
      * 通过id取出商品详情
      * @param  Int  $id 商品id
      */
-    public function getItem($id,$ex = 60*60){
-      $good = $this->getFromRedis($id,1) ;
-      $cacheKey = "carpool_management:score:goods:".$id;
-      $good =  $good ? $good : $this->itemCache($cacheKey);
-      if(!$good){
-        $good = $this->find($id);
-        if($good){
-          $good = $good->toArray();
-          $this->itemCache($cacheKey,$good,$ex);
+    public function getItem($id, $ex = 60 * 60)
+    {
+        $good = $this->getFromRedis($id, 1);
+        $cacheKey = "carpool_management:score:goods:" . $id;
+        $good =  $good ? $good : $this->itemCache($cacheKey);
+        if (!$good) {
+            $good = $this->find($id);
+            if ($good) {
+                $good = $good->toArray();
+                $this->itemCache($cacheKey, $good, $ex);
+            }
         }
-      }
-      return $good;
+        return $good;
     }
 
     /**
      * 从redis取出商品详情
      * @param  Int  $id 商品id
      */
-    public function getFromRedis($id,$type=0)
+    public function getFromRedis($id, $type = 0)
     {
-      $redis = new RedisData();
-      $cacheKey = $type ? "score:goods:".$id :  "carpool_management:score:goods:".$id;
-      $good = json_decode($redis->get($cacheKey),true);
-      if(!$good){
-        $res = $this->reBuildRedis($id);
-        if(isset($res['code']) && $res['code']===0){
-          $good = json_decode($redis->get($cacheKey),true);
-          return $good;
-        }else{
-          return false;
+        $redis = new RedisData();
+        $cacheKey = $type ? "score:goods:" . $id : "carpool_management:score:goods:" . $id;
+        $good = json_decode($redis->get($cacheKey), true);
+        if (!$good) {
+            $res = $this->reBuildRedis($id);
+            if (isset($res['code']) && $res['code'] === 0) {
+                $good = json_decode($redis->get($cacheKey), true);
+                return $good;
+            } else {
+                return false;
+            }
+        } else {
+            return $good;
         }
-      }else{
-        return $good;
-      }
     }
 
     /**
@@ -72,14 +74,11 @@ class  Goods extends BaseModel
      */
     public function reBuildRedis($id)
     {
-      $scoreConfigs = (new Configs())->getConfigs("score");
-      $url = "http://".$scoreConfigs['score_host'].":".$scoreConfigs['score_port']."/secret/refresh_goods";
-      $token =  $scoreConfigs['score_token'];
-      $CurlRequest = new CurlRequest();
-      $res = $CurlRequest->postJsonDataFsockopen($url,["gid"=>[intval($id)],'token'=>$token]);
-      return $res;
-
+        $scoreConfigs = (new Configs())->getConfigs("score");
+        $url = "http://" . $scoreConfigs['score_host'] . ":" . $scoreConfigs['score_port'] . "/secret/refresh_goods";
+        $token =  $scoreConfigs['score_token'];
+        $CurlRequest = new CurlRequest();
+        $res = $CurlRequest->postJsonDataFsockopen($url, ["gid" => [intval($id)], 'token' => $token]);
+        return $res;
     }
-
-
 }

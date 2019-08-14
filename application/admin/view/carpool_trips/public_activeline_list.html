@@ -6,94 +6,92 @@
     <div class="layui-tab ">
 
         <ul class="  amain-tool-bar" >
-          <li class="layui-this"><a href="{:url('admin/CarpoolTrips/public_activeline_list')}"  showloading >Active line</a></li>
-        
+            <li class="layui-this"><a href="{:url('admin/CarpoolTrips/public_activeline_list')}"  showloading >Active line</a></li>
         </ul>
 
         <div class="amain-content">
-          <form class="layui-form layui-form-pane" id="filter-form" showloading action="{:url('admin/CarpoolTrips/public_activeline_list')}" method="get" >
-              <div class="layui-inline">
-                  <label class="layui-form-label">检索</label>
-                  <div class="layui-input-inline">
-                      <input type="text" name="infoid" value="{$infoid ? $infoid :''}" placeholder="infoid" class="layui-input" style="width:130px" >
-                  </div>
-                  
-              </div>
-              <!-- <div class="blank10">  </div> -->
-            
+            <form class="layui-form layui-form-pane" id="filter-form" showloading action="{:url('admin/CarpoolTrips/public_activeline_list')}" method="get" >
+                <div class="layui-inline">
+                    <label class="layui-form-label">检索</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="infoid" value="{$infoid ? $infoid :''}" placeholder="infoid" class="layui-input" style="width:130px" >
+                    </div>
+                    
+                </div>
+                <!-- <div class="blank10">  </div> -->
+                
 
-              <div class="layui-inline">
-                  <input type="hidden" name="orderField" value="{$orderField}"  >
-                  <input type="hidden" name="orderType" value="{$orderType}"  >
-                  <button class="layui-btn"><i class="fa fa-search"></i></button>
-              </div>
-          </form>
+                <div class="layui-inline">
+                    <input type="hidden" name="orderField" value="{$orderField}"  >
+                    <input type="hidden" name="orderType" value="{$orderType}"  >
+                    <button class="layui-btn"><i class="fa fa-search"></i></button>
+                </div>
+            </form>
 
-          <hr>
-
-
-
-          <div class="layui-tab amain-content-tab">
-            <div class="tab-title-wrapper">
-              
-            </div>
+            <hr>
 
 
-            <div class="layui-tab-content" style="margin:0 -10px">
-              <div class="layui-tab-item layui-show">
-                <div class="order-list">
-                  <form class="layui-form">
-                    <blockquote class="layui-elem-quote">共检得 <b>{$lists->total()}</b> 条数据</blockquote>
-                    <table lay-filter="listtable" class=" list-table">
-                        <thead>
-                        <tr >
-                            <th lay-data="{field:'info_active_line_id', width:80,fixed: 'left' }" >#</th>
-                            <th lay-data="{field:'infoid', width:120, fixed: 'left' , sort: true}">infoid</th>
-                            <th lay-data="{field:'name', minWidth:130, fixed: 'left'  }">名</th>
-                            <th lay-data="{field:'uid' ,width:120, sort: true}" >用户名</th>
-                            <th lay-data="{field:'longitude',minWidth:120 }">经</th>
-                            <th lay-data="{field:'latitude' ,width:120}">纬</th>
-                            <th lay-data="{field:'speed', width:120,}">速</th>
-                            <th lay-data="{field:'locationtime', width:120, sort: true }">时</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {foreach name="lists" item="vo"}
-                        <tr data-id="{$vo.info_active_line_id}" >
-                            <td>{$vo.info_active_line_id}</td>
-                            <td>{$vo.infoid}</td>
-                            <td>
-                              {$vo.name}
-                            </td>
-                            <td>
-                              {$vo.loginname} ({$vo.uid})
-                            </td>
-                            <td>
-                              {$vo.longitude}
-                            </td>
-                            <td>
-                              {$vo.latitude}
-                            </td>
-                            <td>
-                              {$vo.speed}
-                            </td>
-                            <td>
-                              {$vo.locationtime}
-                            </td>
-                        </tr>
-                        {/foreach}
-                        </tbody>
-                    </table>
-                  </form>
+
+            <div class="layui-tab amain-content-tab">
+                <div class="tab-title-wrapper">
+                
                 </div>
 
-              </div>
 
+                <div class="layui-tab-content" style="margin:0 -10px">
+                <div class="layui-tab-item layui-show">
+                    <div class="order-list">
+                    <form class="layui-form">
+                        <blockquote class="layui-elem-quote">共检得 <b>{$lists->total()}</b> 条数据</blockquote>
+                        <table lay-filter="listtable" class=" list-table">
+                            <thead>
+                            <tr >
+                                <th lay-data="{field:'info_active_line_id', width:80,fixed: 'left' }" >#</th>
+                                <th lay-data="{field:'infoid', width:120, fixed: 'left' , sort: true}">infoid</th>
+                                <th lay-data="{field:'name', minWidth:130, fixed: 'left'  }">名</th>
+                                <th lay-data="{field:'uid' ,width:120, sort: true}" >用户名</th>
+                                <th lay-data="{field:'longitude',minWidth:120 }">经</th>
+                                <th lay-data="{field:'latitude' ,width:120}">纬</th>
+                                <th lay-data="{field:'speed', width:120,}">速</th>
+                                <th lay-data="{field:'locationtime', width:120, sort: true }">时</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {foreach name="lists" item="vo"}
+                            <tr data-id="{$vo.info_active_line_id}" >
+                                <td>{$vo.info_active_line_id}</td>
+                                <td>{$vo.infoid}</td>
+                                <td>
+                                {$vo.name}
+                                </td>
+                                <td>
+                                {$vo.loginname} ({$vo.uid})
+                                </td>
+                                <td>
+                                {$vo.longitude}
+                                </td>
+                                <td>
+                                {$vo.latitude}
+                                </td>
+                                <td>
+                                {$vo.speed}
+                                </td>
+                                <td>
+                                {$vo.locationtime}
+                                </td>
+                            </tr>
+                            {/foreach}
+                            </tbody>
+                        </table>
+                    </form>
+                    </div>
+
+                </div>
+
+                </div>
             </div>
-         </div>
-          <!--分页-->
-          {$lists|raw}
-
+            <!--分页-->
+            {$lists|raw}
         </div>
     </div>
 </div>
@@ -103,29 +101,29 @@
 <script>
 
 initLayuiTable({ 
-  limit: {$pagesize},
-  autoSort: false ,
-  initSort: {
-    field: '{$orderField}' //排序字段，对应 cols 设定的各字段名
-    ,type: '{$orderType}' //排序方式  asc: 升序、desc: 降序、null: 默认排序
-  }
+    limit: {$pagesize},
+    autoSort: false ,
+    initSort: {
+        field: '{$orderField}' //排序字段，对应 cols 设定的各字段名
+        ,type: '{$orderType}' //排序方式  asc: 升序、desc: 降序、null: 默认排序
+    }
 })
 
 layui.table.on('sort(listtable)', function(obj){ //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
-console.log(obj.field); //当前排序的字段名
-  console.log(obj.type); //当前排序类型：desc（降序）、asc（升序）、null（空对象，默认排序）
-  console.log(this); //当前排序的 th 对象
-  
-  $("input[name='orderField'").val(obj.field);
-  $("input[name='orderType'").val(obj.type);
-  submitFilterForm();
-  return ;
-  
+    console.log(obj.field); //当前排序的字段名
+    console.log(obj.type); //当前排序类型：desc（降序）、asc（升序）、null（空对象，默认排序）
+    console.log(this); //当前排序的 th 对象
+    
+    $("input[name='orderField'").val(obj.field);
+    $("input[name='orderType'").val(obj.type);
+    submitFilterForm();
+    return ;
+    
 });
 
 function submitFilterForm(){
-  $('#filter-form').submit();
-  return false;
+    $('#filter-form').submit();
+    return false;
 
 }
 </script>

@@ -1,102 +1,102 @@
 {extend name="base" /}
 {block name="body"}
 <div class="amain-body">
-  <div class="layui-container">
-    <div class="blank12"></div>
-    {if $userInfo}
-    <div style="text-align:center; margin:10px 0 -10px;">
-      <div class="cp-avatar" style="background-image:url('{$userInfo.avatar}')"></div>
-    </div>
-    {/if}
-    <h3>{:lang('Point account')}</h3>
-    {if $accountInfo}
-    <table class="layui-table">
-      <tbody>
-        <tr>
-          <td class="td-label" width="100">uuid</td>
-          <td>{$accountInfo.identifier}</td>
-        </tr>
-        <!-- <tr>
-          <td class="td-label" width="100">{:lang('Acount')}</td>
-          <td>{$accountInfo.account&& trim($accountInfo.account)!=''?$accountInfo.account:'-'}</td>
-        </tr> -->
-        <tr>
-          <td class="td-label">{:lang('Carpool account')}</td>
-          <td>{$accountInfo.carpool_account}</td>
-        </tr>
-        <tr>
-          <td class="td-label">{:lang('Points')}</td>
-          <td><b class="text-red">{$accountInfo.balance}</b></td>
-        </tr>
-        <tr>
-          <td class="td-label">{:lang('Phone')}</td>
-          <td>{$accountInfo.phone?$accountInfo.phone:'-'}</td>
-        </tr>
-      </tbody>
-    </table>
-    {else}
-    <div class="blank10"></div>
-    <blockquote class="layui-elem-quote">{:lang('The user has not opened a credit account')}</blockquote>
-    {/if}
+    <div class="layui-container">
+        <div class="blank12"></div>
+        {if $userInfo}
+        <div style="text-align:center; margin:10px 0 -10px;">
+            <div class="cp-avatar" style="background-image:url('{$userInfo.avatar}')"></div>
+        </div>
+        {/if}
+        <h3>{:lang('Point account')}</h3>
+        {if $accountInfo}
+        <table class="layui-table">
+        <tbody>
+            <tr>
+                <td class="td-label" width="100">uuid</td>
+                <td>{$accountInfo.identifier}</td>
+            </tr>
+            <!-- <tr>
+            <td class="td-label" width="100">{:lang('Acount')}</td>
+            <td>{$accountInfo.account&& trim($accountInfo.account)!=''?$accountInfo.account:'-'}</td>
+            </tr> -->
+            <tr>
+                <td class="td-label">{:lang('Carpool account')}</td>
+                <td>{$accountInfo.carpool_account}</td>
+            </tr>
+            <tr>
+                <td class="td-label">{:lang('Points')}</td>
+                <td><b class="text-red">{$accountInfo.balance}</b></td>
+            </tr>
+            <tr>
+                <td class="td-label">{:lang('Phone')}</td>
+                <td>{$accountInfo.phone?$accountInfo.phone:'-'}</td>
+            </tr>
+        </tbody>
+        </table>
+        {else}
+        <div class="blank10"></div>
+        <blockquote class="layui-elem-quote">{:lang('The user has not opened a credit account')}</blockquote>
+        {/if}
 
-    <div class="blank20"></div>
-    {if $userInfo}
-    <h3>{:lang('Carpool account')}</h3>
-    <table class="layui-table">
-      <tbody>
-        <tr>
-          <td class="label" width="100">{:lang('Username')}</td>
-          <td>{$userInfo.loginname}</td>
-        </tr>
-        <tr>
-            <td class="label">Mobile</td>
-            <td>{$userInfo.mobile}</td>
-          </tr>
-        <tr>
-          <td class="label">{:lang('Phone')}</td>
-          <td>{$userInfo.phone}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Full name')}</td>
-          <td>{$userInfo.name}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Sex')}</td>
-          <td>
-            {if condition="$userInfo.sex==1"}{:lang('Male')}{/if}
-            {if condition="$userInfo.sex==2"}{:lang('Female')}{/if}
-            {if condition="$userInfo.sex==0"}-{/if}
-          </td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Company')}</td>
-          <td>{$userInfo.company_name}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Department')}</td>
-          <td>{$userInfo.Department}</td>
-        </tr>
-        <tr>
-          <td class="label">{:lang('Department')}(HR)</td>
-          <td>{$userInfo.department_fullname}</td>
-        </tr>
-      </tbody>
-    </table>
-    {/if}
-    <div class="blank50"></div>
-    <div class="layui-row" style="position: fixed; bottom:0; left:0; right:0;">
-      <div class="layui-col-xs12">
-        {php}
-          if($accountInfo){
-            $h_url = url('admin/scoreHistory/lists',['type'=>0,'account_id'=>$accountInfo['id']]);
-          }else{
-            $h_url = url('admin/scoreHistory/lists',['type'=>2,'account'=>$userInfo['loginname']]);
-          }
-        {/php}
-        <a href="{$h_url}" class="layui-btn layui-btn-lg layui-col-xs12" >View points history</a>
-      </div>
+        <div class="blank20"></div>
+        {if $userInfo}
+        <h3>{:lang('Carpool account')}</h3>
+        <table class="layui-table">
+            <tbody>
+                <tr>
+                <td class="label" width="100">{:lang('Username')}</td>
+                <td>{$userInfo.loginname}</td>
+                </tr>
+                <tr>
+                    <td class="label">Mobile</td>
+                    <td>{$userInfo.mobile}</td>
+                </tr>
+                <tr>
+                <td class="label">{:lang('Phone')}</td>
+                <td>{$userInfo.phone}</td>
+                </tr>
+                <tr>
+                <td class="label">{:lang('Full name')}</td>
+                <td>{$userInfo.name}</td>
+                </tr>
+                <tr>
+                <td class="label">{:lang('Sex')}</td>
+                <td>
+                    {if condition="$userInfo.sex==1"}{:lang('Male')}{/if}
+                    {if condition="$userInfo.sex==2"}{:lang('Female')}{/if}
+                    {if condition="$userInfo.sex==0"}-{/if}
+                </td>
+                </tr>
+                <tr>
+                <td class="label">{:lang('Company')}</td>
+                <td>{$userInfo.company_name}</td>
+                </tr>
+                <tr>
+                <td class="label">{:lang('Department')}</td>
+                <td>{$userInfo.Department}</td>
+                </tr>
+                <tr>
+                <td class="label">{:lang('Department')}(HR)</td>
+                <td>{$userInfo.department_fullname}</td>
+                </tr>
+            </tbody>
+        </table>
+        {/if}
+        <div class="blank50"></div>
+        <div class="layui-row" style="position: fixed; bottom:0; left:0; right:0;">
+            <div class="layui-col-xs12">
+                {php}
+                if($accountInfo){
+                    $h_url = url('admin/scoreHistory/lists',['type'=>0,'account_id'=>$accountInfo['id']]);
+                }else{
+                    $h_url = url('admin/scoreHistory/lists',['type'=>2,'account'=>$userInfo['loginname']]);
+                }
+                {/php}
+                <a href="{$h_url}" class="layui-btn layui-btn-lg layui-col-xs12" >View points history</a>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
 {/block}

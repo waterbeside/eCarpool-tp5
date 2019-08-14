@@ -22,40 +22,40 @@
 <div class="btn-drop m-language-box">
     <a href="javascript:;" class="drop-btn"><i class="fa fa-language"></i> Language  <i class="fa fa-caret-down"></i></a>
     <ul class="drop-box"> <!-- 二级菜单 -->
-      {foreach name="langs_select_list" item="v" key="k"}
-        <li><a href="?lang={$k}" >{$v}</a></li>
-      {/foreach}
+        {foreach name="langs_select_list" item="v" key="k"}
+            <li><a href="?lang={$k}" >{$v}</a></li>
+        {/foreach}
     </ul>
 </div>
 <div class="login-title">Carpool Management </div>
 <div class="login-form-wrapper">
-  <form class="layui-form login-form" action="{:url('admin/login/login')}" method="post" data-unrefresh='1' data-jump="{:url('admin/index/index')}">
-      <div class="layui-form-item">
-          <label class="layui-form-label"><i class="fa fa-user"></i></label>
-          <div class="layui-input-block">
-              <input type="text" name="username" required  autocomplete="off" class="layui-input" placeholder="{:lang('Username')}">
-          </div>
-      </div>
-      <div class="layui-form-item">
-          <label class="layui-form-label"><i class="fa fa-key"></i></label>
-          <div class="layui-input-block">
-              <input type="password" name="password" required  class="layui-input" placeholder="{:lang('Password')}">
-          </div>
-      </div>
-      <div class="layui-form-item">
-          <label class="layui-form-label"><i class="fa fa-hand-peace-o"></i></label>
-          <div class="layui-input-block">
-              <input type="text" name="verify" required  class="layui-input layui-input-inline" placeholder="{:lang('Captcha')}">
-              <img src="{:captcha_src()}" alt="{:lang('Click to change')}" title="{:lang('Click to change')}" onclick="this.src='{:captcha_src()}?time='+Math.random()" class="captcha">
-          </div>
-      </div>
-      <div class="layui-form-item">
-          <div class="layui-input-block">
-            <!-- <button class="layui-btn J-submit-btn" lay-submit lay-filter="*.login">登 录</button> -->
-              <button class="layui-btn J-submit-btn layui-btn-lg" lay-submit lay-filter="*.login">{:lang("Sign in")}</button>
-          </div>
-      </div>
-  </form>
+    <form class="layui-form login-form" action="{:url('admin/login/login')}" method="post" data-unrefresh='1' data-jump="{:url('admin/index/index')}">
+        <div class="layui-form-item">
+            <label class="layui-form-label"><i class="fa fa-user"></i></label>
+            <div class="layui-input-block">
+                <input type="text" name="username" required  autocomplete="off" class="layui-input" placeholder="{:lang('Username')}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><i class="fa fa-key"></i></label>
+            <div class="layui-input-block">
+                <input type="password" name="password" required  class="layui-input" placeholder="{:lang('Password')}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><i class="fa fa-hand-peace-o"></i></label>
+            <div class="layui-input-block">
+                <input type="text" name="verify" required  class="layui-input layui-input-inline" placeholder="{:lang('Captcha')}">
+                <img src="{:captcha_src()}" alt="{:lang('Click to change')}" title="{:lang('Click to change')}" onclick="this.src='{:captcha_src()}?time='+Math.random()" class="captcha">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <!-- <button class="layui-btn J-submit-btn" lay-submit lay-filter="*.login">登 录</button> -->
+                <button class="layui-btn J-submit-btn layui-btn-lg" lay-submit lay-filter="*.login">{:lang("Sign in")}</button>
+            </div>
+        </div>
+    </form>
 </div>
 
 <script>
@@ -73,9 +73,9 @@
 <script>
 
 var inputFiledTitle = {
-  "username" : "{:lang('Username')}",
-  "password" : "{:lang('Password')}",
-  "verify" : "{:lang('Captcha')}",
+    "username" : "{:lang('Username')}",
+    "password" : "{:lang('Password')}",
+    "verify" : "{:lang('Captcha')}",
 }
 
 /**
@@ -87,14 +87,14 @@ form.on('submit(*.login)', function (data) {
     var checkOk = 1 ;
     $(dataList).each(function(index, el) {
 
-      if($.trim(el.value)==""){
-        layer.msg( inputFiledTitle[el.name] + "{:lang('can not be empty')}");
-        checkOk = 0
-        return false;
-      }
+        if($.trim(el.value)==""){
+            layer.msg( inputFiledTitle[el.name] + "{:lang('can not be empty')}");
+            checkOk = 0
+            return false;
+        }
     });
     if(!checkOk){
-      return false;
+        return false;
     }
     $(".J-submit-btn").addClass('layui-disabled').prop('disabled',true).html('<i class="fa fa-spinner fa-spin"></i>');
     layer.msg("Loading");
@@ -105,22 +105,22 @@ form.on('submit(*.login)', function (data) {
         data: $(data.form).serialize(),
         success: function (res) {
             if (res.code === 0) {
-              var jump = $(data.form).data('jump') ? $(data.form).data('jump') : "";
+                var jump = $(data.form).data('jump') ? $(data.form).data('jump') : "";
 
-              if($(data.form).data('unrefresh')!=1 || jump!=""){
-                setTimeout(function () {
-                  if(jump!=""){
-                    location.href = jump;
-                  }else if(res.url){
-                    location.href = res.url;
-                  }else{
-                    location.reload();
-                  }
-                }, 1000);
-              }
+                if($(data.form).data('unrefresh')!=1 || jump!=""){
+                    setTimeout(function () {
+                    if(jump!=""){
+                        location.href = jump;
+                    }else if(res.url){
+                        location.href = res.url;
+                    }else{
+                        location.reload();
+                    }
+                    }, 1000);
+                }
             }else{
-              $("input[name='verify']").val('');
-              $(".captcha").trigger('click');
+                $("input[name='verify']").val('');
+                $(".captcha").trigger('click');
             }
             layer.msg(res.desc);
             $(".J-submit-btn").removeClass('layui-disabled').prop('disabled',false).html('{:lang("Sign in")}');

@@ -1,4 +1,5 @@
 <?php
+
 namespace app\carpool\validate;
 
 use think\Validate;

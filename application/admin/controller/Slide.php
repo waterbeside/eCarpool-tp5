@@ -1,4 +1,5 @@
 <?php
+
 namespace app\admin\controller;
 
 use app\common\model\SlideCategory as SlideCategoryModel;
@@ -38,25 +39,24 @@ class Slide extends AdminBase
      */
     public function add()
     {
-      if ($this->request->isPost()) {
-          $data            = $this->request->param();
-          $validate_result = $this->validate($data, 'Slide');
+        if ($this->request->isPost()) {
+            $data            = $this->request->param();
+            $validate_result = $this->validate($data, 'Slide');
 
-          if ($validate_result !== true) {
-              $this->jsonReturn(-1,$validate_result);
-          } else {
-              $slide_model = new SlideModel();
-              if ($slide_model->allowField(true)->save($data)) {
-                $this->jsonReturn(0,'保存成功');
-              } else {
-                $this->jsonReturn(-1,'保存失败');
-              }
-          }
-      }else{
-        $slide_category_list = SlideCategoryModel::all();
-        return $this->fetch('add', ['slide_category_list' => $slide_category_list]);
-      }
-
+            if ($validate_result !== true) {
+                $this->jsonReturn(-1, $validate_result);
+            } else {
+                $slide_model = new SlideModel();
+                if ($slide_model->allowField(true)->save($data)) {
+                    $this->jsonReturn(0, '保存成功');
+                } else {
+                    $this->jsonReturn(-1, '保存失败');
+                }
+            }
+        } else {
+            $slide_category_list = SlideCategoryModel::all();
+            return $this->fetch('add', ['slide_category_list' => $slide_category_list]);
+        }
     }
 
 
@@ -68,26 +68,25 @@ class Slide extends AdminBase
      */
     public function edit($id)
     {
-      if ($this->request->isPost()) {
-          $data            = $this->request->param();
-          $validate_result = $this->validate($data, 'Slide');
+        if ($this->request->isPost()) {
+            $data            = $this->request->param();
+            $validate_result = $this->validate($data, 'Slide');
 
-          if ($validate_result !== true) {
-              $this->jsonReturn(-1,$validate_result);
-          } else {
-              $slide_model = new SlideModel();
-              if ($slide_model->allowField(true)->save($data, $id) !== false) {
-                $this->jsonReturn(0,'更新成功');
-              } else {
-                $this->jsonReturn(-1,'更新失败');
-              }
-          }
-      }else{
-        $slide_category_list = SlideCategoryModel::all();
-        $slide               = SlideModel::get($id);
-        return $this->fetch('edit', ['slide' => $slide, 'slide_category_list' => $slide_category_list]);
-      }
-
+            if ($validate_result !== true) {
+                $this->jsonReturn(-1, $validate_result);
+            } else {
+                $slide_model = new SlideModel();
+                if ($slide_model->allowField(true)->save($data, $id) !== false) {
+                    $this->jsonReturn(0, '更新成功');
+                } else {
+                    $this->jsonReturn(-1, '更新失败');
+                }
+            }
+        } else {
+            $slide_category_list = SlideCategoryModel::all();
+            $slide               = SlideModel::get($id);
+            return $this->fetch('edit', ['slide' => $slide, 'slide_category_list' => $slide_category_list]);
+        }
     }
 
 
@@ -98,9 +97,9 @@ class Slide extends AdminBase
     public function delete($id)
     {
         if (SlideModel::destroy($id)) {
-          $this->jsonReturn(0,'删除成功');
+            $this->jsonReturn(0, '删除成功');
         } else {
-          $this->jsonReturn(-1,'删除失败');
+            $this->jsonReturn(-1, '删除失败');
         }
     }
 }

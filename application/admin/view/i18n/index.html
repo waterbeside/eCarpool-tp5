@@ -6,8 +6,8 @@
         <ul class="amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/i18n/index')}"  >I18n文档管理</a></li>
             <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/i18n/add')}"  data-title="添加字条"  data-trigger="modal" >
-              <i class="fa fa-plus"></i> 添加字条</a>
+                <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/i18n/add')}"  data-title="添加字条"  data-trigger="modal" >
+                <i class="fa fa-plus"></i> 添加字条</a>
             </li>
         </ul>
         <div class="layui-tab-content">
@@ -15,17 +15,17 @@
 
                 <form class="layui-form layui-form-pane" action="{:url('admin/i18n/index')}" method="get" id="searchForm">
                     <div class="layui-inline">
-                      <select name="module"  lay-search>
-                        <option value="0">请选择模块</option>
-                        {foreach name="modules" item="vo"}
-                         <option value="{$vo.module}" {php}echo $vo['module']==$module ? 'selected' : '';{/php}>{$vo.module}</option>
-                         {/foreach}
-                       </select>
+                        <select name="module"  lay-search>
+                            <option value="0">请选择模块</option>
+                            {foreach name="modules" item="vo"}
+                            <option value="{$vo.module}" {php}echo $vo['module']==$module ? 'selected' : '';{/php}>{$vo.module}</option>
+                            {/foreach}
+                        </select>
                     </div>
                     <div class="layui-inline">
-                      <select name="lang"   lay-search>
-                         <option value="0">请选择语言</option>
-                       </select>
+                        <select name="lang"   lay-search>
+                            <option value="0">请选择语言</option>
+                        </select>
                     </div>
                     <div class="layui-inline">
                         <div class="layui-input-inline">
@@ -58,22 +58,22 @@
                         <td>{$vo.key_ios}</td>
                         <td>{$vo.key_android}</td>
                         <td>{php}
-                          if($lang=="zh-cn"){
-                            echo $vo['content'] ? $vo['content'] : $vo['title'];
+                            if($lang=="zh-cn"){
+                                echo $vo['content'] ? $vo['content'] : $vo['title'];
 
-                          }else{
-                            echo "<small>".$vo['title']." </small><br />";
-                            echo $vo['content'];
+                            }else{
+                                echo "<small>".$vo['title']." </small><br />";
+                                echo $vo['content'];
 
-                          }
-                          {/php}
+                            }
+                            {/php}
                         </td>
                         <td>{php}echo $vo['status']==1 ? '<i class="fa fa-check"></i>' : '<i class="fa fa-times"></i>';{/php}</td>
 
 
                         <td>
-                          <a  href="{:url('admin/i18n/edit',['id'=>$vo['id']])}" class="layui-btn layui-btn-sm " data-title="編輯"  data-trigger="modal"     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
-                          <a href="{:url('admin/i18n/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
+                            <a  href="{:url('admin/i18n/edit',['id'=>$vo['id']])}" class="layui-btn layui-btn-sm " data-title="編輯"  data-trigger="modal"     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
+                            <a href="{:url('admin/i18n/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
                         </td>
                     </tr>
                     {/foreach}
@@ -90,25 +90,25 @@
 {block name="script"}
 <script>
 var pageData = {
-  langs:[]
+    langs:[]
 }
 function getLangs(success){
     var _this = this;
     var lang = '{$lang}';
     $.get("{:url('admin/i18n/public_langs')}",function(res){
-      if(res.code === 0){
-        var options = '<option value="0">请选择语言</option>';
-        pageData.langs = res.data.lists;
-        $(res.data.lists).each(function(index, el) {
-          var selected = el.code == lang ? "selected" : '';
-          options += '<option value="'+el.code+'" '+selected+'>【'+el.code +"】"+el.name+'</option>';
-        });
-        $("#searchForm select[name='lang']").html(options)
-        if(typeof(success)=="function"){
-          success(res);
+        if(res.code === 0){
+            var options = '<option value="0">请选择语言</option>';
+            pageData.langs = res.data.lists;
+            $(res.data.lists).each(function(index, el) {
+            var selected = el.code == lang ? "selected" : '';
+            options += '<option value="'+el.code+'" '+selected+'>【'+el.code +"】"+el.name+'</option>';
+            });
+            $("#searchForm select[name='lang']").html(options)
+            if(typeof(success)=="function"){
+            success(res);
+            }
+            form.render();
         }
-        form.render();
-      }
     })
 
 }

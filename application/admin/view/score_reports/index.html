@@ -6,140 +6,140 @@
     <div class="layui-tab layui-tab-brief " lay-filter="main-tab">
 
         <ul class="amain-tool-bar layui-tab-title" >
-          <li class="layui-this" > <a href="{:url('index')}"  >积分期报</a> </li>
+            <li class="layui-this" > <a href="{:url('index')}"  >积分期报</a> </li>
         </ul>
 
         <div class="amain-content layui-tab-content">
-          <!-- **************  s : 积分期报 ************** -->
-          <div class="layui-tab-item layui-show">
-            <form class="layui-form layui-form-pane" id="filter-form" showloading action="{:url('admin/ScoreReports/index')}" method="get">
-                <!-- <div class="blank10">  </div> -->
-                <div class="layui-inline">
-                  <label class="layui-form-label" style="width:160px">时间范围选择</label>
-                  <div class="layui-input-inline">
-                    <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
-                  </div>
-                  <div class="layui-input-inline">
-                    <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly   >
-                    <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择显示区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary"
-                      data-target="region_id:id" data-tips="选择显示区域" data-title="选择显示区域" data-tips-position="3" data-auto-submit="true"   >
-                      {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择显示区域"}
-                    </a>
-                  </div>
+            <!-- **************  s : 积分期报 ************** -->
+            <div class="layui-tab-item layui-show">
+                <form class="layui-form layui-form-pane" id="filter-form" showloading action="{:url('admin/ScoreReports/index')}" method="get">
+                    <!-- <div class="blank10">  </div> -->
+                    <div class="layui-inline">
+                    <label class="layui-form-label" style="width:160px">时间范围选择</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly   >
+                        <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择显示区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary"
+                        data-target="region_id:id" data-tips="选择显示区域" data-title="选择显示区域" data-tips-position="3" data-auto-submit="true"   >
+                        {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择显示区域"}
+                        </a>
+                    </div>
+                    </div>
+                    <div class="layui-inline">
+                    <input type="hidden" name="export" value="0">
+                        <!-- <button class="layui-btn"><i class="fa fa-search"></i></button> -->
+                    </div>
+                </form>
+                <hr>
+                <div class="total-content">
+                <div class="total-item  total-item-add">
+                    <h3>新增积分</h3>
+                    <dl class="value-wrapper value-wrapper-carpool">
+                        <dt>拼车</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-turnplate">
+                        <dt>转盘抽奖</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-lottery">
+                        <dt>实物抽奖</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-goods">
+                        <dt>奖品兑换</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-others">
+                        <dt>其它</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-total">
+                        <dt>合计</dt>
+                        <dd>0</dd>
+                    </dl>
                 </div>
-                <div class="layui-inline">
-                  <input type="hidden" name="export" value="0">
-                    <!-- <button class="layui-btn"><i class="fa fa-search"></i></button> -->
+                <div class="total-item  total-item-minus">
+                    <h3>消耗积分</h3>
+                    <dl class="value-wrapper value-wrapper-carpool">
+                        <dt>拼车</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-turnplate">
+                        <dt>转盘抽奖</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-lottery">
+                        <dt>实物抽奖</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-goods">
+                        <dt>奖品兑换</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-others">
+                        <dt>其它</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-total">
+                        <dt>合计</dt>
+                        <dd>0</dd>
+                    </dl>
                 </div>
-            </form>
-            <hr>
-            <div class="total-content">
-              <div class="total-item  total-item-add">
-                <h3>新增积分</h3>
-                <dl class="value-wrapper value-wrapper-carpool">
-                  <dt>拼车</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-turnplate">
-                  <dt>转盘抽奖</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-lottery">
-                  <dt>实物抽奖</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-goods">
-                  <dt>奖品兑换</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-others">
-                  <dt>其它</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-total">
-                  <dt>合计</dt>
-                  <dd>0</dd>
-                </dl>
-              </div>
-              <div class="total-item  total-item-minus">
-                <h3>消耗积分</h3>
-                <dl class="value-wrapper value-wrapper-carpool">
-                  <dt>拼车</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-turnplate">
-                  <dt>转盘抽奖</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-lottery">
-                  <dt>实物抽奖</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-goods">
-                  <dt>奖品兑换</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-others">
-                  <dt>其它</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-total">
-                  <dt>合计</dt>
-                  <dd>0</dd>
-                </dl>
-              </div>
 
-              <div class="total-item  total-item-diff">
-                <h3>收支差</h3>
-                <dl class="value-wrapper value-wrapper-carpool">
-                  <dt>拼车</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-turnplate">
-                  <dt>转盘抽奖</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-lottery">
-                  <dt>实物抽奖</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-goods">
-                  <dt>奖品兑换</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-others">
-                  <dt>其它</dt>
-                  <dd>0</dd>
-                </dl>
-                <dl class="value-wrapper value-wrapper-total">
-                  <dt>合计</dt>
-                  <dd>0</dd>
-                </dl>
-              </div>
-           </div>
-
-
-
-
-          </div>
-          <!-- **************  e / 积分期报 ************** -->
-
-
-          <!-- **************  s : 走势图表 ************** -->
-          <div class="layui-tab-item ">
-            <div class="time-options">
-              <a class="time-item" href="javascript:void(0)"  onclick="return PAGE_EXEC.drawChart('year');">年</a>
-              <a class="time-item current" href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('month');">月</a>
-              <a class="time-item" href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('week');">周</a>
-              <a class="time-item" href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('day');">日</a>
-            </div>
-            <div class="chart-wapper">
-              <div id="chart"  class="cp-chart-content" style="height:600px;"></div>
+                <div class="total-item  total-item-diff">
+                    <h3>收支差</h3>
+                    <dl class="value-wrapper value-wrapper-carpool">
+                        <dt>拼车</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-turnplate">
+                        <dt>转盘抽奖</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-lottery">
+                        <dt>实物抽奖</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-goods">
+                        <dt>奖品兑换</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-others">
+                        <dt>其它</dt>
+                        <dd>0</dd>
+                    </dl>
+                    <dl class="value-wrapper value-wrapper-total">
+                        <dt>合计</dt>
+                        <dd>0</dd>
+                    </dl>
+                </div>
             </div>
 
 
-          </div>
-          <!-- **************  e / 走势图表 ************** -->
+
+
+            </div>
+            <!-- **************  e / 积分期报 ************** -->
+
+
+            <!-- **************  s : 走势图表 ************** -->
+            <div class="layui-tab-item ">
+                <div class="time-options">
+                    <a class="time-item" href="javascript:void(0)"  onclick="return PAGE_EXEC.drawChart('year');">年</a>
+                    <a class="time-item current" href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('month');">月</a>
+                    <a class="time-item" href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('week');">周</a>
+                    <a class="time-item" href="javascript:void(0)" onclick="return PAGE_EXEC.drawChart('day');">日</a>
+                </div>
+                <div class="chart-wapper">
+                    <div id="chart"  class="cp-chart-content" style="height:600px;"></div>
+                </div>
+
+
+            </div>
+            <!-- **************  e / 走势图表 ************** -->
 
 
 

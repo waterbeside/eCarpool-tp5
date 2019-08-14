@@ -6,8 +6,8 @@
         <ul class="amain-tool-bar">
             <li class="layui-this"><a href="{:url('admin/Docs/index')}"  >文档管理</a></li>
             <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " onclick="openLayer('{:url('admin/Docs/add')}',{area: ['96%', '90%'], title:'添加文档'});" href="javascript:void(0);"   >
-              <i class="fa fa-plus"></i> 添加文档</a>
+                <a class="layui-btn layui-btn-sm layui-btn-success " onclick="openLayer('{:url('admin/Docs/add')}',{area: ['96%', '90%'], title:'添加文档'});" href="javascript:void(0);"   >
+                <i class="fa fa-plus"></i> 添加文档</a>
             </li>
         </ul>
         <div class="layui-tab-content">
@@ -59,8 +59,8 @@
                             <td>{php}echo $vo['status']==1 ? '显示' : '不显示';{/php}</td>
                             <td>{$vo.create_time}</td>
                             <td>
-                              <a onclick="openLayer('{:url('admin/Docs/edit',['id'=>$vo['id']])}',{area: ['96%', '90%'], title:'编辑文档 #{$vo.id}'});" href="javascript:void(0);" class="layui-btn layui-btn-sm "     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
-                              <a href="{:url('admin/Docs/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
+                                <a onclick="openLayer('{:url('admin/Docs/edit',['id'=>$vo['id']])}',{area: ['96%', '90%'], title:'编辑文档 #{$vo.id}'});" href="javascript:void(0);" class="layui-btn layui-btn-sm "     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
+                                <a href="{:url('admin/Docs/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
                             </td>
                         </tr>
                         {/foreach}

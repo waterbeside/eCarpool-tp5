@@ -1,97 +1,97 @@
 <form class="layui-form form-container" action="{:url('admin/i18n/edit')}" method="post" id="editForm">
-  <fieldset class="amain-fieldset layui-elem-field" >
-    <legend>基本设置</legend>
-    <div class="layui-form-item">
-      <label class="layui-form-label">模块</label>
-      <div class="layui-input-block">
-          <input type="text" name="module" value="{$data.module}"  placeholder="输入模块" class="layui-input">
-      </div>
-    </div>
-    <div class="layui-form-item">
-      <label class="layui-form-label">Key</label>
-      <div class="layui-input-block">
-          <input type="text" name="name" value="{$data.name}" required  lay-verify="required" placeholder="输入key" class="layui-input">
-      </div>
-    </div>
-
-    <div class="layui-form-item">
-        <label class="layui-form-label">状态</label>
-        <div class="layui-input-block">
-            <input type="checkbox" name="status" value="1" lay-skin="switch" lay-text="启用|禁用" {if condition="$data.status==1"} checked="checked"{/if}>
-        </div>
-    </div>
-
-    <ul class="amain-i18n-edit-list" id="J-contents-list">
-      <li class="item layui-form-item item-zh-cn">
-        <label class="layui-form-label">
-          zh-cn<br />
-          <small>中文<br />(中国大陆)</small>
-          <input type="hidden" name="langData[zh-cn][sort]" class="amain-sort-input" value="0"/>
-          <br />
-        </label>
-        <div class="layui-input-block">
-          <textarea name="langData[zh-cn][content]"    class="layui-textarea"   ></textarea>
-        </div>
-      </li>
-    </ul>
-
-    <div class="amain-additem-bar">
-      <div class="layui-form-item">
-          <label class="layui-form-label ">添加语言</label>
-          <div class="layui-input-inline">
-            <select name="langs" lay-verify="required" lay-search>
-               <option value="0">请选择语言</option>
-             </select>
-          </div>
-          <button class="layui-btn layui-btn-primary  "  onclick="return RESOLVE_INIT.addLang()"><i class="fa fa-plus"></i> 添加一种语言</button>
-      </div>
-
-    </div>
-  </fieldset>
-
-
-
-  <div class="layui-collapse" >
-    <div class="layui-colla-item">
-      <h2 class="layui-colla-title">其它</h2>
-      <div class="layui-colla-content">
-        <div class="layui-form-item ">
-          <label class="layui-form-label">title</label>
-          <div class="layui-input-block">
-            <input type="text" name="title" value="{$data.title}" required  lay-verify="required"   class="layui-input">
-            <div class="layui-form-mid layui-word-aux">
-              <label><input type="checkbox" name="auto_title" value="1" lay-ignore checked> 根据中文内容自动截取</label>
+    <fieldset class="amain-fieldset layui-elem-field" >
+        <legend>基本设置</legend>
+        <div class="layui-form-item">
+            <label class="layui-form-label">模块</label>
+            <div class="layui-input-block">
+                <input type="text" name="module" value="{$data.module}"  placeholder="输入模块" class="layui-input">
             </div>
-          </div>
         </div>
         <div class="layui-form-item">
-          <label class="layui-form-label">IOS Key</label>
-          <div class="layui-input-block">
-            <input type="text" name="key_ios" value="{$data.key_ios}" required  lay-verify="required"   class="layui-input " >
-            <div class="layui-form-mid layui-word-aux">
-              <label><input type="checkbox" name="auto_key_ios" value="1" lay-ignore checked> 根据Key自动填写</label>
+            <label class="layui-form-label">Key</label>
+            <div class="layui-input-block">
+                <input type="text" name="name" value="{$data.name}" required  lay-verify="required" placeholder="输入key" class="layui-input">
             </div>
-          </div>
         </div>
-        <div class="layui-form-item ">
-          <label class="layui-form-label">Android KEY</label>
-          <div class="layui-input-block">
-            <input type="text" name="key_android" value="{$data.key_android}" required  lay-verify="required"   class="layui-input " >
-            <div class="layui-form-mid layui-word-aux">
-              <label><input type="checkbox" name="auto_key_and" value="1" lay-ignore checked> 根据Key自动填写</label>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">状态</label>
+            <div class="layui-input-block">
+                <input type="checkbox" name="status" value="1" lay-skin="switch" lay-text="启用|禁用" {if condition="$data.status==1"} checked="checked"{/if}>
             </div>
-          </div>
         </div>
-      </div>
+
+        <ul class="amain-i18n-edit-list" id="J-contents-list">
+        <li class="item layui-form-item item-zh-cn">
+            <label class="layui-form-label">
+            zh-cn<br />
+            <small>中文<br />(中国大陆)</small>
+            <input type="hidden" name="langData[zh-cn][sort]" class="amain-sort-input" value="0"/>
+            <br />
+            </label>
+            <div class="layui-input-block">
+            <textarea name="langData[zh-cn][content]"    class="layui-textarea"   ></textarea>
+            </div>
+        </li>
+        </ul>
+
+        <div class="amain-additem-bar">
+        <div class="layui-form-item">
+            <label class="layui-form-label ">添加语言</label>
+            <div class="layui-input-inline">
+                <select name="langs" lay-verify="required" lay-search>
+                <option value="0">请选择语言</option>
+                </select>
+            </div>
+            <button class="layui-btn layui-btn-primary  "  onclick="return RESOLVE_INIT.addLang()"><i class="fa fa-plus"></i> 添加一种语言</button>
+        </div>
+
+        </div>
+    </fieldset>
+
+
+
+    <div class="layui-collapse" >
+        <div class="layui-colla-item">
+        <h2 class="layui-colla-title">其它</h2>
+        <div class="layui-colla-content">
+            <div class="layui-form-item ">
+            <label class="layui-form-label">title</label>
+            <div class="layui-input-block">
+                <input type="text" name="title" value="{$data.title}" required  lay-verify="required"   class="layui-input">
+                <div class="layui-form-mid layui-word-aux">
+                <label><input type="checkbox" name="auto_title" value="1" lay-ignore checked> 根据中文内容自动截取</label>
+                </div>
+            </div>
+            </div>
+            <div class="layui-form-item">
+            <label class="layui-form-label">IOS Key</label>
+            <div class="layui-input-block">
+                <input type="text" name="key_ios" value="{$data.key_ios}" required  lay-verify="required"   class="layui-input " >
+                <div class="layui-form-mid layui-word-aux">
+                <label><input type="checkbox" name="auto_key_ios" value="1" lay-ignore checked> 根据Key自动填写</label>
+                </div>
+            </div>
+            </div>
+            <div class="layui-form-item ">
+            <label class="layui-form-label">Android KEY</label>
+            <div class="layui-input-block">
+                <input type="text" name="key_android" value="{$data.key_android}" required  lay-verify="required"   class="layui-input " >
+                <div class="layui-form-mid layui-word-aux">
+                <label><input type="checkbox" name="auto_key_and" value="1" lay-ignore checked> 根据Key自动填写</label>
+                </div>
+            </div>
+            </div>
+        </div>
+        </div>
     </div>
-  </div>
 
 
-  <div class="blank20"></div>
-  <div class="layui-btn-container layui-row">
-      <input type="hidden" name="id" value="{$data.id}">
-      <button class="layui-btn layui-btn-lg layui-col-xs12"  type="submit" lay-submit lay-filter="*">提交</button>
-  </div>
+    <div class="blank20"></div>
+    <div class="layui-btn-container layui-row">
+        <input type="hidden" name="id" value="{$data.id}">
+        <button class="layui-btn layui-btn-lg layui-col-xs12"  type="submit" lay-submit lay-filter="*">提交</button>
+    </div>
 
 </form>
 

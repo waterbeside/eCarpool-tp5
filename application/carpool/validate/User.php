@@ -1,4 +1,5 @@
 <?php
+
 namespace app\carpool\validate;
 
 use think\Validate;
@@ -12,7 +13,7 @@ class User extends Validate
         'phone'            => 'unique:carpool/user',
         // 'Department'       => 'require',
     ];
-// |unique:carpool/user
+    // |unique:carpool/user
     protected $message = [
         'loginname.require'         => '请输入用户名',
         'loginname.length'          => '用户名不得少于3位',
@@ -29,15 +30,15 @@ class User extends Validate
     // edit 验证场景定义
     public function sceneEdit()
     {
-    	return $this->only(['loginname','Department'])
-          ->remove('loginname', 'unique');
+        return $this->only(['loginname', 'Department'])
+            ->remove('loginname', 'unique');
     }
 
     // edit 验证场景定义
     public function sceneEdit_change_password()
     {
-    	return $this->only(['loginname','Department','password','confirm_password'])
-        // ->append('password', 'length:6,18')
-          ->remove('loginname', 'unique');
+        return $this->only(['loginname', 'Department', 'password', 'confirm_password'])
+            // ->append('password', 'length:6,18')
+            ->remove('loginname', 'unique');
     }
 }

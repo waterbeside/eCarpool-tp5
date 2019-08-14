@@ -1,4 +1,5 @@
 <?php
+
 namespace app\carpool\validate;
 
 use think\Validate;
@@ -6,10 +7,10 @@ use think\Validate;
 class UpdateVersion extends Validate
 {
     protected $rule = [
-      'latest_version'  => 'require',
-      'current_versioncode'  => 'require|number',
-      'min_versioncode'  => 'require|number',
-      'max_versioncode'  => 'require|number',
+        'latest_version'  => 'require',
+        'current_versioncode'  => 'require|number',
+        'min_versioncode'  => 'require|number',
+        'max_versioncode'  => 'require|number',
 
     ];
 
@@ -23,6 +24,4 @@ class UpdateVersion extends Validate
         'max_versioncode.number'     => '最大版本号为数字',
 
     ];
-
-
 }

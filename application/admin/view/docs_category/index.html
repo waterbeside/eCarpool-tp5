@@ -6,13 +6,12 @@
         <ul class="amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/DocsCategory/index')}"  >文档分类管理</a></li>
             <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/DocsCategory/add')}"  data-title="添加分类"  data-trigger="modal" >
-              <i class="fa fa-plus"></i> 添加分类</a>
+                <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/DocsCategory/add')}"  data-title="添加分类"  data-trigger="modal" >
+                <i class="fa fa-plus"></i> 添加分类</a>
             </li>
         </ul>
         <div class="layui-tab-content">
             <div class="layui-tab-item layui-show">
-
 
                 <table class="layui-table">
                     <thead>
@@ -32,8 +31,8 @@
                         <td>{$vo.title}</td>
                         <td>{$vo.description}</td>
                         <td>
-                          <a  href="{:url('admin/DocsCategory/edit',['id'=>$vo['id']])}" class="layui-btn layui-btn-sm " data-title="編輯"  data-trigger="modal"     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
-                          <a href="{:url('admin/DocsCategory/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
+                            <a  href="{:url('admin/DocsCategory/edit',['id'=>$vo['id']])}" class="layui-btn layui-btn-sm " data-title="編輯"  data-trigger="modal"     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
+                            <a href="{:url('admin/DocsCategory/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
                         </td>
                     </tr>
                     {/foreach}

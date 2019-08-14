@@ -6,8 +6,8 @@
         <ul class="amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/i18n/lang_list')}"  >语言管理</a></li>
             <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/i18n/lang_add')}"  data-title="添加语言"  data-trigger="modal" >
-              <i class="fa fa-plus"></i> 添加语言</a>
+                <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/i18n/lang_add')}"  data-title="添加语言"  data-trigger="modal" >
+                <i class="fa fa-plus"></i> 添加语言</a>
             </li>
         </ul>
         <div class="layui-tab-content">
@@ -43,8 +43,8 @@
                         <td>{$vo.name}</td>
                         <td>{php}echo $vo['status']==1 ? '<i class="fa fa-check"></i>' : '<i class="fa fa-times"></i>';{/php}</td>
                         <td>
-                          <a  href="{:url('admin/i18n/lang_edit',['id'=>$vo['id']])}" class="layui-btn layui-btn-sm " data-title="編輯"  data-trigger="modal"     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
-                          <a href="{:url('admin/i18n/lang_delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
+                            <a  href="{:url('admin/i18n/lang_edit',['id'=>$vo['id']])}" class="layui-btn layui-btn-sm " data-title="編輯"  data-trigger="modal"     title="编辑" ><i class="layui-icon">&#xe642;</i></a>
+                            <a href="{:url('admin/i18n/lang_delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-sm ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
                         </td>
                     </tr>
                     {/foreach}

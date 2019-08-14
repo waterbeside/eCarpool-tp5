@@ -1,4 +1,5 @@
 <?php
+
 namespace app\admin\controller;
 
 use app\common\model\AdminLog as AdminLogModel;
@@ -32,18 +33,17 @@ class AdminLog extends AdminBase
     {
         $map = [];
         if ($keyword) {
-            $map[] = ['route|description|ip','like', "%{$keyword}%"];
+            $map[] = ['route|description|ip', 'like', "%{$keyword}%"];
         }
         $join = [
-          ['admin_user u','l.uid = u.id'],
+            ['admin_user u', 'l.uid = u.id'],
         ];
         $fields = 'l.*, u.username, u.nickname ';
 
-        $lists = $this->log_model->alias('l')->join($join)->where($map)->order('time DESC , id DESC ')->field($fields)->paginate(50, false,['query'=>['keyword'=>$keyword]]);
+        $lists = $this->log_model->alias('l')->join($join)->where($map)
+                    ->order('time DESC , id DESC ')->field($fields)
+                    ->paginate(50, false, ['query' => ['keyword' => $keyword]]);
 
         return $this->fetch('index', ['lists' => $lists, 'keyword' => $keyword]);
     }
-
-
-
 }

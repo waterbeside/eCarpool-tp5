@@ -4,93 +4,93 @@
 
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
-      <div class="layui-tab-content">
+        <div class="layui-tab-content">
 
-              <form class="layui-form layui-form-pane" action="{:url('')}" method="get">
-                  <div class="layui-inline">
-                      <label class="layui-form-label">检索</label>
+                <form class="layui-form layui-form-pane" action="{:url('')}" method="get">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">检索</label>
 
-                      <div class="layui-input-inline">
-                          <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
-                      </div>
-                      <div class="layui-input-inline">
-                          <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
-                      </div>
-                  </div>
-                  <div class="layui-inline">
-                      <input type="hidden" name="export" value="0">
-                      <button class="layui-btn"><i class="fa fa-search"></i></button>
-                  </div>
-              </form>
-              <hr>
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <input type="hidden" name="export" value="0">
+                        <button class="layui-btn"><i class="fa fa-search"></i></button>
+                    </div>
+                </form>
+                <hr>
 
-              <table lay-filter="listtable" class="layui-table">
-                  <thead>
+                <table lay-filter="listtable" class="layui-table">
+                    <thead>
+                        <tr>
+                            <th lay-data="{field:'uid', width:100, fixed:'left'}" >ID</th>
+                            <th lay-data="{field:'loginname', width:120, fixed:'left'}">用户名</th>
+                            <th lay-data="{field:'name', width:100}">姓名</th>
+                            <th lay-data="{field:'phone', width:100}">手机</th>
+                            <th lay-data="{field:'full_department', minWidth:160}">部门(HR)</th>
+                            <th lay-data="{field:'options', width:80,fixed:'right'}">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {foreach name="lists" item="vo"}
                     <tr>
-                        <th lay-data="{field:'uid', width:100, fixed:'left'}" >ID</th>
-                        <th lay-data="{field:'loginname', width:120, fixed:'left'}">用户名</th>
-                        <th lay-data="{field:'name', width:100}">姓名</th>
-                        <th lay-data="{field:'phone', width:100}">手机</th>
-                        <th lay-data="{field:'full_department', minWidth:160}">部门(HR)</th>
-                        <th lay-data="{field:'options', width:80,fixed:'right'}">操作</th>
+                        <td>
+                            <div <?php echo  ($vo['is_delete']  ? 'class="text-gray"' : ''); ?>>
+                            {$vo.uid}
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{:url('admin/User/public_detail',['id'=>$vo['uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情" <?php echo  ($vo['is_delete']  ? 'class="text-gray"' : ''); ?>>
+                            {$vo.loginname}
+                            </a>
+                        </td>
+                        <td>
+                            <div <?php echo  ($vo['is_delete']  ? 'class="text-gray"' : ''); ?>>
+                            {$vo.name}
+                            <span class="text-gray">
+                                {php}echo $vo['sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+                                {php}echo $vo['is_active']==1 ? '' : '<i class="fa fa-times"></i>';{/php}
+                            </span>
+                            </div>
+
+                        </td>
+                        <td>{$vo.phone}</td>
+
+                        <td>{$vo.full_department}</td>
+
+                        <!-- <td><a  class="layui-btn layui-btn-normal layui-btn-xs " data-title="分数管理"  data-trigger="modal" href="">0</a></td> -->
+
+                        <td>
+                            <?php if($vo['is_delete']){ ?>
+                            <button href="javascript:void(0);"  class="layui-btn   layui-btn-xs " title="选择" disabled>选择</button>
+                            <?php }else{
+                            $returnItemData = [
+                                'uid'             => $vo['uid'],
+                                'name'           => $vo['name'],
+                                'nativename'     => $vo['nativename'],
+                                'mail'           => $vo['mail'],
+                                'department_id'  => $vo['department_id'],
+                                'sex'            => $vo['sex'],
+                                'loginname'      => $vo['loginname'],
+                            ];
+                            ?>
+                            <button href="javascript:void(0);"  class="layui-btn   layui-btn-xs " title="选择" onclick='<?php echo $fun.'('.json_encode($returnItemData).')'; ?>'>选择</button>
+                            <?php } ?>
+
+                        </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                  {foreach name="lists" item="vo"}
-                  <tr>
-                      <td>
-                        <div <?php echo  ($vo['is_delete']  ? 'class="text-gray"' : ''); ?>>
-                          {$vo.uid}
-                        </div>
-                      </td>
-                      <td>
-                        <a href="{:url('admin/User/public_detail',['id'=>$vo['uid']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情" <?php echo  ($vo['is_delete']  ? 'class="text-gray"' : ''); ?>>
-                          {$vo.loginname}
-                        </a>
-                      </td>
-                      <td>
-                        <div <?php echo  ($vo['is_delete']  ? 'class="text-gray"' : ''); ?>>
-                          {$vo.name}
-                          <span class="text-gray">
-                            {php}echo $vo['sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
-                            {php}echo $vo['is_active']==1 ? '' : '<i class="fa fa-times"></i>';{/php}
-                          </span>
-                        </div>
+                    {/foreach}
+                    </tbody>
+                </table>
+                <!--分页-->
+                {$lists|raw}
 
-                      </td>
-                      <td>{$vo.phone}</td>
-
-                      <td>{$vo.full_department}</td>
-
-                      <!-- <td><a  class="layui-btn layui-btn-normal layui-btn-xs " data-title="分数管理"  data-trigger="modal" href="">0</a></td> -->
-
-                      <td>
-                        <?php if($vo['is_delete']){ ?>
-                          <button href="javascript:void(0);"  class="layui-btn   layui-btn-xs " title="选择" disabled>选择</button>
-                        <?php }else{
-                          $returnItemData = [
-                            'uid'             => $vo['uid'],
-                            'name'           => $vo['name'],
-                            'nativename'     => $vo['nativename'],
-                            'mail'           => $vo['mail'],
-                            'department_id'  => $vo['department_id'],
-                            'sex'            => $vo['sex'],
-                            'loginname'      => $vo['loginname'],
-                          ];
-                        ?>
-                          <button href="javascript:void(0);"  class="layui-btn   layui-btn-xs " title="选择" onclick='<?php echo $fun.'('.json_encode($returnItemData).')'; ?>'>选择</button>
-                        <?php } ?>
-
-                      </td>
-                  </tr>
-                  {/foreach}
-                  </tbody>
-              </table>
-              <!--分页-->
-              {$lists|raw}
-
+            </div>
         </div>
-      </div>
     </div>
 </div>
 
@@ -100,13 +100,13 @@
 initLayuiTable({ limit: {$pagesize} });
 // var laydate = layui.laydate;
 function <?php echo $fun; ?>(data){
-  if(typeof(window.parent.<?php echo $fun ?>)!="function"){
-    return false;
-  }else{
-    window.parent.<?php echo $fun."("; ?>data<?php echo ")"; ?>;
-    var layerIndex = parent.layer.getFrameIndex(window.name);
-    parent.layer.close(layerIndex);
-  }
+    if(typeof(window.parent.<?php echo $fun ?>)!="function"){
+        return false;
+    }else{
+        window.parent.<?php echo $fun."("; ?>data<?php echo ")"; ?>;
+        var layerIndex = parent.layer.getFrameIndex(window.name);
+        parent.layer.close(layerIndex);
+    }
 }
 
 </script>

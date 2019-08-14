@@ -15,17 +15,17 @@
                         <input type="hidden" name="account_id" value="{$account_id}">
                         <input type="hidden" name="pagesize" value="{$pagesize}">
                         <div class="layui-input-inline">
-                          <select name="filter[reason]" lay-verify="required" lay-search>
-                            <option value="">{:lang('Reason')}</option>
-                            {foreach name="reasons" key="key" item="vo"}
-                             <option value="{$key}" {php}echo $filter['reason']== "$key" ? 'selected' : ''; {/php} ><?php echo $key > 0 ? "+" : "-" ; ?> {:lang("sl:".$vo)}</option>
-                            {/foreach}
-                           </select>
+                            <select name="filter[reason]" lay-verify="required" lay-search>
+                                <option value="">{:lang('Reason')}</option>
+                                {foreach name="reasons" key="key" item="vo"}
+                                <option value="{$key}" {php}echo $filter['reason']== "$key" ? 'selected' : ''; {/php} ><?php echo $key > 0 ? "+" : "-" ; ?> {:lang("sl:".$vo)}</option>
+                                {/foreach}
+                            </select>
                         </div>
 
                     </div>
                     <div class="layui-input-inline">
-                      <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="{:lang('Time range')}" value="{$filter.time}"  style="width:200px" autocomplete="off">
+                        <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="{:lang('Time range')}" value="{$filter.time}"  style="width:200px" autocomplete="off">
                     </div>
                     <div class="layui-inline">
                         <button class="layui-btn"><i class="fa fa-search"></i></button>
@@ -56,9 +56,9 @@
                         <td class="t-number">{$vo.result}</td>
                         <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($vo.time)*1000}</span></td>
                         <td>
-                          <?php if($auth['admin/ScoreHistory/delete'] ){ ?>
-                            <a href="{:url('admin/ScoreHistory/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-danger layui-btn-xs ajax-delete"  ><i class="layui-icon">&#xe640;</i></a>
-                          <?php } ?>
+                            <?php if($auth['admin/ScoreHistory/delete'] ){ ?>
+                                <a href="{:url('admin/ScoreHistory/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-danger layui-btn-xs ajax-delete"  ><i class="layui-icon">&#xe640;</i></a>
+                            <?php } ?>
                         </td>
 
 
@@ -79,11 +79,11 @@
 // initLayuiTable({ limit: {$pagesize} })
 // var laydate = layui.laydate;
   //执行一个laydate实例
-  laydate.render({
+laydate.render({
     elem: '#filter_time'
     ,lang:'{$active_lang == "zh-cn" ? "cn" : "en"}'
     ,range: '~' //或 range: '~' 来自定义分割字符
-  });
+});
 
 
 

@@ -6,8 +6,8 @@
         <ul class="amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/menu/index')}"  >后台菜单</a></li>
             <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/menu/add')}"  data-title="添加菜单"  data-trigger="modal" >
-              <i class="fa fa-plus"></i> 添加菜单</a>
+                <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/menu/add')}"  data-title="添加菜单"  data-trigger="modal" >
+                <i class="fa fa-plus"></i> 添加菜单</a>
             </li>
         </ul>
         <div class="layui-tab-content">
@@ -17,7 +17,7 @@
             <a class="layui-btn layui-btn-primary layui-btn-xs" onclick="PAGE_EXEC.expandAll()">展开所有</a>
             </div>
             <div class="layui-tab-item layui-show">
-               <table id="ContentCateTree" class="layui-table table-tree menu-list" lay-size="sm"></table>
+                <table id="ContentCateTree" class="layui-table table-tree menu-list" lay-size="sm"></table>
             </div>
         </div>
     </div>
@@ -27,115 +27,115 @@
 <script>
 
 PAGE_EXEC = {
-  data : {
-    treeList: []
-  },
-  treetable : $('#ContentCateTree'),
+    data : {
+        treeList: []
+    },
+    treetable : $('#ContentCateTree'),
 
-  getData : function(){
-    var _this = this;
-    $.get("{:url('admin/menu/index',['json'=>1])}").then(function(res){
-      if(res.code === 0){
-         _this.data.treeList = res.data
-        _this.setTreegrid();
-      }else{
-        layer.msg('数据加载失败');
-      }
-    })
-  },
-
-  setTreegrid : function(){
-    var _this = this;
-    var $treetable = _this.treetable;
-    var treeOffsetTop = $treetable.offset().top;
-    var treegridHeight = document.documentElement.clientHeight-treeOffsetTop-20
-    $treetable.kanTreegrid({
-
-      idField:'id',
-      pidField:'pid',
-      treeField: 'title',
-      height:treegridHeight,
-      datas: _this.data.treeList,
-
-      columns:[[
-            {field:'id',title:'#',width:60},
-            {field:'title',title:'标题',width:290,formatter:formatTitle},
-            {field:'name',title:'路由标识' ,formatter:formatName},
-            {field:'status',title:'状态',width:50,formatter:formatStatus},
-            {field:'sort',title:'排序',width:40},
-            {field:'option',title:'操作',width:150,formatter:formatOption},
-      ]],
-      onClickRow:function(row){
-
-      },
-      onLoadSuccess:function(node, data){
-        $(".P-menu [data-tips]").each(function(index, el) {
-          var $_this = $(this);
-          $(this).hover(function(){
-            var tips = $_this.attr('data-tips');
-            if(tips){
-              var tipsPosition = $_this.data('tips-position') ;
-              layer.tips(tips, this,{
-                // time:1000,
-                tips:4,
-              })
-            }
-          })
-        });
-      }
-    })
-
-  function formatTitle(value,row){
-    var s_en = '<span class="layui-badge layui-bg-black" title="'+row.title_en+'" >EN</span>';
-    var s_vi = '<span class="layui-badge layui-bg-black" title="'+row.title_vi+'" >VI</span>';
-    var s = value;
-    var tips = "";
-    if($.trim(row.title_en)!=""){
-        s += s_en;
-        tips += 'EN:\t'+row.title_en
-    }
-    if($.trim(row.title_vi)!=""){
-        s += s_vi;
-        tips = tips ? tips + "<br />" : tips;
-        tips += 'VI:\t'+row.title_vi;
-    }
-    tips = tips ? 'data-tips="'+tips+'"' : '';
-    return '<span '+tips+' >' + s + '</span>'
-  }
-
-   function formatOption(value,row){
-     var s = '<a href="{:url('admin/menu/add')}?pid='+row.id+'" class="layui-btn layui-btn-success layui-btn-xs " data-title="添加子菜单"  data-trigger="modal" title="添加子菜单"><i class="layui-icon">&#xe654;</i> </a>'
-     s += '<a href="{:url('admin/menu/edit')}?id='+row.id+'"  data-trigger="modal" data-title="编辑 #'+row.id+'" class="layui-btn   layui-btn-xs "   title="编辑"> <i class="fa fa-pencil"></i> </a>';
-      s += '<a href="{:url('admin/menu/delete')}?id='+row.id+'" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete">删</a>';
-     return s;
-    }
-
-    function formatStatus(value){
-        if(value==1){
-          return '显示';
+    getData : function(){
+        var _this = this;
+        $.get("{:url('admin/menu/index',['json'=>1])}").then(function(res){
+        if(res.code === 0){
+            _this.data.treeList = res.data
+            _this.setTreegrid();
         }else{
-          return '<span class="status_0">隐藏</span>';
+            layer.msg('数据加载失败');
         }
+        })
+    },
+
+    setTreegrid : function(){
+        var _this = this;
+        var $treetable = _this.treetable;
+        var treeOffsetTop = $treetable.offset().top;
+        var treegridHeight = document.documentElement.clientHeight-treeOffsetTop-20
+        $treetable.kanTreegrid({
+
+        idField:'id',
+        pidField:'pid',
+        treeField: 'title',
+        height:treegridHeight,
+        datas: _this.data.treeList,
+
+        columns:[[
+                {field:'id',title:'#',width:60},
+                {field:'title',title:'标题',width:290,formatter:formatTitle},
+                {field:'name',title:'路由标识' ,formatter:formatName},
+                {field:'status',title:'状态',width:50,formatter:formatStatus},
+                {field:'sort',title:'排序',width:40},
+                {field:'option',title:'操作',width:150,formatter:formatOption},
+        ]],
+        onClickRow:function(row){
+
+        },
+        onLoadSuccess:function(node, data){
+            $(".P-menu [data-tips]").each(function(index, el) {
+                var $_this = $(this);
+                $(this).hover(function(){
+                    var tips = $_this.attr('data-tips');
+                    if(tips){
+                    var tipsPosition = $_this.data('tips-position') ;
+                    layer.tips(tips, this,{
+                        // time:1000,
+                        tips:4,
+                    })
+                    }
+                })
+                });
+            }
+        })
+
+        function formatTitle(value,row){
+            var s_en = '<span class="layui-badge layui-bg-black" title="'+row.title_en+'" >EN</span>';
+            var s_vi = '<span class="layui-badge layui-bg-black" title="'+row.title_vi+'" >VI</span>';
+            var s = value;
+            var tips = "";
+            if($.trim(row.title_en)!=""){
+                s += s_en;
+                tips += 'EN:\t'+row.title_en
+            }
+            if($.trim(row.title_vi)!=""){
+                s += s_vi;
+                tips = tips ? tips + "<br />" : tips;
+                tips += 'VI:\t'+row.title_vi;
+            }
+            tips = tips ? 'data-tips="'+tips+'"' : '';
+            return '<span '+tips+' >' + s + '</span>'
+        }
+
+        function formatOption(value,row){
+            var s = '<a href="{:url('admin/menu/add')}?pid='+row.id+'" class="layui-btn layui-btn-success layui-btn-xs " data-title="添加子菜单"  data-trigger="modal" title="添加子菜单"><i class="layui-icon">&#xe654;</i> </a>'
+            s += '<a href="{:url('admin/menu/edit')}?id='+row.id+'"  data-trigger="modal" data-title="编辑 #'+row.id+'" class="layui-btn   layui-btn-xs "   title="编辑"> <i class="fa fa-pencil"></i> </a>';
+            s += '<a href="{:url('admin/menu/delete')}?id='+row.id+'" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete">删</a>';
+            return s;
+        }
+
+        function formatStatus(value){
+            if(value==1){
+                return '显示';
+            }else{
+                return '<span class="status_0">隐藏</span>';
+            }
+        }
+
+        function formatName(value,row){
+            var icon = row.icon ? row.icon : "fa fa-caret-right";
+            return  "<i class='"+icon+"'></i> " + "<b>" + value + "</b>";
+        }
+
+    },
+
+    collapseAll: function(){
+        var _this = this;
+        var $treetable = _this.treetable;
+        $treetable.kanTreegrid('collapseAll');
+    },
+
+    expandAll: function(){
+        var _this = this;
+        var $treetable = _this.treetable;
+        $treetable.kanTreegrid('expandAll');
     }
-
-    function formatName(value,row){
-      var icon = row.icon ? row.icon : "fa fa-caret-right";
-      return  "<i class='"+icon+"'></i> " + "<b>" + value + "</b>";
-    }
-
-  },
-
-  collapseAll: function(){
-    var _this = this;
-    var $treetable = _this.treetable;
-    $treetable.kanTreegrid('collapseAll');
-  },
-
-  expandAll: function(){
-    var _this = this;
-    var $treetable = _this.treetable;
-    $treetable.kanTreegrid('expandAll');
-  }
 
 
 }

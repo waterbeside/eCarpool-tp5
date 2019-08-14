@@ -4,59 +4,59 @@ FORM_PAGE_EXEC = {
     upload : layui.upload,
     
     init: function(){
-      var _this = this;
-      var url="{:url('/api/ueditor')}";
+        var _this = this;
+        var url="{:url('/api/ueditor')}";
 
-      this.getCustomers().then(function(res){})
+        this.getCustomers().then(function(res){})
 
-      /** UE **/
-      var ue = this.renderUeditor('content',1)
-      var ue2 = this.renderUeditor('testing',0)
-      var ue3 = this.renderUeditor('bulk_note',0)
-      var ue_e = this.renderUeditor('content_en',1)
-      var ue2_e = this.renderUeditor('testing_en',0)
-      var ue3_e = this.renderUeditor('bulk_note_en',0)
-      
+        /** UE **/
+        var ue = this.renderUeditor('content',1)
+        var ue2 = this.renderUeditor('testing',0)
+        var ue3 = this.renderUeditor('bulk_note',0)
+        var ue_e = this.renderUeditor('content_en',1)
+        var ue2_e = this.renderUeditor('testing_en',0)
+        var ue3_e = this.renderUeditor('bulk_note_en',0)
+        
 
-      /** thumb upload **/
-      var $thumbInput =  cRenderUploadBtn({
-        wrapper:'.j-upload-thumb',
-        inputName:'thumb',
-        url: "{:url('admin/Uploader/images')}",
-        data: {"module":"admin/NPD/product/thumb"},
-      })
+        /** thumb upload **/
+        var $thumbInput =  cRenderUploadBtn({
+            wrapper:'.j-upload-thumb',
+            inputName:'thumb',
+            url: "{:url('admin/Uploader/images')}",
+            data: {"module":"admin/NPD/product/thumb"},
+        })
 
 
-      //merch拖动排序
-      var sortable = new  Sortable($("#merch-list")[0],{
-        handle: ".handle",
-        filter: ".btns",
-        onUpdate: function (evt/**Event*/){ 
-          console.log(evt)
-        }
-      }); 
+        //merch拖动排序
+        var sortable = new  Sortable($("#merch-list")[0],{
+            handle: ".handle",
+            filter: ".btns",
+            onUpdate: function (evt/**Event*/){ 
+            console.log(evt)
+            }
+        }); 
 
-      //patent拖动排序
-      var sortable2 = new  Sortable($("#patent-list")[0],{
-        handle: ".handle",
-        filter: ".btns",
-      }); 
+        //patent拖动排序
+        var sortable2 = new  Sortable($("#patent-list")[0],{
+            handle: ".handle",
+            filter: ".btns",
+        }); 
 
-      //执行一个laydate实例
-      layui.laydate.render({
-        type:'datetime',
-        // value: cFormatDate(new Date(),'yyyy-mm-dd hh:ii:ss'),
-        elem: '#j-publish_time' //指定元素
-      });
+        //执行一个laydate实例
+        layui.laydate.render({
+            type:'datetime',
+            // value: cFormatDate(new Date(),'yyyy-mm-dd hh:ii:ss'),
+            elem: '#j-publish_time' //指定元素
+        });
 
-      form.render();//拖动排序
+        form.render();//拖动排序
 
-      /**
-       * 提交
-       */
-      form.on('submit(*product_form)', function (data) {
-        _this.submitData(data);
-      });
+        /**
+         * 提交
+         */
+        form.on('submit(*product_form)', function (data) {
+            _this.submitData(data);
+        });
 
     },
 
@@ -64,129 +64,128 @@ FORM_PAGE_EXEC = {
     *提效数据
     */
     submitData:function(data){
-      console.log('submitData');
-      console.log(data);
-      var fieldData = data.field;
-      var upData = $.extend({},data.field);
-      var merchandizingData = [];
+        console.log('submitData');
+        console.log(data);
+        var fieldData = data.field;
+        var upData = $.extend({},data.field);
+        var merchandizingData = [];
+        
+        let merchData = MyDynItem.getData("#merch-list",['merch.ppo_no','merch.desc'],'.');
+        let patentData = MyDynItem.getData("#patent-list",['patent.cty_name','patent.cty_name_en','patent.sn','patent.type_name'],'.');
+        upData.merchandizing = merchData;
+        upData.patent = patentData;
+        
+        ajaxSubmit({
+            url: data.form.action,
+            dataType:'json',
+            type: data.form.method,
+            data: upData,
+            unrefresh: $(data.form).data('unrefresh') ? $(data.form).data('unrefresh') : false,
+            jump : $(data.form).data('jump') ? $(data.form).data('jump') : "" ,
+            jumpWin: $(data.form).data('jump-target') == "parent" ? parent : null
+            });
+            return false;
+        },
     
-      let merchData = MyDynItem.getData("#merch-list",['merch.ppo_no','merch.desc'],'.');
-      let patentData = MyDynItem.getData("#patent-list",['patent.cty_name','patent.cty_name_en','patent.sn','patent.type_name'],'.');
-      upData.merchandizing = merchData;
-      upData.patent = patentData;
-    
-      ajaxSubmit({
-          url: data.form.action,
-          dataType:'json',
-          type: data.form.method,
-          data: upData,
-          unrefresh: $(data.form).data('unrefresh') ? $(data.form).data('unrefresh') : false,
-          jump : $(data.form).data('jump') ? $(data.form).data('jump') : "" ,
-          jumpWin: $(data.form).data('jump-target') == "parent" ? parent : null
-        });
-        return false;
-    },
-   
-    /**
-     * 删除一条patent
-     */
-    patent_del:function(obj){
-      var $item = $(obj).closest('.patent-item');
-      if($('#patent-list').find('.patent-item').length < 2){
-        // $item.find('input').val('');
-        layer.msg('专利/商标 （Patent/Trademark） 至少有一项'); 
-        return false;
-      }
-      $item.fadeOut();
-      setTimeout(function(){
-        $item.remove();
-      },400)
+        /**
+         * 删除一条patent
+         */
+        patent_del:function(obj){
+        var $item = $(obj).closest('.patent-item');
+        if($('#patent-list').find('.patent-item').length < 2){
+            // $item.find('input').val('');
+            layer.msg('专利/商标 （Patent/Trademark） 至少有一项'); 
+            return false;
+        }
+        $item.fadeOut();
+        setTimeout(function(){
+            $item.remove();
+        },400)
     },
 
     /**
      * 创建和渲染uedit
      */
     renderUeditor:function(target_id,type){
-      type = type || 0;
-      var toolbars = [
-        ['undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript',
-        '|','justifyleft','justifyright','justifycenter','|','blockquote','pasteplain','autotypeset'],
-        ['inserttable','insertrow','insertcol', 'mergeright', 'mergedown',  'deleterow',  'deletecol',  'splittorows', 'splittocols', 'splittocells', 
-       'inserttitle', 'mergecells', 
-        ,'|', 'removeformat','horizontal','|']
-      ];
-      var url="{:url('/api/ueditor')}";
-      var maximumWords = 3000;
-      var initialFrameHeight = 300;
-      if(type == 1){
-        toolbars.push(['simpleupload','insertimage','imagenone', 'imageleft', 'imageright','imagecenter','wordimage', '|','fullscreen','source']);
-        maximumWords = 8000;
-        initialFrameHeight = 500;
-      }
+        type = type || 0;
+        var toolbars = [
+            ['undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript',
+            '|','justifyleft','justifyright','justifycenter','|','blockquote','pasteplain','autotypeset'],
+            ['inserttable','insertrow','insertcol', 'mergeright', 'mergedown',  'deleterow',  'deletecol',  'splittorows', 'splittocols', 'splittocells', 
+        'inserttitle', 'mergecells', 
+            ,'|', 'removeformat','horizontal','|']
+        ];
+        var url="{:url('/api/ueditor')}";
+        var maximumWords = 3000;
+        var initialFrameHeight = 300;
+        if(type == 1){
+            toolbars.push(['simpleupload','insertimage','imagenone', 'imageleft', 'imageright','imagecenter','wordimage', '|','fullscreen','source']);
+            maximumWords = 8000;
+            initialFrameHeight = 500;
+        }
 
 
 
-      var ue = UE.getEditor(target_id,{
-        serverUrl :url,
-        toolbars: toolbars,
-        topOffset:0,
-        wordCount:true,
-        maximumWords:maximumWords,
-        zIndex: 10,
-        //默认的编辑区域高度
-        initialFrameHeight:initialFrameHeight,
-      })
-      return ue;
+        var ue = UE.getEditor(target_id,{
+            serverUrl :url,
+            toolbars: toolbars,
+            topOffset:0,
+            wordCount:true,
+            maximumWords:maximumWords,
+            zIndex: 10,
+            //默认的编辑区域高度
+            initialFrameHeight:initialFrameHeight,
+        })
+        return ue;
     },
 
     /**
      * 取得客户列表
      */
     getCustomers:function(){
-      return $.ajax({
-        type:'get',
-        dataType:'json',
-        url:'{:url("admin/NpdCustomer/public_lists")}',
-        success:function(res){
-          if(res.code===0){
-            var list = res.data.lists
-            var optList = []
-            for(var i in list){
-              var item = list[i];
-              optList.push({id:item.id,name:item.name})
-            }
-            console.log(optList);
-            var dropdown = $('.customers-wrapper').dropdown({
-              // limitCount: 40,
-              multipleMode: 'label',
-              data:optList,
-              input:'<input type="text" maxLength="20" placeholder="搜索关键词或ID">',
-              choice: function (e,data) {
-                var val = $('[name="customers_arr"]').val();
-                $('input[name="customers"]').val(val.join(','));
+        return $.ajax({
+            type:'get',
+            dataType:'json',
+            url:'{:url("admin/NpdCustomer/public_lists")}',
+            success:function(res){
+            if(res.code===0){
+                var list = res.data.lists
+                var optList = []
+                for(var i in list){
+                var item = list[i];
+                optList.push({id:item.id,name:item.name})
+                }
+                console.log(optList);
+                var dropdown = $('.customers-wrapper').dropdown({
+                // limitCount: 40,
+                multipleMode: 'label',
+                data:optList,
+                input:'<input type="text" maxLength="20" placeholder="搜索关键词或ID">',
+                choice: function (e,data) {
+                    var val = $('[name="customers_arr"]').val();
+                    $('input[name="customers"]').val(val.join(','));
+                    
+                }
+                }).data('dropdown');
+                var customers_val = $.trim($('input[name="customers"]').val())
+                if(customers_val !=''){
+                var customers_val_arr = customers_val.split(',');
+                // dropdown.changeStatus('disabled');
+                dropdown.choose(customers_val_arr);
+                }
                 
-              }
-            }).data('dropdown');
-            var customers_val = $.trim($('input[name="customers"]').val())
-            if(customers_val !=''){
-              var customers_val_arr = customers_val.split(',');
-              // dropdown.changeStatus('disabled');
-              dropdown.choose(customers_val_arr);
             }
-            
-          }
-        },
-        error:function(err){
-          console.log(err);
-        }
-      })
+            },
+            error:function(err){
+            console.log(err);
+            }
+        })
     },
-  
 
-  }
-  $(function(){
-    FORM_PAGE_EXEC.init();
+}
+$(function(){
+FORM_PAGE_EXEC.init();
 
-    
-  })
+
+})
 </script>

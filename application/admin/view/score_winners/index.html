@@ -12,119 +12,119 @@
         </ul>
 
         <div class="amain-content">
-          <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreWinners/index')}" method="get" onsubmit="submitForm()">
-              <div class="layui-inline">
-                  <div class="layui-input-inline">
-                      <input type="text" name="filter[keyword_prize]" value="{$filter['keyword_prize'] ? $filter['keyword_prize'] :''}" placeholder="{:lang('Prize name')}" class="layui-input">
-                  </div>
-                  <div class="layui-input-inline">
-                      <input type="text" name="filter[keyword_user]" value="{$filter['keyword_user'] ? $filter['keyword_user'] :''}" placeholder="{:lang('Account keyword')}" class="layui-input" style="width:140px" >
-                  </div>
-                  <div class="layui-input-inline">
-                      <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="{:lang('Department')}" class="layui-input" style="width:100px" >
-                  </div>
-                  <div class="layui-input-inline is_exchange-wrapper" >
-                    <select name="filter[is_exchange]" lay-verify="required" >
-                      <option value="" >{:lang('Status')} - {:lang('Unlimited')}</option>
-                      <option value="0" {php}echo isset($filter['is_exchange']) && $filter['is_exchange'] === "0" ? 'selected' : ''; {/php}>{:lang('Not redeemed')}</option>
-                      <option value="1" {php}echo isset($filter['is_exchange']) && $filter['is_exchange'] === "1" ? 'selected' : ''; {/php}>{:lang('Redeemed')}</option>
+            <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreWinners/index')}" method="get" onsubmit="submitForm()">
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="filter[keyword_prize]" value="{$filter['keyword_prize'] ? $filter['keyword_prize'] :''}" placeholder="{:lang('Prize name')}" class="layui-input">
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="filter[keyword_user]" value="{$filter['keyword_user'] ? $filter['keyword_user'] :''}" placeholder="{:lang('Account keyword')}" class="layui-input" style="width:140px" >
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="{:lang('Department')}" class="layui-input" style="width:100px" >
+                    </div>
+                    <div class="layui-input-inline is_exchange-wrapper" >
+                        <select name="filter[is_exchange]" lay-verify="required" >
+                        <option value="" >{:lang('Status')} - {:lang('Unlimited')}</option>
+                        <option value="0" {php}echo isset($filter['is_exchange']) && $filter['is_exchange'] === "0" ? 'selected' : ''; {/php}>{:lang('Not redeemed')}</option>
+                        <option value="1" {php}echo isset($filter['is_exchange']) && $filter['is_exchange'] === "1" ? 'selected' : ''; {/php}>{:lang('Redeemed')}</option>
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
+                        <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" >
+                                {$regionData ? str_replace(',',' / ',$regionData['fullname']) : lang("Region or department")}
+                        </a>
+                    </div>
+                </div>
+                <!-- <div class="blank10">  </div> -->
+                <div class="my-input-prebox" style="max-width:120px">
+                    <select name="filter[time_type]"  >
+                    <option value="0" {php}echo !isset($filter['time_type']) ||  $filter['time_type'] == 0 ? 'selected' : ''; {/php}>{:lang('Participation time')}</option>
+                    <option value="1" {php}echo isset($filter['time_type']) &&  $filter['time_type'] ? 'selected' : ''; {/php}>{:lang('Lottery time')}</option>
                     </select>
-                  </div>
-                  <div class="layui-input-inline">
-                      <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
-                      <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" >
-                              {$regionData ? str_replace(',',' / ',$regionData['fullname']) : lang("Region or department")}
-                      </a>
-                  </div>
-              </div>
-              <!-- <div class="blank10">  </div> -->
-              <div class="my-input-prebox" style="max-width:120px">
-                <select name="filter[time_type]"  >
-                  <option value="0" {php}echo !isset($filter['time_type']) ||  $filter['time_type'] == 0 ? 'selected' : ''; {/php}>{:lang('Participation time')}</option>
-                  <option value="1" {php}echo isset($filter['time_type']) &&  $filter['time_type'] ? 'selected' : ''; {/php}>{:lang('Lottery time')}</option>
-                </select>
-              </div>
-              <div class="layui-inline">
-                  <div class="layui-input-inline">
-                    <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:180px" autocomplete="off">
-                  </div>
-              </div>
-
-              <div class="layui-inline">
-
-                  <button class="layui-btn"><i class="fa fa-search"></i></button>
-              </div>
-          </form>
-
-          <hr>
-
-
-
-          <div class="layui-tab amain-content-tab" >
-
-
-
-            <div class="layui-tab-content" style="margin:0 -10px">
-              <div class="layui-tab-item layui-show">
-                <div class="order-list">
-                  <form class="layui-form lottery-table-list-wrapper" >
-                    <blockquote class="layui-elem-quote">  <?php echo lang('A total of %s data were found',['<b>'.$lists->total().'</b>']) ?></blockquote>
-                    <table class="layui-table" lay-filter="listtable">
-                      <thead>
-                      <tr >
-                          <th lay-data="{field:'uid', width:40, fixed:'left'}"  >#</th>
-                          <th lay-data="{field:'prize_name',  minWidth:260, fixed:'left'}" >{:lang('Prize name')}</th>
-                          <th lay-data="{field:'participants_number', width:80}" >{:lang('Number of participation')}</th>
-                          <th lay-data="{field:'amount', width:80}" >{:lang('Purchase price')}</th>
-                          <th lay-data="{field:'user_name', width:120}"  >{:lang('m:s_l:Winner')}</th>
-                          <th lay-data="{field:'user_phone', width:120}"  >{:lang('Phone')}</th>
-                          <th lay-data="{field:'Department', width:120}" >{:lang('Department')}</th>
-                          <th lay-data="{field:'company', width:90}" >{:lang('Company')}</th>
-                          <th lay-data="{field:'buy_time', width:90}" >{:lang('Participation time')}</th>
-                          <th lay-data="{field:'end_time', width:90}" >{:lang('Lottery time')}</th>
-                          <th lay-data="{field:'exchange_time', width:100}"  width="60">{:lang('Redeemed')}?</th>
-                          <th lay-data="{field:'options', width:100, fixed:'right'}"  width="60">{:lang('Operate')}</th>
-                      </tr>
-                      </thead>
-                      <tbody class="lottery-table-list">
-                        {foreach name="lists" item="vo"}
-                        <tr class="lottery-item">
-                          <td  >{$vo.id}</td>
-                          <td >
-                            <div  class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>"> </div>
-                            <span class="layui-elip">【{:lang('Phase %d',[$vo['publication_number']])}】 {$vo.prize_name|iconv_substr=0,14} </span>
-                          </td>
-                          <td>{$vo.participants_number}</td>
-                          <td>{$vo.amount ? $vo.amount : '-' }</td>
-                          <td>{$vo.user_name}</td>
-                          <td>{$vo.user_phone}</td>
-                          <td>{$vo.Department}</td>
-                          <td><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></td>
-
-                          <td ><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{$vo.buy_time ? strtotime($vo.buy_time)*1000 : '-'}</span></td>
-                          <td ><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{$vo.lottery_time ? strtotime($vo.lottery_time)*1000 : '-'}</span></td>
-                          <td ><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{$vo.exchange_time ? strtotime($vo.exchange_time)*1000 : '-'}</span></td>
-                          <td >
-                            <a href="{:url('admin/ScoreWinners/detail',['id'=>$vo['id']])}"  data-title="{:lang('Details')} #{$vo.id}"  data-trigger="modal" title="{:lang('Details')} #{$vo.id}" class="ibtn layui-btn layui-btn-xs  {php}if($vo['exchange_time']){ echo
-                              'layui-btn-success';}{/php}  ">  {:lang('Details')}</a>
-                          </td>
-
-                        </tr>
-                        {/foreach}
-
-
-
-                      </tbody>
-                    </table>
-                  </form>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:180px" autocomplete="off">
+                    </div>
                 </div>
 
-              </div>
+                <div class="layui-inline">
 
+                    <button class="layui-btn"><i class="fa fa-search"></i></button>
+                </div>
+            </form>
+
+            <hr>
+
+
+
+            <div class="layui-tab amain-content-tab" >
+
+
+
+                <div class="layui-tab-content" style="margin:0 -10px">
+                <div class="layui-tab-item layui-show">
+                    <div class="order-list">
+                    <form class="layui-form lottery-table-list-wrapper" >
+                        <blockquote class="layui-elem-quote">  <?php echo lang('A total of %s data were found',['<b>'.$lists->total().'</b>']) ?></blockquote>
+                        <table class="layui-table" lay-filter="listtable">
+                        <thead>
+                        <tr >
+                            <th lay-data="{field:'uid', width:40, fixed:'left'}"  >#</th>
+                            <th lay-data="{field:'prize_name',  minWidth:260, fixed:'left'}" >{:lang('Prize name')}</th>
+                            <th lay-data="{field:'participants_number', width:80}" >{:lang('Number of participation')}</th>
+                            <th lay-data="{field:'amount', width:80}" >{:lang('Purchase price')}</th>
+                            <th lay-data="{field:'user_name', width:120}"  >{:lang('m:s_l:Winner')}</th>
+                            <th lay-data="{field:'user_phone', width:120}"  >{:lang('Phone')}</th>
+                            <th lay-data="{field:'Department', width:120}" >{:lang('Department')}</th>
+                            <th lay-data="{field:'company', width:90}" >{:lang('Company')}</th>
+                            <th lay-data="{field:'buy_time', width:90}" >{:lang('Participation time')}</th>
+                            <th lay-data="{field:'end_time', width:90}" >{:lang('Lottery time')}</th>
+                            <th lay-data="{field:'exchange_time', width:100}"  width="60">{:lang('Redeemed')}?</th>
+                            <th lay-data="{field:'options', width:100, fixed:'right'}"  width="60">{:lang('Operate')}</th>
+                        </tr>
+                        </thead>
+                        <tbody class="lottery-table-list">
+                            {foreach name="lists" item="vo"}
+                            <tr class="lottery-item">
+                            <td  >{$vo.id}</td>
+                            <td >
+                                <div  class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>"> </div>
+                                <span class="layui-elip">【{:lang('Phase %d',[$vo['publication_number']])}】 {$vo.prize_name|iconv_substr=0,14} </span>
+                            </td>
+                            <td>{$vo.participants_number}</td>
+                            <td>{$vo.amount ? $vo.amount : '-' }</td>
+                            <td>{$vo.user_name}</td>
+                            <td>{$vo.user_phone}</td>
+                            <td>{$vo.Department}</td>
+                            <td><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></td>
+
+                            <td ><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{$vo.buy_time ? strtotime($vo.buy_time)*1000 : '-'}</span></td>
+                            <td ><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{$vo.lottery_time ? strtotime($vo.lottery_time)*1000 : '-'}</span></td>
+                            <td ><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{$vo.exchange_time ? strtotime($vo.exchange_time)*1000 : '-'}</span></td>
+                            <td >
+                                <a href="{:url('admin/ScoreWinners/detail',['id'=>$vo['id']])}"  data-title="{:lang('Details')} #{$vo.id}"  data-trigger="modal" title="{:lang('Details')} #{$vo.id}" class="ibtn layui-btn layui-btn-xs  {php}if($vo['exchange_time']){ echo
+                                'layui-btn-success';}{/php}  ">  {:lang('Details')}</a>
+                            </td>
+
+                            </tr>
+                            {/foreach}
+
+
+
+                        </tbody>
+                        </table>
+                    </form>
+                    </div>
+
+                </div>
+
+                </div>
             </div>
-         </div>
-          <!--分页-->
-          {$lists|raw}
+            <!--分页-->
+            {$lists|raw}
 
         </div>
     </div>
@@ -133,38 +133,45 @@
 {/block}
 {block name="script"}
 <script>
-initLayuiTable({ limit: {$pagesize} })
+    initLayuiTable({
+        limit: {
+            $pagesize
+        }
+    })
 
-function exportExcel(){
-  var form = $("#filter-form");
-  form.find("input[name='export']").val(1);
-  form.attr('target','_blank') ;
-  form.submit();
-  form.find("input[name='export']").val(0);
-  form.attr('target','_self') ;
-}
-function changeStatus(status){
-  var form = $("#filter-form");
-  form.find("input[name='status']").val(status);
-  form.submit();
-}
-function submitForm(){
-  var form = $("#filter-form");
-  var isExport = form.find("input[name='export']").val();
-  if(isExport!=1){
-    layer.load(1);
-  }
-}
-// initLayuiTable({ limit: {$pagesize} })
-laydate.render({
-  elem: '#filter_time'
-  ,range: '~' //或 range: '~' 来自定义分割字符
-  ,done: function(value, date, endDate){
+    function exportExcel() {
+        var form = $("#filter-form");
+        form.find("input[name='export']").val(1);
+        form.attr('target', '_blank');
+        form.submit();
+        form.find("input[name='export']").val(0);
+        form.attr('target', '_self');
+    }
 
- }
-});
-$(".layui-tab-title li a").click(function(){
-  layer.load(1);
-})
+    function changeStatus(status) {
+        var form = $("#filter-form");
+        form.find("input[name='status']").val(status);
+        form.submit();
+    }
+
+    function submitForm() {
+        var form = $("#filter-form");
+        var isExport = form.find("input[name='export']").val();
+        if (isExport != 1) {
+            layer.load(1);
+        }
+    }
+    // initLayuiTable({ limit: {$pagesize} })
+    laydate.render({
+        elem: '#filter_time',
+        range: '~' //或 range: '~' 来自定义分割字符
+            ,
+        done: function (value, date, endDate) {
+
+        }
+    });
+    $(".layui-tab-title li a").click(function () {
+        layer.load(1);
+    })
 </script>
 {/block}

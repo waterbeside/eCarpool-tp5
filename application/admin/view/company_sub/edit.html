@@ -11,16 +11,16 @@
             <div class="layui-form-item">
                 <label class="layui-form-label">所属公司</label>
                 <div class="layui-input-block">
-                  <select name="company_id" lay-verify="required">
-                     <option value="0">请选择公司</option>
-                   </select>
+                    <select name="company_id" lay-verify="required">
+                        <option value="0">请选择公司</option>
+                    </select>
                 </div>
             </div>
 
             <div class="layui-form-item layui-form-text">
                 <label class="layui-form-label">简介</label>
                 <div class="layui-input-block">
-                  <textarea name="remark" placeholder="请输入内容" class="layui-textarea">{$datas.remark}</textarea>
+                    <textarea name="remark" placeholder="请输入内容" class="layui-textarea">{$datas.remark}</textarea>
                 </div>
             </div>
 
@@ -45,18 +45,18 @@
     </div>
 </div>
 <script>
-  $.get("{:url('admin/company/public_lists')}",function(res){
-    var selectedid = "{$datas.company_id}";
-    if(res.code === 0){
-      var options = '<option value="0">请选择公司</option>';
-      $(res.data.lists).each(function(index, el) {
-        var selected = selectedid == el.id ? "selected" : "";
-        options += '<option value="'+el.id+'" '+selected+'>'+el.name+'</option>';
-      });
-      $("select[name='company_id']").html(options)
-      form.render();
-    }
-  })
-  form.render();
+$.get("{:url('admin/company/public_lists')}",function(res){
+var selectedid = "{$datas.company_id}";
+if(res.code === 0){
+    var options = '<option value="0">请选择公司</option>';
+    $(res.data.lists).each(function(index, el) {
+    var selected = selectedid == el.id ? "selected" : "";
+    options += '<option value="'+el.id+'" '+selected+'>'+el.name+'</option>';
+    });
+    $("select[name='company_id']").html(options)
+    form.render();
+}
+})
+form.render();
 
 </script>

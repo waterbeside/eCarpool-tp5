@@ -62,20 +62,20 @@
 {block name="script"}
 <script>
 PAGE_EXEC = {
-  init: function(){
-    initLayuiTable({ limit: {$pagesize} })
-    var $tableWrapper = $(".P-admin-user-list [lay-filter=LAY-table-1] .layui-table-box");
-    var $tableWrapper_main = $tableWrapper.find(".layui-table-main");
-    var $tr = $tableWrapper_main.find('tr');
-    var $tableWrapper_l = $tableWrapper.find(".layui-table-fixed .layui-table-body");
-    $tr.each(function(index, el) {
-      if($(el).find("[data-field=id]").find('.status_0').length > 0){
-        $(el).addClass('delete');
-        $(el).find('.ajax-delete').hide();
-        $tableWrapper_l.find('tr').eq(index).addClass('delete')
-      }
-    });
-  }
+    init: function(){
+        initLayuiTable({ limit: {$pagesize} })
+        var $tableWrapper = $(".P-admin-user-list [lay-filter=LAY-table-1] .layui-table-box");
+        var $tableWrapper_main = $tableWrapper.find(".layui-table-main");
+        var $tr = $tableWrapper_main.find('tr');
+        var $tableWrapper_l = $tableWrapper.find(".layui-table-fixed .layui-table-body");
+        $tr.each(function(index, el) {
+            if($(el).find("[data-field=id]").find('.status_0').length > 0){
+            $(el).addClass('delete');
+            $(el).find('.ajax-delete').hide();
+            $tableWrapper_l.find('tr').eq(index).addClass('delete')
+            }
+        });
+    }
 }
 PAGE_EXEC.init()
 

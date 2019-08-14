@@ -1,4 +1,5 @@
 <?php
+
 namespace app\npd\model;
 
 use think\Db;
@@ -13,7 +14,7 @@ class Nav extends Model
     protected $table = 't_nav';
     protected $pk = 'id';
 
-    
+
     /**
      * 自动生成时间
      * @return bool|string
@@ -30,43 +31,38 @@ class Nav extends Model
      */
     public function getChildrensId($pid = 0, $deep = 0)
     {
-      $data = $this->where([['pid','=', $pid]])->column('id');
-      foreach ($data as $key => $value) {
-        $children_next = $this->getChildrensId($value, $deep+1);
-        if($children_next){
-          $data = array_merge($data,$children_next);
+        $data = $this->where([['pid', '=', $pid]])->column('id');
+        foreach ($data as $key => $value) {
+            $children_next = $this->getChildrensId($value, $deep + 1);
+            if ($children_next) {
+                $data = array_merge($data, $children_next);
+            }
         }
-      }
-      return  $deep ? $data : array_merge($data,[intval($pid)]) ;
+        return  $deep ? $data : array_merge($data, [intval($pid)]);
     }
 
 
     /**
      * 取得列表，如果redis有
      * @param  integer $exp 过期时间
-     * @return array           
+     * @return array
      */
-    public function getList($exp = 3600 * 2 )
+    public function getList($exp = 3600 * 2)
     {
-      $rKey = "NPD:nav:list";
-      $redis = new RedisData();
-      $data = json_decode($redis->get($rKey),true);
-      if(!$data || $exp === -1){
-        $data  = $this->where([['is_delete','=',0]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
-        $redis->setex($rKey,$exp,json_encode($data));
-      }
-      return $data;
+        $rKey = "NPD:nav:list";
+        $redis = new RedisData();
+        $data = json_decode($redis->get($rKey), true);
+        if (!$data || $exp === -1) {
+            $data  = $this->where([['is_delete', '=', 0]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+            $redis->setex($rKey, $exp, json_encode($data));
+        }
+        return $data;
     }
 
 
     public function deleteListCache()
     {
-      $redis = new RedisData();
-      $redis->delete("NPD:nav:list");
-
+        $redis = new RedisData();
+        $redis->delete("NPD:nav:list");
     }
-
-
-
-
 }

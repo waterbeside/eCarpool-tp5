@@ -9,107 +9,107 @@
                 <form class="layui-form  " action="{:url('admin/Notice/edit')}" method="post" style="margin-right:15px;" id="editForm" data-jump-target="parent">
 
                     <div class="layui-row">
-                      <div class="layui-col-md8">
-                        <div class="col-wrapper">
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">标题</label>
-                              <div class="layui-input-block">
-                                  <input type="text" name="title" value="{$data.title}" required  lay-verify="required" placeholder="请输入标题" class="layui-input">
-                              </div>
-                          </div>
+                        <div class="layui-col-md8">
+                            <div class="col-wrapper">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">标题</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="title" value="{$data.title}" required  lay-verify="required" placeholder="请输入标题" class="layui-input">
+                                </div>
+                            </div>
 
 
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">内容</label>
-                              <div class="layui-input-block">
-                                  <textarea name="content" lay-verify="content" placeholder=""   id="content" class="layui-textarea" style="height:400px">{$data.content}</textarea>
-                              </div>
-                          </div>
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">所属APP</label>
-                              <div class="layui-input-block">
-                                {foreach name="$app_id_list" key='key' item="vo"}
-                                <input type="checkbox" name="app_id[{$key}]"  title="{$vo}" <?php echo in_array($key,$data['app_id_list']) ? "checked" : ""; ?> >
-                                {/foreach}
-                              </div>
-                          </div>
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">所属平台</label>
-                              <div class="layui-input-block">
-                                {foreach name="$platform_list" key='key' item="vo"}
-                                <?php if($key > 0){ ?>
-                                  <input type="checkbox" name="platform[{$key}]" title="{$vo}" <?php echo in_array($key,$data['platform_list']) ? "checked" : ""; ?> >
-                                <?php } ?>
-                                {/foreach}
-                              </div>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- /layui-col-md9  -->
-
-                      <div class="layui-col-md4">
-                        <div class="col-wrapper">
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">所属类型</label>
-                              <div class="layui-input-block">
-                                <select name="type">
-                                    <option value="0">选译类型</option>
-                                    {foreach name="$typeList" key='key' item="vo"}
-                                    <option value="{$key}" {if condition="$data.type==$key"} selected="selected"{/if}> {$vo}</option>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">内容</label>
+                                <div class="layui-input-block">
+                                    <textarea name="content" lay-verify="content" placeholder=""   id="content" class="layui-textarea" style="height:400px">{$data.content}</textarea>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">所属APP</label>
+                                <div class="layui-input-block">
+                                    {foreach name="$app_id_list" key='key' item="vo"}
+                                    <input type="checkbox" name="app_id[{$key}]"  title="{$vo}" <?php echo in_array($key,$data['app_id_list']) ? "checked" : ""; ?> >
                                     {/foreach}
-                                </select>
-                              </div>
-                          </div>
-                          <div class="layui-form-item">
-                              <label class="layui-form-label ">选择语言</label>
-                              <div class="layui-input-block">
-                                <select name="lang" lay-verify="required" lay-search>
-                                   <option value="0">请选择语言</option>
-                                 </select>
-                              </div>
-                          </div>
-
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">状态</label>
-                              <div class="layui-input-block">
-                                  <input type="radio" name="status" value="1" title="显示" {if condition="$data.status==1"} checked="checked"{/if}>
-                                  <input type="radio" name="status" value="0" title="隐藏" {if condition="$data.status==0"} checked="checked"{/if}>
-                              </div>
-                          </div>
-
-
-
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">排序</label>
-                              <div class="layui-input-block">
-                                  <input type="nubmer" name="sort" value="{$data.sort}" class="layui-input">
-                                  <div class="layui-form-mid layui-word-aux" >越大越前</div>
-                              </div>
-                          </div>
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">开始日</label>
-                              <div class="layui-input-block">
-                                  <input type="text" name="start_time"  value="{$data.start_time}"  class="layui-input " id="start_time" >
-                              </div>
-                          </div>
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">结束日</label>
-                              <div class="layui-input-block">
-                                  <input type="text" name="end_time"  value="{$data.end_time}"  class="layui-input " id="end_time" >
-                              </div>
-                          </div>
-
-                          <div class="layui-form-item">
-                              <label class="layui-form-label">强行显示</label>
-                              <div class="layui-input-block">
-                                  <input type="checkbox" name="is_refresh" value="1" lay-skin="switch" lay-text="是|否" >
-                                  <div class="layui-form-mid layui-word-aux" >开启后，即使客户之前点击“不再阅读”，也于本次更新强行弹出</div>
-                              </div>
-
-                          </div>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">所属平台</label>
+                                <div class="layui-input-block">
+                                    {foreach name="$platform_list" key='key' item="vo"}
+                                    <?php if($key > 0){ ?>
+                                    <input type="checkbox" name="platform[{$key}]" title="{$vo}" <?php echo in_array($key,$data['platform_list']) ? "checked" : ""; ?> >
+                                    <?php } ?>
+                                    {/foreach}
+                                </div>
+                            </div>
+                            </div>
                         </div>
-                      </div>
-                      <!-- /layui-col-md3  -->
+                        <!-- /layui-col-md9  -->
+
+                        <div class="layui-col-md4">
+                            <div class="col-wrapper">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">所属类型</label>
+                                <div class="layui-input-block">
+                                    <select name="type">
+                                        <option value="0">选译类型</option>
+                                        {foreach name="$typeList" key='key' item="vo"}
+                                        <option value="{$key}" {if condition="$data.type==$key"} selected="selected"{/if}> {$vo}</option>
+                                        {/foreach}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label ">选择语言</label>
+                                <div class="layui-input-block">
+                                    <select name="lang" lay-verify="required" lay-search>
+                                    <option value="0">请选择语言</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">状态</label>
+                                <div class="layui-input-block">
+                                    <input type="radio" name="status" value="1" title="显示" {if condition="$data.status==1"} checked="checked"{/if}>
+                                    <input type="radio" name="status" value="0" title="隐藏" {if condition="$data.status==0"} checked="checked"{/if}>
+                                </div>
+                            </div>
+
+
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">排序</label>
+                                <div class="layui-input-block">
+                                    <input type="nubmer" name="sort" value="{$data.sort}" class="layui-input">
+                                    <div class="layui-form-mid layui-word-aux" >越大越前</div>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">开始日</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="start_time"  value="{$data.start_time}"  class="layui-input " id="start_time" >
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">结束日</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="end_time"  value="{$data.end_time}"  class="layui-input " id="end_time" >
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">强行显示</label>
+                                <div class="layui-input-block">
+                                    <input type="checkbox" name="is_refresh" value="1" lay-skin="switch" lay-text="是|否" >
+                                    <div class="layui-form-mid layui-word-aux" >开启后，即使客户之前点击“不再阅读”，也于本次更新强行弹出</div>
+                                </div>
+
+                            </div>
+                            </div>
+                        </div>
+                        <!-- /layui-col-md3  -->
                     </div>
 
 
@@ -136,69 +136,69 @@
 PAGE_EXEC = {
 
 
-  data: {
-    langs:[],
-    lang:'{$data.lang}'
-  },
+    data: {
+        langs:[],
+        lang:'{$data.lang}'
+    },
 
-  init: function(){
+init: function(){
     var _this = this;
     this.getLangs();
     form.render();
 
     element.init();
-  },
-  getLangs: function(success){
-      var _this = this;
-      $.get("{:url('admin/i18n/public_langs')}",function(res){
+},
+getLangs: function(success){
+    var _this = this;
+    $.get("{:url('admin/i18n/public_langs')}",function(res){
         if(res.code === 0){
-          _this.data.langs = res.data.lists;
-          _this.renderLangs(res.data.lists);
-          if(typeof(success)=="function"){
+        _this.data.langs = res.data.lists;
+        _this.renderLangs(res.data.lists);
+        if(typeof(success)=="function"){
             success(res);
-          }
-          form.render();
         }
-      })
+        form.render();
+        }
+    })
 
-  },
+},
 
-  renderLangs: function(listData){
+renderLangs: function(listData){
     var options = '<option value="0">请选择语言</option>';
     var lang = this.data.lang;
 
     $(listData).each(function(index, el) {
-      var selected = el.code == lang ? "selected" : '';
-      options += '<option value="'+el.code+'"  '+selected+'>【'+el.code +"】"+el.name+'</option>';
+    var selected = el.code == lang ? "selected" : '';
+    options += '<option value="'+el.code+'"  '+selected+'>【'+el.code +"】"+el.name+'</option>';
     });
     $("#editForm select[name='lang']").html(options)
-  },
+},
 
 
 }
 
 
 $(function() {
-  laydate.render({
-    elem: '#start_time'
-    ,value: '{$data.start_time}'
-    ,type: 'datetime'
-  });
-  laydate.render({
-    elem: '#end_time'
-    ,value: '{$data.end_time}'
-    ,type: 'datetime'
-  });
+    laydate.render({
+        elem: '#start_time'
+        ,value: '{$data.start_time}'
+        ,type: 'datetime'
+    });
+    laydate.render({
+        elem: '#end_time'
+        ,value: '{$data.end_time}'
+        ,type: 'datetime'
+    });
     var photoListItem,
         uploadImage;
-  /*  var ue = UE.getEditor('content',{
-      //这里可以选择自己需要的工具按钮名称,此处仅选择如下五个
-      toolbars:[['undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript','|','justifyleft','justifyright','justifycenter','|','blockquote','pasteplain','inserttable','autotypeset','removeformat']],
-      wordCount:true,
-      topOffset:0,
-      maximumWords:8000,
-      //默认的编辑区域高度
-      initialFrameHeight:300,
+/*  var ue = UE.getEditor('content',{
+    //这里可以选择自己需要的工具按钮名称,此处仅选择如下五个
+    toolbars:[['undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript','|','justifyleft','justifyright','justifycenter','|','blockquote','pasteplain','inserttable','autotypeset','removeformat']],
+    wordCount:true,
+    topOffset:0,
+    maximumWords:8000,
+    //默认的编辑区域高度
+    initialFrameHeight:300,
     })*/
     PAGE_EXEC.init();
 

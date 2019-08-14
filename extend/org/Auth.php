@@ -149,9 +149,8 @@ class Auth
         }
         $list = []; //保存验证通过的规则名
         if ('url' == $mode) {
-          // $REQUEST = unserialize(strtolower(serialize($this->request->param())));
+            // $REQUEST = unserialize(strtolower(serialize($this->request->param())));
             $REQUEST = unserialize(strtolower(serialize(Request::param())));
-
         }
 
         foreach ($authList as $auth) {
@@ -216,7 +215,7 @@ class Auth
     protected function getAuthList($uid, $type)
     {
         static $_authList = []; //保存用户验证通过的权限列表
-        $t = implode(',', (array)$type);
+        $t = implode(',', (array) $type);
         if (isset($_authList[$uid . $t])) {
             return $_authList[$uid . $t];
         }
@@ -236,8 +235,8 @@ class Auth
             return [];
         }
         $map = [
-            ['id','in',$ids],
-            ['type','=',$type]
+            ['id', 'in', $ids],
+            ['type', '=', $type]
             // 'id'   => ['in', $ids],
             // 'type' => $type
         ];

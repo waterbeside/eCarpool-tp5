@@ -5,36 +5,36 @@
 
 
     <table class="layui-table">
-      <tbody>
+        <tbody>
 
-        <tr>
-          <td class="td-label" width="100">司机</td>
-          <td>{$data.d_name}</td>
-        </tr>
-        <tr>
-          <td class="td-label">乘客</td>
-          <td>{$data.p_name}</td>
-        </tr>
-        <tr>
-          <td class="td-label">起点</td>
-          <td>{$data.s_addressname}</td>
-        </tr>
-        <tr>
-          <td class="td-label">终点</td>
-          <td>{$data.e_addressname}</td>
-        </tr>
-        <tr>
-          <td class="td-label">时间</td>
-          <td>{$data.info_time}</td>
-        </tr>
-      </tbody>
+            <tr>
+                <td class="td-label" width="100">司机</td>
+                <td>{$data.d_name}</td>
+            </tr>
+            <tr>
+                <td class="td-label">乘客</td>
+                <td>{$data.p_name}</td>
+            </tr>
+            <tr>
+                <td class="td-label">起点</td>
+                <td>{$data.s_addressname}</td>
+            </tr>
+            <tr>
+                <td class="td-label">终点</td>
+                <td>{$data.e_addressname}</td>
+            </tr>
+            <tr>
+                <td class="td-label">时间</td>
+                <td>{$data.info_time}</td>
+            </tr>
+        </tbody>
     </table>
     <div class="blank50"></div>
     <?php if($data["status"]===0){ ?>
     <div class="layui-btn-container" style="text-align: right; margin-right:-8px;">
 
-      <a onclick="RESOLVE_INIT.failOperate(-1,{$data.wpid})" href="javascript:void(0);" class="layui-btn layui-btn-warm " ><i class="layui-icon">&#xe69c;</i>处理为失败</a>
-      <a onclick="RESOLVE_INIT.failOperate(1,{$data.wpid})" href="javascript:void(0);" class="layui-btn layui-btn-success "><i class="layui-icon ">&#xe6af;</i>处理为成功</a>
+        <a onclick="RESOLVE_INIT.failOperate(-1,{$data.wpid})" href="javascript:void(0);" class="layui-btn layui-btn-warm " ><i class="layui-icon">&#xe69c;</i>处理为失败</a>
+        <a onclick="RESOLVE_INIT.failOperate(1,{$data.wpid})" href="javascript:void(0);" class="layui-btn layui-btn-success "><i class="layui-icon ">&#xe6af;</i>处理为成功</a>
     </div>
     <?php } ?>
 
@@ -44,16 +44,16 @@
 
 <script>
 RESOLVE_INIT = {
-  data:{
-    id:<?php echo $data['wpid'] ?  $data['wpid']: 0; ?>,
-  },
-  init:function(){
+    data:{
+        id:<?php echo $data['wpid'] ?  $data['wpid']: 0; ?>,
+    },
+    init:function(){
 
-  },
-  failOperate:function(status,id){
-    failOperate(status,id);
-    return false;
-  }
+    },
+    failOperate:function(status,id){
+        failOperate(status,id);
+        return false;
+    }
 
 }
 RESOLVE_INIT.init();

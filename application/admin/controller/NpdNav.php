@@ -1,6 +1,6 @@
 <?php
-namespace app\admin\controller;
 
+namespace app\admin\controller;
 
 use app\npd\model\Nav as NavModel;
 use app\admin\controller\AdminBase;
@@ -12,6 +12,7 @@ use my\Tree;
  * Class NpdNav
  * @package app\admin\controller
  */
+
 class NpdNav extends AdminBase
 {
 
@@ -28,23 +29,23 @@ class NpdNav extends AdminBase
      * 导航菜单管理
      * @return mixed
      */
-    public function index($json=0,$recycled=0)
+    public function index($json = 0, $recycled = 0)
     {
-      if($json){
-        if(!$recycled){
-          $data = $this->nav_model->getList(1);
-        }else{
-          $data  = $this->nav_model->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+        if ($json) {
+            if (!$recycled) {
+                $data = $this->nav_model->getList(1);
+            } else {
+                $data  = $this->nav_model->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+            }
+            $tree = new Tree();
+            $tree->init($data);
+            $tree->parentid_name = 'pid';
+            $treeData = $tree->get_tree_array(0, 'id');
+            $this->jsonReturn(0, $treeData);
+        } else {
+            $this->assign('recycled', $recycled);
+            return $this->fetch();
         }
-        $tree = new Tree();
-        $tree->init($data);
-        $tree->parentid_name = 'pid';
-        $treeData = $tree->get_tree_array(0,'id');
-        $this->jsonReturn(0,$treeData);
-      }else{
-        $this->assign('recycled', $recycled);
-        return $this->fetch();
-      }
     }
 
     /**
@@ -54,33 +55,33 @@ class NpdNav extends AdminBase
      */
     public function add($pid = '')
     {
-      if ($this->request->isPost()) {
-        $data            = $this->request->param();
-        $validate_result = $this->validate($data, 'app\npd\validate\Nav');
-        if ($validate_result !== true) {
-          $this->jsonReturn(-1,$validate_result);
-        }
-        if(!isset($data['pid']) || !is_numeric($data['pid'])){
-          $data['pid'] = 0 ;
-        }
-        if ($this->nav_model->allowField(true)->save($data)) {
-          $this->nav_model->deleteListCache();
-          $this->updateDataVersion($this->cacheVersionKey);
-          $this->log('添加导航菜单成功',0);
-          $this->jsonReturn(0,'保存成功');
+        if ($this->request->isPost()) {
+            $data            = $this->request->param();
+            $validate_result = $this->validate($data, 'app\npd\validate\Nav');
+            if ($validate_result !== true) {
+                $this->jsonReturn(-1, $validate_result);
+            }
+            if (!isset($data['pid']) || !is_numeric($data['pid'])) {
+                $data['pid'] = 0;
+            }
+            if ($this->nav_model->allowField(true)->save($data)) {
+                $this->nav_model->deleteListCache();
+                $this->updateDataVersion($this->cacheVersionKey);
+                $this->log('添加导航菜单成功', 0);
+                $this->jsonReturn(0, '保存成功');
+            } else {
+                $this->log('添加导航菜单失败', -1);
+                $this->jsonReturn(-1, '保存失败');
+            }
         } else {
-          $this->log('添加导航菜单失败',-1);
-          $this->jsonReturn(-1,'保存失败');
+            $nav_level_list       = $this->nav_model->where('is_delete', 0)->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
+            foreach ($nav_level_list as $key => $value) {
+                $nav_level_list[$key]['pid'] = $value['pid'];
+            }
+            $nav_level_list = array2level($nav_level_list);
+            $this->assign('nav_level_list', $nav_level_list);
+            return $this->fetch('add', ['pid' => $pid]);
         }
-      }else{
-        $nav_level_list       = $this->nav_model->where('is_delete',0)->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
-        foreach ($nav_level_list as $key => $value) {
-          $nav_level_list[$key]['pid'] = $value['pid'];
-        }
-        $nav_level_list = array2level($nav_level_list);
-        $this->assign('nav_level_list', $nav_level_list);
-        return $this->fetch('add', ['pid' => $pid]);
-      }
     }
 
 
@@ -92,40 +93,39 @@ class NpdNav extends AdminBase
      */
     public function edit($id)
     {
-      if ($this->request->isPost()) {
-        $data            = $this->request->param();
-        $validate_result = $this->validate($data, 'app\npd\validate\Nav');
+        if ($this->request->isPost()) {
+            $data            = $this->request->param();
+            $validate_result = $this->validate($data, 'app\npd\validate\Nav');
 
-        if ($validate_result !== true) {
-          $this->jsonReturn(-1,$validate_result);
-        }
+            if ($validate_result !== true) {
+                $this->jsonReturn(-1, $validate_result);
+            }
 
-        $children = $this->nav_model->getChildrensId($id);
-        if (in_array($data['pid'], $children)) {
-          $this->jsonReturn(-1,'不能移动到自己的子菜单');
+            $children = $this->nav_model->getChildrensId($id);
+            if (in_array($data['pid'], $children)) {
+                $this->jsonReturn(-1, '不能移动到自己的子菜单');
+            } else {
+                if ($this->nav_model->allowField(true)->save($data, $id) !== false) {
+                    $this->nav_model->deleteListCache();
+                    $this->updateDataVersion($this->cacheVersionKey);
+                    $this->log('更新导航菜单成功', 0);
+                    $this->jsonReturn(0, '更新成功');
+                } else {
+                    $this->log('更新导航菜单失败', -1);
+                    $this->jsonReturn(-1, '更新失败');
+                }
+            }
         } else {
-          if ($this->nav_model->allowField(true)->save($data, $id) !== false) {
-            $this->nav_model->deleteListCache();
-            $this->updateDataVersion($this->cacheVersionKey);
-            $this->log('更新导航菜单成功',0);
-            $this->jsonReturn(0,'更新成功');
-          } else {
-            $this->log('更新导航菜单失败',-1);
-            $this->jsonReturn(-1,'更新失败');
-          }
-        }
+            $nav_level_list       = $this->nav_model->where('is_delete', 0)->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
+            foreach ($nav_level_list as $key => $value) {
+                $nav_level_list[$key]['pid'] = $value['pid'];
+            }
+            $nav_level_list = array2level($nav_level_list);
+            $this->assign('nav_level_list', $nav_level_list);
 
-      }else{
-        $nav_level_list       = $this->nav_model->where('is_delete',0)->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
-        foreach ($nav_level_list as $key => $value) {
-          $nav_level_list[$key]['pid'] = $value['pid'];
+            $data = $this->nav_model->find($id);
+            return $this->fetch('edit', ['data' => $data]);
         }
-        $nav_level_list = array2level($nav_level_list);
-        $this->assign('nav_level_list', $nav_level_list);
-
-        $data = $this->nav_model->find($id);
-        return $this->fetch('edit', ['data' => $data]);
-      }
     }
 
 
@@ -136,16 +136,15 @@ class NpdNav extends AdminBase
      */
     public function delete($id)
     {
-      if($this->nav_model->where('id', $id)->update(['is_delete' => 1])){
-        $this->nav_model->deleteListCache();
-        $this->updateDataVersion($this->cacheVersionKey);
-        $this->log('删除导航菜单成功',0);
-        $this->jsonReturn(0,'删除成功');
-      }else{
-        $this->log('删除导航菜单失败',-1);
-        $this->jsonReturn(-1,'删除失败');
-      }
-      
+        if ($this->nav_model->where('id', $id)->update(['is_delete' => 1])) {
+            $this->nav_model->deleteListCache();
+            $this->updateDataVersion($this->cacheVersionKey);
+            $this->log('删除导航菜单成功', 0);
+            $this->jsonReturn(0, '删除成功');
+        } else {
+            $this->log('删除导航菜单失败', -1);
+            $this->jsonReturn(-1, '删除失败');
+        }
     }
 
 
@@ -155,24 +154,14 @@ class NpdNav extends AdminBase
      */
     public function recycle($id)
     {
-      if($this->nav_model->where('id', $id)->update(['is_delete' => 0])){
-        $this->nav_model->deleteListCache();
-        $this->updateDataVersion($this->cacheVersionKey);
-        $this->log('还原导航菜单成功',0);
-        $this->jsonReturn(0,'还原成功');
-      }else{
-        $this->log('还原导航菜单失败',-1);
-        $this->jsonReturn(-1,'还原失败');
-      }
-
+        if ($this->nav_model->where('id', $id)->update(['is_delete' => 0])) {
+            $this->nav_model->deleteListCache();
+            $this->updateDataVersion($this->cacheVersionKey);
+            $this->log('还原导航菜单成功', 0);
+            $this->jsonReturn(0, '还原成功');
+        } else {
+            $this->log('还原导航菜单失败', -1);
+            $this->jsonReturn(-1, '还原失败');
+        }
     }
-
-
-
-
-
-
-
-
-
 }

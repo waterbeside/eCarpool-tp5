@@ -1,9 +1,12 @@
 <?php
+
 namespace my;
+
 /**
  * 通用的树型类，可以生成任何树型结构
  */
-class Tree {
+class Tree
+{
     /**
      * 生成树型结构所需要的2维数组
      * @var array
@@ -33,7 +36,8 @@ class Tree {
      *      7 => array('id'=>'7','parentid'=>3,'name'=>'三级栏目二')
      *      )
      */
-    public function init($arr = array()) {
+    public function init($arr = array())
+    {
         $this->arr = $arr;
         $this->ret = '';
         return is_array($arr);
@@ -43,16 +47,19 @@ class Tree {
      * @param int
      * @return array
      */
-    public function get_parent($myid) {
+    public function get_parent($myid)
+    {
         $newarr = array();
-        if (!isset($this->arr[$myid]))
+        if (!isset($this->arr[$myid])) {
             return false;
+        }
         $pid = $this->arr[$myid][$this->parentid_name];
         $pid = $this->arr[$pid][$this->parentid_name];
         if (is_array($this->arr)) {
             foreach ($this->arr as $id => $a) {
-                if ($a[$this->parentid_name] == $pid)
+                if ($a[$this->parentid_name] == $pid) {
                     $newarr[$id] = $a;
+                }
             }
         }
         return $newarr;
@@ -62,13 +69,15 @@ class Tree {
      * @param int
      * @return array
      */
-    public function get_child($myid) {
+    public function get_child($myid)
+    {
         $a = $newarr = array();
         if (is_array($this->arr)) {
             foreach ($this->arr as $id => $a) {
-                if ($a[$this->parentid_name] == $myid)
+                if ($a[$this->parentid_name] == $myid) {
                     //$newarr[$id] = $a;
                     $newarr[] = $a;
+                }
             }
         }
 
@@ -79,10 +88,12 @@ class Tree {
      * @param int
      * @return array
      */
-    public function get_pos($myid, &$newarr) {
+    public function get_pos($myid, &$newarr)
+    {
         $a = array();
-        if (!isset($this->arr[$myid]))
+        if (!isset($this->arr[$myid])) {
             return false;
+        }
         $newarr[] = $this->arr[$myid];
         $pid = $this->arr[$myid][$this->parentid_name];
         if (isset($this->arr[$pid])) {
@@ -103,7 +114,8 @@ class Tree {
      * @param int 被选中的ID，比如在做树型下拉框的时候需要用到
      * @return string
      */
-    public function get_tree($myid, $str, $sid = 0, $adds = '', $str_group = '') {
+    public function get_tree($myid, $str, $sid = 0, $adds = '', $str_group = '')
+    {
         $number = 1;
         //一级栏目
         $child = $this->get_child($myid);
@@ -136,7 +148,7 @@ class Tree {
      * @param int 被选中的ID，比如在做树型下拉框的时候需要用到
      * @return string
      */
-/*    public function get_tree_array($myid, $str, $sid = 0, $adds = '', $str_group = '') {
+    /*    public function get_tree_array($myid, $str, $sid = 0, $adds = '', $str_group = '') {
         $retarray = array();
         //一级栏目数组
         $child = $this->get_child($myid);
@@ -151,7 +163,7 @@ class Tree {
         }
         return $retarray;
     }*/
-/**
+    /**
      * 得到树型结构数组
      * @param int ID，表示获得这个ID下的所有子级
      * @param string ID字段名。
@@ -159,7 +171,8 @@ class Tree {
      * @param int 用于記錄遞歸次數，一般不重新設定
      * @return array
      */
-    public function get_tree_array($myid,$idField="id",$deep=0,$deepMark=0) {
+    public function get_tree_array($myid, $idField = "id", $deep = 0, $deepMark = 0)
+    {
         $retarray = array();
         //一级栏目数组
         $child = $this->get_child($myid);
@@ -167,24 +180,24 @@ class Tree {
         if (is_array($child)) {
             //数组长度
             $total = count($child);
-            if($total>0){
+            if ($total > 0) {
                 foreach ($child as $key => $value) {
                     //@extract($value);
                     $retarray[$key] = $value;
-                    $deepMark_n = $deepMark+1;
-                    if($deep==0 || $deep>$deepMark){
-                        $retarray[$key]["children"] = $this->get_tree_array($value[$idField],$idField,$deep,$deepMark_n);
+                    $deepMark_n = $deepMark + 1;
+                    if ($deep == 0 || $deep > $deepMark) {
+                        $retarray[$key]["children"] = $this->get_tree_array($value[$idField], $idField, $deep, $deepMark_n);
                     }
                 }
             }
-
         }
         return $retarray;
     }
     /**
      * 同上一方法类似,但允许多选
      */
-    public function get_tree_multi($myid, $str, $sid = 0, $adds = '') {
+    public function get_tree_multi($myid, $str, $sid = 0, $adds = '')
+    {
         $number = 1;
         $child = $this->get_child($myid);
         if (is_array($child)) {
@@ -215,7 +228,8 @@ class Tree {
      * @param integer $sid  默认选中
      * @param integer $adds 前缀
      */
-    public function get_tree_category($myid, $str, $str2, $sid = 0, $adds = '') {
+    public function get_tree_category($myid, $str, $str2, $sid = 0, $adds = '')
+    {
         $number = 1;
         $child = $this->get_child($myid);
         if (is_array($child)) {
@@ -254,7 +268,8 @@ class Tree {
      * @param $currentlevel 计算当前层级，递归使用 适用改函数时不需要用该参数
      * @param $recursion 递归使用 外部调用时为FALSE
      */
-    function get_treeview($myid, $effected_id = 'example', $str = "<span class='file'>\$name</span>", $str2 = "<span class='folder'>\$name</span>", $showlevel = 0, $style = 'filetree ', $currentlevel = 1, $recursion = FALSE) {
+    public function get_treeview($myid, $effected_id = 'example', $str = "<span class='file'>\$name</span>", $str2 = "<span class='folder'>\$name</span>", $showlevel = 0, $style = 'filetree ', $currentlevel = 1, $recursion = false)
+    {
         $child = $this->get_child($myid);
         if (!defined('EFFECTED_INIT')) {
             $effected = ' id="' . $effected_id . '"';
@@ -263,21 +278,23 @@ class Tree {
             $effected = '';
         }
         $placeholder = '<ul><li><span class="placeholder"></span></li></ul>';
-        if (!$recursion)
-            $this->str .='<ul' . $effected . '  class="' . $style . '">';
+        if (!$recursion) {
+            $this->str .= '<ul' . $effected . '  class="' . $style . '">';
+        }
         foreach ($child as $id => $a) {
             @extract($a);
-            if ($showlevel > 0 && $showlevel == $currentlevel && $this->get_child($id))
+            if ($showlevel > 0 && $showlevel == $currentlevel && $this->get_child($id)) {
                 $folder = 'hasChildren'; //如设置显示层级模式@2011.07.01
+            }
             $floder_status = isset($folder) ? ' class="' . $folder . '"' : '';
             $this->str .= $recursion ? '<ul><li' . $floder_status . ' id=\'' . $id . '\'>' : '<li' . $floder_status . ' id=\'' . $id . '\'>';
-            $recursion = FALSE;
+            $recursion = false;
             //判断是否为终极栏目
             if ($child == 1) {
                 eval("\$nstr = \"$str2\";");
                 $this->str .= $nstr;
                 if ($showlevel == 0 || ($showlevel > 0 && $showlevel > $currentlevel)) {
-                    $this->get_treeview($id, $effected_id, $str, $str2, $showlevel, $style, $currentlevel + 1, TRUE);
+                    $this->get_treeview($id, $effected_id, $str, $str2, $showlevel, $style, $currentlevel + 1, true);
                 } elseif ($showlevel > 0 && $showlevel == $currentlevel) {
                     $this->str .= $placeholder;
                 }
@@ -285,10 +302,11 @@ class Tree {
                 eval("\$nstr = \"$str\";");
                 $this->str .= $nstr;
             }
-            $this->str .=$recursion ? '</li></ul>' : '</li>';
+            $this->str .= $recursion ? '</li></ul>' : '</li>';
         }
-        if (!$recursion)
-            $this->str .='</ul>';
+        if (!$recursion) {
+            $this->str .= '</ul>';
+        }
         return $this->str;
     }
     /**
@@ -296,10 +314,11 @@ class Tree {
      * Enter description here ...
      * @param unknown_type $myid
      */
-    public function creat_sub_json($myid, $str = '') {
+    public function creat_sub_json($myid, $str = '')
+    {
         $sub_cats = $this->get_child($myid);
         $n = 0;
-        if (is_array($sub_cats))
+        if (is_array($sub_cats)) {
             foreach ($sub_cats as $c) {
                 $data[$n]['id'] = iconv(CHARSET, 'utf-8', $c['catid']);
                 if ($this->get_child($c['catid'])) {
@@ -317,9 +336,12 @@ class Tree {
                 }
                 $n++;
             }
+        }
+
         return json_encode($data);
     }
-    private function have($list, $item) {
-        return(strpos(',,' . $list . ',', ',' . $item . ','));
+    private function have($list, $item)
+    {
+        return (strpos(',,' . $list . ',', ',' . $item . ','));
     }
 }

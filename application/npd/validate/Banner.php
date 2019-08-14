@@ -1,4 +1,5 @@
 <?php
+
 namespace app\npd\validate;
 
 use think\Validate;

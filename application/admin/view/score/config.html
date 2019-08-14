@@ -10,81 +10,81 @@
         
         </ul>
         <div class="layui-tab-content">
-          <form class="layui-form layui-form-pane" action="{:url('admin/Score/config')}" method="get">
-              <div class="layui-inline">
-                  <div class="layui-input-inline">
-                      <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
-                      <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择显示区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary"
-                        data-target="region_id:id" data-tips="选择显示区域" data-title="选择显示区域" data-tips-position="3" data-auto-submit="true"   >
-                        {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择显示区域"}
-                      </a>
-                  </div>
-              </div>
+            <form class="layui-form layui-form-pane" action="{:url('admin/Score/config')}" method="get">
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
+                        <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','选择显示区域');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary"
+                            data-target="region_id:id" data-tips="选择显示区域" data-title="选择显示区域" data-tips-position="3" data-auto-submit="true"   >
+                            {$regionData ? str_replace(',',' / ',$regionData['fullname']) : "选择显示区域"}
+                        </a>
+                    </div>
+                </div>
 
-          </form>
+            </form>
 
-          <div class="blank20"></div>
-          <?php if(!$data){ ?>
-             <blockquote class="layui-elem-quote layui-elem-quote-warning">
-               <p> 该"地区/部门"{$regionData ? "【".str_replace(',',' / ',$regionData['fullname'])."】" : ""}未有单独进行积分配置, </p>
-               <p> 点击保存即生成. </p>
-             </blockquote>
-          <?php } ?>
-          <form class="layui-form form-container" action="{:url('admin/Score/config')}" method="post">
-            <input type="hidden" name="region_id" value="{$region_id}" />
-            <input type="hidden" name="id" value="{$res.id}" />
-            <table class="layui-table">
-              <tbody>
-                <tr>
-                  <td>允许下单日 </td>
-                  <td>
-                    <input type="text" name="order_date" value="{$data.order_date_str}" required  lay-verify="required" placeholder="每月允许下单日" class="layui-input">
-                    <div class="layui-form-mid layui-word-aux">每月允许下单日，多个日期请用英文","格开，例 3,4,5,6 </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td>兑换日 </td>
-                  <td>
-                    <input type="text" name="exchange_date" value="{$data.exchange_date_str}" required  lay-verify="required" placeholder="每月兑换日" class="layui-input">
-                    <div class="layui-form-mid layui-word-aux">每月兑换日","格开，例 18,19,20 </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td>启用积分兑换 </td>
-                  <td>
-                    <input type="checkbox" name="order_switch" value="1" lay-skin="switch" lay-text="开启|禁用" <?php echo isset($data['order_switch']) && $data['order_switch']==1 ? 'checked="checked"':''; ?> >
-                  </td>
-                </tr>
-                <tr>
-                  <td>启用积分抽奖 </td>
-                  <td>
-                    <input type="checkbox" name="lottery_integral_switch" value="1" lay-skin="switch" lay-text="开启|禁用" <?php echo isset($data['lottery_integral_switch']) && $data['lottery_integral_switch']==1 ? 'checked="checked"': ''; ?> >
-                  </td>
-                </tr>
-                <tr>
-                  <td>积分抽奖价</td>
-                  <td>
-                    <input type="text" name="lottery_integral_price" value="{$data.lottery_integral_price ? $data.lottery_integral_price : ''}" required  lay-verify="required" placeholder="每次积分抽奖的单价" class="layui-input">
-                    <div class="layui-form-mid layui-word-aux">每次积分抽奖的单价 </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td>启用实物抽奖 </td>
-                  <td>
-                    <input type="checkbox" name="lottery_material_switch" value="1" lay-skin="switch" lay-text="开启|禁用" <?php echo isset($data['lottery_material_switch']) && $data['lottery_material_switch']==1 ? 'checked="checked"': ''; ?> >
-                  </td>
-                </tr>
-              </tbody>
+            <div class="blank20"></div>
+            <?php if(!$data){ ?>
+                <blockquote class="layui-elem-quote layui-elem-quote-warning">
+                <p> 该"地区/部门"{$regionData ? "【".str_replace(',',' / ',$regionData['fullname'])."】" : ""}未有单独进行积分配置, </p>
+                <p> 点击保存即生成. </p>
+                </blockquote>
+            <?php } ?>
+            <form class="layui-form form-container" action="{:url('admin/Score/config')}" method="post">
+                <input type="hidden" name="region_id" value="{$region_id}" />
+                <input type="hidden" name="id" value="{$res.id}" />
+                <table class="layui-table">
+                <tbody>
+                    <tr>
+                    <td>允许下单日 </td>
+                    <td>
+                        <input type="text" name="order_date" value="{$data.order_date_str}" required  lay-verify="required" placeholder="每月允许下单日" class="layui-input">
+                        <div class="layui-form-mid layui-word-aux">每月允许下单日，多个日期请用英文","格开，例 3,4,5,6 </div>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>兑换日 </td>
+                    <td>
+                        <input type="text" name="exchange_date" value="{$data.exchange_date_str}" required  lay-verify="required" placeholder="每月兑换日" class="layui-input">
+                        <div class="layui-form-mid layui-word-aux">每月兑换日","格开，例 18,19,20 </div>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>启用积分兑换 </td>
+                    <td>
+                        <input type="checkbox" name="order_switch" value="1" lay-skin="switch" lay-text="开启|禁用" <?php echo isset($data['order_switch']) && $data['order_switch']==1 ? 'checked="checked"':''; ?> >
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>启用积分抽奖 </td>
+                    <td>
+                        <input type="checkbox" name="lottery_integral_switch" value="1" lay-skin="switch" lay-text="开启|禁用" <?php echo isset($data['lottery_integral_switch']) && $data['lottery_integral_switch']==1 ? 'checked="checked"': ''; ?> >
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>积分抽奖价</td>
+                    <td>
+                        <input type="text" name="lottery_integral_price" value="{$data.lottery_integral_price ? $data.lottery_integral_price : ''}" required  lay-verify="required" placeholder="每次积分抽奖的单价" class="layui-input">
+                        <div class="layui-form-mid layui-word-aux">每次积分抽奖的单价 </div>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>启用实物抽奖 </td>
+                    <td>
+                        <input type="checkbox" name="lottery_material_switch" value="1" lay-skin="switch" lay-text="开启|禁用" <?php echo isset($data['lottery_material_switch']) && $data['lottery_material_switch']==1 ? 'checked="checked"': ''; ?> >
+                    </td>
+                    </tr>
+                </tbody>
             </table>
 
 
-              <div class="blank20"></div>
+            <div class="blank20"></div>
 
-              <div class="layui-btn-container layui-row" style="text-align: right">
-                  <button class="layui-btn layui-btn-lg" lay-submit lay-filter="*">保存</button>
-              </div>
+            <div class="layui-btn-container layui-row" style="text-align: right">
+                <button class="layui-btn layui-btn-lg" lay-submit lay-filter="*">保存</button>
+            </div>
 
-          </form>
+        </form>
 
         </div>
     </div>

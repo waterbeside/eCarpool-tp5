@@ -33,15 +33,15 @@
                         <tr>
                             <td>{$vo.id}</td>
                             <td>
-                              {$vo.name}
+                                {$vo.name}
                             </td>
                             <td>
-                              {$vo.domain}
+                                {$vo.domain}
                             </td>
                             <td>{php}echo $vo['is_ssl']==1 ? '<b class="text-red">是</b>' : '<b class="text-gray">否</b>';{/php}</td>
                             <td>
-                              <a href="{:url('admin/Apps/edit',['id'=>$vo['id']])}"  data-title="編輯 #{$vo.id}"  data-trigger="modal" title="編輯 #{$vo.id}" class=" layui-btn   layui-btn-xs    "><i class="layui-icon">&#xe642;</i> 編輯</a>
-                              <!-- <a href="{:url('admin/Apps/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a> -->
+                                <a href="{:url('admin/Apps/edit',['id'=>$vo['id']])}"  data-title="編輯 #{$vo.id}"  data-trigger="modal" title="編輯 #{$vo.id}" class=" layui-btn   layui-btn-xs    "><i class="layui-icon">&#xe642;</i> 編輯</a>
+                                <!-- <a href="{:url('admin/Apps/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a> -->
                             </td>
                         </tr>
                         {/foreach}

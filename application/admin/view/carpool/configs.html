@@ -2,96 +2,96 @@
 {block name="body"}
 <div class="amain-body">
 
-  <!--tab标签-->
-  <div class="layui-tab layui-tab-brief">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
 
-    <ul class="  amain-tool-bar">
-      <li class="layui-this"><a href="{:url('admin/carpool/configs')}">拼车设置</a></li>
-    </ul>
+        <ul class="  amain-tool-bar">
+            <li class="layui-this"><a href="{:url('admin/carpool/configs')}">拼车设置</a></li>
+        </ul>
 
-    <div class="layui-tab-content">
+        <div class="layui-tab-content">
 
-      <div class="blank20"></div>
-     
+        <div class="blank20"></div>
+        
 
 
-      <div class="layui-card">
-        <div class="layui-card-header">
-            <a class="layui-btn  layui-btn-success layui-btn-sm " style="float:right; margin:4px;" onclick="PAGE_EXEC.add_input('trip_company_group')">
-              <i class="fa fa-plus"></i> 添加分组
-            </a>
+        <div class="layui-card">
+            <div class="layui-card-header">
+                <a class="layui-btn  layui-btn-success layui-btn-sm " style="float:right; margin:4px;" onclick="PAGE_EXEC.add_input('trip_company_group')">
+                <i class="fa fa-plus"></i> 添加分组
+                </a>
 
-          <h3>拼车互通公司分组置</h3>
-        </div>
-        <div class="layui-card-body">
-          <form class="layui-form form-container" action="{:url('admin/carpool/configs',['name'=>'trip_company_group'])}"
-            method="post" beforeSubmit="PAGE_EXEC.beforeSubmit">
-            <div class="trip_company_group_wrapper">
-                {foreach name="trip_company_group" item="vo" key="key"}
-                <div class="trip_company_group_item" ondblclick="PAGE_EXEC.del('trip_company_group')" >
-                  分组：
-                    <input class="layui-input " type="text" value="{:implode(',',$vo)}" />
+            <h3>拼车互通公司分组置</h3>
+            </div>
+            <div class="layui-card-body">
+            <form class="layui-form form-container" action="{:url('admin/carpool/configs',['name'=>'trip_company_group'])}"
+                method="post" beforeSubmit="PAGE_EXEC.beforeSubmit">
+                <div class="trip_company_group_wrapper">
+                    {foreach name="trip_company_group" item="vo" key="key"}
+                    <div class="trip_company_group_item" ondblclick="PAGE_EXEC.del('trip_company_group')" >
+                    分组：
+                        <input class="layui-input " type="text" value="{:implode(',',$vo)}" />
+                    </div>
+                    {/foreach}
+                    <div class="blank10"></div>
+                    
                 </div>
-                {/foreach}
-                <div class="blank10"></div>
-                
-              </div>
-              <div class="layui-word-aux">
-                <p>每组以公司id和","分格，例: 1,2,3</p>
-                <p>输入框内只允许输入数字和英文逗号</p>
-                <p>对应的公司请到【用户系统】->【公司管理】内查询</p>
-                <p>每组所设置的公司，成员之间能相互拼车。</p>
-              </div>
-              <input type="hidden" name="trip_company_group" value="" />
-            <button class="layui-btn layui-btn" lay-submit lay-filter="*">提交</button>
-          </form>
+                <div class="layui-word-aux">
+                    <p>每组以公司id和","分格，例: 1,2,3</p>
+                    <p>输入框内只允许输入数字和英文逗号</p>
+                    <p>对应的公司请到【用户系统】->【公司管理】内查询</p>
+                    <p>每组所设置的公司，成员之间能相互拼车。</p>
+                </div>
+                <input type="hidden" name="trip_company_group" value="" />
+                <button class="layui-btn layui-btn" lay-submit lay-filter="*">提交</button>
+            </form>
+            </div>
         </div>
-      </div>
 
 
 
 
+        </div>
     </div>
-  </div>
 </div>
 
 {/block}
 {block name="script"}
 <script>
-  PAGE_EXEC = {
+PAGE_EXEC = {
 
     del: function (name) {
 
-      var e = e || event;
-      var $obj = $(e.target)
-      if(!$obj.hasClass(name + '_item')){
+        var e = e || event;
+        var $obj = $(e.target)
+        if(!$obj.hasClass(name + '_item')){
         $obj =  $obj.closest('.' + name + '_item');
-      }
-      if ($('.' + name + '_item').length < 2) {
+        }
+        if ($('.' + name + '_item').length < 2) {
         return false;
-      }
-      $obj.remove();
+        }
+        $obj.remove();
     },
     add_input: function (name) {
-      var $item_last = $('.' + name + '_item:last');
-      var $item_clone = $item_last.clone();
-      $item_clone.find('input').val('');
-      $item_last.after($item_clone).after(' ');
+        var $item_last = $('.' + name + '_item:last');
+        var $item_clone = $item_last.clone();
+        $item_clone.find('input').val('');
+        $item_last.after($item_clone).after(' ');
     },
     setListVal: function (name) {
-      var str_val = '';
-      var $item = $('.' + name + '_item');
-      $item.each(function (index, item) {
+        var str_val = '';
+        var $item = $('.' + name + '_item');
+        $item.each(function (index, item) {
         var val = $(item).find('input').val();
         if (val != '') {
-          str_val += str_val ? '|||' + val : val;
+            str_val += str_val ? '|||' + val : val;
         }
-      })
-      $('input[name="' + name + '"]').val(str_val);
+        })
+        $('input[name="' + name + '"]').val(str_val);
     },
     beforeSubmit: function (data) {
-      PAGE_EXEC.setListVal('trip_company_group');
+        PAGE_EXEC.setListVal('trip_company_group');
     }
-  }
+}
 </script>
 {/block}

@@ -7,132 +7,132 @@
         <ul class="amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/ContentIdle/index')}"  >二手市场管理</a></li>
             <li class="btn-item btn-item-right">
-              <a class="layui-btn layui-btn-sm  layui-btn-warning " href="javascript:void(0);" onclick="PAGE_EXEC.recache()"  >清除前端缓存</a>
+                <a class="layui-btn layui-btn-sm  layui-btn-warning " href="javascript:void(0);" onclick="PAGE_EXEC.recache()"  >清除前端缓存</a>
             </li>
             <!-- <li class="btn-item btn-item-add">
-              <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ContentIdle/add')}"  data-title="发布信息"  data-trigger="modal" >
-              <i class="fa fa-plus"></i> 发布信息</a>
+                <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ContentIdle/add')}"  data-title="发布信息"  data-trigger="modal" >
+                <i class="fa fa-plus"></i> 发布信息</a>
             </li> -->
         </ul>
         <div class="layui-tab-content">
 
-                <form class="layui-form layui-form-pane" action="{:url('admin/ContentIdle/index')}" method="get">
-                   <input type="hidden" name="pagesize" value="{$pagesize}">
-                    <div class="layui-inline" style="width:120px">
-                        <div class="layui-input-inline">
-                          <select name="filter[status]" >
-                            <option value="">状态:不限</option>
-                            {foreach name="status_list" key="key" item="vo"}
-                             <option value="{$key}" {php}echo $filter['status']== "$key" ? 'selected' : ''; {/php} > {$vo}</option>
-                            {/foreach}
-                           </select>
-                        </div>
-                    </div>
-                    <div class="layui-inline" style="width:120px">
-                        <div class="layui-input-inline">
-                          <select name="filter[show_level]" >
-                            <option value="">审核:不限</option>
-                            {foreach name="showLevel_list" key="key" item="vo"}
-                             <option value="{$key}" {php}echo $filter['show_level']== "$key" ? 'selected' : ''; {/php} >{$key} : {$vo}</option>
-                            {/foreach}
-                           </select>
-                        </div>
-                    </div>
-                    <div class="layui-inline" style="width:80px">
-                        <div class="layui-input-inline">
-                          <select name="filter[is_delete]" >
-                            <option value="0">正常</option>
-                            <option value="1"  {php}echo is_numeric($filter['is_delete']) && $filter['is_delete'] ? 'selected' : ''; {/php} >已删</option>
-                           </select>
-                        </div>
-                    </div>
+            <form class="layui-form layui-form-pane" action="{:url('admin/ContentIdle/index')}" method="get">
+                <input type="hidden" name="pagesize" value="{$pagesize}">
+                <div class="layui-inline" style="width:120px">
                     <div class="layui-input-inline">
-                        <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="商品信息" class="layui-input">
+                        <select name="filter[status]" >
+                        <option value="">状态:不限</option>
+                        {foreach name="status_list" key="key" item="vo"}
+                            <option value="{$key}" {php}echo $filter['status']== "$key" ? 'selected' : ''; {/php} > {$vo}</option>
+                        {/foreach}
+                        </select>
                     </div>
+                </div>
+                <div class="layui-inline" style="width:120px">
                     <div class="layui-input-inline">
-                        <input type="text" name="filter[keyword_user]" value="{$filter['keyword_user'] ? $filter['keyword_user'] :''}" placeholder="用户名" class="layui-input">
+                        <select name="filter[show_level]" >
+                        <option value="">审核:不限</option>
+                        {foreach name="showLevel_list" key="key" item="vo"}
+                            <option value="{$key}" {php}echo $filter['show_level']== "$key" ? 'selected' : ''; {/php} >{$key} : {$vo}</option>
+                        {/foreach}
+                        </select>
                     </div>
+                </div>
+                <div class="layui-inline" style="width:80px">
                     <div class="layui-input-inline">
-                      <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter.time}"  style="width:200px" autocomplete="off">
+                        <select name="filter[is_delete]" >
+                        <option value="0">正常</option>
+                        <option value="1"  {php}echo is_numeric($filter['is_delete']) && $filter['is_delete'] ? 'selected' : ''; {/php} >已删</option>
+                        </select>
                     </div>
-                    <div class="layui-inline">
-                        <button class="layui-btn"><i class="fa fa-search"></i></button>
-                    </div>
-                </form>
-                <hr>
-                <blockquote class="layui-elem-quote">共检得 <b>{$lists->total()}</b> 条数据</blockquote>
+                </div>
+                <div class="layui-input-inline">
+                    <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="商品信息" class="layui-input">
+                </div>
+                <div class="layui-input-inline">
+                    <input type="text" name="filter[keyword_user]" value="{$filter['keyword_user'] ? $filter['keyword_user'] :''}" placeholder="用户名" class="layui-input">
+                </div>
+                <div class="layui-input-inline">
+                    <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter.time}"  style="width:200px" autocomplete="off">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn"><i class="fa fa-search"></i></button>
+                </div>
+            </form>
+            <hr>
+            <blockquote class="layui-elem-quote">共检得 <b>{$lists->total()}</b> 条数据</blockquote>
 
-                <div class="idle-list ">
-                  {foreach name="lists" item="vo"}
-                  <div class="am-card" data-id = "{$vo.id}">
+            <div class="idle-list ">
+                {foreach name="lists" item="vo"}
+                <div class="am-card" data-id = "{$vo.id}">
                     <div class="am-card-inner">
-                      <div class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>">
-                          <div class="cover-thumb-inner">
-                          </div>
-                      </div>
-                      <div class="am-card-body">
+                    <div class="cover-thumb " style="<?php echo $vo['thumb'] ? 'background-image:url(\''.$vo['thumb'].'\')' : ''; ?>">
+                        <div class="cover-thumb-inner">
+                        </div>
+                    </div>
+                    <div class="am-card-body">
                         <h5 class="am-card-title layui-elip" >
-                          <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"   data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}">{$vo.title}
-                          </a>
+                        <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"   data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}">{$vo.title}
+                        </a>
                         </h5>
                         <span class="id">#{$vo.id} <input type="checkbox" name="id[]" value="{$vo.id}" /></span>
                         <p class="name-bar"><span class="name">{$vo.name} / {$vo.loginname}</span><span class="time">{$vo.post_time}</span></p>
                         <p class="am-card-text">
-                          <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"   data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}">
-                          {$vo.desc|iconv_substr=0,250}...</a></p>
+                        <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"   data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}">
+                        {$vo.desc|iconv_substr=0,250}...</a></p>
                         <div class="info-bar">
-                          <span class="info-item price"> 价格：<b >{$vo.price}</b></span>
-                          <!-- <span class="info-item original_price"> 原价：<b >{$vo.original_price}</b></span> -->
-                          <span class="info-item  status">
+                        <span class="info-item price"> 价格：<b >{$vo.price}</b></span>
+                        <!-- <span class="info-item original_price"> 原价：<b >{$vo.original_price}</b></span> -->
+                        <span class="info-item  status">
                             状态：<b><?php echo isset($status_list[$vo['status']]) ? $status_list[$vo['status']] : $vo['status'] ;?>  </b>
-                              <?php echo $vo['is_delete'] ? '/已删' : '' ;?>
-                          </span>
-                          <span class="info-item  show_level">审：<b><?php echo isset($showLevel_list[$vo['show_level']]) && $showLevel_list[$vo['show_level']] <1 ? $showLevel_list[$vo['show_level']] : $vo['status'] ;?>  </b></span>
+                            <?php echo $vo['is_delete'] ? '/已删' : '' ;?>
+                        </span>
+                        <span class="info-item  show_level">审：<b><?php echo isset($showLevel_list[$vo['show_level']]) && $showLevel_list[$vo['show_level']] <1 ? $showLevel_list[$vo['show_level']] : $vo['status'] ;?>  </b></span>
 
                         </div>
                         <div class="btns-wrapper">
-                          <!-- <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"  data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}" class="ibtn layui-btn    layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a> -->
+                        <!-- <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"  data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}" class="ibtn layui-btn    layui-btn-radius   "><i class="layui-icon">&#xe642;</i> 編輯</a> -->
                         </div>
-                      </div>
                     </div>
-                  </div>
-                  {/foreach}
-
+                    </div>
                 </div>
-                <!--分页-->
-                {$lists|raw}
+                {/foreach}
+
+            </div>
+            <!--分页-->
+            {$lists|raw}
 
         </div>
         <div class="blank80"></div>
     </div>
     <div class="am-bottom-tool-bar">
-      <div class="am-bottom-tool-bar-inner " lay-filter="form-bottom-tool">
-        <div class="form-wrapper layui-form">
-          <div class="layui-input-inline">
-            <input type="checkbox" name="checkall" lay-filter="checkall" title="全选" lay-skin="primary" >
-            <span> 已选： <b class="j-hasCheck ">0</b></span>
-          </div>
-        </div>
-        <div class="btns-wrapper">
-            <div class="btn-drop">
-              <button type="button" class="layui-btn layui-btn-success drop-btn" >审</button>
-              <ul class="drop-box">
-                <?php foreach($showLevel_list as $key => $value){
-                  if($key < 0 || $key > 0){
-                    echo '<li class="" data-value = "'.$key.'"><a href="javascript:void(0);" onclick="PAGE_EXEC.audit(\''.$key.'\')">'.$value.'</a></li>';
-                  }
-                } ?>
+        <div class="am-bottom-tool-bar-inner " lay-filter="form-bottom-tool">
+            <div class="form-wrapper layui-form">
+            <div class="layui-input-inline">
+                <input type="checkbox" name="checkall" lay-filter="checkall" title="全选" lay-skin="primary" >
+                <span> 已选： <b class="j-hasCheck ">0</b></span>
             </div>
-            <div class="btn-drop" style="margin-left:4px;">
-              <button type="button" class="layui-btn layui-btn-normal drop-btn" >改变状态</button>
-              <ul class="drop-box">
-                <?php foreach($status_list as $key => $value){
-                    echo '<li class="" data-value = "'.$key.'"><a href="javascript:void(0);" onclick="PAGE_EXEC.status(\''.$key.'\')">'.$value.'</a></li>';
-                } ?>
             </div>
+            <div class="btns-wrapper">
+                <div class="btn-drop">
+                <button type="button" class="layui-btn layui-btn-success drop-btn" >审</button>
+                <ul class="drop-box">
+                    <?php foreach($showLevel_list as $key => $value){
+                    if($key < 0 || $key > 0){
+                        echo '<li class="" data-value = "'.$key.'"><a href="javascript:void(0);" onclick="PAGE_EXEC.audit(\''.$key.'\')">'.$value.'</a></li>';
+                    }
+                    } ?>
+                </div>
+                <div class="btn-drop" style="margin-left:4px;">
+                <button type="button" class="layui-btn layui-btn-normal drop-btn" >改变状态</button>
+                <ul class="drop-box">
+                    <?php foreach($status_list as $key => $value){
+                        echo '<li class="" data-value = "'.$key.'"><a href="javascript:void(0);" onclick="PAGE_EXEC.status(\''.$key.'\')">'.$value.'</a></li>';
+                    } ?>
+                </div>
 
+            </div>
         </div>
-      </div>
     </div>
     <!-- 底部工具栏 -->
 
@@ -143,181 +143,181 @@
 {block name="script"}
 <script>
 PAGE_EXEC = {
-  data :{
-    checkedCount :0 ,
-  },
-  init: function(){
-    var _this = this;
-    laydate.render({
-      elem: '#filter_time'
-      ,range: '~' //或 range: '~' 来自定义分割字符
-    });
+    data :{
+        checkedCount :0 ,
+    },
+    init: function(){
+        var _this = this;
+        laydate.render({
+        elem: '#filter_time'
+        ,range: '~' //或 range: '~' 来自定义分割字符
+        });
 
-    var $listWrapper = $('.P-idle-list .idle-list');
-    var $items = $listWrapper.find('.am-card');
-    var $checkBoxs = $listWrapper.find('input[type="checkbox"]');
-    form.on('checkbox(checkall)', function(data){
-      var value = data.elem.checked;
-      $checkBoxs.prop('checked', value);
-      _this.changeCheckStyle($checkBoxs,value);
-    });
+        var $listWrapper = $('.P-idle-list .idle-list');
+        var $items = $listWrapper.find('.am-card');
+        var $checkBoxs = $listWrapper.find('input[type="checkbox"]');
+        form.on('checkbox(checkall)', function(data){
+        var value = data.elem.checked;
+        $checkBoxs.prop('checked', value);
+        _this.changeCheckStyle($checkBoxs,value);
+        });
 
-    $items.each(function(index, el) {
-      var $checkBox = $(el).find('input[type="checkbox"]');
-      var $imgBox   = $(el).find(".cover-thumb");
-      $checkBox.change(function(event) {
-        _this.changeCheckStyle($checkBox,$(this).prop('checked'));
-      });
-      $imgBox.click(function(){
-        var value = $checkBox.prop('checked');
-        $checkBox.prop('checked', !value);
-        _this.changeCheckStyle($checkBox,!value);
-      })
+        $items.each(function(index, el) {
+        var $checkBox = $(el).find('input[type="checkbox"]');
+        var $imgBox   = $(el).find(".cover-thumb");
+        $checkBox.change(function(event) {
+            _this.changeCheckStyle($checkBox,$(this).prop('checked'));
+        });
+        $imgBox.click(function(){
+            var value = $checkBox.prop('checked');
+            $checkBox.prop('checked', !value);
+            _this.changeCheckStyle($checkBox,!value);
+        })
 
-    });
-  },
+        });
+    },
 
-  /**
-   * 更改被check的行的样式
-   * @param  $(dom)   $el   checkbox
-   * @param  boolean  $el   值
-   */
-  changeCheckStyle: function($el,value){
-    var _this = this;
-    if(value){
-      $el.closest('.am-card').addClass('checked');
-    }else{
-      $el.closest('.am-card').removeClass('checked');
-    }
-    _this.countCheck();
-  },
-
-  /**
-   * 计算被checked复选框的个数，并显示
-   * @return {[type]} [description]
-   */
-  countCheck: function(){
-    var $toolbarWrapper = $(".am-bottom-tool-bar");
-    var $listWrapper = $('.P-idle-list .idle-list');
-    var $items = $listWrapper.find('.am-card');
-    var item_count = $items.length;
-    var item_checked_count = $listWrapper.find('.am-card.checked').length;
-    this.data.checkedCount = item_checked_count;
-    if(item_count > item_checked_count){
-      $toolbarWrapper.find('input[name="checkall"]').prop('checked', false)
-    }else{
-      $toolbarWrapper.find('input[name="checkall"]').prop('checked', true)
-    }
-    $toolbarWrapper.find(".j-hasCheck").html(item_checked_count);
-    form.render(null, 'form-bottom-tool');
-
-  },
-
-  changeSubmit:function(setting){
-    var loading = layer.load(2,{ shade: [0.2,'#fff']});
-    $.ajax({
-      url:setting.api,
-      data:setting.data,
-      type:'post',
-      dataType:'json',
-    }).done(function(res){
-      if(res.code === 0){
-        layer.msg('成功');
-        setTimeout(function(){
-          reload();
-        },500)
-      }else{
-        layer.msg('失败，请稍候再试');
-        console.log(res);
-      }
-    }).fail(function(err){
-      layer.msg('失败，请稍候再试');
-      console.log(err);
-    }).always(function(){
-      layer.close(loading);
-    });
-    return false;
-  },
-
-  changeSelect:function(setting){
-    var _this = this;
-    var defaults = {
-      confirmMsg:"是否确定执行",
-    }
-    var ids = [];
-    var $toolbarWrapper = $(".am-bottom-tool-bar");
-    var $listWrapper = $('.P-idle-list .idle-list');
-    var $items = $listWrapper.find('.am-card.checked');
-    $items.each(function(index, el) {
-      ids.push($(el).data('id'));
-    });
-    var idCount = ids.length;
-
-    var options = $.extend({}, defaults, setting);
-    if(typeof(options.data)=='undefined'){
-      options.data = {}
-    }
-    options.data.id = ids;
-
-    if(idCount < 1){
-      layer.msg('请选选择要操作的数据');
-      return false;
-    }
-    layer.confirm('已选'+idCount+'条数据，'+options.confirmMsg, {
-            btn: ['确定', '取消']
-        }, function (index, layero) {
-          return _this.changeSubmit(options)
+    /**
+     * 更改被check的行的样式
+     * @param  $(dom)   $el   checkbox
+     * @param  boolean  $el   值
+     */
+    changeCheckStyle: function($el,value){
+        var _this = this;
+        if(value){
+        $el.closest('.am-card').addClass('checked');
+        }else{
+        $el.closest('.am-card').removeClass('checked');
         }
-     );
-    return false;
+        _this.countCheck();
+    },
 
-  },
+    /**
+     * 计算被checked复选框的个数，并显示
+     * @return {[type]} [description]
+     */
+    countCheck: function(){
+        var $toolbarWrapper = $(".am-bottom-tool-bar");
+        var $listWrapper = $('.P-idle-list .idle-list');
+        var $items = $listWrapper.find('.am-card');
+        var item_count = $items.length;
+        var item_checked_count = $listWrapper.find('.am-card.checked').length;
+        this.data.checkedCount = item_checked_count;
+        if(item_count > item_checked_count){
+        $toolbarWrapper.find('input[name="checkall"]').prop('checked', false)
+        }else{
+        $toolbarWrapper.find('input[name="checkall"]').prop('checked', true)
+        }
+        $toolbarWrapper.find(".j-hasCheck").html(item_checked_count);
+        form.render(null, 'form-bottom-tool');
 
-  audit: function(show_level){
-    var setting = {
-      data : {
-        show_level:show_level,
-      },
-      api: '{:url("audit")}'
-    }
-    this.changeSelect(setting);
-    return false;
-  },
+    },
 
-  status: function(status){
-    var setting = {
-      data : {
-        status:status,
-      },
-      api: '{:url("status")}'
-    }
-    this.changeSelect(setting);
-    return false;
-  },
-
-  recache :function(){
-    var loading = layer.load(2,{ shade: [0.2,'#fff']});
-    var api = '{:url("recache")}';
-    $.ajax({
-      url:api,
-      type:'post',
-      dataType:'json',
-    }).done(function(res){
-      if(res.code === 0){
-        layer.msg('成功');
-      }else{
+    changeSubmit:function(setting){
+        var loading = layer.load(2,{ shade: [0.2,'#fff']});
+        $.ajax({
+        url:setting.api,
+        data:setting.data,
+        type:'post',
+        dataType:'json',
+        }).done(function(res){
+        if(res.code === 0){
+            layer.msg('成功');
+            setTimeout(function(){
+            reload();
+            },500)
+        }else{
+            layer.msg('失败，请稍候再试');
+            console.log(res);
+        }
+        }).fail(function(err){
         layer.msg('失败，请稍候再试');
-        console.log(res);
-      }
-    }).fail(function(err){
-      layer.msg('失败，请稍候再试');
-      console.log(err);
-    }).always(function(){
-      layer.close(loading);
-    });
-    return false;
+        console.log(err);
+        }).always(function(){
+        layer.close(loading);
+        });
+        return false;
+    },
 
-  }
+    changeSelect:function(setting){
+        var _this = this;
+        var defaults = {
+        confirmMsg:"是否确定执行",
+        }
+        var ids = [];
+        var $toolbarWrapper = $(".am-bottom-tool-bar");
+        var $listWrapper = $('.P-idle-list .idle-list');
+        var $items = $listWrapper.find('.am-card.checked');
+        $items.each(function(index, el) {
+        ids.push($(el).data('id'));
+        });
+        var idCount = ids.length;
+
+        var options = $.extend({}, defaults, setting);
+        if(typeof(options.data)=='undefined'){
+        options.data = {}
+        }
+        options.data.id = ids;
+
+        if(idCount < 1){
+        layer.msg('请选选择要操作的数据');
+        return false;
+        }
+        layer.confirm('已选'+idCount+'条数据，'+options.confirmMsg, {
+                btn: ['确定', '取消']
+            }, function (index, layero) {
+            return _this.changeSubmit(options)
+            }
+        );
+        return false;
+
+    },
+
+    audit: function(show_level){
+        var setting = {
+        data : {
+            show_level:show_level,
+        },
+        api: '{:url("audit")}'
+        }
+        this.changeSelect(setting);
+        return false;
+    },
+
+    status: function(status){
+        var setting = {
+        data : {
+            status:status,
+        },
+        api: '{:url("status")}'
+        }
+        this.changeSelect(setting);
+        return false;
+    },
+
+    recache :function(){
+        var loading = layer.load(2,{ shade: [0.2,'#fff']});
+        var api = '{:url("recache")}';
+        $.ajax({
+        url:api,
+        type:'post',
+        dataType:'json',
+        }).done(function(res){
+        if(res.code === 0){
+            layer.msg('成功');
+        }else{
+            layer.msg('失败，请稍候再试');
+            console.log(res);
+        }
+        }).fail(function(err){
+        layer.msg('失败，请稍候再试');
+        console.log(err);
+        }).always(function(){
+        layer.close(loading);
+        });
+        return false;
+
+    }
 
 
 

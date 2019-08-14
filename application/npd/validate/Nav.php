@@ -1,4 +1,5 @@
 <?php
+
 namespace app\npd\validate;
 
 use think\Validate;
@@ -14,6 +15,4 @@ class Nav extends Validate
         'name.require'     => '请输入导航中文名',
         'name_en.require'     => '请输入导航英文名',
     ];
-
-
 }

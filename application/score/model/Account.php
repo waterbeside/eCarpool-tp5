@@ -1,9 +1,11 @@
 <?php
+
 namespace app\score\model;
 
 use think\Db;
 use app\common\model\Configs;
 use app\common\model\BaseModel;
+
 // use think\Model;
 
 class Account extends BaseModel
@@ -23,10 +25,4 @@ class Account extends BaseModel
     protected $connection = 'database_score';
     protected $table = 't_account';
     protected $pk = 'id';
-
-
-
-
-
-
 }

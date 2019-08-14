@@ -8,31 +8,31 @@
         <ul class="  amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/Configs/ios_audit_switch',['app_id'=>$app_id])}"  >ios审核开关配置</a></li>
             <li class="btn-item btn-item-right">
-              <select name="rule_number" class="select-jump my-select"  >
-                {foreach name="apps" key="key" item="vo"}
-                <option value="{$vo.id}" {php} echo isset($app_id) && is_numeric($app_id) && $app_id == $vo['id'] ? 'selected' : ''; {/php} href="{:url('ios_audit_switch',['app_id'=>$vo.id])}">{$vo.name} </option>
-                {/foreach}
-              </select>
+                <select name="rule_number" class="select-jump my-select"  >
+                    {foreach name="apps" key="key" item="vo"}
+                    <option value="{$vo.id}" {php} echo isset($app_id) && is_numeric($app_id) && $app_id == $vo['id'] ? 'selected' : ''; {/php} href="{:url('ios_audit_switch',['app_id'=>$vo.id])}">{$vo.name} </option>
+                    {/foreach}
+                </select>
             </li>
         </ul>
 
         <div class="layui-tab-content">
 
-          <div class="blank20"></div>
+            <div class="blank20"></div>
 
-          <form class="layui-form form-container" action="{:url('admin/Configs/ios_audit_switch',['app_id'=>$app_id])}" method="post">
+            <form class="layui-form form-container" action="{:url('admin/Configs/ios_audit_switch',['app_id'=>$app_id])}" method="post">
 
-              <div class="layui-form-item">
-                  <label class="layui-form-label">审核开关</label>
-                  <div class="layui-input-block">
-                      <input type="text" name="val" value="{$data}" required  lay-verify="required" placeholder="审核开关" class="layui-input">
-                      <div class="layui-form-mid layui-word-aux"> - </div>
-                  </div>
-              </div>
-              <div class="layui-btn-container layui-row" style="text-align: right">
-                  <button class="layui-btn layui-btn-lg" lay-submit lay-filter="*">提交</button>
-              </div>
-          </form>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">审核开关</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="val" value="{$data}" required  lay-verify="required" placeholder="审核开关" class="layui-input">
+                        <div class="layui-form-mid layui-word-aux"> - </div>
+                    </div>
+                </div>
+                <div class="layui-btn-container layui-row" style="text-align: right">
+                    <button class="layui-btn layui-btn-lg" lay-submit lay-filter="*">提交</button>
+                </div>
+            </form>
 
         </div>
     </div>

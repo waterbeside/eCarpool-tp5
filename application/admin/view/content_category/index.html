@@ -3,28 +3,28 @@
 <div class="amain-body P-category">
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
-        <ul class="amain-tool-bar">
-          <li <?php if(!$recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/ContentCategory/index')}"  >栏目管理</a></li>
-          <li <?php if($recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/ContentCategory/index',['recycled'=>1])}"  >回收站</a></li>
-          <li class="btn-item btn-item-add">
-            <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ContentCategory/add')}"  data-title="添加栏目"  data-trigger="modal" >
-            <i class="fa fa-plus"></i> 添加栏目</a>
-          </li>
-        </ul>
-        <div class="layui-tab-content">
-          <?php if($recycled){ ?>
-          <blockquote class="layui-elem-quote">
-            回收站共有 <b id="recycled-data-count"> -- </b> 条数据可被还原。
-          </blockquote>
-          <?php } ?>
-          <div class="panel-body">
-            <a class="layui-btn layui-btn-primary layui-btn-xs" onclick="PAGE_EXEC.collapseAll()">摺起所有</a>
-            <a class="layui-btn layui-btn-primary layui-btn-xs" onclick="PAGE_EXEC.expandAll()">展开所有</a>
-          </div>
+            <ul class="amain-tool-bar">
+                <li <?php if(!$recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/ContentCategory/index')}"  >栏目管理</a></li>
+                <li <?php if($recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/ContentCategory/index',['recycled'=>1])}"  >回收站</a></li>
+                <li class="btn-item btn-item-add">
+                    <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/ContentCategory/add')}"  data-title="添加栏目"  data-trigger="modal" >
+                    <i class="fa fa-plus"></i> 添加栏目</a>
+                </li>
+            </ul>
+            <div class="layui-tab-content">
+            <?php if($recycled){ ?>
+            <blockquote class="layui-elem-quote">
+                回收站共有 <b id="recycled-data-count"> -- </b> 条数据可被还原。
+            </blockquote>
+            <?php } ?>
+            <div class="panel-body">
+                <a class="layui-btn layui-btn-primary layui-btn-xs" onclick="PAGE_EXEC.collapseAll()">摺起所有</a>
+                <a class="layui-btn layui-btn-primary layui-btn-xs" onclick="PAGE_EXEC.expandAll()">展开所有</a>
+            </div>
 
-          <div class="layui-tab-item layui-show">
-              <table id="ContentCateTree" class="layui-table table-tree" lay-size="sm"></table>
-          </div>
+            <div class="layui-tab-item layui-show">
+                <table id="ContentCateTree" class="layui-table table-tree" lay-size="sm"></table>
+            </div>
         </div>
     </div>
 </div>
@@ -33,130 +33,120 @@
 {block name="script"}
 <script>
 PAGE_EXEC = {
-  data : {
-    treeList: [],
-    typeList:<?php echo json_encode($typeList);?>
-  },
-  treetable : $('#ContentCateTree'),
-  getData : function(){
-    var _this = this;
-    $.get("{:URL('admin/ContentCategory/index',['json'=>1,'recycled'=>$recycled])}").then(function(res){
-      if(res.code === 0){
-
-         _this.data.treeList = res.data
-        _this.setTreegrid();
-
-      }else{
-        layer.msg('数据加载失败');
-
-      }
-      _this
-    })
-  },
-
-  setTreegrid : function(){
-    var _this = this;
-    var $treetable = _this.treetable;
-    var treeOffsetTop = $treetable.offset().top;
-    var treegridHeight = document.documentElement.clientHeight-treeOffsetTop-20
-    $treetable.kanTreegrid({
-
-      idField:'id',
-      pidField:'parent_id',
-      method:'get',
-      treeField: 'name_zh',
-      height:treegridHeight,
-      datas: _this.data.treeList,
-
-      columns:[[
-            {field:'id',title:'#',width:60},
-            {field:'name_zh',title:'名称',width:290},
-            {field:'name_en',title:'名称（EN）',width:100},
-            {field:'name_vi',title:'名称（VI）',width:100},
-            {field:'type',title:'类型',width:100,formatter:formatType},
-            {field:'sort',title:'排序',width:50},
-            {field:'option',title:'操作',width:100,formatter:formatOption},
-          ]],
-
-      onClickRow:function(row){
-
-      },
-      onLoadSuccess:function(data){
-        <?php if($recycled){ ?>
-          var countRecycled = 0;
-          $treetable.find('tbody tr').each(function(index, el) {
-            var id = $(el).data('id');
-            // var isRecycle =  $(el).find()
-            var row = $treetable.kanTreegrid('find',id)
-            if(!row.is_delete){
-              $(this).addClass('un_recycled');
+    data : {
+        treeList: [],
+        typeList:<?php echo json_encode($typeList);?>
+    },
+    treetable : $('#ContentCateTree'),
+    getData : function(){
+        var _this = this;
+        $.get("{:URL('admin/ContentCategory/index',['json'=>1,'recycled'=>$recycled])}").then(function(res){
+            if(res.code === 0){
+                _this.data.treeList = res.data
+                _this.setTreegrid();
             }else{
-              countRecycled ++;
+                layer.msg('数据加载失败');
             }
-          });
-          $("#recycled-data-count").html(countRecycled);
-        <?php } ?>
-      }
-    })
+            // _this
+        })
+    },
+
+    setTreegrid : function(){
+        var _this = this;
+        var $treetable = _this.treetable;
+        var treeOffsetTop = $treetable.offset().top;
+        var treegridHeight = document.documentElement.clientHeight-treeOffsetTop-20
+        $treetable.kanTreegrid({
+
+        idField:'id',
+        pidField:'parent_id',
+        method:'get',
+        treeField: 'name_zh',
+        height:treegridHeight,
+        datas: _this.data.treeList,
+
+        columns:[[
+                {field:'id',title:'#',width:60},
+                {field:'name_zh',title:'名称',width:290},
+                {field:'name_en',title:'名称（EN）',width:100},
+                {field:'name_vi',title:'名称（VI）',width:100},
+                {field:'type',title:'类型',width:100,formatter:formatType},
+                {field:'sort',title:'排序',width:50},
+                {field:'option',title:'操作',width:100,formatter:formatOption},
+            ]],
+
+        onClickRow:function(row){
+
+        },
+        onLoadSuccess:function(data){
+            <?php if($recycled){ ?>
+            var countRecycled = 0;
+            $treetable.find('tbody tr').each(function(index, el) {
+                var id = $(el).data('id');
+                // var isRecycle =  $(el).find()
+                var row = $treetable.kanTreegrid('find',id)
+                if(!row.is_delete){
+                $(this).addClass('un_recycled');
+                }else{
+                countRecycled ++;
+                }
+            });
+            $("#recycled-data-count").html(countRecycled);
+            <?php } ?>
+        }
+        })
 
 
 
-    function formatOption(value,row){
-      <?php if($recycled){ ?>
-        var s = row.is_delete ? '<a href="javascript:void(0);" data-id="'+row.id+'" class="layui-btn layui-btn layui-btn-xs " onclick="PAGE_EXEC.recycle(this)">还原</a>' : '';
-      <?php }else{ ?>
-        var s  = '<a href="{:url('admin/ContentCategory/add')}?pid='+row.id+'" class="layui-btn layui-btn-success layui-btn-xs " data-title="添加子分类"  data-trigger="modal" title="添加子分类"><i class="layui-icon">&#xe654;</i> </a>'
-            s += '<a href="{:url('admin/ContentCategory/edit')}?id='+row.id+'"  data-trigger="modal" data-title="编辑 #'+row.id+'" class="layui-btn   layui-btn-xs "   title="编辑"> <i class="fa fa-pencil"></i> </a>';
-            s += '<a href="{:url('admin/ContentCategory/delete')}?id='+row.id+'" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete">删</a>';
-      <?php } ?>
-      return s;
+        function formatOption(value,row){
+            <?php if($recycled){ ?>
+                var s = row.is_delete ? '<a href="javascript:void(0);" data-id="'+row.id+'" class="layui-btn layui-btn layui-btn-xs " onclick="PAGE_EXEC.recycle(this)">还原</a>' : '';
+            <?php }else{ ?>
+                var s  = '<a href="{:url('admin/ContentCategory/add')}?pid='+row.id+'" class="layui-btn layui-btn-success layui-btn-xs " data-title="添加子分类"  data-trigger="modal" title="添加子分类"><i class="layui-icon">&#xe654;</i> </a>'
+                    s += '<a href="{:url('admin/ContentCategory/edit')}?id='+row.id+'"  data-trigger="modal" data-title="编辑 #'+row.id+'" class="layui-btn   layui-btn-xs "   title="编辑"> <i class="fa fa-pencil"></i> </a>';
+                    s += '<a href="{:url('admin/ContentCategory/delete')}?id='+row.id+'" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete">删</a>';
+            <?php } ?>
+            return s;
+        }
 
-     }
+
+        function formatType(value){
+            var s =  value;
+            if(typeof(_this.data.typeList[value])!="undefined"){
+                return _this.data.typeList[value];
+            }else{
+                return s;
+            }
+        }
+
+    },
+    collapseAll: function(){
+        var _this = this;
+        var $treetable = _this.treetable;
+        $treetable.kanTreegrid('collapseAll');
+    },
 
 
-    function formatType(value){
-      var s =  value;
-      if(typeof(_this.data.typeList[value])!="undefined"){
-        return _this.data.typeList[value];
-      }else{
-        return s;
-      }
+    expandAll: function(){
+        var _this = this;
+        var $treetable = _this.treetable;
+        $treetable.kanTreegrid('expandAll');
+    },
 
+    recycle: function(btn){
+        var $btn = $(btn);
+        var id = $btn.data('id');
+        ajaxSubmit({
+        type:'get',
+        url:"{:url('admin/ContentCategory/recycle')}",
+        data:{id:id},
+        success:function(res){
+            console.log(res);
+        }
+
+        })
     }
-
-  },
-  collapseAll: function(){
-    var _this = this;
-    var $treetable = _this.treetable;
-    $treetable.kanTreegrid('collapseAll');
-  },
-
-
-  expandAll: function(){
-    var _this = this;
-    var $treetable = _this.treetable;
-    $treetable.kanTreegrid('expandAll');
-  },
-
-  recycle: function(btn){
-    var $btn = $(btn);
-    var id = $btn.data('id');
-    ajaxSubmit({
-      type:'get',
-      url:"{:url('admin/ContentCategory/recycle')}",
-      data:{id:id},
-      success:function(res){
-        console.log(res);
-      }
-
-    })
-  }
-
-
-
-
 }
-
 
 PAGE_EXEC.getData();
 

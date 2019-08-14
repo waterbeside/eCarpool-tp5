@@ -6,161 +6,161 @@
     <div class="layui-tab ">
 
         <ul class="  amain-tool-bar" >
-          <li class="layui-this"><a href="{:url('admin/CarpoolTrips/index')}"  showloading >{:lang('trips:行程管理')}</a></li>
-          <li ><a href="{:url('admin/CarpoolTrips/index',['type'=>1])}"  showloading >{:lang('trips:空座位管理')}</a></li>
-          <?php if(checkAuth('admin/CarpoolTrips/export')){ ?>
-          <li class="btn-item btn-item-right">
-            <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="PAGE_EXEC.exportExcel(0)"  ><i class="fa fa-file-excel-o"></i> {:lang('Export')} CSV</a>
-            <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="PAGE_EXEC.exportExcel(1)"  ><i class="fa fa-file-excel-o"></i> {:lang('Export')} XLS (GBK)</a>
-          </li>
-          <?php } ?>
+            <li class="layui-this"><a href="{:url('admin/CarpoolTrips/index')}"  showloading >{:lang('trips:行程管理')}</a></li>
+            <li ><a href="{:url('admin/CarpoolTrips/index',['type'=>1])}"  showloading >{:lang('trips:空座位管理')}</a></li>
+            <?php if(checkAuth('admin/CarpoolTrips/export')){ ?>
+            <li class="btn-item btn-item-right">
+                <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="PAGE_EXEC.exportExcel(0)"  ><i class="fa fa-file-excel-o"></i> {:lang('Export')} CSV</a>
+                <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="PAGE_EXEC.exportExcel(1)"  ><i class="fa fa-file-excel-o"></i> {:lang('Export')} XLS (GBK)</a>
+            </li>
+            <?php } ?>
         </ul>
 
         <div class="amain-content">
-          <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/CarpoolTrips/index')}" method="get" onsubmit="PAGE_EXEC.submitForm()">
-              <div class="layui-inline">
-                  <div class="layui-input-inline">
-                      <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="{:lang('Account keyword')}" class="layui-input" style="width:140px" >
-                  </div>
-                  <div class="my-input-prebox" style="width:64px">
-                    <select name="filter[is_hr]"  >
-                      <option value="1" {php}echo isset($filter['is_hr']) &&  $filter['is_hr'] ? 'selected' : ''; {/php}>{:lang('trip:filter:hr')}</option>
-                      <option value="0" {php}echo isset($filter['is_hr']) &&  $filter['is_hr'] == 0 ? 'selected' : ''; {/php}>{:lang('trip:filter:u')}</option>
-                    </select>
-                  </div>
-                  <div class="layui-input-inline">
-                      <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="{:lang('Department keyword')}" class="layui-input" style="width:100px" >
-                  </div>
-                  <div class="layui-input-inline">
-                      <input type="text" name="filter[keyword_address]" value="{$filter['keyword_address'] ? $filter['keyword_address'] :''}" placeholder="{:lang('Address keyword')}" class="layui-input" style="width:120px" >
-                  </div>
-              </div>
-              <!-- <div class="blank10">  </div> -->
-              <div class="layui-inline">
-                  <div class="layui-input-inline">
-                    <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="{:lang('Time range')}" value="{$filter['time'] ? $filter['time'] :''}"  style="width:180px" autocomplete="off">
-                  </div>
-              </div>
+            <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/CarpoolTrips/index')}" method="get" onsubmit="PAGE_EXEC.submitForm()">
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="{:lang('Account keyword')}" class="layui-input" style="width:140px" >
+                        </div>
+                        <div class="my-input-prebox" style="width:64px">
+                            <select name="filter[is_hr]"  >
+                            <option value="1" {php}echo isset($filter['is_hr']) &&  $filter['is_hr'] ? 'selected' : ''; {/php}>{:lang('trip:filter:hr')}</option>
+                            <option value="0" {php}echo isset($filter['is_hr']) &&  $filter['is_hr'] == 0 ? 'selected' : ''; {/php}>{:lang('trip:filter:u')}</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="{:lang('Department keyword')}" class="layui-input" style="width:100px" >
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[keyword_address]" value="{$filter['keyword_address'] ? $filter['keyword_address'] :''}" placeholder="{:lang('Address keyword')}" class="layui-input" style="width:120px" >
+                        </div>
+                    </div>
+                    <!-- <div class="blank10">  </div> -->
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="{:lang('Time range')}" value="{$filter['time'] ? $filter['time'] :''}"  style="width:180px" autocomplete="off">
+                        </div>
+                    </div>
 
-              <div class="layui-inline">
-                <input type="hidden" name="status" value="{$status}">
-                <input type="hidden" name="export" value="0">
-                <input type="hidden" name="encoding" value="0">
-                <input type="hidden" name="type" value="{$type}">
-                  <button class="layui-btn"><i class="fa fa-search"></i></button>
-              </div>
-          </form>
+                    <div class="layui-inline">
+                        <input type="hidden" name="status" value="{$status}">
+                        <input type="hidden" name="export" value="0">
+                        <input type="hidden" name="encoding" value="0">
+                        <input type="hidden" name="type" value="{$type}">
+                        <button class="layui-btn"><i class="fa fa-search"></i></button>
+                    </div>
+            </form>
 
-          <hr>
+            <hr>
 
-          <div class="layui-tab amain-content-tab">
-            <div class="tab-title-wrapper">
-              <ul class="layui-tab-title">
-                <li <?php echo $status==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="PAGE_EXEC.changeStatus('all')" href="javascript:void(0);" >{:lang('All')}</a></li>
-                <li <?php echo is_numeric($status) || $status=="2" ? 'class="layui-this"' : '' ; ?> ><a onclick="PAGE_EXEC.changeStatus('2')" href="javascript:void(0);" >{:lang('trips:cancel')}</a></li>
-                <li <?php echo $status==="fail" ? 'class="layui-this"' : '' ; ?> ><a onclick="PAGE_EXEC.changeStatus('fail')" href="javascript:void(0);" >{:lang('trips:failed')}</a></li>
-                <li <?php echo $status==="success" ? 'class="layui-this"' : '' ; ?> ><a onclick="PAGE_EXEC.changeStatus('success')" href="javascript:void(0);" >{:lang('trips:success')}</a></li>
-              </ul>
-              <!--<form id="form_filter_time" action="<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>">
-                <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
-              </form>-->
-            </div>
-
-
-            <div class="layui-tab-content" style="margin:0 -10px">
-              <div class="layui-tab-item layui-show">
-                <div class="order-list">
-                  <form class="layui-form" onsubmit="return false">
-                    <blockquote class="layui-elem-quote">  <?php echo lang('A total of %s data were found',['<b>'.$pagination['total'].'</b>']) ?></blockquote>
-                    <table lay-filter="listtable" class="layui-table list-table">
-                        <thead>
-                        <tr >
-                            <th lay-data="{field:'infoid', width:80,fixed: 'left' }" >#</th>
-                            <th lay-data="{field:'d_carnumber', width:120, fixed: 'left' }">{:lang('License plate')}</th>
-                            <th lay-data="{field:'d_name', minWidth:180, }">{:lang('Driver')}</th>
-                            <!-- <th lay-data="{field:'d_phone',width:100,}">司机电话</th> -->
-                            <th lay-data="{field:'d_department' ,width:120}">{:lang('Driver department')}</th>
-                            <th lay-data="{field:'p_name',minWidth:180 }">{:lang('Passenger')}</th>
-                            <!-- <th lay-data="{field:'p_phone' ,width:100}">乘客电话</th> -->
-                            <th lay-data="{field:'p_department' ,width:120}">{:lang('Passenger department')}</th>
-                            <th lay-data="{field:'time', width:120,}">{:lang('Departure time')}</th>
-                            <th lay-data="{field:'start_addressname', width:120 }">{:lang('Departure station')}</th>
-                            <th lay-data="{field:'end_addressname', width:120 }">{:lang('Destination')}</th>
-                            <th lay-data="{field:'subtime', width:120}">{:lang('Creation time')}</th>
-                            <th lay-data="{field:'love_wall_ID', width:100}">WALL_ID</th>
-                            <th lay-data="{field:'map_type', width:60}">map_type</th>
-                            <th lay-data="{field:'options', width:190,fixed: 'right'}">{:lang('Operate')}</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {foreach name="lists" item="vo"}
-                        <tr data-id="{$vo.infoid}" >
-                            <td>{$vo.infoid}</td>
-                            <td>
-                              <small title="{$vo['love_wall_ID']}">{$vo['love_wall_ID'] ? '<i class="fa fa-car"></i>' : '<i class="fa fa-user"></i>'}&nbsp;&nbsp;</small>
-                              {$vo.d_carnumber}
-                            </td>
-                            <td>
-                              <div class="driver status_{$vo.status}">
-                                {php}echo $vo['d_sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['d_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
-                                <a href="{:url('admin/User/public_detail',['id'=>$vo['d_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}" >
-                                  {$vo.d_name} ({$vo.d_loginname})
-                                </a>
-                              </div>
-                            </td>
-                            <!-- <td>{$vo.d_phone}</td> -->
-                            <td>
-                              {$vo.d_department} / {php}echo $vo['d_companyname']!='' ? $vo['d_companyname'] : '-' ;{/php} /
-                              <?php echo isset($companys[$vo['d_company_id']]) ? $companys[$vo['d_company_id']] : $vo['d_company_id']; ?>
-                              || {$vo.d_full_department}
-                            </td>
-
-                            <td>
-                              <div class="passenger status_{$vo.status}">
-                                {php}echo $vo['p_sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['p_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
-                                <a href="{:url('admin/User/public_detail',['id'=>$vo['p_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}">
-                                {$vo.p_name} ({$vo.p_loginname})
-                                </a>
-                              </div>
-                            </td>
-                            <!-- <td>{$vo.p_phone}</td> -->
-                            <td>
-                              {$vo.p_department} / {php}echo $vo['p_companyname'] ? $vo['p_companyname'] : '-' ;{/php} /
-                              <?php echo isset($companys[$vo['p_company_id']]) ? $companys[$vo['p_company_id']] : $vo['d_company_id']; ?>
-                              || {$vo.p_full_department}
-                            </td>
-                            <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($vo.time)*1000}</span></td>
-                            <td><div class="start status_{$vo.status}">{$vo.start_addressname}</div></td>
-                            <td><div class="end status_{$vo.status}">{$vo.end_addressname}</div></td>
-                            <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($vo.subtime)*1000}</span></td>
-                            <td>{$vo.love_wall_ID}</td>
-                            <td>{$vo.map_type}</td>
-
-                            <td>
-                              <div class="option-wrapper option-id-{$vo['infoid']}">
-                                <a onclick="openLayer('{:url('admin/CarpoolTrips/detail',['id'=>$vo['infoid'],'type'=>0])}',{area:['500px','90%'],title:'Trip：{$vo.start_addressname} > {$vo.end_addressname}'});" href="javascript:void(0);"  class="layui-btn  layui-btn-xs " >{:lang('Details')}</a>
-                                <a onclick="openLayer('http://gitsite.net/carpool/shuttle/tripline.html?info_id={$vo.infoid}&lang={$active_lang}',{area:['500px','90%'],title:'GPS {$vo.start_addressname} > {$vo.end_addressname}'});" href="javascript:void(0);"  class="layui-btn layui-btn-primary  layui-btn-xs " data-tips="{:lang('GPS')}" data-tips-position="1" >
-                                  <i class="fa fa-map-signs"></i>
-                                </a>
-                                <a onclick="openLayer('{:url('admin/CarpoolTrips/public_activeline_list',['infoid'=>$vo['infoid']])}',{area:['90%','90%'],title:'GPS {$vo.start_addressname} > {$vo.end_addressname}'});" href="javascript:void(0);"  class="layui-btn layui-btn-primary  layui-btn-xs " data-tips="{:lang('GPS LIST')}" data-tips-position="1" >
-                                  <i class="fa fa-location-arrow"></i>
-                                </a>
-                                <button data-id="{$vo.infoid}"  onclick="PAGE_EXEC.checkCompliant(this,1)"  ondblclick="PAGE_EXEC.checkCompliant(this,2)" title="验证行程是否合法(check compliant)"  class="layui-btn layui-btn-primary  layui-btn-xs btn-check" data-tips="{:lang('Check compliant')}" data-tips-position="1"><i class="fa fa-check"></i></button>
-                              </div>
-                            </td>
-                        </tr>
-                        {/foreach}
-                        </tbody>
-                    </table>
-                  </form>
+            <div class="layui-tab amain-content-tab">
+                <div class="tab-title-wrapper">
+                <ul class="layui-tab-title">
+                    <li <?php echo $status==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="PAGE_EXEC.changeStatus('all')" href="javascript:void(0);" >{:lang('All')}</a></li>
+                    <li <?php echo is_numeric($status) || $status=="2" ? 'class="layui-this"' : '' ; ?> ><a onclick="PAGE_EXEC.changeStatus('2')" href="javascript:void(0);" >{:lang('trips:cancel')}</a></li>
+                    <li <?php echo $status==="fail" ? 'class="layui-this"' : '' ; ?> ><a onclick="PAGE_EXEC.changeStatus('fail')" href="javascript:void(0);" >{:lang('trips:failed')}</a></li>
+                    <li <?php echo $status==="success" ? 'class="layui-this"' : '' ; ?> ><a onclick="PAGE_EXEC.changeStatus('success')" href="javascript:void(0);" >{:lang('trips:success')}</a></li>
+                </ul>
+                <!--<form id="form_filter_time" action="<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>">
+                    <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="时间范围" value="{$filter['time'] ? $filter['time'] :''}"  style="width:200px" autocomplete="off">
+                </form>-->
                 </div>
 
-              </div>
 
+                <div class="layui-tab-content" style="margin:0 -10px">
+                <div class="layui-tab-item layui-show">
+                    <div class="order-list">
+                    <form class="layui-form" onsubmit="return false">
+                        <blockquote class="layui-elem-quote">  <?php echo lang('A total of %s data were found',['<b>'.$pagination['total'].'</b>']) ?></blockquote>
+                        <table lay-filter="listtable" class="layui-table list-table">
+                            <thead>
+                            <tr >
+                                <th lay-data="{field:'infoid', width:80,fixed: 'left' }" >#</th>
+                                <th lay-data="{field:'d_carnumber', width:120, fixed: 'left' }">{:lang('License plate')}</th>
+                                <th lay-data="{field:'d_name', minWidth:180, }">{:lang('Driver')}</th>
+                                <!-- <th lay-data="{field:'d_phone',width:100,}">司机电话</th> -->
+                                <th lay-data="{field:'d_department' ,width:120}">{:lang('Driver department')}</th>
+                                <th lay-data="{field:'p_name',minWidth:180 }">{:lang('Passenger')}</th>
+                                <!-- <th lay-data="{field:'p_phone' ,width:100}">乘客电话</th> -->
+                                <th lay-data="{field:'p_department' ,width:120}">{:lang('Passenger department')}</th>
+                                <th lay-data="{field:'time', width:120,}">{:lang('Departure time')}</th>
+                                <th lay-data="{field:'start_addressname', width:120 }">{:lang('Departure station')}</th>
+                                <th lay-data="{field:'end_addressname', width:120 }">{:lang('Destination')}</th>
+                                <th lay-data="{field:'subtime', width:120}">{:lang('Creation time')}</th>
+                                <th lay-data="{field:'love_wall_ID', width:100}">WALL_ID</th>
+                                <th lay-data="{field:'map_type', width:60}">map_type</th>
+                                <th lay-data="{field:'options', width:190,fixed: 'right'}">{:lang('Operate')}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {foreach name="lists" item="vo"}
+                            <tr data-id="{$vo.infoid}" >
+                                <td>{$vo.infoid}</td>
+                                <td>
+                                <small title="{$vo['love_wall_ID']}">{$vo['love_wall_ID'] ? '<i class="fa fa-car"></i>' : '<i class="fa fa-user"></i>'}&nbsp;&nbsp;</small>
+                                {$vo.d_carnumber}
+                                </td>
+                                <td>
+                                <div class="driver status_{$vo.status}">
+                                    {php}echo $vo['d_sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['d_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+                                    <a href="{:url('admin/User/public_detail',['id'=>$vo['d_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}" >
+                                    {$vo.d_name} ({$vo.d_loginname})
+                                    </a>
+                                </div>
+                                </td>
+                                <!-- <td>{$vo.d_phone}</td> -->
+                                <td>
+                                {$vo.d_department} / {php}echo $vo['d_companyname']!='' ? $vo['d_companyname'] : '-' ;{/php} /
+                                <?php echo isset($companys[$vo['d_company_id']]) ? $companys[$vo['d_company_id']] : $vo['d_company_id']; ?>
+                                || {$vo.d_full_department}
+                                </td>
+
+                                <td>
+                                <div class="passenger status_{$vo.status}">
+                                    {php}echo $vo['p_sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['p_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
+                                    <a href="{:url('admin/User/public_detail',['id'=>$vo['p_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}">
+                                    {$vo.p_name} ({$vo.p_loginname})
+                                    </a>
+                                </div>
+                                </td>
+                                <!-- <td>{$vo.p_phone}</td> -->
+                                <td>
+                                {$vo.p_department} / {php}echo $vo['p_companyname'] ? $vo['p_companyname'] : '-' ;{/php} /
+                                <?php echo isset($companys[$vo['p_company_id']]) ? $companys[$vo['p_company_id']] : $vo['d_company_id']; ?>
+                                || {$vo.p_full_department}
+                                </td>
+                                <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($vo.time)*1000}</span></td>
+                                <td><div class="start status_{$vo.status}">{$vo.start_addressname}</div></td>
+                                <td><div class="end status_{$vo.status}">{$vo.end_addressname}</div></td>
+                                <td><span class="J-times-format" data-format="yyyy-mm-dd hh:ii">{:strtotime($vo.subtime)*1000}</span></td>
+                                <td>{$vo.love_wall_ID}</td>
+                                <td>{$vo.map_type}</td>
+
+                                <td>
+                                <div class="option-wrapper option-id-{$vo['infoid']}">
+                                    <a onclick="openLayer('{:url('admin/CarpoolTrips/detail',['id'=>$vo['infoid'],'type'=>0])}',{area:['500px','90%'],title:'Trip：{$vo.start_addressname} > {$vo.end_addressname}'});" href="javascript:void(0);"  class="layui-btn  layui-btn-xs " >{:lang('Details')}</a>
+                                    <a onclick="openLayer('http://gitsite.net/carpool/shuttle/tripline.html?info_id={$vo.infoid}&lang={$active_lang}',{area:['500px','90%'],title:'GPS {$vo.start_addressname} > {$vo.end_addressname}'});" href="javascript:void(0);"  class="layui-btn layui-btn-primary  layui-btn-xs " data-tips="{:lang('GPS')}" data-tips-position="1" >
+                                    <i class="fa fa-map-signs"></i>
+                                    </a>
+                                    <a onclick="openLayer('{:url('admin/CarpoolTrips/public_activeline_list',['infoid'=>$vo['infoid']])}',{area:['90%','90%'],title:'GPS {$vo.start_addressname} > {$vo.end_addressname}'});" href="javascript:void(0);"  class="layui-btn layui-btn-primary  layui-btn-xs " data-tips="{:lang('GPS LIST')}" data-tips-position="1" >
+                                    <i class="fa fa-location-arrow"></i>
+                                    </a>
+                                    <button data-id="{$vo.infoid}"  onclick="PAGE_EXEC.checkCompliant(this,1)"  ondblclick="PAGE_EXEC.checkCompliant(this,2)" title="验证行程是否合法(check compliant)"  class="layui-btn layui-btn-primary  layui-btn-xs btn-check" data-tips="{:lang('Check compliant')}" data-tips-position="1"><i class="fa fa-check"></i></button>
+                                </div>
+                                </td>
+                            </tr>
+                            {/foreach}
+                            </tbody>
+                        </table>
+                    </form>
+                    </div>
+
+                </div>
+
+                </div>
             </div>
-         </div>
-          <!--分页-->
-          {$pagination.render|raw}
+            <!--分页-->
+            {$pagination.render|raw}
 
         </div>
     </div>
@@ -169,112 +169,112 @@
 {/block}
 {block name="script"}
 <script>
-  PAGE_EXEC = {
+PAGE_EXEC = {
     exportExcel:function(type){
-      var form = $("#filter-form");
-      var o_action = form.attr('action');
-      form.attr('action',"{:url('admin/CarpoolTrips/export')}");
-      form.find("input[name='export']").val(1);
-      form.find("input[name='encoding']").val(type);
-      form.attr('target','_blank') ;
-      form.submit();
-      form.find("input[name='export']").val(0);
-      form.attr('target','_self');
-      form.attr('action',o_action);
+        var form = $("#filter-form");
+        var o_action = form.attr('action');
+        form.attr('action',"{:url('admin/CarpoolTrips/export')}");
+        form.find("input[name='export']").val(1);
+        form.find("input[name='encoding']").val(type);
+        form.attr('target','_blank') ;
+        form.submit();
+        form.find("input[name='export']").val(0);
+        form.attr('target','_self');
+        form.attr('action',o_action);
     },
     changeStatus:function(status){
-      var form = $("#filter-form");
-      form.find("input[name='status']").val(status);
-      form.submit();
+        var form = $("#filter-form");
+        form.find("input[name='status']").val(status);
+        form.submit();
     },
     submitForm:function(){
-      var form = $("#filter-form");
-      var isExport = form.find("input[name='export']").val();
-      if(isExport!=1){
-        layer.load(1);
-      }
+        var form = $("#filter-form");
+        var isExport = form.find("input[name='export']").val();
+        if(isExport!=1){
+            layer.load(1);
+        }
     },
     checkCompliant:function(obj,type,e){
-      var $obj = $(obj);
-      var oEvent = e || event;
-      oEvent.preventDefault(); 
-      oEvent.stopPropagation();
-      var infoid = $obj.attr('data-id');
-      var url = "{:url('admin/CarpoolTrips/public_check_compliant')}"
-      
-      if($obj.hasClass('layui-btn-disabled')){
-        return false;
-      }
-      $obj.addClass('layui-btn-disabled')
-
-      if(type == 1){
-        $.getJSON(url,{returnType:0,infoid:infoid}).then(function(res){
-          if(res.code === 0){
-            var data = res.data;
-            PAGE_EXEC.checkCompliantRes(data.infoid,data.res)
-          }else{
-            layer.msg('Load Failed')
-          }
-          $obj.removeClass('layui-btn-disabled')
-        }).catch(function(err){
-          layer.msg('加载失败')
-          $obj.removeClass('layui-btn-disabled')
-        })
-      }else{
-        var model = $.kanModal({
-          title: "验证行程是否合法(check compliant)",
-          remote: url,
-          data:{
-            returnType:1,
-            infoid:infoid,
-          },
-          onLoadSuccess: function(a) {
-            $obj.removeClass('layui-btn-disabled')
+        var $obj = $(obj);
+        var oEvent = e || event;
+        oEvent.preventDefault(); 
+        oEvent.stopPropagation();
+        var infoid = $obj.attr('data-id');
+        var url = "{:url('admin/CarpoolTrips/public_check_compliant')}"
+        
+        if($obj.hasClass('layui-btn-disabled')){
             return false;
-          }
-        })
-        model.show();
-      }  
-      return false;
+        }
+        $obj.addClass('layui-btn-disabled')
+
+        if(type == 1){
+            $.getJSON(url,{returnType:0,infoid:infoid}).then(function(res){
+            if(res.code === 0){
+                var data = res.data;
+                PAGE_EXEC.checkCompliantRes(data.infoid,data.res)
+            }else{
+                layer.msg('Load Failed')
+            }
+            $obj.removeClass('layui-btn-disabled')
+            }).catch(function(err){
+            layer.msg('加载失败')
+            $obj.removeClass('layui-btn-disabled')
+            })
+        }else{
+            var model = $.kanModal({
+            title: "验证行程是否合法(check compliant)",
+            remote: url,
+            data:{
+                returnType:1,
+                infoid:infoid,
+            },
+            onLoadSuccess: function(a) {
+                $obj.removeClass('layui-btn-disabled')
+                return false;
+            }
+            })
+            model.show();
+        }  
+        return false;
     },
     checkCompliantRes: function(id,res){
-      let btnsWrapper = $('.option-id-'+id);
-      btnsWrapper.addClass('check-'+res.code);
-      btnsWrapper.find('.btn-check').text(res.code);
-      btnsWrapper.find('.btn-check').attr('data-tips',res.message);
+        let btnsWrapper = $('.option-id-'+id);
+        btnsWrapper.addClass('check-'+res.code);
+        btnsWrapper.find('.btn-check').text(res.code);
+        btnsWrapper.find('.btn-check').attr('data-tips',res.message);
     },
     init:function(){
-            
-      // initLayuiTable({ limit: {$pagesize} })
-      laydate.render({
-        elem: '#filter_time'
-        ,range: '~' //或 range: '~' 来自定义分割字符
-        ,lang:'{$active_lang == "zh-cn" ? "cn" : "en"}'
-        ,done: function(value, date, endDate){
-          /*layer.load(1);
-          var url = "<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>";
-          // location.href = url;
-          var form = $("<form method='get'></form>");
-          form.attr({ "action": url });
-          var input = $("<input type='hidden'>");
-          input.attr({ "name": "filter[time]" });
-          input.val(value);
-          form.append(input);
-          $(document.body).append(form);
-          form.submit();*/
-      }
-      });
-      $(".layui-tab-title li a").click(function(){
+                
+        // initLayuiTable({ limit: {$pagesize} })
+        laydate.render({
+            elem: '#filter_time'
+            ,range: '~' //或 range: '~' 来自定义分割字符
+            ,lang:'{$active_lang == "zh-cn" ? "cn" : "en"}'
+            ,done: function(value, date, endDate){
+            /*layer.load(1);
+            var url = "<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>";
+            // location.href = url;
+            var form = $("<form method='get'></form>");
+            form.attr({ "action": url });
+            var input = $("<input type='hidden'>");
+            input.attr({ "name": "filter[time]" });
+            input.val(value);
+            form.append(input);
+            $(document.body).append(form);
+            form.submit();*/
+        }
+    });
+    $(".layui-tab-title li a").click(function(){
         layer.load(1);
-      })
-      initLayuiTable({ limit: {$pagesize} })
-      cRenderTips(null,1);
+    })
+    initLayuiTable({ limit: {$pagesize} })
+    cRenderTips(null,1);
     }
 
-  }
+}
 
 
-  PAGE_EXEC.init();
+PAGE_EXEC.init();
 
 
 

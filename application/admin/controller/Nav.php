@@ -1,4 +1,5 @@
 <?php
+
 namespace app\admin\controller;
 
 use app\common\model\Nav as NavModel;
@@ -41,22 +42,22 @@ class Nav extends AdminBase
      */
     public function add($pid = '')
     {
-      if ($this->request->isPost()) {
-          $data            = $this->request->post();
-          $validate_result = $this->validate($data, 'Nav');
+        if ($this->request->isPost()) {
+            $data            = $this->request->post();
+            $validate_result = $this->validate($data, 'Nav');
 
-          if ($validate_result !== true) {
-              $this->jsonReturn(-1,$validate_result);
-          } else {
-              if ($this->nav_model->save($data)) {
-                $this->jsonReturn(0,'保存成功');
-              } else {
-                $this->jsonReturn(-1,'保存失败');
-              }
-          }
-      }else{
-        return $this->fetch('add', ['pid' => $pid]);
-      }
+            if ($validate_result !== true) {
+                $this->jsonReturn(-1, $validate_result);
+            } else {
+                if ($this->nav_model->save($data)) {
+                    $this->jsonReturn(0, '保存成功');
+                } else {
+                    $this->jsonReturn(-1, '保存失败');
+                }
+            }
+        } else {
+            return $this->fetch('add', ['pid' => $pid]);
+        }
     }
 
 
@@ -67,23 +68,23 @@ class Nav extends AdminBase
      */
     public function edit($id)
     {
-      if ($this->request->isPost()) {
-          $data            = $this->request->post();
-          $validate_result = $this->validate($data, 'Nav');
+        if ($this->request->isPost()) {
+            $data            = $this->request->post();
+            $validate_result = $this->validate($data, 'Nav');
 
-          if ($validate_result !== true) {
-              $this->jsonReturn(-1,$validate_result);
-          } else {
-              if ($this->nav_model->save($data, $id) !== false) {
-                $this->jsonReturn(0,'更新成功');
-              } else {
-                $this->jsonReturn(-1,'更新失败');
-              }
-          }
-      }else{
-        $nav = $this->nav_model->find($id);
-        return $this->fetch('edit', ['nav' => $nav]);
-      }
+            if ($validate_result !== true) {
+                $this->jsonReturn(-1, $validate_result);
+            } else {
+                if ($this->nav_model->save($data, $id) !== false) {
+                    $this->jsonReturn(0, '更新成功');
+                } else {
+                    $this->jsonReturn(-1, '更新失败');
+                }
+            }
+        } else {
+            $nav = $this->nav_model->find($id);
+            return $this->fetch('edit', ['nav' => $nav]);
+        }
     }
 
 
@@ -94,9 +95,9 @@ class Nav extends AdminBase
     public function delete($id)
     {
         if ($this->nav_model->destroy($id)) {
-            $this->jsonReturn(0,'删除成功');
+            $this->jsonReturn(0, '删除成功');
         } else {
-            $this->jsonReturn(-1,'删除失败');
+            $this->jsonReturn(-1, '删除失败');
         }
     }
 }
