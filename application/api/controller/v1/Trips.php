@@ -15,7 +15,7 @@ use app\carpool\service\Trips as TripsService;
 use app\carpool\service\TripsChange as TripsChangeService;
 use app\carpool\service\TripsList as TripsListService;
 use app\carpool\service\TripsDetail as TripsDetailService;
-
+use InfoController;
 use my\RedisData;
 use think\Db;
 
@@ -461,6 +461,16 @@ class Trips extends ApiBase
         $checkData['uid'] = $uid;
         $checkData['driver_id'] = $datas->carownid;
 
+        //把行程的参与者id放到数组;
+        $actor = [$uid];
+        if (!$isDriver) {
+            $actor[] = $datas->carownid;
+        } else {
+            if ($from == 'info' && isset($datas->passengerid) && $datas->passengerid) {
+                $actor[] = $datas->passengerid;
+            }
+        }
+
         $checkRes = $TripsChangeService->checkAfterData($checkData);
         if (!$checkRes) {
             if ($TripsChangeService->errorCode == 1) {
@@ -506,13 +516,16 @@ class Trips extends ApiBase
             //如果是取消或上车操作，执行推送消息
             if ($type == "cancel" || $type == "get_on") {
                 $TripsChangeService->pushMsg($checkData);
+                if (!empty($TripsChangeService->data['sendTarget']) && is_array($TripsChangeService->data['sendTarget'])) {
+                    $actor = array_merge($actor, $TripsChangeService->data['sendTarget']);
+                }
             }
             if ($from == "wall" && $isDriver) { //如果是司机操作空座位，则同时对乘客行程进行操作。
                 $upInfoData = $type == "finish" ? ["status" => 3] : ["status" => 0, "love_wall_ID" => null, "carownid" => -1];
                 InfoModel::where([["love_wall_ID", '=', $id], ["status", "in", [0, 1, 4]]])->update($upInfoData);
             }
             $extra = $TripsChangeService->errorMsg ? ['pushMsg' => $TripsChangeService->errorMsg] : [];
-            $this->removeCache($uid);
+            $this->removeCache($actor);
             return $this->jsonReturn(0, [], "success", $extra);
         }
 
@@ -526,7 +539,7 @@ class Trips extends ApiBase
             $datas->save();
             $TripsChangeService->pushMsg($checkData);
             $extra = $TripsChangeService->errorMsg ? ['pushMsg' => $TripsChangeService->errorMsg] : [];
-            $this->removeCache($uid);
+            $this->removeCache($actor);
             return $this->jsonReturn(0, ['infoid' => $res], 'success', $extra);
         }
 
@@ -552,7 +565,7 @@ class Trips extends ApiBase
             if ($res) {
                 $TripsChangeService->pushMsg($checkData);
                 $extra = $TripsChangeService->errorMsg ? ['pushMsg' => $TripsChangeService->errorMsg] : [];
-                $this->removeCache($uid);
+                $this->removeCache($actor);
                 return $this->jsonReturn(0, [], 'success', $extra);
             }
         }
@@ -583,7 +596,7 @@ class Trips extends ApiBase
             }
             $res = $datas->save($inputData);
             if ($res) {
-                $this->removeCache($uid);
+                $this->removeCache($actor);
                 return $this->jsonReturn(0, [], 'success');
             }
         }
@@ -822,14 +835,21 @@ class Trips extends ApiBase
     /**
      * 删除我的缓存
      *
-     * @param integer $uid 用户uid
+     * @param integer|array $uid 用户uid
      * @return void
      */
     protected function removeCache($uid)
     {
-        $redis = new RedisData();
-        $cacheKey_01 = $this->cacheKey_myInfo . "u{$uid}";
-        $cacheKey_02 = $this->cacheKey_myTrip . "u{$uid}";
-        $redis->delete($cacheKey_01, $cacheKey_02);
+        if (is_array($uid)) {
+            $uid = array_unique($uid);
+            foreach ($uid as $v) {
+                $this->removeCache($v);
+            }
+        } elseif (is_numeric($uid)) {
+            $redis = new RedisData();
+            $cacheKey_01 = $this->cacheKey_myInfo . "u{$uid}";
+            $cacheKey_02 = $this->cacheKey_myTrip . "u{$uid}";
+            $redis->delete($cacheKey_01, $cacheKey_02);
+        }
     }
 }
