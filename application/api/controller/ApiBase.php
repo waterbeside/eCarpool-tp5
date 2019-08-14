@@ -80,7 +80,7 @@ class ApiBase extends Base
                 $msg =  $e->getMessage();
             } catch (\Firebase\JWT\ExpiredException $e) {  // token过期
                 $msg =  $e->getMessage();
-                //TODO:如果过期，则同时处理记录在服务端的token为失效; 
+                // TODO:如果过期，则同时处理记录在服务端的token为失效;
                 // if (config('others.is_single_sign')) {
                 //   $JwtToken = new JwtToken();
                 //   $JwtToken->invalidate($Authorization,-3);
