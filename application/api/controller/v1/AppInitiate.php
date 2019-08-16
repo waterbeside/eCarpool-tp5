@@ -113,7 +113,7 @@ class AppInitiate extends ApiBase
         $platform_str = isset($platform_list[$platform]) ? $platform_list[$platform] : '';
         // dump($platform_str);exit;
 
-        $map[] = ['is_new', '=', 1];
+        // $map[] = ['is_new', '=', 1];
         $map[] = ['app_id', '=', $app_id];
         $map[] = ['platform', '=', $platform_str];
         $versionData  = VersionModel::where($map)->order('update_version_id DESC')->find();
@@ -140,15 +140,14 @@ class AppInitiate extends ApiBase
 
             $returnVersionData['desc'] = $versionDescription['description'] ? $versionDescription['description'] : "";
 
-            if ($versionData['min_versioncode'] < $version   && $version  < $versionData['max_versioncode']) {
-                $returnVersionData['forceUpdate'] = 'F';
-                $returnVersionData['is_update'] = 2;
-            } elseif ($versionData && $version < $versionData['current_versioncode']) {
-                $returnVersionData['forceUpdate'] = 'A';
-                $returnVersionData['is_update'] = 1;
-            } else {
-                $returnVersionData['forceUpdate'] = 'N';
-                $returnVersionData['is_update'] = 0;
+            if ($versionData['is_new']) {
+                if ($versionData['min_versioncode'] < $version   && $version  < $versionData['max_versioncode']) {
+                    $returnVersionData['forceUpdate'] = 'F';
+                    $returnVersionData['is_update'] = 2;
+                } elseif ($versionData && $version < $versionData['current_versioncode']) {
+                    $returnVersionData['forceUpdate'] = 'A';
+                    $returnVersionData['is_update'] = 1;
+                }
             }
         }
 
