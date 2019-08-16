@@ -463,11 +463,11 @@ class Trips extends ApiBase
 
         //把行程的参与者id放到数组;
         $actor = [$uid];
-        if (!$isDriver) {
+        if (!$isDriver && $datas->carownid > 0) {
             $actor[] = $datas->carownid;
         } else {
             if ($from == 'info' && isset($datas->passengerid) && $datas->passengerid) {
-                $actor[] = $datas->passengerid;
+                $actor[] = intval($datas->passengerid);
             }
         }
 
