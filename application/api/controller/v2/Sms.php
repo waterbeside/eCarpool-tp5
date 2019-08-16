@@ -10,6 +10,7 @@ use app\score\model\AccountMix as ScoreAccountModel;
 use my\RedisData;
 use com\Nim as NimServer;
 use app\common\model\Configs;
+use app\user\model\UserOauth as UserOauthModel;
 
 use think\Db;
 
@@ -415,7 +416,7 @@ class Sms extends ApiBase
                 $AccountModel = new ScoreAccountModel();
                 $checkScoreAccount = $AccountModel->registerAccount($userData['loginname']);
                 if (!$checkScoreAccount || (isset($checkScoreAccount['code']) && $checkScoreAccount['code'] !== 0)) {
-                    $this->jsonReturn(-1, lang('Failed'));
+                    $this->jsonReturn(-1, null, lang('Failed'), ['debug'=>'查询或注册工号的积分账号失败']);
                 }
 
                 Db::connect('database_carpool')->startTrans();
@@ -436,10 +437,12 @@ class Sms extends ApiBase
                     ];
                     Db::connect('database_carpool')->table('user')->where('uid', $uid)->update($update_userData); //工号账号绑定手机号
                     $AccountModel->mergeScore($userData['loginname'], $phoneUserData['loginname'], $nowTime);
+                    // TODO: 解绑第三方账号
+                    $UserOauthModel = new UserOauthModel();
+                    $UserOauthModel->unbindByUid($phoneUserData['uid']);
                     // 提交事务
                     Db::connect('database_carpool')->commit();
                 } catch (\Exception $e) {
-                    // echo($e);
                     // 回滚事务
                     Db::connect('database_carpool')->rollback();
                     $logMsg = "合并账号失败:" . json_encode($this->request->post());
