@@ -73,13 +73,16 @@ class UserOauth extends AdminBase
      */
     public function delete($id)
     {
-        $userOauth = UserOauthModel::get($id);
+        $UserOauthModel = new UserOauthModel();
+        $userOauth = $UserOauthModel->where('id', $id)->find();
         if (!$userOauth) {
             return $this->jsonReturn(20002, '无此数据');
         }
-        $userOauth->is_delete = 1;
-        $userOauth->unbinding_date = date("Y-m-d H:i:s");
-        $res = $userOauth->save();
+        $res = $UserOauthModel->unbind([['id','=',$id]]);
+
+        // $uid = $userOauth->user_id;
+        // $res = $UserOauthModel->unbindByUid($uid);
+
 
         // if($this->user_model->where('uid', $id)->update(['is_delete' => 1])){
         if ($res !== false) {
