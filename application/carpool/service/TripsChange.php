@@ -197,11 +197,19 @@ class TripsChange
         $isDriver    = $driver_id == $uid ? true : false; //是否司机操作
         $map_type = $tripData->map_type;
         // $appid      = $map_type ? 2 : 1;
+        
+        $cnt_object_id = $id;
+        $cnt_from = $from;
+        if (isset($tripData->love_wall_ID) && $tripData->love_wall_ID > 0) {
+            $cnt_object_id = $tripData->love_wall_ID;
+            $cnt_from = 'wall';
+        }
+        
         $content = [
             'code' => 101,
             'data' => [
-                'object_id' => $id,
-                'from' => $from,
+                'object_id' => $cnt_object_id,
+                'from' => $cnt_from,
             ]
         ];
 
