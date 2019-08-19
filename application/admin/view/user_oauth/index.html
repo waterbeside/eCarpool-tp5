@@ -9,29 +9,35 @@
         <div class="layui-tab-content">
         <form class="layui-form layui-form-pane" action="{:url('admin/UserOauth/index')}" method="get">
             <div class="layui-inline">
-            <label class="layui-form-label">检索</label>
+                <label class="layui-form-label">检索</label>
 
-            <div class="layui-input-inline">
-                <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}"
-                placeholder="用户名|账号|电话" class="layui-input" style="width:140px">
-            </div>
-            <div class="layui-input-inline">
-                <input type="text" name="filter[keyword_dept]"
-                value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input"
-                style="width:100px">
-            </div>
-            <div class="layui-input-inline" style="width:120px">
-                <select name="filter[type]">
-                <option value="0" {if condition="$filter.type==0" } selected="selected" {/if}> 类型:不限</option> {foreach
-                    name="$typeList" key='key' item="vo" } <option value="{$key}" {if condition="$filter.type==$key" }
-                    selected="selected" {/if}> {$vo}</option> {/foreach} </select> </div> <div class="layui-input-inline"
-                    style="width:120px">
+                <div class="layui-input-inline">
+                    <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}"
+                    placeholder="用户名|账号|电话" class="layui-input" style="width:140px">
+                </div>
+                <div class="layui-input-inline">
+                    <input type="text" name="filter[keyword_dept]"
+                    value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input"
+                    style="width:100px">
+                </div>
+                <div class="layui-input-inline" style="width:120px">
+                    <select name="filter[type]">
+                        <option value="0" {if condition="$filter.type==0" } selected="selected" {/if}> 类型:不限</option>
+                        {foreach name="$typeList" key='key' item="vo" }
+                        <option value="{$key}" {if condition="$filter.type==$key" } selected="selected" {/if}> {$vo}</option>
+                        {/foreach}
+                    </select>
+                </div>
+                <div class="layui-input-inline"  style="width:120px">
                     <select name="filter[is_delete]">
-                    <option value="0" {if condition="$filter.is_delete==0" } selected="selected" {/if}> 状态:綁定</option>
+                        <option value="0" {if condition="$filter.is_delete==0" } selected="selected" {/if}> 状态:綁定</option>
                         <option value="1" {if condition="$filter.is_delete==1" } selected="selected" {/if}> 状态:已解绑</option>
-                        </select> </div> </div> <div class="layui-inline">
-                        <!-- <input type="hidden" name="export" value="0"> -->
-                        <button class="layui-btn"><i class="fa fa-search"></i></button>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <!-- <input type="hidden" name="export" value="0"> -->
+                <button class="layui-btn"><i class="fa fa-search"></i></button>
             </div>
         </form>
         <hr>
