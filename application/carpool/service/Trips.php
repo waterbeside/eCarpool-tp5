@@ -243,11 +243,12 @@ class Trips
 
 
     /**
-     * 通过id取得用户姓名
-     * @param  integer $uid      [对方id]
-     * @param  string  $message  [发送的内容]
+     * 推送消息
+     * @param  Integer $uid      [对方id]
+     * @param  String  $message  [发送的内容]
+     * @param  Array  $content   [要透传的数据]
      */
-    public function pushMsg($uid, $message, $appid = 1)
+    public function pushMsg($uid, $message, $content = null)
     {
         if (!$uid || !$message) {
             return false;
@@ -257,13 +258,13 @@ class Trips
             $res = [];
             foreach ($uid as $key => $value) {
                 if (is_numeric($value)) {
-                    $res[] = $PushMessage->add($value, $message, "拼车", 101, 101, 0);
+                    $res[] = $PushMessage->add($value, $message, "拼车", $content, 101, 101, 0);
                     // $res[] = $PushMessage->add($value, $message, lang("Car pooling"), 101,101, 0);
                     // $PushMessage->push($value,$message,lang("Car pooling"),2);
                 }
             }
         } elseif (is_numeric($uid)) {
-            $res = $PushMessage->add($uid, $message, "拼车", 101, 101, 0);
+            $res = $PushMessage->add($uid, $message, "拼车", $content, 101, 101, 0);
             // $res = $PushMessage->add($uid, $message, lang("Car pooling"), 101,101, 0);
             // $PushMessage->push($uid,$message,lang("Car pooling"),2);
         } else {

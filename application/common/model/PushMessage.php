@@ -17,11 +17,12 @@ class PushMessage extends Model
 
     /**
      * 添加消息推送
-     * @param integer $uid  [description]
-     * @param  $msg  [description]
-     * @param [type] $type [description]
+     * @param Integer $uid  目标用户id
+     * @param String $msg  消息
+     * @param String $title 标题
+     * @param Array $content 透传数据
      */
-    public function add($uid, $msg = "", $title = "", $module_id = 101, $type = 101, $is_notify = 0)
+    public function add($uid, $msg = "", $title = "", $content = null, $module_id = 101, $type = 101, $is_notify = 0)
     {
         $default_data = [
             'message_time' => date("Y-m-d H:i:s"),
@@ -40,6 +41,9 @@ class PushMessage extends Model
                 'module_id' => $module_id,
                 'message_type' => $type,
             ];
+            if (is_array($content)) {
+                $data['content'] = json_encode($content);
+            }
         }
         $data = array_merge($default_data, $data);
         return $this->insertGetId($data);

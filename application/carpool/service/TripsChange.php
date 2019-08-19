@@ -100,7 +100,9 @@ class TripsChange
 
             //如果是乘客从空座位操作, 则查出infoid，递归到from = info操作。
             if ($from == "wall" && !$isDriver) {
-                $infoDatas = InfoModel::where([["love_wall_ID", '=', $id], ['passengerid', "=", $uid], ['status', 'in', [0, 1, 4]]])->order("status")->find();
+                $infoDatas = InfoModel::where([["love_wall_ID", '=', $id], ['passengerid', "=", $uid], ['status', 'in', [0, 1, 4]]])
+                    ->order("status")
+                    ->find();
                 if (!$infoDatas) {
                     $checkCount = InfoModel::where([["love_wall_ID", '=', $id], ['passengerid', "=", $uid]])->order("status")->count();
                     if (!$checkCount) {
@@ -194,13 +196,21 @@ class TripsChange
         $driver_id   = $data['driver_id'];
         $isDriver    = $driver_id == $uid ? true : false; //是否司机操作
         $map_type = $tripData->map_type;
-        $appid      = $map_type ? 2 : 1;
+        // $appid      = $map_type ? 2 : 1;
+        $content = [
+            'code' => 101,
+            'data' => [
+                'object_id' => $id,
+                'from' => $from,
+            ]
+        ];
 
         if ($type == "cancel") {
             if ($isDriver) { // 如果是司机，则推给乘客
                 // $push_msg = lang("The driver {:name} cancelled the trip", ["name"=>$userData['name']]) ;
                 $push_msg = "司机" . $userData['name'] . "取消了行程";
-                $passengerids = $from == "wall" ?  InfoModel::where([["love_wall_ID", '=', $id], ["status", "in", [0, 1, 4]]])->column('passengerid') : $tripData->passengerid;
+                $passengerids = $from == "wall" ?
+                    InfoModel::where([["love_wall_ID", '=', $id], ["status", "in", [0, 1, 4]]])->column('passengerid') : $tripData->passengerid;
                 $sendTarget = $passengerids;
             } else { //如果乘客取消，则推送给司机
                 // $push_msg = lang("The passenger {:name} cancelled the trip", ["name"=>$userData['name']]) ;
@@ -230,7 +240,7 @@ class TripsChange
             return true;
         }
         $TripsService = new TripsService();
-        $TripsService->pushMsg($sendTarget, $push_msg, $appid);
+        $TripsService->pushMsg($sendTarget, $push_msg, $content);
         if ($TripsService->errorMsg) {
             return $this->error(-1, $TripsService->errorMsg);
         }
