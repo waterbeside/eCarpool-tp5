@@ -156,17 +156,17 @@ class SyncHr extends ApiBase
         }
 
         if ($res['code'] == -1) {
-            $userData = OldUserModel::where('loginname', $code)->find();
+            $userData = OldUserModel::where([['loginname', '=', $code]])->find();
             if (!$userData) {
                 return $this->jsonReturn_setCache([20002, $res, "用户不存在"], $cacheKey);
             }
-            if ($userData && $DepartmentModel->checkIsCheckLeave($userData)) {
-                if ($is_sync && $userData['is_delete'] < 1) {
-                    OldUserModel::where('uid', $userData['uid'])->update(['is_delete' => 1, 'modifty_time' => date("Y-m-d H:i:s")]);
-                }
-                return $this->jsonReturn_setCache([10003, $res, "用户已离积"], $cacheKey);
+            if (!$DepartmentModel->checkIsCheckLeave($userData)) {
+                return $this->jsonReturn_setCache([20002, $res, "用户无须同步"], $cacheKey);
             }
-            return $this->jsonReturn_setCache([20002, $res, "用户不存在"], $cacheKey);
+            if ($is_sync && $userData['is_delete'] < 1) {
+                OldUserModel::where([['loginname', '=', $code]])->update(['is_delete' => 1, 'modifty_time' => date("Y-m-d H:i:s")]);
+            }
+            return $this->jsonReturn_setCache([10003, $res, "用户已离积"], $cacheKey);
         }
         if ($is_sync) {
             try {
