@@ -17,10 +17,17 @@
             <div class="layui-inline">
                 <label class="layui-form-label">检索</label>
                 <div class="layui-input-inline">
-                <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
+                    <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|账号|电话" class="layui-input" style="width:140px" >
                 </div>
                 <div class="layui-input-inline">
-                <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
+                    <input type="text" name="filter[keyword_dept]" value="{$filter['keyword_dept'] ? $filter['keyword_dept'] :''}" placeholder="分厂|部门" class="layui-input" style="width:100px" >
+                </div>
+                <div class="layui-input-inline">
+                    <select name="filter[is_delete]">
+                        <option value="" <?php if(!isset($filter['is_delete']) || !is_numeric('is_delete') ){ echo 'selected="selected"';  } ?> > 是否被删：不限</option>
+                        <option value="0" <?php if(isset($filter['is_delete']) && is_numeric($filter['is_delete']) && $filter['is_delete'] == 0 ){ echo 'selected="selected"'; } ?> > 正常用户</option>
+                        <option value="1" <?php if(isset($filter['is_delete']) && is_numeric($filter['is_delete']) && $filter['is_delete'] == 1  ){ echo 'selected="selected"'; } ?> > 已删用户</option>
+                    </select>
                 </div>
             </div>
             <div class="layui-inline">
@@ -74,7 +81,7 @@
                 {php}echo $vo['sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
                 </td>
                 <td>
-                <a href="{:url('admin/nim/im_user',['uid'=>$vo['uid']])}"  class="layui-btn   layui-btn-xs " data-title="云信账号"  data-trigger="modal" title="編輯云帐号">IM</a>
+                <!-- <a href="{:url('admin/nim/im_user',['uid'=>$vo['uid']])}"  class="layui-btn   layui-btn-xs " data-title="云信账号"  data-trigger="modal" title="編輯云帐号">IM</a> -->
                 <a href="{:url('admin/user/edit',['id'=>$vo['uid']])}"  class="layui-btn   layui-btn-xs " data-title="編輯成員"  data-trigger="modal" title="編輯"><i class="layui-icon">&#xe642;</i></a>
                 <?php if(checkAuth('admin/SyncHr/sync_single')) { ?>
                     <a href="{:url('admin/SyncHr/sync_single',['code'=>$vo['loginname']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="同步HR用户" data-hint="是否同步用户?"><i class="fa fa-refresh"></i></a>

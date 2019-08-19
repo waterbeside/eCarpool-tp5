@@ -54,6 +54,11 @@ class User extends AdminBase
             $map[] = ['d.fullname|u.companyname|c.company_name', 'like', "%{$filter['keyword_dept']}%"];
             // $map[] = ['u.Department|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
         }
+        
+        //筛选是否被删的用户
+        if (isset($filter['is_delete']) && is_numeric($filter['is_delete'])) {
+            $map[] = ['u.is_delete', '=', $filter['is_delete']];
+        }
 
 
         $user_list = $this->user_model->alias('u')->field($fields)->join($join)
