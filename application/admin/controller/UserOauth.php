@@ -7,8 +7,8 @@ use app\user\model\UserOauth as UserOauthModel;
 use think\Db;
 
 /**
- * 用户
- * Class Slide
+ * 用户第三方账号
+ * Class UserOauth
  * @package app\admin\controller
  */
 class UserOauth extends AdminBase
