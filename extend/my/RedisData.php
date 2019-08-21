@@ -37,7 +37,7 @@ class RedisData extends Redis
     {
         if ($value === null) {
             return $this->delete($cacheKey);
-        } else if ($value !== false) {
+        } elseif ($value !== false) {
             $value = json_encode($value);
             if ($ex > 0) {
                 return $this->setex($cacheKey, $ex, $value);
