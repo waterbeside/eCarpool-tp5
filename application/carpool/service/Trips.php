@@ -214,7 +214,7 @@ class Trips
         if (is_string($unsetFields) && $unsetFields == "list") {
             $unsetFields = [
                 'p_companyname', 'd_companyname', 'p_company_id', 'd_company_id', 'p_department_id',
-                'd_department_id', 'p_sex', 'd_sex', 'like_count'
+                'd_department_id', 'like_count'
                 // ,'d_im_id','p_im_id'
                 // ,'start_longitude','start_latitude'
                 , 'start_addressid'
