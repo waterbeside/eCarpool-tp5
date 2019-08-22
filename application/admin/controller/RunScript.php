@@ -4,6 +4,7 @@ namespace app\admin\controller;
 
 use app\carpool\model\User as UserModel;
 use app\admin\controller\AdminBase;
+use Firebase\JWT\JWT;
 use my\RedisData;
 use my\Queue;
 use think\Db;
@@ -103,6 +104,80 @@ class RunScript extends AdminBase
             }
             $page = $page + 1;
             $url  = url('score_history_regionid_set', ['page' => $page]);
+        } else {
+            $msg .= "完成全部操作";
+        }
+        return $this->fetch('index/multi_jump', ['url' => $url, 'msg' => $msg]);
+    }
+
+
+    /**
+     * 重置jwt表的client字段
+     *
+     * @param integer $page
+     * @param integer $requeue
+     * @return void
+     */
+    public function reset_jwt_client($page = 0, $requeue = 0)
+    {
+        $JwtModel = app()->model('\app\user\model\JwtToken');
+
+        $queueKey = "common:queue:reset_jwt_client";
+        $Queue = Queue::key($queueKey);
+
+        $msg = "";
+        $url = "";
+
+        $runTime = date('Y-m-d H:i:s');
+
+
+        $len = $Queue->count();
+        if ($page < 1) {
+            if ($requeue || $len === 0) {
+                $Queue->delete();
+                $fields = 'id, uid, client, iss , token';
+                $lists = $JwtModel->field($fields)->select()->toArray();
+                $Queue->pushAll($lists, ['run_time' => $runTime]);
+                $msg .= "共查" . count($lists) . "条数据入列";
+            } else {
+                $msg .= "共查" . $len . "条数据入列";
+            }
+            $url  = url('reset_jwt_client', ['page' => 1, 'time' => $runTime]);
+            return $this->fetch('index/multi_jump', ['url' => $url, 'msg' => $msg]);
+        } else {
+            $msg .= "队列剩余" . $len . "条数据";
+            $lists = $Queue->pops(50);
+        }
+
+        if (count($lists) > 0) {
+            foreach ($lists as $key => $value) {
+                $msg .= "<br />";
+                $upMap = [
+                    ['id', '=', $value['id']],
+                ];
+                $jwtData = null ;
+                $id = $value['id'];
+                try {
+                    $jwtData = JWT::decode($value['token'], config('secret.front_setting')['jwt_key'], array('HS256'));
+                } catch (\Firebase\JWT\SignatureInvalidException $e) {
+                }
+                
+                if ($jwtData) {
+                    $upData = [
+                        'client' => $jwtData->client == 2 ? 'Android' : ( $jwtData->client == 1 ? 'iOS' : $jwtData->client),
+                    ];
+                    $res = $JwtModel::where($upMap)->update($upData);
+                }
+                
+
+                if ($res !== false) {
+                    $msg .=  "id:" . $id . "  OK";
+                } else {
+                    $msg .=  "id:" . $id . "  Failed";
+                }
+            }
+            $page = $page + 1;
+            $url  = url('reset_jwt_client', ['page' => $page]);
         } else {
             $msg .= "完成全部操作";
         }
