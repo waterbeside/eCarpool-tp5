@@ -53,22 +53,24 @@ class Trips extends ApiBase
                     return $this->jsonReturn(20002, lang('No data'));
                 }
                 $returnData = json_decode($cacheData, true);
-                return $this->jsonReturn(0, $returnData, "success");
             }
         }
-        $returnData = $TripsListService->myList($userData, $pagesize, $type);
 
-        if ($returnData === false) {
-            if (!$type) {
-                $redis->hSet($cacheKey, $cacheField, -1);
-                $redis->expire($cacheKey, 5);
+        if (!isset($returnData)) {
+            $returnData = $TripsListService->myList($userData, $pagesize, $type);
+            if ($returnData === false) {
+                if (!$type) {
+                    $redis->hSet($cacheKey, $cacheField, -1);
+                    $redis->expire($cacheKey, 5);
+                }
+                return $this->jsonReturn(20002, lang('No data'));
             }
-            return $this->jsonReturn(20002, lang('No data'));
+            if (!$type) {
+                $redis->hSet($cacheKey, $cacheField, json_encode($returnData));
+                $redis->expire($cacheKey, $cacheExp);
+            }
         }
-        if (!$type) {
-            $redis->hSet($cacheKey, $cacheField, json_encode($returnData));
-            $redis->expire($cacheKey, $cacheExp);
-        }
+        
         // TODO::添加显示乘客到列表
         foreach ($returnData['lists'] as $k => $v) {
             $returnData['lists'][$k]['passengers'] = $v['love_wall_ID'] > 0 ?
@@ -98,15 +100,17 @@ class Trips extends ApiBase
                 return $this->jsonReturn(20002, lang('No data'));
             }
             $returnData = json_decode($cacheData, true);
-            return $this->jsonReturn(0, $returnData, "success");
         }
 
-        $returnData = $TripsListService->history($userData, $pagesize);
-        if ($returnData === false) {
-            $redis->setex($cacheKey, $cacheExp, -1);
-            return $this->jsonReturn(20002, lang('No data'));
+        if (!isset($returnData)) {
+            $returnData = $TripsListService->history($userData, $pagesize);
+            if ($returnData === false) {
+                $redis->setex($cacheKey, $cacheExp, -1);
+                return $this->jsonReturn(20002, lang('No data'));
+            }
+            $redis->setex($cacheKey, $cacheExp, json_encode($returnData));
         }
-        $redis->setex($cacheKey, $cacheExp, json_encode($returnData));
+        
         // TODO::添加显示乘客到列表
         foreach ($returnData['lists'] as $k => $v) {
             $returnData['lists'][$k]['passengers'] = $v['love_wall_ID'] > 0 ?
@@ -222,6 +226,7 @@ class Trips extends ApiBase
         if (empty($status)) {
             $status = "neq|2";
         }
+        $TripsService = new TripsService();
 
         $res = false;
         if ($status == 'neq|2') {
@@ -234,7 +239,6 @@ class Trips extends ApiBase
         
         
         if ($res === false) {
-            $TripsService = new TripsService();
             $res =  $this->info_list("", $status, 0, $id, 0, 'status ASC, time ASC');
             if ($status == 'neq|2') {
                 $redis->cache($cacheKey, $res, $exp);
