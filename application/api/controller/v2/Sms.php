@@ -290,7 +290,7 @@ class Sms extends ApiBase
                 $token =  $scoreConfigs['score_token'];
                 $postData = [
                     'phone' => $phone,
-                    'clinet' => $client,
+                    'client' => $client,
                     'token' => $token,
                 ];
 
