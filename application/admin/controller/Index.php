@@ -4,6 +4,7 @@ namespace app\admin\controller;
 
 use think\facade\Config;
 use app\admin\controller\AdminBase;
+use app\admin\service\Server;
 use think\Db;
 
 /**
@@ -26,6 +27,13 @@ class Index extends AdminBase
     {
 
         $version = Db::query('SELECT VERSION() AS ver');
+        $Server = new Server();
+        try {
+            $CPU1= $Server->GetCPUUse();
+            sleep(1);
+            $CPU2= $Server->GetCPUUse();
+        } catch (\Exception $e) {
+        }
         $config  = [
             'url'             => $_SERVER['HTTP_HOST'],
             'document_root'   => $_SERVER['DOCUMENT_ROOT'],
@@ -34,9 +42,11 @@ class Index extends AdminBase
             'server_soft'     => $_SERVER['SERVER_SOFTWARE'],
             'php_version'     => PHP_VERSION,
             'mysql_version'   => $version[0]['ver'],
-            'max_upload_size' => ini_get('upload_max_filesize')
+            'max_upload_size' => ini_get('upload_max_filesize'),
+            'disk' => $Server->getDisk(),
+            'memory' => $Server->getMemory(),
+            'cpu' => isset($CPU1) && isset($CPU2) ? $Server->getCPUPercent($CPU1, $CPU2) : [],
         ];
-        // dump(Config::get());
         return $this->fetch('main', ['config' => $config]);
     }
 
