@@ -107,10 +107,11 @@ class JwtToken extends BaseModel
         $tokenActive = $this->getActiveToken($uid);
         if ($tokenActive != $token) {
             $data = $this->getByToken($token);
+            $client = strtolower($data['client']);
             if ($data) {
                 $this->errorData = [
                     'uid' => $data['uid'],
-                    'platform' => $data['client'] == 'iOS' ? 1 : $data['client'] == 'Android' ? 2 : 0,
+                    'platform' => $client == 'iso' ? 1 : $client == 'android' ? 2 : 0,
                     'iss' => $data['iss'],
                     'token' => $data['token'],
                     'iat' => $data['iat'],
@@ -157,7 +158,8 @@ class JwtToken extends BaseModel
         $client = strtolower($jwtData->client);
         $data = [
             'uid' => $jwtData->uid,
-            'client' => $client === 'ios' ? 'iOS' : $client === 'android' ? 'Android' : $jwtData->client,
+            'client' => $jwtData->client == 2 ? 'Android' : ( $jwtData->client == 1 ? 'iOS' : $jwtData->client),
+            // 'client' => $client === 'ios' ? 'iOS' : ($client === 'android' ? 'Android' : $jwtData->client),
             'iss' => $jwtData->iss,
             'token' => $token,
             'iat' => $jwtData->iat,
