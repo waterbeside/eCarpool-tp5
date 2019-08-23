@@ -255,7 +255,7 @@ class Trips extends ApiBase
             $map[] = ['t.map_type', '=', $map_type];
         }
 
-        $returnData = $TripsListService->info_list($map, $pagesize, $wid, $orderby);
+        $returnData = $TripsListService->info_list($map, $pagesize, $orderby);
         if ($returnData === false) {
             return $this->jsonReturn(20002, lang('No data'));
         }
