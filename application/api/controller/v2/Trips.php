@@ -74,7 +74,7 @@ class Trips extends ApiBase
         // TODO::添加显示乘客到列表
         foreach ($returnData['lists'] as $k => $v) {
             $returnData['lists'][$k]['passengers'] = $v['love_wall_ID'] > 0 ?
-                $this->passengers($v['love_wall_ID'], null, 0, ['p_name','p_sex','status','subtime','time'], 20) : null;
+                $this->passengers($v['love_wall_ID'], null, 0, ['p_name','p_sex','status','subtime','time'], 20) : [];
         }
         $this->jsonReturn(0, $returnData, "success");
     }
@@ -114,7 +114,7 @@ class Trips extends ApiBase
         // TODO::添加显示乘客到列表
         foreach ($returnData['lists'] as $k => $v) {
             $returnData['lists'][$k]['passengers'] = $v['love_wall_ID'] > 0 ?
-                $this->passengers($v['love_wall_ID'], null, 0, ['p_name','p_sex','status','subtime','time'], 3600) : null;
+                $this->passengers($v['love_wall_ID'], null, 0, ['p_name','p_sex','status','subtime','time'], 3600) : [];
         }
         $this->jsonReturn(0, $returnData, "success");
         // $TripsService->unsetResultValue($this->index($pagesize, 1, 1));
@@ -261,7 +261,7 @@ class Trips extends ApiBase
         }
         $code = $res && count($res['lists']) > 0 ? 0  : 20002;
         $msg =  $res && count($res['lists']) > 0 ? 'Successful'  : 'No data';
-        return $returnType ? $this->jsonReturn($code, $res, $msg) : $res['lists'] ;
+        return $returnType ? $this->jsonReturn($code, $res, $msg) : ( $res['lists'] ? $res['lists'] : [] );
     }
 
 
