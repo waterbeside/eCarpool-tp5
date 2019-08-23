@@ -74,7 +74,7 @@ class Trips extends ApiBase
         // TODO::添加显示乘客到列表
         foreach ($returnData['lists'] as $k => $v) {
             $returnData['lists'][$k]['passengers'] = $v['love_wall_ID'] > 0 ?
-                $this->passengers($v['love_wall_ID'], null, 0, ['p_name','p_sex','status','subtime','time'], 20) : [];
+                $this->passengers($v['love_wall_ID'], null, 0, ['p_name','p_sex','status','subtime','time'], 20) : null;
         }
         $this->jsonReturn(0, $returnData, "success");
     }
@@ -114,7 +114,7 @@ class Trips extends ApiBase
         // TODO::添加显示乘客到列表
         foreach ($returnData['lists'] as $k => $v) {
             $returnData['lists'][$k]['passengers'] = $v['love_wall_ID'] > 0 ?
-                $this->passengers($v['love_wall_ID'], null, 0, ['p_name','p_sex','status','subtime','time'], 3600) : [];
+                $this->passengers($v['love_wall_ID'], null, 0, ['p_name','p_sex','status','subtime','time'], 3600) : null;
         }
         $this->jsonReturn(0, $returnData, "success");
         // $TripsService->unsetResultValue($this->index($pagesize, 1, 1));
@@ -185,16 +185,16 @@ class Trips extends ApiBase
             ];
         } else {
             $map = [
-                // ['p.company_id','=',$company_id], // from buildCompanyMap;
-                // ['love_wall_ID','>',0],
-                // ['go_time','between time',[date('YmdHi',$time_s),date('YmdHi',$time_e)]],
                 ['t.time', '<', (date('YmdHi', $time_e))],
                 ['t.time', '>', (date('YmdHi', $time_s))],
             ];
+            if (is_numeric($map_type)) {
+                $map[] = ['t.map_type', '=', $map_type];
+            }
+            $map[] = $TripsService->buildCompanyMap($userData, 'p');
         }
 
 
-        $map[] = $TripsService->buildCompanyMap($userData, 'p');
         $map[] = $TripsService->buildStatusMap($status);
         // dump($map);exit;
         if ($keyword) {
@@ -203,11 +203,10 @@ class Trips extends ApiBase
         if ($city) {
             $map[] = ['s.city', '=', $city];
         }
-        if (is_numeric($map_type)) {
-            $map[] = ['t.map_type', '=', $map_type];
-        }
 
-        $returnData = $TripsListService->info_list($map, $pagesize, $wid, $orderby);
+        $returnData = $TripsListService->info_list($map, $pagesize, $orderby);
+        
+
         if ($returnType && $returnData === false) {
             return $this->jsonReturn(20002, lang('No data'));
         }
