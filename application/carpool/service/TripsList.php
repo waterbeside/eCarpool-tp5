@@ -164,7 +164,7 @@ class TripsList
     /**
      * 取得需求列表
      */
-    public function info_list($map, $pagesize = 20, $wid = 0, $orderby = 'time ASC, t.infoid ASC ')
+    public function info_list($map, $pagesize = 20, $orderby = 'time ASC, t.infoid ASC ')
     {
         $TripsService = new TripsService();
 
@@ -174,7 +174,7 @@ class TripsList
 
         $modelObj =  InfoModel::alias('t')->field($fields)->join($join)->where($map)->order($orderby);
         // $sql = $modelObj->fetchSql()->select();
-        if ($pagesize > 0 || $wid > 0) {
+        if ($pagesize > 0) {
             $results =    $modelObj->paginate($pagesize, false, ['query' => request()->param()])->toArray();
 
             if (!$results['data']) {
