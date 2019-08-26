@@ -236,12 +236,11 @@ class UserTemp extends Model
             $name_arr2 = explode(')', $name_arr[1]);
             $returnData['name'] = trim($name_arr2[0]);
             // $returnData['general_name'] = trim($name_arr[0]);
-            $returnData['general_name'] = trim($str);
         } else {
             // $returnData['name'] = '';
             $returnData['name'] = trim($name_arr[0]);
-            // $returnData['general_name'] = trim($name_arr[0]);
         }
+        $returnData['general_name'] = trim($str);
         return $returnData;
     }
 
