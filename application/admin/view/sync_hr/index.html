@@ -146,7 +146,7 @@
         sync: function (type, tid) {
             var _this = this;
             if (type == 'all') {
-                openLayer('{:url('sync_all ',['type '=>1,'page '=>1,'return '=>1])}', '同步');
+                openLayer('{:url('sync_all',['type'=>1,'page'=>1,'return'=>1])}', '同步');
             } else if (type == "single") {
                 var $target = $(event.target);
                 var $row = $target.closest('tr')
