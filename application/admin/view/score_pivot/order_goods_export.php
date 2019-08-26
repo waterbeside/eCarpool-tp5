@@ -10,7 +10,7 @@ $filename =  md5(json_encode($filter)) . '_' . $status . '_' . time() . ($encodi
 
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
-$start_ab = 10;
+$start_ab = 11;
 $start_ab_c = $start_ab;
 
 /*设置表头*/
@@ -23,7 +23,8 @@ $sheet->setCellValue('A1', lang('Order number'))
     ->setCellValue('G1', lang('Branch'))
     ->setCellValue('H1', lang('Order time'))
     ->setCellValue('I1', lang('Prize name'))
-    ->setCellValue('J1', lang('Status'));
+    ->setCellValue('J1', lang('Status'))
+    ->setCellValue('k1', lang('Consumption points'));
 
 //把商品设到表头
 foreach ($goodsList as $k => $vo) {
@@ -48,7 +49,8 @@ foreach ($lists as $key => $value) {
         ->setCellValue('G' . $rowNum, $value['user']['companyname'])
         ->setCellValue('H' . $rowNum, $value['creation_time'])
         ->setCellValue('I' . $rowNum, $goodStr)
-        ->setCellValue('J' . $rowNum, $value['status']);
+        ->setCellValue('J' . $rowNum, $value['status'])
+        ->setCellValue('K' . $rowNum, $value['total']);
     $sheet->getStyle('I' . $rowNum)->getAlignment()->setWrapText(true);
     $start_ab_c = $start_ab;
     foreach ($goodsList as $k => $vo) {

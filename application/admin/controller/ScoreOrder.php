@@ -177,7 +177,8 @@ class ScoreOrder extends AdminBase
                 ->setCellValue('G1', lang('Branch'))
                 ->setCellValue('H1', lang('Order time'))
                 ->setCellValue('I1', lang('Prize name'))
-                ->setCellValue('J1', lang('Status'));
+                ->setCellValue('J1', lang('Status'))
+                ->setCellValue('k1', lang('Consumption points'));
 
             foreach ($lists as $key => $value) {
                 $rowNum = $key + 2;
@@ -196,7 +197,8 @@ class ScoreOrder extends AdminBase
                     ->setCellValue('G' . $rowNum, $value['companyname'])
                     ->setCellValue('H' . $rowNum, $value['creation_time'])
                     ->setCellValue('I' . $rowNum, $goodStr)
-                    ->setCellValue('J' . $rowNum, $value['status']);
+                    ->setCellValue('J' . $rowNum, $value['status'])
+                    ->setCellValue('K' . $rowNum, $value['total']);
                 $sheet->getStyle('I' . $rowNum)->getAlignment()->setWrapText(true);
             }
             /*$value = "Hello World!" . PHP_EOL . "Next Line";
