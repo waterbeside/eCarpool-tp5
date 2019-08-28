@@ -7,13 +7,12 @@ use app\common\model\Apps as AppsModel;
 use think\Db;
 
 /**
- * 友情链接
- * Class Link
+ * APP管理
+ * Class Apps
  * @package app\admin\controller
  */
 class Apps extends AdminBase
 {
-    protected $link_model;
 
     protected function initialize()
     {

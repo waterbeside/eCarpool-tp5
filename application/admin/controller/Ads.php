@@ -10,7 +10,7 @@ use app\user\model\Department;
 
 /**
  * 广告图管理
- * Class Slide
+ * Class Ads
  * @package app\admin\controller
  */
 class Ads extends AdminBase
