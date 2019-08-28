@@ -68,4 +68,33 @@ class Address extends Model
         unset($data['longtitude']);
         return $data;
     }
+
+
+    /**
+     * 高德逆地理编码查询
+     *
+     * @param string|array $lnglat 经纬度或经纬度列表，经续度为"lng,lat"格式字符串
+     */
+    public function regeo($lnglat)
+    {
+        
+        $location = $lnglat ;
+        $batch = false;
+        if (is_array($lnglat)) {
+            $batch = true;
+            $location = join('|', $lnglat);
+        }
+        $data = [
+            'location' => $location,
+            'key' => config('secret.amap_key.web'),
+            'batch' => $batch,
+        ];
+
+        try {
+            $res = clientRequest('https://restapi.amap.com/v3/geocode/regeo', ['query'=>$data], 'get');
+            return $res;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
 }

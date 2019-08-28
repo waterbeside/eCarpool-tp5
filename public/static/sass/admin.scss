@@ -19,19 +19,19 @@ $height-header:60px;
 
 
 select.my-select {
-   $height:38px;
-   height: $height;
-   // line-height: $height;
-   border-radius: 3px;
-   border-color: $color-border;
-   vertical-align: middle;
-   text-transform: none;
-   word-wrap: normal;
-   -webkit-appearance: none;
-   padding:0 24px 0 8px;
-   background-image: url('../images/caret-down.gif');
-   background-position: right 8px center;
-   background-repeat: no-repeat;
+  $height:38px;
+  height: $height;
+  // line-height: $height;
+  border-radius: 3px;
+  border-color: $color-border;
+  vertical-align: middle;
+  text-transform: none;
+  word-wrap: normal;
+  -webkit-appearance: none;
+  padding:0 24px 0 8px;
+  background-image: url('../images/caret-down.gif');
+  background-position: right 8px center;
+  background-repeat: no-repeat;
 }
 .my-input-prebox {
   display: inline-block; margin: 2px -6px 2px 0 ;vertical-align: middle;
@@ -67,7 +67,7 @@ select.my-select {
     color:$color-silver-d3;
     tbody tr:hover {background-color: darken($color-dark-white,3%);}
     thead tr{
-       background-color: lighten($color-silver-l2,15%);
+      background-color: lighten($color-silver-l2,15%);
     }
     td, th {border-color:lighten($color-silver-l2,10%)}
     &-box {
@@ -95,7 +95,7 @@ select.my-select {
     }
   }
 }
- 
+
 
 .blank10 {@include blank(10px)}
 .blank12 {@include blank(12px)}
@@ -137,9 +137,9 @@ body {background:#FFF; color:$color-black-l1}
 .t-number , .layui-table th.t-number { text-align: right}
 
 .aframe-box{
-   width:100%;   height:100%;   overflow: hidden; display: flex;   display: -webkit-flex;
-   position:absolute;   top:$height-header; left:0; right:0;   bottom:0;   z-index: 1;
-   & > .aframe-sidebox{ width:200px;   flex:0 0 auto; height:100%; z-index: 8}
+  width:100%;   height:100%;   overflow: hidden; display: flex;   display: -webkit-flex;
+  position:absolute;   top:$height-header; left:0; right:0;   bottom:0;   z-index: 1;
+  & > .aframe-sidebox{ width:200px;   flex:0 0 auto; height:100%; z-index: 8}
 }
 
 
@@ -619,30 +619,84 @@ body {background:#FFF; color:$color-black-l1}
   }
   .map-content { height: 100%; position: relative; z-index: 0}
   .member-bar {
-     background: #FFF;  width: 100%; overflow: hidden; overflow-x:scroll;
-     border-top:1px solid #DDD; box-shadow: 0 -10px 10px rgba(0,0,0,.1);
-     &-inner {  position: relative; z-index: 1;  display: flex;   }
-     .avatar { float: left; margin-right: 8px; width: 36px; height:36px; border-radius: 50%; background-size: cover; background-position: center;}
-   }
-   .member-item {
-     box-sizing: border-box;padding: 8px 12px 12px;
-     position: relative; min-width: 160px; display: block; width: 100%;
-     border-right: 1px solid rgb(199, 215, 224); border-bottom: 1px solid rgb(199, 215, 224);
-     .type {position: absolute; transform: scale(.8) translate(-4px,-4px);left: 0; top:0; padding: 2px 4px; background: rgb(53, 94, 94); color: #FFF; font-size: 12px; }
-     .phone { font-size: 10px;}
-     .department { font-size: 10px; color:#ddd}
-     &.driver {
-       background: rgb(235, 239, 244);
-       .type { background:rgb(56, 102, 157); }
-     }
-     &.passenger {
-       background: rgb(235, 244, 240);
-       .type { background:rgb(56, 157, 90); }
-     }
-   }
-   .info-table { margin-top: 0;
-     .department { color: #aaa}
-   }
+    background: #FFF;
+    width: 100%;
+    overflow: hidden;
+    overflow-x: scroll;
+    border-top: 1px solid #DDD;
+    box-shadow: 0 -10px 10px rgba(0, 0, 0, .1);
+
+    &-inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+    }
+
+    .avatar {
+      float: left;
+      margin-right: 8px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+    }
+  }
+
+  .member-item {
+    box-sizing: border-box;
+    padding: 8px 12px 12px;
+    position: relative;
+    min-width: 160px;
+    display: block;
+    width: 100%;
+    border-right: 1px solid rgb(199, 215, 224);
+    border-bottom: 1px solid rgb(199, 215, 224);
+
+    .type {
+      position: absolute;
+      transform: scale(.8) translate(-4px, -4px);
+      left: 0;
+      top: 0;
+      padding: 2px 4px;
+      background: rgb(53, 94, 94);
+      color: #FFF;
+      font-size: 12px;
+    }
+
+    .phone {
+      font-size: 10px;
+    }
+
+    .department {
+      font-size: 10px;
+      color: #ddd
+    }
+
+    &.driver {
+      background: rgb(235, 239, 244);
+
+      .type {
+        background: rgb(56, 102, 157);
+      }
+    }
+
+    &.passenger {
+      background: rgb(235, 244, 240);
+
+      .type {
+        background: rgb(56, 157, 90);
+      }
+    }
+  }
+
+  .info-table {
+    margin-top: 0;
+
+    .department {
+      color: #aaa
+    }
+  }
 
 }
 
@@ -719,7 +773,7 @@ body {background:#FFF; color:$color-black-l1}
   .total-item-carpool { min-width: 300px; width: 100%}
   .total-value {
     .small { float: left; display: inline-block; text-align: left;
-     span { display: block; font-size: 14px;}
+      span { display: block; font-size: 14px;}
     }
   }
   &-area { background: #FFF;}
@@ -736,14 +790,14 @@ body {background:#FFF; color:$color-black-l1}
     dt { font-size: 16px; }
     dd { text-align: center; font-size: 30px; transition: all 2s ease-in-out}
     &-total dd {font-size: 50px}
-   }
-   .total-item-minus { background: rgb(252, 240, 239); color:#cc5956;
-      h3 {   color:#cc5956}
-   }
-   .total-item-diff {
-     background: rgb(255, 249, 226); color:#ff9900;
-     h3 {   color:#ed9c13}
-   }
+  }
+  .total-item-minus { background: rgb(252, 240, 239); color:#cc5956;
+    h3 {   color:#cc5956}
+  }
+  .total-item-diff {
+    background: rgb(255, 249, 226); color:#ff9900;
+    h3 {   color:#ed9c13}
+  }
 }
 
 .P-winners-list .is_exchange-wrapper .layui-form-select { width:140px}
@@ -847,18 +901,18 @@ body {background:#FFF; color:$color-black-l1}
 
     }
     .item {
-     margin: 8px 0 0 8px;padding: 2px 4px; border:1px solid #ccc; border-radius: 3px; display: inline-block;
-     font-size: 12px; background: $color-gray;
-     animation: fadeInDown .4s linear 1 ;
+    margin: 8px 0 0 8px;padding: 2px 4px; border:1px solid #ccc; border-radius: 3px; display: inline-block;
+    font-size: 12px; background: $color-gray;
+    animation: fadeInDown .4s linear 1 ;
 
-     .close { margin-left: 8px; }
-     &.delete {
-       animation: fadeOutUp .3s linear 1 ; opacity: 0;
-     }
+    .close { margin-left: 8px; }
+    &.delete {
+      animation: fadeOutUp .3s linear 1 ; opacity: 0;
     }
-    .btns-wrapper {
-       text-align: right; padding: 4px 8px 0 0;
-    }
+  }
+  .btns-wrapper {
+      text-align: right; padding: 4px 8px 0 0;
+  }
   }
 }
 
@@ -962,4 +1016,129 @@ body {background:#FFF; color:$color-black-l1}
     }
 
   }
+}
+
+.P-address-maplist {
+  display: flex; flex-direction: row; align-items:stretch; justify-content:space-between;
+  .search-box {
+    display: flex;
+  }
+  .listbar {
+    position: relative;
+    overflow: hidden;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content:space-between;
+    width: 420px;
+    height: 100%;
+    border-right: 1px solid #DDD;
+    box-shadow: 0 0 10px rgba(0,0,0,.1);
+    // min-width: 200px
+  }
+  .pagination-wrapper {
+    text-align: center;
+    .layui-laypage {
+      display: flex; justify-content:space-between;
+      margin: 0 0 -5px;
+
+    }
+  }
+  .list-wrapper {
+    height: 100%;
+    overflow-y: scroll;
+    padding: 8px;
+    .item {
+      position: relative;
+      padding: 8px 4px ;
+      border-bottom: 1px solid $color-border;
+      font-size: 12px;
+      .id { color: $color-silver;}
+      .city { color: $color-silver; float: right;}
+      .title { font-size: 16px; color: $color-black-l1}
+      .geo { color: lighten($color-primary, 20%); }
+      .time { color: lighten($color-primary, 30%); }
+      &:hover {
+        background: $color-gray-l2;
+      }
+      &.current {
+        background: #FFF;
+        .title {
+          font-weight: 700; 
+          color: darken($color-primary,10%)
+        }
+      }
+    }
+    .no-data { text-align: center;}
+  }
+  
+  .mapbar {
+    display: flex; flex-direction: column; justify-content: space-between;
+    width:100%; height: 100%;
+    .map-content {
+      height: 100%;
+    }
+    .panel-box {
+      width: 100%;   
+      // background: rgb(252, 247, 241);
+      background: $color-black;
+      color:$color-gray;
+      border-top: 1px solid $color-border;
+      bottom: 0; right: 0;
+      .detail {
+        $padding-x :16px; 
+        $padding-y :8px; 
+        display: flex; justify-content: space-between;
+        .btn-edit {
+          margin-left: 4px;
+          color: $color-silver;
+          font-size: 12px;
+          &:hover { color: $color-dark-white}
+        }
+        .addressname-edit {
+          display: none;
+          input { width: 200px}
+        }
+        .data-box {
+          padding:$padding-y $padding-x;
+          position: relative;
+          font-size:12px;
+          h3 {
+            color: $color-silver; font-weight: 300;
+          }
+          
+          .loading { margin-top:15px; font-size: 18px; text-align: center}
+          .city {
+            color: rgb(255, 245, 158); 
+          }
+          .btnbar {
+            position: absolute; right: $padding-x; bottom: $padding-y;
+          }
+          .btn-revise {
+            display: none;
+            &.show { display: inline-block;}
+          }
+        }
+        .data-1 {
+          flex:2;
+          border-right: 1px dotted $color-silver; 
+          .id { position: absolute; right: $padding-x; top:$padding-y; color: $color-silver; }
+          .time { color: $color-silver-l1; }
+          .title { color: #FFF; font-size: 16px; }
+          .city { float:right}
+          .uid { 
+            a { color: rgb(224, 188, 188)}
+          }
+        }
+        .data-2 {
+          flex:1;
+          .city {
+            margin-left:12px;  float: right;
+          }
+          .citycode { opacity: .5;}
+        }
+      }
+    }
+  }
+  
 }

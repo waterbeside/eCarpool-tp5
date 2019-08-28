@@ -1,0 +1,420 @@
+{extend name="base" /}
+
+{block name="body"}
+
+
+
+<div class="amain-body P-address-maplist">
+    <!-- 列表 -->
+    <div class="listbar">
+        <form onsubmit='return PAGE_EXEC.doSearch()'>
+            <div class="search-box">
+                <input type="text" name="keyword" value="" placeholder="站点名" class="layui-input" >
+                <button class="layui-btn" ><i class="fa fa-search"></i></button>
+            </div>
+        </form>
+        
+        <div class="list-wrapper">
+            <ul id="j-list"> </ul>
+        </div>
+        
+        <div id="my-list-page" class="pagination-wrapper"></div>
+
+    </div>
+    <!-- 地图 -->
+    <div class="mapbar">
+        <div id="container" class="container map-content"></div>
+        <div id="panel-box" class="panel-box"></div>
+    </div>
+</div>
+
+{/block}
+{block name="js"}
+
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.10&key=<?php echo config('secret.amap_key.default') ?>&plugin=AMap.Geocoder,AMap.ToolBar"></script>
+<script src="__JS__/underscore-min.js"></script>
+
+{/block}
+{block name="script"}
+<script id="j-list-tpl" type="text/html">
+    {{#  layui.each(d, function(index, item){ }}
+        <li class="item item-{{ item.addressid }}" onclick="PAGE_EXEC.handleClickItem({{ item.addressid }})">
+            <span class="id"># {{ item.addressid }}</span>
+            <span class="city">{{ item.city }}</span>
+            <div class="title">{{ item.addressname }}</div>
+            <div class="time">{{ item.create_time }}</div>
+            <div class="geo">{{ item.longtitude }}, {{ item.latitude }}</div>
+        </li>
+    {{#  }); }}
+    {{#  if(d.length === 0){ }}
+        <li class="no-data"> 无数据 </li>
+    {{#  } }} 
+</script>
+
+<script id="j-detail-tpl" type="text/html">
+    <div class="detail">
+        <div class="data-box data-1">
+            <h3>数据查询</h3>
+            <span class="id"># {{ d.item.addressid }}</span>
+            <div class="city">{{ d.item.city }} </div>
+            <div class="title">
+                <span class="addressname-text">{{ d.item.addressname }} </span>
+                <a class="btn-edit" href="javascript:void(0)" onclick="PAGE_EXEC.edit('addressname',true)"><i class="fa fa-pencil"></i></a>
+            </div>
+            <div class="addressname-edit">
+                <div class="layui-input-inline">
+                    <input type="text" name="addressname" value="{{ d.item.addressname }}" placeholder="站点名" class="layui-input" >
+                </div>
+                <div class="layui-input-inline">
+                        <button class="layui-btn layui-btn-primary" onclick="PAGE_EXEC.edit('addressname',false)"><i class="fa fa-times"></i></button>
+                    </div>
+                <div class="layui-input-inline">
+                    <button class="layui-btn" onclick="PAGE_EXEC.submitEdit({{ d.item.addressid }},'addressname')"><i class="fa fa-check"></i></button>
+                </div>
+
+            </div>
+            <div class="geo">{{ d.item.longtitude }}, {{ d.item.latitude }}</div>
+            <div class="time">{{ d.item.create_time }}</div>
+            <div class="uid">
+                <a href="{:url('admin/User/public_detail')}"  data-data="id={{ d.item.create_uid }}" data-title="用户详情"  data-trigger="modal" title="用户详情">
+                    UID: {{ d.item.create_uid }}
+                </a>
+            </div>
+            <div class="btnbar">
+                <a class="layui-btn layui-btn-xs btn-revise" onclick="PAGE_EXEC.cityRevise({{ d.item.addressid }})">校正城市</a>
+            </div>
+        </div>
+        <div class="data-box data-2">
+            <h3>地图查询</h3>
+            {{#  if(typeof(d.geo) === 'undefined'){ }}
+                <div class="loading"> <i class="fa fa-spinner fa-spin"></i></div>
+            {{#  } else if (d.geo === false) { }} 
+                <div class="nodata">查询失败</div>
+            {{#  } else { }} 
+                    <span class="city">
+                    {{ d.geo.addressComponent.city || d.geo.addressComponent.province}} <br/> 
+                    <small class="citycode">{{ d.geo.addressComponent.citycode }}</small>
+                </span>
+                <span class="address">{{ d.geo.formattedAddress }}</span>
+            {{#  } }} 
+
+            
+        </div>
+        
+    </div>
+</script>
+
+<script>
+    PAGE_EXEC = {
+
+        data: {
+            mapObj: null,
+            geocoder: null,
+            marker: null,
+            mapLayer: null,
+            list:null,
+            keyword:'',
+            page:1,
+            revising: false,
+            submiting: false,
+        },
+
+        init: function () {
+            this.setMap();
+            this.getList();
+        },
+
+        /**
+         * 取得列表数据
+         **/
+        getList: function () {
+            var _this = this;
+            var keyword = this.data.keyword;
+            var data = {};
+            if(keyword){
+                data.filter = { keyword : keyword};
+            }
+            data.page = _this.data.page;
+
+            var loading = layer.load(2,{ shade: [0.2,'#fff']});
+
+            $.ajax({
+                type:"get",
+                dataType:"json",
+                url:"{:url('admin/address/index',['type'=>1])}",
+                data: data
+            }).then(function(res){;
+                if (res.code === 0) {
+                    var data = res.data
+                    
+                    if (data.page.currentPage === 1) {
+                        var laypage = layui.laypage;
+                        laypage.render({
+                            elem: 'my-list-page' //注意，这里的 test1 是 ID，不用加 # 号
+                            ,count: data.page.total //数据总数，从服务端得到
+                            ,limit: data.page.pageSize
+                            ,layout: ['prev', 'skip', 'next' ]
+                            ,groups: 3
+                            ,prev: "<i class='fa fa-chevron-left'></i>"
+                            ,next: "<i class='fa fa-chevron-right'></i>"
+                            ,jump: function(obj, first){
+                                // console.log(obj.curr); //得到当前页，以便向服务端请求对应页的数据。
+                                // console.log(obj.limit); //得到每页显示的条数
+                                //首次不执行
+                                if(!first){
+                                    _this.data.page = obj.curr;
+                                    // console.log(_this.data.page)
+                                    _this.getList();
+                                }
+                                return false;
+                            }
+                        });
+
+                    }
+                    var idkList = {};
+                    for (var i in data.lists) {
+                        var item = data.lists[i];
+                        idkList[item.addressid] = item;
+                    }
+                    _this.data.list = idkList;
+                    _this.rennderList();
+                    $('.list-wrapper').scrollTop(0);
+
+                } else {
+                    layer.msg(res.desc);
+                }
+                layer.close(loading);
+
+            }).catch(function(err){
+                layer.close(loading);
+            })
+        },
+
+        /**
+         * 执行搜索
+         **/
+        doSearch: function(){
+            var keyword = $('input[name="keyword"]').val();
+            this.data.keyword = keyword;
+            this.data.page = 1 ;
+            this.getList();
+            return false;
+        },
+
+        /**
+         * 地图设置
+         **/
+        setMap: function () {
+            var dtd = $.Deferred();
+            var map = new AMap.Map("container", {
+                resizeEnable: true,
+                zoom: 6
+
+            });
+            var toolBar = new AMap.ToolBar({
+                visible: true
+            });
+            map.addControl(toolBar);
+            
+            this.data.mapObj = map;
+            return dtd.promise();
+        },
+
+        /**
+         * 点击列表条目时
+         **/
+        handleClickItem: function (id) {
+            var _this = this;
+            var item = this.data.list[id];
+            var map = this.data.mapObj;
+            var $itembox = $('.item-'+id);
+            if (!item) {
+                return false;
+            }
+            if ($itembox.hasClass('current')) {
+                return false;
+            }
+            $itembox.addClass('current').siblings('.item').removeClass('current');
+
+            console.log(item);
+            var lnglat = [item.longtitude, item.latitude];
+            console.log(lnglat)
+            setTimeout(function(){
+                map.setFitView();
+            },400)
+            var data = {
+                item: item,
+            }
+            _this.renderDetail(data);
+            
+            this.regeoCode(lnglat,function(res){
+                console.log(res)
+                data.geo = res;
+                _this.renderDetail(data);
+                if (!res) {
+                    return false;
+                }
+
+                var city = res.addressComponent.city;
+                    city = city ? city : res.addressComponent.province;
+                if (city != item.city) {
+                    $('#panel-box .btn-revise').addClass('show');
+                }
+                
+            });
+
+        },
+
+        /**
+         * 渲染列表
+         **/
+        rennderList: function() {
+            var _this = this
+            var getTpl = $('#j-list-tpl').html();
+            var list = [];
+            for (var i in _this.data.list) {
+                var item = _this.data.list[i];
+                list.push(item);
+            }
+            list.reverse();
+            layui.laytpl(getTpl).render(list, function(html){
+                $('#j-list').html(html)
+            });
+        },
+
+        /**
+         * 渲染详情
+         **/
+        renderDetail: function(data) {
+            var getTpl = $('#j-detail-tpl').html();
+            layui.laytpl(getTpl).render(data, function(html){
+                $('#panel-box').html(html)
+            });
+        },
+        
+        /**
+         * 逆地理编码查询
+         **/
+        regeoCode: function(lnglat,success) {
+            var _this = this;
+            var map = this.data.mapObj;
+            if(!this.data.geocoder){
+                this.data.geocoder = new AMap.Geocoder({
+                    radius: 1000 //范围，默认：500
+                });
+            }
+            var geocoder = this.data.geocoder;
+
+            if(!this.data.marker){
+                this.data.marker = new AMap.Marker();
+                map.add(this.data.marker);
+            }
+            var marker = this.data.marker;
+            marker.setPosition(lnglat);
+
+            geocoder.getAddress(lnglat, function(status, result) {
+                if (status === 'complete' && result.regeocode) {
+                    var address = result.regeocode.formattedAddress;
+                    if (typeof(success) === 'function') {
+                        success(result.regeocode);
+                    }
+                } else {
+                    layer.msg('根据经纬度查询地址失败')
+                    if (typeof(success) === 'function') {
+                        success(false);
+                    }
+                }
+            });
+        },
+
+        /**
+         * 校正城市信息
+         **/
+        cityRevise: function(id) {
+            var _this = this;
+            if(this.data.revising) {
+                return false;
+            }
+            var loading = layer.load(2,{ shade: [0.4,'#fff']});
+            _this.data.revising = true;
+            $.getJSON("{:url('admin/address/city_revise')}",{id:id}).then(function(res){
+                _this.data.revising = false;
+                layer.msg(res.desc);
+                console.log(res);
+                if (res.code === 0 ) {
+                    var city = res.data.addressComponent.city;
+                    city = typeof(city) ==='string' && city ? city : res.data.addressComponent.province;
+                    _this.data.list[id].city = city;
+                    _this.rennderList();
+                    var $itembox = $('.item-'+id);
+                    $itembox.addClass('current').siblings('.item').removeClass('current');
+                    $('#panel-box .detail .data-1 .city').html(city);
+                }
+                layer.close(loading);
+            }).catch(function(err){
+                layer.msg('网络出错，请稍候再试');
+                layer.close(loading);
+                _this.data.revising = false;
+            });
+        },
+
+        edit: function(field,type) {
+            if(type){
+                $('.'+field+'-edit').show();
+                $('.detail .title').hide();
+            }else{
+                $('.'+field+'-edit').hide();
+                $('.detail .title').show();
+            }
+            
+        },
+
+        submitEdit: function(id, field) {
+            var _this = this;
+            if(_this.data.submiting) {
+                return false;
+            }
+            var data = {
+                id: id,
+                fd: field,
+            }
+            var value = $("input[name='"+field+"']").val();
+            if(!value){
+                layer.msg('请输入内容再提交');
+                return false;
+            }
+            data[field] = value;
+
+            var loading = layer.load(2,{ shade: [0.4,'#fff']});
+            _this.data.submiting = true;
+            $.ajax({
+                url: "{:url('admin/address/edit')}",
+                type: 'post',
+                dataType: 'json',
+                data: data
+            }).then(function(res){
+                if(res.code === 0) {
+                    $('.detail .addressname-text').html(value);
+                    _this.edit(field,false);
+                    _this.data.list[id][field] = value;
+                    _this.rennderList();
+                }
+                layer.msg(res.desc);
+                layer.close(loading);
+                _this.data.submiting = false;
+            }).catch(function(err){
+                layer.close(loading);
+                layer.msg('网络出错，请稍候再试');
+                _this.data.submiting = false;
+            })
+        
+
+        }
+
+        
+
+    }
+    PAGE_EXEC.init()
+</script>
+
+{/block}
