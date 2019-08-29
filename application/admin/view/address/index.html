@@ -18,7 +18,10 @@
             <ul id="j-list"> </ul>
         </div>
         
-        <div id="my-list-page" class="pagination-wrapper"></div>
+        <div class="pagination-wrapper">
+            <div id="j-page-info"></div>
+            <div id="my-list-page"></div>
+        </div>
 
     </div>
     <!-- 地图 -->
@@ -36,6 +39,12 @@
 
 {/block}
 {block name="script"}
+<script id="j-pageinfo-tpl" type="text/html">
+    <div class="alert">
+        共 {{ d.lastPage }} 页 和 {{ d.total }} 条数据。
+    </div>
+</script>
+
 <script id="j-list-tpl" type="text/html">
     {{#  layui.each(d, function(index, item){ }}
         <li class="item item-{{ item.addressid }}" onclick="PAGE_EXEC.handleClickItem({{ item.addressid }})">
@@ -97,10 +106,7 @@
                 </span>
                 <span class="address">{{ d.geo.formattedAddress }}</span>
             {{#  } }} 
-
-            
         </div>
-        
     </div>
 </script>
 
@@ -148,27 +154,7 @@
                     var data = res.data
                     
                     if (data.page.currentPage === 1) {
-                        var laypage = layui.laypage;
-                        laypage.render({
-                            elem: 'my-list-page' //注意，这里的 test1 是 ID，不用加 # 号
-                            ,count: data.page.total //数据总数，从服务端得到
-                            ,limit: data.page.pageSize
-                            ,layout: ['prev', 'skip', 'next' ]
-                            ,groups: 3
-                            ,prev: "<i class='fa fa-chevron-left'></i>"
-                            ,next: "<i class='fa fa-chevron-right'></i>"
-                            ,jump: function(obj, first){
-                                // console.log(obj.curr); //得到当前页，以便向服务端请求对应页的数据。
-                                // console.log(obj.limit); //得到每页显示的条数
-                                //首次不执行
-                                if(!first){
-                                    _this.data.page = obj.curr;
-                                    // console.log(_this.data.page)
-                                    _this.getList();
-                                }
-                                return false;
-                            }
-                        });
+                        _this.renderPager(data.page);
 
                     }
                     var idkList = {};
@@ -177,7 +163,7 @@
                         idkList[item.addressid] = item;
                     }
                     _this.data.list = idkList;
-                    _this.rennderList();
+                    _this.renderList();
                     $('.list-wrapper').scrollTop(0);
 
                 } else {
@@ -265,10 +251,40 @@
 
         },
 
+        renderPager: function(pageData) {
+            var _this = this
+            var laypage = layui.laypage;
+            laypage.render({
+                elem: 'my-list-page' //注意，这里的 test1 是 ID，不用加 # 号
+                ,count: pageData.total //数据总数，从服务端得到
+                ,limit: pageData.pageSize
+                ,layout: ['prev', 'skip', 'next' ]
+                ,groups: 3
+                ,prev: "<i class='fa fa-chevron-left'></i>"
+                ,next: "<i class='fa fa-chevron-right'></i>"
+                ,jump: function(obj, first){
+                    // console.log(obj.curr); //得到当前页，以便向服务端请求对应页的数据。
+                    // console.log(obj.limit); //得到每页显示的条数
+                    //首次不执行
+                    if(!first){
+                        _this.data.page = obj.curr;
+                        // console.log(_this.data.page)
+                        _this.getList();
+                    }
+                    return false;
+                }
+            });
+
+            var getTpl = $('#j-pageinfo-tpl').html();
+            layui.laytpl(getTpl).render(pageData, function(html){
+                $('#j-page-info').html(html)
+            });
+        },
+        
         /**
          * 渲染列表
          **/
-        rennderList: function() {
+        renderList: function() {
             var _this = this
             var getTpl = $('#j-list-tpl').html();
             var list = [];
@@ -345,7 +361,7 @@
                     var city = res.data.addressComponent.city;
                     city = typeof(city) ==='string' && city ? city : res.data.addressComponent.province;
                     _this.data.list[id].city = city;
-                    _this.rennderList();
+                    _this.renderList();
                     var $itembox = $('.item-'+id);
                     $itembox.addClass('current').siblings('.item').removeClass('current');
                     $('#panel-box .detail .data-1 .city').html(city);
@@ -397,7 +413,7 @@
                     $('.detail .addressname-text').html(value);
                     _this.edit(field,false);
                     _this.data.list[id][field] = value;
-                    _this.rennderList();
+                    _this.renderList();
                 }
                 layer.msg(res.desc);
                 layer.close(loading);
