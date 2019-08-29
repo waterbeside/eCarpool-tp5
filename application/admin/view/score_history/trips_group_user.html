@@ -28,11 +28,15 @@
                         <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="{:lang('Time range')}" value="{$filter.time}"  style="width:200px">
                     </div>
                     <div class="layui-input-inline">
+                        <input type="text" name="filter[keyword]" class="layui-input" placeholder="{:lang('Account')}" value="{$filter.keyword ? $filter.keyword : ''}"  style="width:200px">
+                    </div>
+                    <div class="layui-input-inline">
                         <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
                         <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" >
                             {$regionData ? str_replace(',',' / ',$regionData['fullname']) : lang('Region or department')}
                         </a>
                     </div>
+                    
                     <!-- <div class="layui-inline">
                         &nbsp;&nbsp;&nbsp;&nbsp;{:lang('Points range')}:
                         <div class="layui-input-inline">

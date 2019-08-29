@@ -179,11 +179,11 @@ class ScoreHistory extends AdminBase
     {
 
         $fields = 't.account_id, t.reason , t.region_id, 
-    sum(t.operand) as operand_sum , max(t.time) as max_time ,
-    count(t.account_id) as total,
-    ROUND( sum(t.operand) / count(t.account_id),2 )  as rate, 
-    ac.carpool_account, ac.balance,
-    d.fullname as full_department';
+            sum(t.operand) as operand_sum , max(t.time) as max_time ,
+            count(t.account_id) as total,
+            ROUND( sum(t.operand) / count(t.account_id),2 )  as rate, 
+            ac.carpool_account, ac.balance,
+            d.fullname as full_department';
         $join = [
             ['carpool.t_department d', 't.region_id = d.id', 'left'],
             ['t_account ac', 't.account_id = ac.id', 'left'],
@@ -193,14 +193,6 @@ class ScoreHistory extends AdminBase
         $map[] = ['t.reason', '=', 100];
         $map[] = ['', 'exp', Db::raw('t.account_id IS NOT NULL')];
 
-        // //筛选分数范围 - 下限
-        // if (isset($filter['floor']) && is_numeric($filter['floor'])  ){
-        //   $map[] = ['sum(t.operand)','EGT', $filter['floor']];
-        // }
-        // //筛选分数范围 - 上限
-        // if (isset($filter['ceiling']) && is_numeric($filter['ceiling']) ){
-        //   $map[] = ['sum(t.operand)','ELT', $filter['ceiling']];
-        // }
 
         if (!isset($filter['time']) || !$filter['time']) {
             $filter['time'] =  $this->getFilterTimeRangeDefault('Y-m-d', 'm');
@@ -215,6 +207,22 @@ class ScoreHistory extends AdminBase
             }
         }
 
+        // 筛选用户名
+        if (isset($filter['keyword']) && !empty(trim($filter['keyword']))) {
+            $map[] = ['ac.carpool_account', 'like', "%".$filter['keyword']."%" ];
+        }
+
+        /**
+         *
+         //筛选分数范围 - 下限
+        if (isset($filter['floor']) && is_numeric($filter['floor'])) {
+            $map[] = ['', 'exp', Db::raw("sum(t.operand) <= ".$filter['floor'])];
+        }
+        //筛选分数范围 - 上限
+        if (isset($filter['ceiling']) && is_numeric($filter['ceiling'])) {
+            $map[] = ['', 'exp', Db::raw("sum(t.operand) >= ".$filter['floor'])];
+        }
+        */
 
 
 
@@ -224,34 +232,28 @@ class ScoreHistory extends AdminBase
             $map[] = $authDeptData['region_map'];
         }
 
-
-        // $map_c1 = [
-        //   ['time', '>=', $time_arr[0]],
-        //   ['time', '<', $time_arr[1]],
-        //   ['reason', '=', 100],
-        //   ['operand', '>', 0],
-        //   ['', 'exp', Db::raw('account_id = t.account_id')]
-        // ];
-        // $sql_count_success = HistoryModel::field('count(*)')->where($map_c1)->buildSql();
-
-        // $map_c2 = [
-        //   ['time', '>=', $time_arr[0]],
-        //   ['time', '<', $time_arr[1]],
-        //   ['reason', '=', 100],
-        //   ['operand', '=', 0],
-        //   ['', 'exp', Db::raw('account_id = t.account_id')]
-        // ];
-        // $sql_count_fail = HistoryModel::field('count(*)')->where($map_c2)->buildSql();
-
-        // $fields .= ", $sql_count_success as count_success , $sql_count_fail as count_failed";
-
-
-
         $lists = HistoryModel::alias('t')->field($fields)->where($map)->group('t.account_id, t.reason, t.region_id')->join($join)
-            ->order('rate DESC, operand_sum DESC, max_time DESC')
+            ->order('rate DESC, operand_sum DESC, max_time DESC')->paginate($pagesize, false, ['query' => request()->param()]);
+        /**
+         *
+        $baseSql = HistoryModel::alias('t')->field($fields)->where($map)->group('t.account_id, t.reason, t.region_id')->join($join)
+            ->order('rate DESC, operand_sum DESC, max_time DESC')->buildSql();
+
+        $map2 = [];
+         //筛选分数范围 - 下限
+        if (isset($filter['floor']) && is_numeric($filter['floor'])) {
+            $map2[] = ['', 'exp', Db::raw("operand_sum <= ".$filter['floor'])];
+        }
+        //筛选分数范围 - 上限
+        if (isset($filter['ceiling']) && is_numeric($filter['ceiling'])) {
+            $map2[] = ['', 'exp', Db::raw("operand_sum >= ".$filter['floor'])];
+        }
+
+        $lists = Db::connect('database_score')->table($baseSql)->alias('a')->where($map2)
             ->paginate($pagesize, false, ['query' => request()->param()]);
         // ->fetchSql()->select();
         // dump($lists);exit;
+        */
 
         $map_c_base  = [
             ['time', '>=', $time_arr[0]],
