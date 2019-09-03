@@ -139,7 +139,8 @@ class Passport extends ApiBase
      * 登出
      *
      */
-    public function logout() {
+    public function logout()
+    {
         // TODO: 登出相关操作。
         return $this->jsonReturn(0, 'Successful');
     }
