@@ -55,8 +55,10 @@ class ApiBase extends Base
         $Authorization = request()->header('Authorization');
         $temp_array    = explode('Bearer ', $Authorization);
         $Authorization = count($temp_array) > 1 ? $temp_array[1] : '';
-        $Authorization = $Authorization ? $Authorization : cookie('admin_token');
-        $Authorization = $Authorization ? $Authorization : input('request.admin_token');
+        $Authorization = $Authorization ? $Authorization : request()->header('X-Token');
+        $Authorization = $Authorization ? $Authorization : cookie('x-token');
+        $Authorization = $Authorization ? $Authorization : input('request.x-token');
+
         $this->jwt = $Authorization;
         return $Authorization;
     }
@@ -108,7 +110,7 @@ class ApiBase extends Base
                 }
                 // 单点登入验证  &&
                 // dump($jwtDecode);
-                if (config('others.is_single_sign') && strtolower($jwtDecode->client) != 'h5') {
+                if (config('others.is_single_sign') && in_array(strtolower($jwtDecode->client), ['android', 'ios', 1, 2, 'unknow'])) {
                     $JwtToken = new JwtToken();
                     if (!$JwtToken->checkActive($jwtDecode->uid, $Authorization)) {
                         //XXX:如果第一次进行单点登入，把token记下来以平滑过度
@@ -136,12 +138,14 @@ class ApiBase extends Base
 
     /**
      * 生成jwt
-     * @param  array $data {uid,loginname,client}
-     * @return string      jwt
+     * @param array $data {uid,loginname,client}
+     * @param integer $ex 有效时长，单位为s，默认为null则自动根据client设置
+     * @return string jwt
      */
-    public function createPassportJwt($data)
+    public function createPassportJwt($data, $ex = null)
     {
-        $exp = in_array(strtolower($data['client']), ['ios', 'android']) ? (time() + 36 * 30 * 86400) : (time() + 48 * 3600);
+        $ex = $ex && is_numeric($ex) ? $ex : (in_array(strtolower($data['client']), ['ios', 'android']) ?  36 * 30 * 86400 : 48 * 3600);
+        $exp = time() + $ex;
         $jwtData  = array(
             'exp' => $exp, //过期时间
             'iat' => time(), //发行时间
@@ -183,7 +187,8 @@ class ApiBase extends Base
             return $this->userData;
         }
         if ($uid) {
-            $userData = UserModel::find($uid);
+            $userModel = new UserModel();
+            $userData = $userModel->findByUid($uid);
         }
         if (!$uid || !$userData) {
             return $returnType ? $this->jsonReturn(10004, lang('You are not logged in')) : false;

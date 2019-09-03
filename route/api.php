@@ -1,6 +1,8 @@
 <?php
 
-$allowHeader = 'Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-Requested-With,Accept-Lag,Accept-Language';
+$allowHeader = 'Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-Requested-With, X-Token, Accept-Language';
+Route::header('Access-Control-Allow-Headers', $allowHeader)
+    ->allowCrossDomain();
 
 Route::group([], function () {
     Route::rule('api/:version/index', 'api/:version.index');
@@ -100,7 +102,8 @@ Route::group([], function () {
     Route::rule('api/:version/publics/reports/month_statis', 'api/:version.publics.reports/month_statis', 'GET');
     Route::rule('api/:version/publics/reports/month_ranking', 'api/:version.publics.reports/month_ranking', 'GET');
     Route::rule('api/:version/publics/reports/today_info', 'api/:version.publics.reports/today_info', 'GET');
-})->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
+});
+// ->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
 
 // Route::resource('api/:version/docs','api/:version.docs')->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
 // Route::resource('api/:version/passport','api/:version.passport')->header('Access-Control-Allow-Headers', $allowHeader)->allowCrossDomain();
