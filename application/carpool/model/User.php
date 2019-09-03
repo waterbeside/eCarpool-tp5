@@ -26,6 +26,35 @@ class User extends BaseModel
     protected $pk = 'uid';
 
 
+
+    /**
+     * 取得账号详情
+     *
+     * @param integer $uid 用户id
+     * @param integer $exp 缓存有效时间
+     */
+    public function findByUid($uid = "", $exp = 60 * 5)
+    {
+        if (!$uid) {
+            return false;
+        }
+        $cacheKey = "carpool:user:detail:uid_" . $uid;
+        $redis = new RedisData();
+        $cacheData = $redis->cache($cacheKey);
+        if ($cacheData) {
+            return $cacheData;
+        }
+        $res = $this->find($uid);
+
+        if ($res) {
+            $res = $res->toArray();
+            $exp_offset = getRandValFromArray([1,2,3]);
+            $exp +=  $exp_offset * 60;
+            $cacheData = $redis->cache($cacheKey, $res, $exp);
+        }
+        return $res;
+    }
+
     /**
      * 取得账号详情
      *
