@@ -14,7 +14,6 @@ class GetLang
         if (!$controller->language_l) {
             $lang_s =  input('request._language');
             $lang_s = $lang_s ? $lang_s : input('request.lang');
-            $lang_s = $lang_s ? $lang_s : request()->header('Accept-Lang');
             $lang_s = $lang_s ? $lang_s : request()->header('Accept-Language');
 
             $language = $this->formatLangCode($lang_s);
