@@ -100,12 +100,12 @@ class User extends BaseModel
     /**
      * 删除用户详情数据
      *
-     * @param string $account
+     * @param string|integer $account|uid
      * @return void
      */
-    public function deleteDetailCache($account = "")
+    public function deleteDetailCache($account = "", $byID = false)
     {
-        $cacheKey = "carpool:user:detail:ac_" . strtolower($account);
+        $cacheKey = $byID ? "carpool:user:detail:uid_" . $account : "carpool:user:detail:ac_" . strtolower($account);
         $redis = new RedisData();
         $redis->delete($cacheKey);
     }
