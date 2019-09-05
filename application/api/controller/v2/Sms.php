@@ -355,19 +355,24 @@ class Sms extends ApiBase
                 if ($userData['phone'] == $phone) {
                     break;
                 }
-                $phoneUserData = UserModel::where([['loginname', '=', $phone], ['is_delete', '=', 0]])->find();
+                $UserModel = new UserModel();
+                $phoneUserData = $UserModel->where([['loginname', '=', $phone], ['is_delete', '=', 0]])->find();
                 if ($phoneUserData) {
                     $this->jsonReturn(10006, [], lang('The phone number has been registered for another account'));
                 }
-                $phoneUserData2 = UserModel::where([['phone', '=', $phone], ['is_delete', '=', 0]])->find();
+                $phoneUserData2 = $UserModel->where([['phone', '=', $phone], ['is_delete', '=', 0]])->find();
                 try {
                     if ($phoneUserData2) {
-                        UserModel::where([['phone', '=', $phone], ['loginname', '<>', $phone]])->setField('phone', ''); //解绑其它帐号
+                        $UserModel->where([['phone', '=', $phone], ['loginname', '<>', $phone]])->setField('phone', ''); //解绑其它帐号
                     }
-                    $update_count = UserModel::where('uid', $uid)->setField('phone', $phone); //绑定新号码
+                    $update_count = $UserModel->where('uid', $uid)->setField('phone', $phone); //绑定新号码
                     if (!$update_count) {
                         throw new \Exception(lang('Fail'));
                     }
+                    $UserModel->deleteDetailCache($uid, true);
+                    $UserModel->deleteDetailCache($phoneUserData['loginname']);
+                    $UserModel->deleteDetailCache($phoneUserData2['uid'], true);
+                    $UserModel->deleteDetailCache($phoneUserData2['loginname']);
                     // 提交事务
                     Db::commit();
                 } catch (\Exception $e) {
