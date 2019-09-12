@@ -261,16 +261,16 @@ class NpdProduct extends AdminBase
 
 
     /**
-     * 删除栏目
+     * 删除产品
      * @param $id
      */
     public function delete($id)
     {
         if (ProductModel::where('id', $id)->update(['is_delete' => 1])) {
-            $this->log('删除分类成功', 0);
+            $this->log('删除产品成功', 0);
             $this->jsonReturn(0, '删除成功');
         } else {
-            $this->log('删除分类失败', -1);
+            $this->log('删除产品失败', -1);
             $this->jsonReturn(-1, '删除失败');
         }
     }
