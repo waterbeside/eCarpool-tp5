@@ -10,7 +10,7 @@ use think\Db;
 
 /**
  * 产品图册管理
- * Class NpdProduct
+ * Class NpdProductGallery
  * @package app\admin\controller
  */
 
@@ -31,6 +31,9 @@ class NpdProductGallery extends AdminBase
 
         if (isset($filter['keyword']) && $filter['keyword']) {
             $map[] = ['title|title_en', 'like', "%{$filter['keyword']}%"];
+        }
+        if (isset($filter['status']) && is_numeric($filter['status'])) {
+            $map[] = ['status', '=', $filter['status']];
         }
         $map[] = ['model', '=', 'product'];
         if ($pid) {
@@ -65,7 +68,7 @@ class NpdProductGallery extends AdminBase
         if ($this->request->isPost()) {
             $data          = $this->request->param();
             $data['model'] = 'product';
-            $data['is_active'] = isset($data['is_active']) ? isset($data['is_active']) : 0;
+            $data['status'] = isset($data['status']) ? isset($data['status']) : 0;
             $validate_result = $this->validate($data, 'app\npd\validate\Gallery');
             if ($validate_result !== true) {
                 $this->jsonReturn(-1, $validate_result);
@@ -97,7 +100,7 @@ class NpdProductGallery extends AdminBase
         if ($this->request->isPost()) {
             $data          = $this->request->param();
             $data['model'] = 'product';
-            $data['is_active'] = isset($data['is_active']) ? isset($data['is_active']) : 0;
+            $data['status'] = isset($data['status']) ? isset($data['status']) : 0;
             $validate_result = $this->validate($data, 'app\npd\validate\Gallery');
             if ($validate_result !== true) {
                 $this->jsonReturn(-1, $validate_result);

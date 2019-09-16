@@ -19,10 +19,10 @@
                     <input type="text" name="filter[keyword]" value="{$filter.keyword}" placeholder="请输入关键词" class="layui-input">
                 </div>
                 <div class="layui-input-inline">
-                    <select name="filter[is_active]">
-                    <option value="" {if condition="!isset($filter['is_active']) || !is_numeric($filter['is_active'])" }  selected="selected" {/if}>全部 </option>
-                    <option value="1" {if condition="isset($filter['is_active']) && is_numeric($filter['is_active']) && $filter['is_active'] == 1" } selected="selected" {/if}>显示 </option> 
-                    <option value="0" {if condition="isset($filter['is_active']) && is_numeric($filter['is_active']) && $filter['is_active'] == 0"  } selected="selected" {/if}>不显示 </option> 
+                    <select name="filter[status]">
+                    <option value="" {if condition="!isset($filter['status']) || !is_numeric($filter['status'])" }  selected="selected" {/if}>全部 </option>
+                    <option value="1" {if condition="isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 1" } selected="selected" {/if}>显示 </option> 
+                    <option value="0" {if condition="isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 0"  } selected="selected" {/if}>不显示 </option> 
                     </select> 
                 </div>
             </div> 
@@ -62,7 +62,7 @@
                     </td>
                     <td><div <?php echo  ($vo['is_delete']  ? 'class="is_delete"' : ''); ?></div>{$vo.title}</td>
                     <td>{$vo.title_en}</td>
-                    <td>{php}echo $vo['is_active']==1 ? '显示' : '不显示';{/php}</td>
+                    <td>{php}echo $vo['status']==1 ? '显示' : '不显示';{/php}</td>
                     <td>{$vo.sort}</td>
                     <td>{$vo.create_time}</td>
                     <td>
