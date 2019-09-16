@@ -137,15 +137,14 @@
                     </tr>
                 </thead>
                 <tbody id="patent-list">
-                    <?php if(count($data['patent'])>0){ 
-            s
+                    <?php if(count($data['patent'])>0){ ?>
                     <tr class="patent-item item">
                         <td>{$value.cty_name}</td>
                         <td>{$value.cty_name_en}</td>
                         <td>{$value.sn}</td>
                         <td>{$value.type_name}</td>
                     </tr>
-                    <?php }}else{ echo('No Data');} ?>
+                    <?php }else{ echo('No Data');} ?>
                 </tbody>
             </table>
         </div>
@@ -162,8 +161,7 @@
         <div class="chn-box" id="bulk_note">
             <h2>大货备注 <small>Notes to bulk</small></h2>
             <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#a-bulk-zh" aria-controls="home" role="tab"
-                        data-toggle="tab">zh</a></li>
+                <li role="presentation" class="active"><a href="#a-bulk-zh" aria-controls="home" role="tab" data-toggle="tab">zh</a></li>
                 <li role="presentation"><a href="#a-bulk-en" role="tab" data-toggle="tab">en</a></li>
             </ul>
             <div class="tab-content">
@@ -201,9 +199,6 @@
                 </tbody>
             </table>
         </div>
-
-
-
     </div>
 
     <script>
