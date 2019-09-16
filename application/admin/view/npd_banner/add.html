@@ -4,99 +4,93 @@
 
         <div class="layui-tab-content">
 
-        <form class="layui-form  " action="{:url('admin/NpdBanner/add')}" method="post" style="margin-right:15px;"
-            id="editForm">
+            <form class="layui-form  " action="{:url('admin/NpdBanner/add')}" method="post" style="margin-right:15px;" id="editForm">
 
-
-            <div class="layui-form-item">
-            <label class="layui-form-label">标题</label>
-            <div class="layui-input-block">
-                <input type="text" name="title" value="" required lay-verify="required" placeholder="请输入标题"
-                class="layui-input">
-            </div>
-            </div>
-
-            <div class="layui-form-item">
-            <label class="layui-form-label">缩略图</label>
-            <div class="layui-input-block">
-                <input type="text" name="thumb" value="{$data.thumb ? $data.thumb  : ''}" class="layui-input">
-                <a class="amain-uploadImgBtn" id="upload-btn">
-                <img class="layui-upload-img" id="item-thumb" src="{$data.thumb ? $data.thumb  : ''}">
-                <div class="text">
-                    <i class="fa fa-upload"></i>上传图片
+                <div class="layui-form-item">
+                    <label class="layui-form-label">标题</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="title" value="" required lay-verify="required" placeholder="请输入标题"
+                        class="layui-input">
+                    </div>
                 </div>
-                </a>
-                <p id="uploadText"></p>
-            </div>
-            </div>
 
+                <div class="layui-form-item">
+                    <label class="layui-form-label">缩略图</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="thumb" value="{$data.thumb ? $data.thumb  : ''}" class="layui-input">
+                        <a class="amain-uploadImgBtn" id="upload-btn">
+                        <img class="layui-upload-img" id="item-thumb" src="{$data.thumb ? $data.thumb  : ''}">
+                        <div class="text">
+                            <i class="fa fa-upload"></i>上传图片
+                        </div>
+                        </a>
+                        <p id="uploadText"></p>
+                    </div>
+                </div>
 
+                <div class="layui-form-item">
+                    <label class="layui-form-label">所属类型</label>
+                    <div class="layui-input-block">
+                        <select name="type">
+                        <!-- <option value="0">选译类型</option> -->
+                        {foreach name="$typeList" key='key' item="vo"}
+                        <option value="{$key}"> {$vo}</option>
+                        {/foreach}
+                        </select>
+                    </div>
+                </div>
 
+                <div class="layui-form-item">
+                    <label class="layui-form-label">跳转类型</label>
+                    <div class="layui-input-block">
+                        <select name="link_type">
+                        <option value="0">不跳转</option>
+                        <option value="1">路由</option>
+                        <option value="2">连接</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">跳转连接</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="link" value="" placeholder="跳转连接或路由名" class="layui-input">
+                        <div class="layui-form-mid layui-word-aux">当跳转类型为“连接”时，请填写包含http://的完整连接内容</div>
+                    </div>
+                </div>
 
+                <div class="layui-form-item">
+                    <label class="layui-form-label">状态</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="status" value="1" title="显示" checked="checked">
+                        <input type="radio" name="status" value="0" title="隐藏">
+                    </div>
+                </div>
 
-            <div class="layui-form-item">
-            <label class="layui-form-label">所属类型</label>
-            <div class="layui-input-block">
-                <select name="type">
-                <!-- <option value="0">选译类型</option> -->
-                {foreach name="$typeList" key='key' item="vo"}
-                <option value="{$key}"> {$vo}</option>
-                {/foreach}
-                </select>
-            </div>
-            </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">排序</label>
+                    <div class="layui-input-block">
+                        <input type="number" name="sort" value="0" class="layui-input">
+                        <div class="layui-form-mid layui-word-aux">越大越前</div>
+                    </div>
+                </div>
 
-            <div class="layui-form-item">
-            <label class="layui-form-label">跳转类型</label>
-            <div class="layui-input-block">
-                <select name="link_type">
-                <option value="0">不跳转</option>
-                <option value="1">路由</option>
-                <option value="2">连接</option>
-                </select>
-            </div>
-            </div>
-            <div class="layui-form-item">
-            <label class="layui-form-label">跳转连接</label>
-            <div class="layui-input-block">
-                <input type="text" name="link" value="" placeholder="跳转连接或路由名" class="layui-input">
-                <div class="layui-form-mid layui-word-aux">当跳转类型为“连接”时，请填写包含http://的完整连接内容</div>
-            </div>
-            </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label ">选择语言</label>
+                    <div class="layui-input-block">
+                        <select name="lang" lay-filter='language_code_select' lay-verify="required">
+                        <option value="0">请选择语言</option>
+                        </select>
+                        <input type="text" id="language_code" name="lang_input" value="" placeholder="请输入语言码" class="layui-input">
+                    </div>
+                </div>
 
-            <div class="layui-form-item">
-            <label class="layui-form-label">状态</label>
-            <div class="layui-input-block">
-                <input type="radio" name="status" value="1" title="显示" checked="checked">
-                <input type="radio" name="status" value="0" title="隐藏">
-            </div>
-            </div>
-
-            <div class="layui-form-item">
-            <label class="layui-form-label">排序</label>
-            <div class="layui-input-block">
-                <input type="number" name="sort" value="0" class="layui-input">
-                <div class="layui-form-mid layui-word-aux">越大越前</div>
-            </div>
-            </div>
-
-            <div class="layui-form-item">
-            <label class="layui-form-label ">选择语言</label>
-            <div class="layui-input-block">
-                <select name="lang" lay-filter='language_code_select' lay-verify="required">
-                <option value="0">请选择语言</option>
-                </select>
-                <input type="text" id="language_code" name="lang_input" value="" placeholder="请输入语言码" class="layui-input">
-            </div>
-            </div>
-
-            <div class="layui-form-item">
-            <div class="layui-input-block">
-                <button class="layui-btn" lay-submit lay-filter="*">保存</button>
-                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
-            </div>
-            </div>
-        </form>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="*">保存</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </form>
 
         </div>
     </div>
