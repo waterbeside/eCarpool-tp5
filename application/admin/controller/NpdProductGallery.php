@@ -121,7 +121,7 @@ class NpdProductGallery extends AdminBase
 
 
     /**
-     * 删除栏目
+     * 删除图片
      * @param $id
      */
     public function delete($id)
