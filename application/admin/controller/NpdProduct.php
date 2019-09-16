@@ -218,6 +218,7 @@ class NpdProduct extends AdminBase
         $returnData['data_zh'] = [
             'pid'       => $pid,
             'content'   => $data['data']['zh']['content'],
+            'speciality'   => $data['data']['zh']['speciality'],
             'testing'   => $data['data']['zh']['testing'],
             'bulk_note' => $data['data']['zh']['bulk_note'],
             'lang'      => 'zh-cn',
@@ -225,6 +226,7 @@ class NpdProduct extends AdminBase
         $returnData['data_en'] = [
             'pid'       => $pid,
             'content'   => $data['data']['en']['content'],
+            'speciality'   => $data['data']['en']['speciality'],
             'testing'   => $data['data']['en']['testing'],
             'bulk_note' => $data['data']['en']['bulk_note'],
             'lang'      => 'en',

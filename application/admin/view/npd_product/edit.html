@@ -38,30 +38,39 @@
                 <!-- 中文 -->
                 <div class="layui-tab-item layui-show">
                     <div class="layui-form-item">
-                    <label class="layui-form-label">介绍 
-                        <div><small>Introduction</small></div>
-                    </label>
-                    <div class="layui-input-block">
-                        <textarea name="data[zh][content]" placeholder=""   id="content">{$data.data_zh.content}</textarea>
+                        <label class="layui-form-label">介绍 
+                            <div><small>Introduction</small></div>
+                        </label>
+                        <div class="layui-input-block">
+                            <textarea name="data[zh][content]" placeholder=""   id="content">{$data.data_zh.content}</textarea>
+                        </div>
                     </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">特点 
+                            <div><small>Speciality</small></div>
+                        </label>
+                        <div class="layui-input-block">
+                            <textarea name="data[zh][speciality]" placeholder=""   id="speciality">{$data.data_zh.speciality}</textarea>
+                        </div>
+                    </div>   
+        
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">测试方法与标准 
+                            <div><small>Testing method and standards</small></div>
+                        </label>
+                        <div class="layui-input-block">
+                            <textarea name="data[zh][testing]" placeholder=""   id="testing">{$data.data_zh.testing}</textarea>
+                        </div>
                     </div>
         
                     <div class="layui-form-item">
-                    <label class="layui-form-label">测试方法与标准 
-                        <div><small>Testing method and standards</small></div>
-                    </label>
-                    <div class="layui-input-block">
-                        <textarea name="data[zh][testing]" placeholder=""   id="testing">{$data.data_zh.testing}</textarea>
-                    </div>
-                    </div>
-        
-                    <div class="layui-form-item">
-                    <label class="layui-form-label">大货备注 
-                        <div><small>Notes to bulk</small></div>
-                    </label>
-                    <div class="layui-input-block">
-                        <textarea name="data[zh][bulk_note]" placeholder=""   id="bulk_note">{$data.data_zh.bulk_note}</textarea>
-                    </div>
+                        <label class="layui-form-label">大货备注 
+                            <div><small>Notes to bulk</small></div>
+                        </label>
+                        <div class="layui-input-block">
+                            <textarea name="data[zh][bulk_note]" placeholder=""   id="bulk_note">{$data.data_zh.bulk_note}</textarea>
+                        </div>
                     </div>
 
                 </div>
@@ -76,6 +85,15 @@
                     <div class="layui-input-block">
                         <textarea name="data[en][content]" placeholder=""   id="content_en">{$data.data_en.content}</textarea>
                     </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">Speciality 
+                            <div><small>特点</small></div>
+                        </label>
+                        <div class="layui-input-block">
+                            <textarea name="data[en][speciality]" placeholder=""   id="speciality_en">{$data.data_en.speciality}</textarea>
+                        </div>
                     </div>
         
                     <div class="layui-form-item">
