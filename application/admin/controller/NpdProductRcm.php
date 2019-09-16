@@ -50,7 +50,7 @@ class NpdProductRcm extends AdminBase
 
 
     /**
-     * 添加图片
+     * 添加推荐
      * @return mixed
      */
     public function add()
@@ -58,7 +58,7 @@ class NpdProductRcm extends AdminBase
         if ($this->request->isPost()) {
             $data          = $this->request->param();
             $data['model'] = 'product';
-            $data['is_active'] = isset($data['is_active']) ? isset($data['is_active']) : 0;
+            $data['status'] = isset($data['status']) ? isset($data['status']) : 0;
             $validate_result = $this->validate($data, 'app\npd\validate\Recommend');
             if ($validate_result !== true) {
                 $this->jsonReturn(-1, $validate_result);
@@ -77,7 +77,7 @@ class NpdProductRcm extends AdminBase
 
 
     /**
-     * 编辑图片
+     * 编辑推荐
      * @param $id
      * @return mixed
      */
@@ -85,7 +85,7 @@ class NpdProductRcm extends AdminBase
     {
         if ($this->request->isPost()) {
             $data          = $this->request->param();
-            $data['is_active'] = isset($data['is_active']) ? isset($data['is_active']) : 0;
+            $data['status'] = isset($data['status']) ? isset($data['status']) : 0;
             $validate_result = $this->validate($data, 'app\npd\validate\Recommend');
             if ($validate_result !== true) {
                 $this->jsonReturn(-1, $validate_result);
@@ -105,7 +105,7 @@ class NpdProductRcm extends AdminBase
 
 
     /**
-     * 删除栏目
+     * 删除推荐
      * @param $id
      */
     public function delete($id)
