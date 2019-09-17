@@ -8,6 +8,8 @@ use app\carpool\model\User as CarpoolUserModel;
 use app\admin\controller\AdminBase;
 use think\Db;
 
+use function GuzzleHttp\json_decode;
+
 /**
  * 积分历史
  * Class ScoreHistory
@@ -55,7 +57,9 @@ class ScoreHistory extends AdminBase
 
         $lists = HistoryModel::alias('t')->field($fields)->where($map)->join($join)
             ->order('t.time DESC, t.id DESC')->paginate($pagesize, false, ['query' => request()->param()]);
+
         foreach ($lists as $key => $value) {
+            $lists[$key]['extra'] = json_decode($value['extra_info'], true);
             if ($value['account_id']) {
                 $userInfo = ScoreAccountModel::where(['id' => $value['account_id']])->find();
                 $lists[$key]['account'] = $userInfo['carpool_account'] ?
@@ -134,6 +138,10 @@ class ScoreHistory extends AdminBase
         }
 
         $lists = HistoryModel::where($map)->order('time DESC, id DESC')->paginate($pagesize, false, ['query' => request()->param()]);
+
+        foreach ($lists as $key => $value) {
+            $lists[$key]['extra'] = json_decode($value['extra_info'], true);
+        }
 
         $auth['admin/ScoreHistory/edit'] = $this->checkActionAuth('admin/ScoreHistory/edit');
         $auth['admin/ScoreHistory/delete'] = $this->checkActionAuth('admin/ScoreHistory/delete');

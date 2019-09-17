@@ -66,7 +66,16 @@
                             </a>
                         </td>
                         <!-- <td>{php}echo $vo['reason'] > 0 ? '收入' : '支出' ;{/php}</td> -->
-                        <td>{php}echo isset($reasons[$vo['reason']]) ? $reasons[$vo['reason']] : $vo['reason'] ; {/php}</td>
+                        <td>
+                            {php}
+                                if(isset($reasons[$vo['reason']])){
+                                    echo  $vo['operand'] > 0 ? $reasons[$vo['reason']] : '';
+                                } else {
+                                    echo $vo['reason'];
+                                }
+                            {/php}
+                            {$vo.extra.message ?? ''}
+                        </td>
                         <td>{$vo.full_department|str_replace=","," / ",###}</td>
 
 
