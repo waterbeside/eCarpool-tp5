@@ -10,6 +10,7 @@ Route::group([], function () {
 
     Route::resource('npd/api/:version/product', 'npd/api.:version.product');
     Route::resource('npd/api/:version/article', 'npd/api.:version.article');
+    Route::rule('npd/api/:version/product_rcm', 'npd/api.:version.product_rcm/index', 'GET');
     Route::rule('npd/api/:version/single', 'npd/api.:version.single/index', 'GET');
     Route::rule('npd/api/:version/single/:id', 'npd/api.:version.single/read', 'GET');
 
