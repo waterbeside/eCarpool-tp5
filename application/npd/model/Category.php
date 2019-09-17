@@ -127,7 +127,9 @@ class Category extends Model
         $rKey = "NPD:category:list";
         $redis = new RedisData();
         $data = json_decode($redis->get($rKey), true);
-
+        if ($exp === -2) {
+            return $data;
+        }
         if (!$data || $exp === -1) {
             $data  = $this->where([['is_delete', '=', 0]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
             $redis->setex($rKey, $exp, json_encode($data));
@@ -217,9 +219,30 @@ class Category extends Model
                     'name_en' => $item['name_en'],
                     'icon' => $item['icon'],
                     'path' => $item['path'],
+                    'model' => $item['model'],
+                    'children_count' => $this->getChildCount($item['id'], 1),
                 ];
             }
         }
         return $list;
+    }
+
+    /**
+     * 查询有多少字栏目
+     *
+     * @param integer $cid 要查的栏目id
+     * @param integer $isOnlyActive 是否只包括有效的
+     * @return integer
+     */
+    public function getChildCount($cid, $isOnlyActive = 0)
+    {
+        $list = $this->getList();
+        $c = 0;
+        foreach ($list as $key => $value) {
+            if ($cid == $value['parent_id'] && ( $isOnlyActive === 0 || ($isOnlyActive && $value['status']))) {
+                $c ++;
+            }
+        }
+        return $c;
     }
 }
