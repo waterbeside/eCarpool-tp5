@@ -27,11 +27,10 @@ class Category extends ApiBase
     /**
      * 取得导航列表
      */
-    public function index($model = "product")
+    public function index($model = "", $cid = 0)
     {
         $CateModel = new CateModel();
         $res = $CateModel->getListByModel($model, 1);
-
         $list = [];
         if ($res) {
             foreach ($res as $key => $value) {
@@ -47,11 +46,12 @@ class Category extends ApiBase
                     'thumb' => $value['thumb'],
                 ];
                 $list[] = $data;
+
             }
             $tree = new Tree();
             $tree->init($list);
             $tree->parentid_name = 'parent_id';
-            $treeData = $tree->get_tree_array(1, 'id');
+            $treeData = $tree->get_tree_array($cid, 'id');
         }
         $returnData = [
             'list' => $treeData,
