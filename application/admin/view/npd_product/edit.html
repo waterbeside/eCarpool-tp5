@@ -12,6 +12,7 @@
                 <input type="text" name="title" value="{$data.title}" required  lay-verify="required" placeholder="请输入产品名" class="layui-input">
                 </div>
             </div>
+            
             <div class="layui-form-item">
                 <label class="layui-form-label">产品名 EN</label>
                 <div class="layui-input-block">
@@ -42,7 +43,7 @@
                             <div><small>Introduction</small></div>
                         </label>
                         <div class="layui-input-block">
-                            <textarea name="data[zh][content]" placeholder=""   id="content">{$data.data_zh.content}</textarea>
+                            <textarea name="data[zh][intro]" placeholder=""   id="intro">{$data.data_zh.intro}</textarea>
                         </div>
                     </div>
 
@@ -83,7 +84,7 @@
                         <div><small>介绍</small></div>
                     </label>
                     <div class="layui-input-block">
-                        <textarea name="data[en][content]" placeholder=""   id="content_en">{$data.data_en.content}</textarea>
+                        <textarea name="data[en][intro]" placeholder=""   id="intro_en">{$data.data_en.intro}</textarea>
                     </div>
                     </div>
 
