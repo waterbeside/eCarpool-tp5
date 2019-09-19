@@ -77,10 +77,10 @@
                             <tr >
                                 <th lay-data="{field:'infoid', width:80,fixed: 'left' }" >#</th>
                                 <th lay-data="{field:'d_carnumber', width:120, fixed: 'left' }">{:lang('License plate')}</th>
-                                <th lay-data="{field:'d_name', minWidth:180, }">{:lang('Driver')}</th>
+                                <th lay-data="{field:'d_nativename', minWidth:180, }">{:lang('Driver')}</th>
                                 <!-- <th lay-data="{field:'d_phone',width:100,}">司机电话</th> -->
                                 <th lay-data="{field:'d_department' ,width:120}">{:lang('Driver department')}</th>
-                                <th lay-data="{field:'p_name',minWidth:180 }">{:lang('Passenger')}</th>
+                                <th lay-data="{field:'p_nativename',minWidth:180 }">{:lang('Passenger')}</th>
                                 <!-- <th lay-data="{field:'p_phone' ,width:100}">乘客电话</th> -->
                                 <th lay-data="{field:'p_department' ,width:120}">{:lang('Passenger department')}</th>
                                 <th lay-data="{field:'time', width:120,}">{:lang('Departure time')}</th>
@@ -104,7 +104,7 @@
                                 <div class="driver status_{$vo.status}">
                                     {php}echo $vo['d_sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['d_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
                                     <a href="{:url('admin/User/public_detail',['id'=>$vo['d_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}" >
-                                    {$vo.d_name} ({$vo.d_loginname})
+                                    {$vo.d_nativename ?: $vo.d_name} ({$vo.d_loginname})
                                     </a>
                                 </div>
                                 </td>
@@ -119,7 +119,7 @@
                                 <div class="passenger status_{$vo.status}">
                                     {php}echo $vo['p_sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['p_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
                                     <a href="{:url('admin/User/public_detail',['id'=>$vo['p_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}">
-                                    {$vo.p_name} ({$vo.p_loginname})
+                                    {$vo.p_nativename ?: $vo.p_name} ({$vo.p_loginname})
                                     </a>
                                 </div>
                                 </td>

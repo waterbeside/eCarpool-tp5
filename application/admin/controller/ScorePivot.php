@@ -86,8 +86,8 @@ class ScorePivot extends AdminBase
 
         // step - 2 算出各订单对应的商品数
         $fields = "o.id, o.region_id, o.uuid, o.creator, o.platform, o.creation_time, o.content, o.status, o.total, 
-    ac.carpool_account,
-    d.fullname as full_department";
+            ac.carpool_account,
+            d.fullname as full_department";
         $join = [
             ['account ac', 'o.creator = ac.id', 'left'],
         ];
@@ -127,6 +127,7 @@ class ScorePivot extends AdminBase
             $lists[$key]['user'] = $userData ? $userData : [
                 'uid' => 0,
                 'name' => '-',
+                'nativename' => '-',
                 'loginname' => '-',
                 'phone' => '-',
                 'companyname' => '-',

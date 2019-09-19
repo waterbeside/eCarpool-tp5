@@ -34,7 +34,7 @@ class ScoreSpecialWinner extends AdminBase
         $fields = 't.*
         ,lo.uuid as lottery_uuid, lo.buy_time , lo.result_str
         ,ac.id as account_id , ac.carpool_account, ac.balance
-        ,u.name as user_name , u.phone as user_phone , u.company_id ,u.loginname, u.Department, u.sex , u.companyname
+        ,u.nativename as user_name , u.phone as user_phone , u.company_id ,u.loginname, u.Department, u.sex , u.companyname
         ';
         $join = [
             ['lottery lo', 'lo.id = t.lottery_id', 'left'],
@@ -58,7 +58,7 @@ class ScoreSpecialWinner extends AdminBase
         }
         //筛选用户信息
         if (isset($filter['keyword_user']) && $filter['keyword_user']) {
-            $map[] = ['u.loginname|u.phone|u.name', 'like', "%{$filter['keyword_user']}%"];
+            $map[] = ['u.loginname|u.phone|u.nativename', 'like', "%{$filter['keyword_user']}%"];
         }
         //筛选部门
         if (isset($filter['keyword_dept']) && $filter['keyword_dept']) {

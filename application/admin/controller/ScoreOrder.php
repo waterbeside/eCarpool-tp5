@@ -38,8 +38,9 @@ class ScoreOrder extends AdminBase
     public function index($filter = [], $status = "0", $page = 1, $pagesize = 15, $export = 0)
     {
         //构建sql
-        $fields = 't.*, ac.carpool_account, ac.balance    ';
-        $fields .= ',cu.uid, cu.loginname,cu.name, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname, d.fullname as full_department';
+        $fields = 't.*, ac.carpool_account, ac.balance  ';
+        $fields .= ',cu.uid, cu.loginname,cu.name, cu.nativename, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname, 
+            d.fullname as full_department';
 
         $join = [
             ['account ac', 't.creator = ac.id', 'left'],
@@ -94,7 +95,7 @@ class ScoreOrder extends AdminBase
 
         //筛选用户信息
         if (isset($filter['keyword']) && $filter['keyword']) {
-            $map[] = ['cu.loginname|cu.phone|cu.name', 'like', "%{$filter['keyword']}%"];
+            $map[] = ['cu.loginname|cu.phone|cu.nativename', 'like', "%{$filter['keyword']}%"];
         }
         //筛选部门
         if (isset($filter['keyword_dept']) && $filter['keyword_dept']) {
@@ -189,7 +190,7 @@ class ScoreOrder extends AdminBase
                 }
 
                 $sheet->setCellValue('A' . $rowNum, iconv_substr($value['uuid'], 0, 8) . '/' . $value['id'])
-                    ->setCellValue('B' . $rowNum, $value['name'] . "(#" . $value['uid'] . ")")
+                    ->setCellValue('B' . $rowNum, $value['nativename'] . "(#" . $value['uid'] . ")")
                     ->setCellValue('C' . $rowNum, $value['phone'])
                     ->setCellValue('D' . $rowNum, $value['loginname'])
                     ->setCellValue('E' . $rowNum, isset($companys[$value['company_id']]) ? $companys[$value['company_id']] : $value['company_id'])
@@ -202,8 +203,8 @@ class ScoreOrder extends AdminBase
                 $sheet->getStyle('I' . $rowNum)->getAlignment()->setWrapText(true);
             }
             /*$value = "Hello World!" . PHP_EOL . "Next Line";
-      $sheet->setCellValue('A1', $value)；
-      $sheet->getStyle('A1')->getAlignment()->setWrapText(true);*/
+            $sheet->setCellValue('A1', $value)；
+            $sheet->getStyle('A1')->getAlignment()->setWrapText(true);*/
 
             $writer = $encoding ? new Xls($spreadsheet) : new Csv($spreadsheet);
             if ($encoding) {
@@ -459,7 +460,7 @@ class ScoreOrder extends AdminBase
 
         $map_2  = [];
         if (isset($filter['keyword']) && $filter['keyword']) {
-            $map_2[] = ['cu.loginname|cu.phone|cu.Department|cu.name|cu.companyname', 'like', "%{$filter['keyword']}%"];
+            $map_2[] = ['cu.loginname|cu.phone|cu.Department|cu.nativename|cu.companyname', 'like', "%{$filter['keyword']}%"];
         }
         if (isset($filter['company_id']) && $filter['company_id']) {
             $map_2[] = ['cu.company_id', '=', $filter['company_id']];
@@ -467,7 +468,7 @@ class ScoreOrder extends AdminBase
 
         $fields = "s.num , s.creator, s.add_time,  ac.id as account_id , 
             ac.carpool_account,  ac.is_delete as ac_is_delete, ac.balance,
-            cu.uid, cu.loginname,cu.name, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname
+            cu.uid, cu.loginname,cu.name, cu.nativename, cu.phone, cu.Department, cu.sex ,cu.company_id, cu.companyname
             ";
         $join = [
             ['account ac', 's.creator = ac.id', 'left'],

@@ -25,11 +25,11 @@ class UserOauth extends AdminBase
      */
     public function index($filter = [], $pagesize = 20)
     {
-        $fields = "o.*, u.loginname, u.name,c.company_name,u.sex, d.fullname as full_department ";
+        $fields = "o.*, u.loginname, u.name, u.nativename, c.company_name,u.sex, d.fullname as full_department ";
         $map = [];
         //筛选用户信息
         if (isset($filter['keyword']) && $filter['keyword']) {
-            $map[] = ['u.loginname|u.phone|u.name', 'like', "%{$filter['keyword']}%"];
+            $map[] = ['u.loginname|u.phone|u.name|u.nativename', 'like', "%{$filter['keyword']}%"];
         }
         //筛选部门
         if (isset($filter['keyword_dept']) && $filter['keyword_dept']) {

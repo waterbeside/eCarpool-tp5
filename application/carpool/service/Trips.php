@@ -61,7 +61,7 @@ class Trips
     public function buildUserFields($a = "u", $fields = [])
     {
         $format_array = [];
-        $fields = !empty($fields) ? $fields : ['uid', 'loginname', 'name', 'phone', 'mobile', 'Department', 'sex', 'company_id', 'department_id', 'companyname', 'imgpath', 'carnumber', 'carcolor', 'im_id'];
+        $fields = !empty($fields) ? $fields : ['uid', 'loginname', 'name','nativename', 'phone', 'mobile', 'Department', 'sex', 'company_id', 'department_id', 'companyname', 'imgpath', 'carnumber', 'carcolor', 'im_id'];
 
         foreach ($fields as $key => $value) {
             $format_array[$key] = $a . "." . $value . " as " . $a . "_" . mb_strtolower($value);

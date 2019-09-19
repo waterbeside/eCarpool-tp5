@@ -110,7 +110,7 @@ class CarpoolTrips extends AdminBase
             if (is_numeric($type) && $type == 0) {
                 //筛选用户信息
                 if (isset($filter['keyword']) && $filter['keyword']) {
-                    $map[] = ['d.loginname|d.phone|d.name|p.loginname|p.phone|p.name', 'like', "%{$filter['keyword']}%"];
+                    $map[] = ['d.loginname|d.phone|d.name|d.nativename|p.loginname|p.phone|p.name|p.nativename', 'like', "%{$filter['keyword']}%"];
                 }
                 $fields = 't.infoid , t.love_wall_ID , t.time,  t.time, t.status, t.passengerid, t.carownid ,   t.subtime, t.map_type ';
                 $fields .= ',' . $TripsService->buildUserFields('d');
@@ -156,7 +156,7 @@ class CarpoolTrips extends AdminBase
             if ($type == 1) {
                 //筛选用户信息
                 if (isset($filter['keyword']) && $filter['keyword']) {
-                    $map[] = ['d.loginname|d.phone|d.name', 'like', "%{$filter['keyword']}%"];
+                    $map[] = ['d.loginname|d.phone|d.name|d.nativename', 'like', "%{$filter['keyword']}%"];
                 }
                 $subQuery = InfoModel::field('count(love_wall_ID) as count , love_wall_ID')
                     ->group('love_wall_ID')
@@ -307,12 +307,12 @@ class CarpoolTrips extends AdminBase
                 ->setCellValue('B' . $rowNum, $value['end_addressname'])
                 ->setCellValue('C' . $rowNum, $value['time'])
                 ->setCellValue('D' . $rowNum, $value['subtime'])
-                ->setCellValue('E' . $rowNum, $value['d_name'])
+                ->setCellValue('E' . $rowNum, $value['d_nativename'])
                 ->setCellValue('F' . $rowNum, $value['d_loginname'])
                 ->setCellValue('G' . $rowNum, isset($companys[$value['d_company_id']]) ? $value['d_department'] . '/' . $companys[$value['d_company_id']] : $value['d_department'])
                 ->setCellValue('H' . $rowNum, $value['d_full_department'])
                 ->setCellValue('I' . $rowNum, $value['d_phone'])
-                ->setCellValue('J' . $rowNum, $type ? $value['took_count'] : $value['p_name'])
+                ->setCellValue('J' . $rowNum, $type ? $value['took_count'] : $value['p_nativename'])
                 ->setCellValue('K' . $rowNum, $type ? $value['seat_count'] : $value['p_loginname'])
                 ->setCellValue('L' . $rowNum, $type ? "-" : (isset($companys[$value['p_company_id']]) ? $value['p_department'] . '/' . $companys[$value['p_company_id']] : $value['p_department']))
                 ->setCellValue('M' . $rowNum, $type ? "-" : $value['p_full_department'])
@@ -376,7 +376,7 @@ class CarpoolTrips extends AdminBase
             $data['subtime'] = date('Y-m-d H:i', $data['subtime']);
             // $data['took_count']       = InfoModel::where([['love_wall_ID','=',$data['love_wall_ID']],['status','<>',2]])->count(); //取已坐数
             $fields2 = 't.*';
-            $fields2 .= ',p.uid ,p.loginname  , p.name , p.phone , p.Department as department, p.sex, p.company_id , p.companyname, p.carnumber, p.imgpath ';
+            $fields2 .= ',p.uid ,p.loginname  , p.name,  p.nativename, p.phone , p.Department as department, p.sex, p.company_id , p.companyname, p.carnumber, p.imgpath ';
             $join2 = [
                 ['user p', 'p.uid = t.passengerid', 'left'],
             ];
@@ -443,7 +443,7 @@ class CarpoolTrips extends AdminBase
         $join = [];
         $join[] = ['user u', 'u.uid = t.uid', 'left'];
         $lists = InfoActiveLine::alias('t')
-                    ->field('t.*,u.name,u.loginname')
+                    ->field('t.*,u.name,u.nativename, u.loginname')
                     ->join($join)
                     ->where($map)
                     ->order("$orderField $orderType")
