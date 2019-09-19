@@ -59,7 +59,12 @@ class ScoreHistory extends AdminBase
             ->order('t.time DESC, t.id DESC')->paginate($pagesize, false, ['query' => request()->param()]);
 
         foreach ($lists as $key => $value) {
-            $lists[$key]['extra'] = json_decode($value['extra_info'], true);
+            try {
+                $lists[$key]['extra'] = json_decode($value['extra_info'], true);
+            } catch (\Exception $e) {
+                $lists[$key]['extra'] = null;
+            }
+            
             if ($value['account_id']) {
                 $userInfo = ScoreAccountModel::where(['id' => $value['account_id']])->find();
                 $lists[$key]['account'] = $userInfo['carpool_account'] ?
