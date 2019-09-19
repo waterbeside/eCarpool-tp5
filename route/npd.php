@@ -14,6 +14,9 @@ Route::group([], function () {
     Route::rule('npd/api/:version/single', 'npd/api.:version.single/index', 'GET');
     Route::rule('npd/api/:version/single/:id', 'npd/api.:version.single/read', 'GET');
 
+    Route::rule('npd/api/:version/gallery', 'npd/api.:version.gallery/index', 'GET');
+
+
     //通行证相关
     Route::rule('npd/api/:version/passport', 'npd/api.:version.passport/login', 'POST');
     Route::rule('npd/api/:version/passport', 'npd/api.:version.passport/index', 'GET');
