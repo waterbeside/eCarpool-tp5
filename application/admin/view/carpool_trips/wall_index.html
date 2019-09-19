@@ -73,7 +73,7 @@
                             <tr >
                                 <th lay-data="{field:'infoid', width:80,fixed: 'left' }" >#</th>
                                 <th lay-data="{field:'d_carnumber', width:120, fixed: 'left' }">{:lang('License plate')}</th>
-                                <th lay-data="{field:'d_name', minWidth:180, }">{:lang('Driver')}</th>
+                                <th lay-data="{field:'d_nativename', minWidth:180, }">{:lang('Driver')}</th>
                                 <!-- <th lay-data="{field:'d_phone',width:100,}">司机电话</th> -->
                                 <th lay-data="{field:'d_department' ,width:120}">{:lang('Driver department')}</th>
                                 <th lay-data="{field:'seat_count' ,width:80}">{:lang('trip:空位数')}</th>
@@ -99,7 +99,7 @@
                                 <div class="driver status_{$vo.status}">
                                     {php}echo $vo['d_sex']==1 ? '<i class="fa fa-mars"></i>' : ($vo['d_sex']==2 ? '<i class="fa fa-venus"></i>' : '<i class="fa fa-genderless"></i>' );{/php}
                                     <a href="{:url('admin/User/public_detail',['id'=>$vo['d_uid']])}"   data-title="{:lang('User detail')}"  data-trigger="modal" title="{:lang('User detail')}">
-                                    {$vo.d_name} ({$vo.d_loginname})
+                                    {$vo.d_nativename ?: $vo.d_name} ({$vo.d_loginname})
                                     </a>
                                 </div>
                                 </td>

@@ -158,7 +158,8 @@ class CarpoolReports extends AdminBase
         } elseif ($type == "passenger") {
             $fieldname = 'passengerid';
         }
-        $sql_passenger  = "SELECT  {$fieldname} , count({$fieldname}) as c , u.name, u.loginname, u.Department , u.sex, u.phone, c.company_name
+        $sql_user  = "SELECT {$fieldname} , count({$fieldname}) as c , 
+            u.name, u.loginname, u.nativename, u.Department , u.sex, u.phone, c.company_name
             FROM
             (" . $from_01 . " ) as i
             LEFT JOIN user as u ON u.uid = {$fieldname}
@@ -168,8 +169,11 @@ class CarpoolReports extends AdminBase
             ORDER BY
             c DESC
         ";
-        $res_passenger =  Db::connect('database_carpool')->query($sql_passenger);
-        $this->jsonReturn(0, ['lists' => $res_passenger]);
+        $res_user =  Db::connect('database_carpool')->query($sql_user);
+        foreach ($res_user as $key => $value) {
+            $res_user[$key]['nativename'] = $value['nativename'] && trim($value['nativename']) != '' ? $value['nativename'] : $value['name'];
+        }
+        $this->jsonReturn(0, ['lists' => $res_user]);
     }
 
 

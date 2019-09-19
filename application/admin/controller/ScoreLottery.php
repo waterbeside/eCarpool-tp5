@@ -38,7 +38,7 @@ class ScoreLottery extends AdminBase
         $fields = 't.* ';
         $fields .= ' ,pr.amount , pr.name as prize_name ,  pr.price , pr.level, pr.images, pr.total_count , pr.real_count';
         $fields .= ' ,ac.id as account_id , ac.carpool_account, ac.balance';
-        $fields .= ' ,u.name as user_name , u.phone as user_phone , u.company_id ,
+        $fields .= ' ,u.nativename as user_name , u.phone as user_phone , u.company_id ,
                     u.loginname, u.Department, u.sex , u.companyname,  
                     d.fullname as full_department';
 
@@ -81,7 +81,7 @@ class ScoreLottery extends AdminBase
 
         //筛选用户信息
         if (isset($filter['keyword_user']) && $filter['keyword_user']) {
-            $map[] = ['u.loginname|u.phone|u.name', 'like', "%{$filter['keyword_user']}%"];
+            $map[] = ['u.loginname|u.phone|u.nativename', 'like', "%{$filter['keyword_user']}%"];
         }
         //筛选部门
         if (isset($filter['keyword_dept']) && $filter['keyword_dept']) {

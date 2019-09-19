@@ -48,7 +48,7 @@
                     <tr >
                         <th lay-data="{field:'uid', width:80,fixed: 'left' }" >#</th>
                         <th lay-data="{field:'loginname', width:120, fixed: 'left'}">{:lang('Username')}</th>
-                        <th lay-data="{field:'name' }">{:lang('Name')}</th>
+                        <th lay-data="{field:'nativename' }">{:lang('Name')}</th>
                         <th lay-data="{field:'score', width:100}">{:lang('Remaining points')}</th>
                         <th lay-data="{field:'phone', width:120}">{:lang('Phone')}</th>
                         <th lay-data="{field:'full_department', width:160}">{:lang('Department')}(HR)</th>
@@ -69,7 +69,7 @@
                         </td>
                         <td>
                             <a onclick="openLayer('{:url('admin/ScoreAccount/detail',['type'=>2,'account'=>$vo['loginname']])}','{:lang('User detail')}');" href="javascript:void(0);" >
-                            {$vo.name}{php}echo $vo['account_id'] ? ' <i class="text-red fa fa-id-card"></i>' : '';{/php}
+                            {$vo.nativename}{php}echo $vo['account_id'] ? ' <i class="text-red fa fa-id-card"></i>' : '';{/php}
                             </a>
                         </td>
                         <td class="field-score"><span>{$vo['balance']}</span></td>

@@ -43,7 +43,7 @@ class ScoreAccount extends AdminBase
 
             $map[] = ['ac.is_delete', '<>', 1];
 
-            $fields .= ' ,cu.uid ,cu.name as name , cu.phone as phone , cu.company_id ,
+            $fields .= ' ,cu.uid ,cu.name as name , cu.nativename as nativename, cu.phone as phone , cu.company_id ,
                 cu.loginname, cu.Department, cu.sex , cu.companyname, 
                 d.fullname as full_department';
             $fields .= ' ,c.company_name ';
@@ -69,7 +69,7 @@ class ScoreAccount extends AdminBase
             $isJoinUser = $export ? true : false;
             //筛选用户信息
             if (isset($filter['keyword']) && $filter['keyword']) {
-                $map[] = ['cu.loginname|cu.name|cu.phone', 'like', "%{$filter['keyword']}%"];
+                $map[] = ['cu.loginname|cu.nativname|cu.phone', 'like', "%{$filter['keyword']}%"];
                 $isJoinUser = true;
             }
             // //筛选部门
@@ -100,7 +100,7 @@ class ScoreAccount extends AdminBase
         } elseif ($type == '1' || $type == "phone") { //电话
             // TODO::当类型为电话号时
         } elseif ($type == '2' || $type == "carpool") { //拼车帐号列表
-            $fields  = 'cu.uid ,cu.name as name , cu.phone as phone , cu.company_id ,
+            $fields  = 'cu.uid ,cu.name as name , cu.nativename as nativename, cu.phone as phone , cu.company_id ,
                 cu.loginname, cu.Department, cu.sex , cu.companyname, cu.is_active, 
                 d.fullname as full_department';
             $fields .= ' ,c.company_name ';
@@ -132,7 +132,7 @@ class ScoreAccount extends AdminBase
             }
             //筛选用户信息
             if (isset($filter['keyword']) && $filter['keyword']) {
-                $map[] = ['cu.loginname|cu.phone|cu.name', 'like', "%{$filter['keyword']}%"];
+                $map[] = ['cu.loginname|cu.phone|cu.nativename', 'like', "%{$filter['keyword']}%"];
             }
             //筛选部门
             if (isset($filter['keyword_dept']) && $filter['keyword_dept']) {
@@ -176,7 +176,7 @@ class ScoreAccount extends AdminBase
             foreach ($lists as $key => $value) {
                 $rowNum = $key + 2;
                 $sheet->setCellValue('A' . $rowNum, $value['uid'])
-                    ->setCellValue('B' . $rowNum, $value['name'])
+                    ->setCellValue('B' . $rowNum, $value['nativename'])
                     ->setCellValue('C' . $rowNum, $value['phone'])
                     ->setCellValue('D' . $rowNum, $value['loginname'] ? $value['loginname'] : '☹︎ ' . $value['carpool_account'])
                     ->setCellValue('E' . $rowNum, $value['company_name'] ?  $value['company_name'] : $value['company_id'])
