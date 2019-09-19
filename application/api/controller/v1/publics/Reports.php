@@ -127,7 +127,7 @@ class Reports extends ApiBase
                 $where = " t.status <> 2 AND carownid IS NOT NULL AND carownid > 0 AND t.time >=  " . $period[0] . " AND t.time < " . $period[1] . "";
                 $tableAll = " SELECT carownid, passengerid ,time , MAX(infoid) as infoid FROM info as t WHERE $where GROUP BY carownid , time, passengerid "; //取得当月所有，去除拼同司机同时间同乘客的数据。
                 $limit = " LIMIT 50 ";
-                $sql = "SELECT u.uid, u.name, u.loginname , u.companyname , count(ta.passengerid) as num FROM ( $tableAll ) as ta LEFT JOIN user as u on ta.carownid =  u.uid  GROUP BY  carownid   ORDER BY num DESC $limit";
+                $sql = "SELECT u.uid, u.nativename as name, u.loginname , u.companyname , count(ta.passengerid) as num FROM ( $tableAll ) as ta LEFT JOIN user as u on ta.carownid =  u.uid  GROUP BY  carownid   ORDER BY num DESC $limit";
 
                 $datas  =  Db::connect('database_carpool')->query($sql);
                 $returnData = array(
@@ -142,7 +142,7 @@ class Reports extends ApiBase
                 $where = " t.status <> 2 AND carownid IS NOT NULL AND carownid > 0 AND t.time >=  " . $period[0] . " AND t.time < " . $period[1] . "";
                 $tableAll = " SELECT   passengerid ,time , MAX(infoid) as infoid , MAX(carownid) as carownid FROM info as t WHERE $where GROUP BY   time, passengerid "; //取得当月所有，去除拼同司机同时间同乘客的数据。
                 $limit = " LIMIT 50 ";
-                $sql = "SELECT u.uid, u.name, u.loginname , u.companyname , count(ta.infoid) as num  FROM ( $tableAll ) as ta 
+                $sql = "SELECT u.uid,  u.loginname , u.nativename as name,  u.companyname , count(ta.infoid) as num  FROM ( $tableAll ) as ta 
                         LEFT JOIN user as u on ta.passengerid =  u.uid  
                         GROUP BY  passengerid   ORDER BY num DESC $limit";
                 $datas  =  Db::connect('database_carpool')->query($sql);
@@ -176,7 +176,7 @@ class Reports extends ApiBase
         $redis = new RedisData();
 
         $cacheKey   = "carpool:reports:today_info";
-        $cacheExp = 60 * 60;
+        $cacheExp = 60 ;
         $cacheDatas = $redis->cache($cacheKey);
 
         if ($cacheDatas) {
@@ -187,8 +187,8 @@ class Reports extends ApiBase
         $where = " i.status <> 2 AND carownid IS NOT NULL AND carownid > 0 AND i.time >=  " . $period[0] . " AND i.time < " . $period[1] . "";
         $whereIds = "SELECT MIN(ii.infoid) FROM  (select * from info as i where $where ) as ii GROUP BY ii.passengerid , ii.time    ";
 
-        $sql = "SELECT i.infoid, i.carownid, i.passengerid, c.name as d_name, c.Department as d_department,c.carnumber, 
-                p.name as p_name, p.Department as p_department, i.time
+        $sql = "SELECT i.infoid, i.carownid, i.passengerid, c.nativename as d_name, c.Department as d_department,c.carnumber, 
+                p.nativename as p_name, p.Department as p_department, i.time
                 FROM info as i
                 LEFT JOIN user AS c ON c.uid = i.carownid
                 LEFT JOIN user AS p ON p.uid = i.passengerid
