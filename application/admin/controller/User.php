@@ -253,12 +253,14 @@ class User extends AdminBase
             }
 
             $user = $this->user_model->find($id);
-            if (in_array($user['company_id'], [1, 11])) {
+            // if (in_array($user['company_id'], [1, 11])) {
                 $data['company_id'] = $user['company_id'];
-            }
+            // }
 
             if ($this->user_model->allowField(true)->save($data, ['uid' => $id]) !== false) {
                 $this->log('保存用户成功，id=' . $id, 0);
+                $this->user_model->deleteDetailCache($user['loginname']);
+                $this->user_model->deleteDetailCache($id, true);
                 return $this->jsonReturn(0, '保存成功');
             } else {
                 $this->log('保存用户失败，id=' . $id, -1);
