@@ -177,6 +177,7 @@ class Category extends Model
         if ($data) {
             $redis->cache($cacheKey, $data, $exp);
         }
+        $data = $data ? $data->toArray() : null;
         return $data;
     }
 
