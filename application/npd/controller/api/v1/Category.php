@@ -52,6 +52,8 @@ class Category extends ApiBase
             $tree->init($list);
             $tree->parentid_name = 'parent_id';
             $treeData = $tree->get_tree_array($cid, 'id');
+        } else {
+            $treeData = [];
         }
         $returnData = [
             'list' => $treeData,
