@@ -87,6 +87,8 @@ class Product extends ApiBase
      */
     public function read($id = 0)
     {
+        $this->checkPassport(true);
+
         if (!$id) {
             $this->jsonReturn(992, 'Error id');
         }
