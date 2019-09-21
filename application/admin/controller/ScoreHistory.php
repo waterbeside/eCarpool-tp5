@@ -145,7 +145,11 @@ class ScoreHistory extends AdminBase
         $lists = HistoryModel::where($map)->order('time DESC, id DESC')->paginate($pagesize, false, ['query' => request()->param()]);
 
         foreach ($lists as $key => $value) {
-            $lists[$key]['extra'] = json_decode($value['extra_info'], true);
+            try {
+                $lists[$key]['extra'] = json_decode($value['extra_info'], true);
+            } catch (\Exception $e) {
+                $lists[$key]['extra'] = null;
+            }
         }
 
         $auth['admin/ScoreHistory/edit'] = $this->checkActionAuth('admin/ScoreHistory/edit');
