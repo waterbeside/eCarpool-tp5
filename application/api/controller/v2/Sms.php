@@ -281,7 +281,7 @@ class Sms extends ApiBase
                 /******** 验证登入 *********/
             case 100:
                 $client = input('param.client');
-                if (!in_array($client, array('ios', 'android', 'h5', 'web', 'third'))) {
+                if (!in_array(strtolower($client), array('ios', 'android', 'h5', 'web', 'third'))) {
                     return  $this->jsonReturn(992, [], 'client error');
                 };
                 ////////////////////
