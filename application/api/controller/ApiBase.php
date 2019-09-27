@@ -73,6 +73,7 @@ class ApiBase extends Base
             $this->passportError = [10004, lang('You are not logged in')];
             return $returnType ? $this->jsonReturn(10004, $this->passportError[1]) : false;
         } else {
+            $errorData = [];
             try {
                 $jwtDecode = JWT::decode($Authorization, config('secret.front_setting')['jwt_key'], array('HS256'));
                 $this->jwtInfo = $jwtDecode;
@@ -87,10 +88,10 @@ class ApiBase extends Base
                 //   $JwtToken = new JwtToken();
                 //   $JwtToken->invalidate($Authorization,-3);
                 // }
-                // $errorData = [
-                //   'invalid_type' => -3,
-                //   'invalid_time' => time(),
-                // ];
+                $errorData = [
+                    'invalid_type' => -3,
+                    // 'invalid_time' => time(),
+                ];
                 // $this->passportError = [10004, $msg, $errorData];
                 // return $returnType ? $this->jsonReturn(10004, $errorData, $this->passportError[1]) : false;
             } catch (\Exception $e) {  //其他错误
@@ -100,7 +101,7 @@ class ApiBase extends Base
             }
             if (isset($msg)) {
                 $this->passportError = [10004, $msg];
-                return $returnType ? $this->jsonReturn(10004, $this->passportError[1]) : false;
+                return $returnType ? $this->jsonReturn(10004, $errorData, $this->passportError[1]) : false;
             }
             if (isset($jwtDecode->uid) && isset($jwtDecode->loginname)) {
                 $now = time();
