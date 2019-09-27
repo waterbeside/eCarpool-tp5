@@ -25,30 +25,130 @@ class Sms extends ApiBase
     protected $appSecret = '';
     protected $test_inter = 0;
     // usage 与对应的模板id
-    protected $SmsTemplate  = array(
-        // 'u_000'   => '4022147',
-        'u_100' => '4072148', //用于登录
-        'u_101' => '4022223', //用于注册
-        'u_102' => '4022224', //用于重置
-        'u_103' => '3892309', //用于绑定手机号
-        'u_104' => '4022147', //用于合并帐号
+    // protected $SmsTemplate  = array(
+    //     // 'u_000'   => '4022147',
+    //     'u_100' => '4072148', //用于登录
+    //     'u_101' => '4022223', //用于注册
+    //     'u_102' => '4022224', //用于重置
+    //     'u_103' => '3892309', //用于绑定手机号
+    //     'u_104' => '4022147', //用于合并帐号
 
-        'u_200' => '4022147', //用于确认通用操作
-        'u_201' => '4022147', //用于确认支付
+    //     'u_200' => '4022147', //用于确认通用操作
+    //     'u_201' => '4022147', //用于开通支付
+    //     'u_202' => '4022147', //用于重置支付密码
 
-        'u_300' => '4012242', //用于邀请下载
-        'u_301' => '4012242', //用于邀请建立好友关系
-        'u_302' => '4012426', //用于邀请进群
-    );
+    //     'u_300' => '4012242', //用于邀请下载
+    //     'u_301' => '4012242', //用于邀请建立好友关系
+    //     'u_302' => '4012426', //用于邀请进群
+    // );
+
+    protected $usageSetting = [
+        'u_100' => [ //用于登录
+            'tpl' => '4072148',
+            'isGetPhone' => true,
+            'isGetPhoneUser' => true,
+            'isCheckUser' => false,
+            'isSendCode' => true,
+        ],
+        'u_101' => [ //用于注册
+            'tpl' => '4022223',
+            'isGetPhone' => true,
+            'isGetPhoneUser' => true,
+            'isCheckUser' => false,
+            'isSendCode' => true,
+        ],
+        'u_102' => [ //用于重置
+            'tpl' => '4022224',
+            'isGetPhone' => true,
+            'isGetPhoneUser' => true,
+            'isCheckUser' => false, // 重置分登录后和登录前，所以先设为false
+            'isSendCode' => true,
+        ],
+        'u_103' => [ //用于绑定手机号
+            'tpl' => '3892309',
+            'isGetPhone' => true,
+            'isGetPhoneUser' => true,
+            'isCheckUser' => true,
+            'isSendCode' => true,
+        ],
+        'u_104' => [ //用于合并帐号
+            'tpl' => '4022147',
+            'isGetPhone' => true,
+            'isGetPhoneUser' => false,
+            'isCheckUser' => false,
+            'isSendCode' => true,
+        ],
+        'u_200' => [ //通用
+            'tpl' => '4022147',
+            'isGetPhone' => true,
+            'isGetPhoneUser' => true,
+            'isCheckUser' => true,
+            'isSendCode' => true,
+        ],
+        'u_201' => [ //用于开通支付
+            'tpl' => '14839075',
+            'isGetPhone' => false,
+            'isGetPhoneUser' => false,
+            'isCheckUser' => true,
+            'isSendCode' => true,
+        ],
+        'u_202' => [ //用于重置支付码
+            'tpl' => '14844112',
+            'isGetPhone' => false,
+            'isGetPhoneUser' => false,
+            'isCheckUser' => true,
+            'isSendCode' => true,
+        ],
+        'u_300' => [ //用于邀请
+            'tpl' => '4012242',
+            'isGetPhone' => false,
+            'isGetPhoneUser' => false,
+            'isCheckUser' => true,
+            'isSendCode' => false,
+        ],
+        'u_301' => [ //用于邀请建立好友关系
+            'tpl' => '4012242',
+            'isGetPhone' => false,
+            'isGetPhoneUser' => false,
+            'isCheckUser' => true,
+            'isSendCode' => false,
+        ],
+        'u_302' => [ //用于邀请进群
+            'tpl' => '4012426',
+            'isGetPhone' => false,
+            'isGetPhoneUser' => false,
+            'isCheckUser' => true,
+            'isSendCode' => false,
+        ],
+    ];
+
+    
 
     protected function initialize()
     {
         parent::initialize();
-
         $this->appKey     = config('secret.nim.appKey');
         $this->appSecret  = config('secret.nim.appSecret');
     }
 
+    /**
+     * 取得场景设置
+     *
+     * @param String||Integer $usage 场景
+     * @return Array
+     */
+    protected function getUsageSetting($usage)
+    {
+        $default = [
+            'tpl' => '4022147',
+            'isGetPhone' => true,
+            'checkUserData' => true,
+            'getPhoneUserData' => true,
+            'isSendCode' => true,
+        ];
+        $settingData = isset($this->usageSetting['u_' .$usage]) ? array_merge($default, $this->usageSetting['u_' .$usage]) : false;
+        return $settingData;
+    }
 
     /**
      * 处理验证码缓存
@@ -90,12 +190,10 @@ class Sms extends ApiBase
 
 
 
-
-
-    /*
-    解释手机号
-    当手机号为字符串时，处理为数组.多个手机号以','格开。
-    例如 phone=[13112345678,13212345678] 或 phone=13112345678,13212345678 或 phone=13112345678有形式皆可
+    /**
+     * 格式手机号参数
+     *
+     * @param String $phones 当手机号为字符串时，处理为数组.多个手机号以','格开。例如 phone=[13112345678,13212345678] 或 phone=13112345678,13212345678 或 phone=13112345678有形式皆可
      */
     protected function formatPhones($phones)
     {
@@ -129,27 +227,35 @@ class Sms extends ApiBase
      */
     public function send($usage = 0, $phone = null)
     {
-        // $dev = input('param.dev',0);
+        // $dev = input('param.dev', 0);
         $dev = 0;
         if (!$usage) {
             $this->jsonReturn(992, [], 'usage empty');
             exit;
         }
-        if (!isset($this->SmsTemplate['u_' . $usage])) {
+
+        $usageSetting = $this->getUsageSetting($usage);
+        if (!$usageSetting) {
             $this->jsonReturn(992, [], 'usage error');
             exit;
         }
-        $phones = $this->formatPhones($phone);
-        $phone = $phones[0];
+
+        if ($usageSetting['isGetPhone']) {
+            $phones = $this->formatPhones($phone);
+            $phone = $phones[0];
+        }
+
         // var_dump($phones);
         $sendCallBack = array();
         $isSuccess = 0;
 
         /******* 非群发的验证场景 ******/
-        if (in_array($usage, array(100, 101, 102, 103, 104, 201, 200))) {
-            $phoneUserData = UserModel::where([['phone', '=', $phone], ['is_delete', '=', 0]])->find();
+        if ($usageSetting['isSendCode']) {
+            if ($usageSetting['isGetPhoneUser']) {
+                $phoneUserData = UserModel::where([['phone', '=', $phone], ['is_delete', '=', 0]])->find();
+            }
 
-            if (in_array($usage, array(103, 200, 201))) { // 验证是否登入
+            if ($usageSetting['isCheckUser']) { // 验证是否登入
                 $userData = $this->getUserData(1);
             }
 
@@ -196,13 +302,17 @@ class Sms extends ApiBase
                             $this->jsonReturn(10100, [], lang('The phone number has been bound to this account, no need to merge.'));
                         }
                     }
-
                     $phoneUserData2 = UserModel::where([['loginname', '=', $phone],['is_delete', '=', 0]])->find();
                     if (!$phoneUserData2) {
                         $this->jsonReturn(10006, [], lang('No need to merge'));
                     }
                     break;
-
+                case 201: //开通支付
+                    $phone = $userData['phone'];
+                    break;
+                case 202: //重置支付
+                    $phone = $userData['phone'];
+                    break;
                 default:
                     # code...
                     break;
@@ -221,17 +331,16 @@ class Sms extends ApiBase
                     $this->jsonReturn(10200, $sendCallBack, 'too often');
                 }
                 if ($sendCallBack['' . $phone]['code'] == 414) {
-                    $this->jsonReturn(992, $sendCallBack, lang('Phone number format is not correct'));
+                    $msg = lang('Phone number format is not correct');
+                    $this->jsonReturn(992, $sendCallBack, $msg);
                 }
                 if ($sendCallBack['' . $phone]['code'] == 416) {
                     $this->jsonReturn(30010, $sendCallBack, lang('The number of verification codes sent to this mobile phone number has reached the upper limit today'));
                 }
                 $this->jsonReturn(-1, $sendCallBack, 'fail');
             }
-        }
-
+        } else {
         /*******  模板短信场景 ******/
-        if (in_array($usage, array(300, 301, 302))) {
             $this->checkPassport(1);
             $sendCallBack = $this->sendTemplate($phones, $usage);
             if ($sendCallBack['code'] == 200) {
@@ -270,9 +379,14 @@ class Sms extends ApiBase
             exit;
         }
 
+        $usageSetting = $this->getUsageSetting($usage);
+        if (!$usageSetting) {
+            $this->jsonReturn(992, [], 'usage error');
+            exit;
+        }
 
         $returnData =  [];
-        if (in_array($usage, array(103, 200, 201))) { // 验证是否登入
+        if ($usageSetting['isCheckUser']) { // 验证是否登入
             $userData = $this->getUserData(1);
             $uid = $this->userBaseInfo['uid'];
         }
@@ -297,6 +411,7 @@ class Sms extends ApiBase
                 if (input('post.getui_id')) {
                     $postData['getui_id'] = input('post.getui_id');
                 }
+
                 $form_params = [
                     'json' => $postData,
                     // 'header' => [
@@ -461,6 +576,14 @@ class Sms extends ApiBase
                 $this->log('合并账号成功', 0);
                 break;
 
+            case 201: //开通支付
+                //  TODO: 开通支付
+                break;
+
+            case 202: //重置支付
+                //  TODO: 重置支付
+                break;
+
             default:
                 # code...
                 break;
@@ -485,8 +608,15 @@ class Sms extends ApiBase
      */
     public function sendCode($phone, $usage, $codeLen = 6, $expiration = 900, $dev = 0)
     {
-        $templates = $this->SmsTemplate;
-        $templateid =   $templates['u_' . $usage]; //短信验证码的模板ID
+        $usageSetting = $this->getUsageSetting($usage);
+        if (!$usageSetting) {
+            $this->jsonReturn(992, [], 'usage error');
+            exit;
+        }
+        $templateid = $usageSetting['tpl'];
+
+        // $templates = $this->SmsTemplate;
+        // $templateid =   $templates['u_' . $usage]; //短信验证码的模板ID
 
         if ($this->test_inter) {
             $templateid = '9284311';
@@ -535,8 +665,14 @@ class Sms extends ApiBase
      */
     public function sendTemplate($phone = array(), $usage = null)
     {
-        $templates = $this->SmsTemplate;
-        $templateid =   $templates['u_' . $usage]; //短信验证码的模板ID
+        $usageSetting = $this->getUsageSetting($usage);
+        if (!$usageSetting) {
+            $this->jsonReturn(992, [], 'usage error');
+            exit;
+        }
+        $templateid = $usageSetting['tpl'];
+        // $templates = $this->SmsTemplate;
+        // $templateid =   $templates['u_' . $usage]; //短信验证码的模板ID
 
         $NIM = new NimServer($this->appKey, $this->appSecret, 'fsockopen');
         $userData = $this->getUserData(1);
