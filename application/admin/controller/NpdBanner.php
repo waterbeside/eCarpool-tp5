@@ -172,19 +172,12 @@ class NpdBanner extends AdminBase
         if (!$oldData) {
             $this->jsonReturn(0, '删除成功');
         }
-        $app_ids = explode(',', $oldData->app_ids);
         $oldData->is_delete = 1;
         if ($oldData->save()) {
-            if ($oldData->status > 0) {
-                foreach ($app_ids as $key => $value) {
-                    $keyOfDataVersion = 'carpool:ads:version:' . $value . '_' . $oldData->type;
-                    $this->updateDataVersion($keyOfDataVersion);
-                }
-            }
-            $this->log('删除广告图成功', 0);
+            $this->log('删除NPD banner图成功', 0);
             $this->jsonReturn(0, '删除成功');
         } else {
-            $this->log('删除广告图失败', -1);
+            $this->log('删除NPD banner图失败', -1);
             $this->jsonReturn(-1, '删除失败');
         }
     }
