@@ -1,0 +1,323 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body P-export-user-gps">
+    <!--tab标签-->
+    <div class="layui-tab ">
+        <ul class="  amain-tool-bar">
+            <li ><a href="{:url('admin/CarpoolTrips/public_activeline_list')}" showloading>Active line</a></li>
+            <li class="layui-this"><a href="{:url('admin/CarpoolTrips/export_user_gps')}" showloading>导出用户坐标点</a></li>
+        </ul>
+        <div class="amain-content">
+            <form class="layui-form layui-form-pane" id="filter-form" method="get"
+                onsubmit="return PAGE_EXEC.getList()">
+
+                <div class="blank10"></div>
+                <div class="layui-form-item layui-form-text">
+                    <div class="layui-input-block">
+                                <!-- GET0220157, GET0265740, GET0126719, GET0241598, GET0255684, GET0299026, GET0243232, GET0259406, GET0126718, GET0126407, GET0255531, GET0155730, GET0191980, GET0136878, GET0126597, GET0126596, GET0126472, GET0230972, GET0181386, GET0296122, GET0126459, GET0287876, GET0257239, GET0297108, GET0270132, GET0133203, GET0126858, GET0157005, GET0126852, GET0275616, GET0211063, GET0279149, GET0205281, GET0127713, GET0126870, GET0151158, GET0292489, GET0303539, GET0126858, GET0285543, GET0126820, GET0160934, GET0126467, GET0126693, GET0126768, GET0126576, GET0126726, GET0156156, GET0126771 -->
+                        <textarea name="loginnames" placeholder="请输入用户loginname，多个可用','或回车分隔" class="layui-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="date_range" class="layui-input" id="filter_time"
+                            placeholder="{:lang('Time range')}" value="{$dateRange}"
+                            style="width:180px" autocomplete="off">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-dark" >确认</button>
+                    <a class="layui-btn layui-btn-danger btn-getAllData" onclick="return PAGE_EXEC.getAllGpsList()">获取数据</a>
+                    <a class="layui-btn layui-btn-success btn-exportAll"  onclick="return PAGE_EXEC.exportAll()" style="display: none">导出所有</a>
+                </div>
+
+            </form>
+            <hr />
+            <blockquote class="layui-elem-quote" id="msg"></blockquote>
+            <div class="list-wrapper">
+                <table class="layui-table list-table">
+                    <thead>
+                        <tr>
+                            <td>loginname</td>
+                            <td>姓名</td>
+                            <td>GPS数</td>
+                            <td>操作</td>
+                        </tr>
+                    </thead>
+                    <tbody id="user-list">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="js"}
+<script src="__JS__/xlsx.full.min.js"></script>
+<script src="__JS__/cExport.js"></script>
+
+{/block}
+{block name="script"}
+<script id="user-list-tpl" type="text/html">
+    <ul>
+    {{#  layui.each(d.list, function(index, item){ }}
+        <tr class="row" id="row-{{item}}" data-user="{{item}}">
+            <td>{{item}}</td>
+            <td><div class="name">-</div></td>
+            <td>
+                <div class="count" id="count-{{item}}">-</div>
+            </td>
+            <td class="opt">
+                <a onclick="return PAGE_EXEC.exportOne('{{item}}')" href="javascript:void(0);"  class="layui-btn  layui-btn-xs btn-exportOne" >{:lang('导出')}</a>                
+            </td>
+        </tr>
+    {{#  }); }}
+    {{#  if(d.list.length === 0){ }}
+        无数据
+    {{#  } }} 
+    </ul>
+</script>
+<script>
+    PAGE_EXEC = {
+        loginnameArray : [],
+        gpsList : {},
+        date_range:'',
+        loadingData: false,
+        exporting: false,
+        doing_index: -1,
+        init: function () {
+            laydate.render({
+                elem: '#filter_time',
+                range: '~', //或 range: '~' 来自定义分割字符,
+                lang: '{$active_lang == "zh-cn" ? "cn" : "en"}',
+                done: function (value, date, endDate) {
+
+                }
+            });
+            $(".layui-tab-title li a").click(function () {
+                layer.load(1);
+            })
+
+        },
+        /**
+        * 通过输入框取得用户列表;
+        */
+        getList: function () { 
+            var _this = this;
+            this.gpsList = {};
+            this.loginnameArray = [];
+            this.loadingData = false;
+            this.exporting = false;
+            this.doing_index = -1;
+            this.date_range = $('input[name="date_range"]').val();
+
+
+            $('.btn-exportAll').removeClass('show');
+            $('.btn-getAllData').addClass('show').prop('disabled');
+
+            var loginnames = $('textarea[name="loginnames"]').val();
+            loginnames = loginnames.replace(/\r\n/g, ",")  
+            loginnames = loginnames.replace(/\n/g, ",");  
+            loginnames = loginnames.replace(/\s+/g, '');
+            loginnames = loginnames.replace(/\,\,/g, ',');
+
+            var loginnameArray = loginnames.split(',');
+            var formatLoginnameArray = [];
+            var formatLoginnames = '';
+            for (var i in loginnameArray) {
+                var item = loginnameArray[i];
+                if (item && $.inArray(item,formatLoginnameArray) < 0) {
+                    formatLoginnameArray.push(item);
+                } else {
+                    console.log(item);
+                }
+            }
+            formatLoginnames = formatLoginnameArray.join(', ');
+            $('textarea[name="loginnames"]').val(formatLoginnames);
+            var getTpl = $('#user-list-tpl').html();
+            layui.laytpl(getTpl).render({list:formatLoginnameArray}, function(html){
+                $('#user-list').html(html);
+            });
+            this.loginnameArray = formatLoginnameArray;
+            this.showMsg();
+            return false;
+        },
+        /**
+        * 取得单个用户的GPS列表
+        */
+        getGpsList: function(loginname, type) {
+            var _this = this;
+            var $row = $('#row-'+loginname);
+            var date_range = this.date_range;
+
+            $row.find('.count').html('<i class="fa fa-spin fa-spinner"></i>');
+            _this.showMsg(`<i class="fa fa-spin fa-spinner"></i> 正在查询用户${loginname}`);
+
+            $row.addClass('doCheck');
+            var data = {
+                loginname: loginname,
+                date_range: date_range,
+                type: type,
+            }
+            return $.ajax({
+                url:'{:url("admin/CarpoolTrips/export_user_gps")}',
+                type:'post',
+                dataType:'json',
+                data: data,
+            }).then(function(res){
+                if(res && res.code === 0) {
+                    _this.gpsList[loginname] = res.data.list;
+                    console.log(res.data.list);
+                }
+                var count = res.data.list.length;
+                var name = typeof res.data.list[0] !== 'undefined' ? res.data.list[0].nativename : ''
+                $row.find('.count').html(count);
+                $row.find('.name').html(name);
+                $row.find('.btn-exportOne').addClass('show');
+                _this.showMsg(`<i class="fa fa-checked"></i> 正在查询用户${loginname}`);
+
+            }).catch(function(err){
+                console.log(err);
+                $row.find('.count').html('查询失败');
+
+            });
+        },
+
+        /**
+        * 批量执行数据获取
+        */
+        getAllGpsList: function(type, di) {
+            var i = typeof di !== 'undefined' ? di : -1;
+            if (this.doing_index < i) {
+                _this.showMsg();
+                return false;
+            }
+            i++ ;
+            this.doing_index = i;
+            if(this.loadingData) {
+                layer.msg('正在查询数据，请不要重复操作');
+                return false;
+            }
+            this.loadingData = true;
+            $('.btn-getAllData').removeClass('show');
+            
+            var _this = this;
+            type = type || 2;
+            var $userList = $('#user-list');
+            var $rowAll = $userList.find('tr.row:not(.doCheck)');
+            if ($rowAll.length < 1) {
+                _this.showMsg('所有用户查询完毕，您可点击导出按钮进行表格下载');
+                $('.btn-exportAll').addClass('show');
+                $('.btn-getAllData').removeClass('show');
+                _this.loadingData = false;
+                console.log(_this.gpsList);
+                return false;
+            }
+            var $row = $($rowAll[0]);
+            var loginname = $row.data('user');
+            this.getGpsList(loginname, type).then(function(res){
+                _this.loadingData = false;
+                _this.getAllGpsList(type, i);
+            }).catch(function(err){
+                _this.loadingData = false;
+                _this.getAllGpsList(type, i);
+            });
+            // var loginnameArray = this.loginnameArray;
+        },
+
+        showMsg: function(msg) {
+            msg = msg || '';
+            var allCount = this.loginnameArray.length;
+            var msg_o = `共查 <b>${allCount}</b> 个用户。`
+            msg_o += `时间范围为：<b>${this.date_range}</b>。`;
+            msg = msg_o + '<br/>' + msg;
+            $('#msg').html(msg);
+        },
+
+        /**
+        * 导出单个用户的excel表
+        */
+        exportOne: function(loginname, success) {
+            success = success || false;
+            var _this = this;
+            var $row = $(`#row-${loginname}`);
+            var username = $row.find('.name').text();
+
+            var gpsList = typeof this.gpsList[loginname] !== 'undefined' ? this.gpsList[loginname] : false;
+            if (!gpsList) {
+                layer.msg(`用户${loginname}查无数据, 无法导出`);
+                $row.find('.btn-exportOne').addClass('layui-btn-danger');
+                return false;
+            }
+            var time = this.date_range;
+            time = time.replace(/\s+/g, '');
+            time = time.replace(/\-/g, "");
+            time = time.replace(/\~/g, "_");
+            var sheet = XLSX.utils.json_to_sheet(gpsList);
+            var fileName = `${loginname}(${username})_${time}.xlsx`;
+            var blob = cExport.sheet2blob(sheet, this.date_range);
+            cExport.saveAs(blob, fileName, function(btn) {
+                if (typeof success === 'function') {
+                    success(btn);
+                }
+            }
+            );
+            return false;
+        },
+
+        /**
+         * 导出所有
+         */
+        exportAll: function(di) {
+            var _this = this;
+            if(this.exporting) {
+                layer.msg('正在导出数据，请不要重复操作');
+                return false;
+            }
+            var i = typeof di !== 'undefined' ? di : -1;
+            if ( di === -1 ) {
+                $('.btn-exportOne').removeClass('layui-btn-success');
+            }
+            this.exporting = true;
+            if (this.doing_index < i) {
+                _this.showMsg();
+                return false;
+            }
+            i++ ;
+            this.doing_index = i;
+
+            var $userList = $('#user-list');
+            var $rowAll = $userList.find('tr.row');
+            if (i >= $rowAll.length) {
+                _this.showMsg('所有表格导出完毕');
+                $('.btn-exportAll').addClass('show');
+                $('.btn-getAllData').removeClass('show');
+                _this.exporting = false;
+                return false;
+            }
+            var $row = $($rowAll[i]);
+            var loginname = $row.data('user');
+            _this.showMsg(`<i class="fa fa-checked"></i> 正在导出用户${loginname}数据`);
+            
+            _this.exportOne(loginname, function(){
+                $row.find('.btn-exportOne').addClass('layui-btn-success');
+                _this.exporting = false;
+                _this.exportAll(i);
+            })
+
+        }
+
+    }
+
+    PAGE_EXEC.init();
+</script>
+<style>
+    .P-export-user-gps .btn-exportOne {  display:none; }
+    .P-export-user-gps .btn-exportAll {  display:none; }
+    .P-export-user-gps .btn-getAllData {  display:none; }
+    .P-export-user-gps .btn-exportOne.show { display: inline-block !important;}
+    .P-export-user-gps .btn-exportAll.show { display: inline-block !important;}
+    .P-export-user-gps .btn-getAllData.show { display: inline-block !important;}
+</style>
+{/block}

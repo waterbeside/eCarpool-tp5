@@ -11,6 +11,7 @@ use think\Db;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use my\Queue;
 
 use app\carpool\service\Trips as TripsService;
 use app\carpool\service\TripsDetail as TripsDetailService;
@@ -482,4 +483,69 @@ class CarpoolTrips extends AdminBase
         ];
         return $returnType ? $this->fetch('public_check_compliant', $returnData) : $this->jsonReturn(0, $returnData);
     }
+
+    /**
+     * 批量导出指定用户的拼车数据
+     */
+    public function export_user_gps($type = 0)
+    {
+        if ($type > 0) {
+            // $loginnames = input('param.loginname');
+            // $loginnames=preg_replace('/\s+/', '', $loginnames);
+            // $loginnames = str_replace(array("\r\n", "\r", "\n"), ",", $loginnames);
+            // $loginnameArray = explode(',', $loginnames);
+
+            $loginname = input('param.loginname');
+            $date_range = input('param.date_range');
+            if (!$loginname || !$date_range) {
+                $this->jsonReturn(992, 'Error Param');
+            }
+            $map = [
+                ['u.loginname', '=', $loginname],
+            ];
+
+            $time_arr = $this->formatFilterTimeRange($date_range, 'Y-m-d H:i:s', 'd');
+            if (count($time_arr) > 1) {
+                $map[] = ['t.locationtime', '>=', $time_arr[0]];
+                $map[] = ['t.locationtime', '<', $time_arr[1]];
+            }
+
+            $join[] = ['user u', 'u.uid = t.uid', 'left'];
+
+            $resObj = InfoActiveLine::alias('t')
+                ->distinct(true)
+                ->field('t.*, u.nativename, u.loginname')
+                ->join($join)
+                ->where($map)
+                ->order('locationtime DESC');
+            $res = null;
+            if ($type == 1) {
+                $res = $resObj->count();
+                $returnData = [
+                    'c' => $res,
+                ];
+            } else {
+                ini_set('memory_limit', '512M');
+                try {
+                    $res = $resObj->select();
+                } catch (\Exception $e) {
+                    $errorMsg = $e->getMessage();
+                    return $this->jsonReturn(-1, $returnData, $errorMsg);
+                }
+                $returnData = [
+                    'list' => $res,
+                ];
+            }
+            $this->jsonReturn(0, $returnData, 'succesful');
+        } else {
+            $dateRange=  $this->getFilterTimeRangeDefault('Y-m-d', 'm');
+            $this->assign('dateRange', $dateRange);
+            return $this->fetch();
+        }
+        
+
+        
+        
+    }
+
 }
