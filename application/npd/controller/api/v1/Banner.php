@@ -38,18 +38,21 @@ class Banner extends ApiBase
 
 
         $redis = new RedisData();
-        $cacheData = $redis->cache($cacheKey);
+        $res = $redis->cache($cacheKey);
+        if (!$res) {
+            $map  = [];
+            $map[] = ['status', '=', 1];
+            $map[]  = ['is_delete', "=", 0];
+            $map[] = ['type', '=', $type];
 
+            $whereExp = '';
+            $whereExp .= " (lang = '$lang' OR lang = '')";
 
-        $map  = [];
-        $map[] = ['status', '=', 1];
-        $map[]  = ['is_delete', "=", 0];
-        $map[] = ['type', '=', $type];
-
-        $whereExp = '';
-        $whereExp .= " (lang = '$lang' OR lang = '')";
-
-        $res  = BannerModel::where($map)->where($whereExp)->order(['sort' => 'DESC', 'id' => 'DESC'])->select();
+            $res  = BannerModel::where($map)->where($whereExp)->order(['sort' => 'DESC', 'id' => 'DESC'])->select();
+            if ($res) {
+                $redis->cache($cacheKey, $res->toArray(), 60);
+            }
+        }
 
         if (!$res) {
             return $this->jsonReturn(20002, [], lang('No data'));
