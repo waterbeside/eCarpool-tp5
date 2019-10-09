@@ -416,47 +416,60 @@ class AdminBase extends Base
     }
 
 
-    public function getFilterTimeRangeDefault($formater = "Y-m-d H:i:s", $accuracy = "d")
+    /**
+     * 概据当前时间，取得默认的时间范围
+     *
+     * @param string $formater
+     * @param string $accuracy
+     * @return void
+     */
+    public function getFilterTimeRangeDefault($formater = "Y-m-d H:i:s", $accuracy = "d", $returnType = 0)
     {
+        return $this->getTimeRange('now', $formater, $accuracy, $returnType);
+    }
+
+    /**
+     * 计算期间
+     */
+    public function getTimeRange($date = null, $formater = "Y-m-d H:i:s", $accuracy = "d", $returnType = 0)
+    {
+        $time = !$date ? strtotime('now') : strtotime($date) ;
         switch ($accuracy) {
             case 'Y':
-                $time_s =  date('Y');
-                $time_e = date('Y');
+                $time_s =  date('Y-m-d', strtotime("first day of this ", $time));
+                $time_e = date('Y-m-d', strtotime("last day of this year", $time));
                 break;
             case 'm':
-                $time_s = date('Y-m-d', strtotime("first day of this month"));
-                $time_e = date('Y-m-d', strtotime("last day of this month"));
+                $time_s = date('Y-m-d', strtotime("first day of this month", $time));
+                $time_e = date('Y-m-d', strtotime("last day of this month", $time));
                 break;
             case 'w':
-                $time_s = date("Y-m-d", strtotime('-1 week last sunday'));
+                $time_s = date("Y-m-d", strtotime('-1 week last sunday', $time));
                 $time_e = date("Y-m-d", strtotime("$time_s +1 week") - 24 * 60 * 60);
                 break;
             case 'd':
-                $time_s =  date('Y-m-d');
-                $time_e = date('Y-m-d');
+                $time_s =  date('Y-m-d 00:00:00', $time);
+                $time_e = date('Y-m-d H:i:s', strtotime("+1 day -1 second", strtotime($time_s)));
                 break;
             case 'H':
-                $time_s =  date('Y-m-d H');
-                $time_e = date('Y-m-d H');
+                $time_s = date('Y-m-d H:00:00', $time);
+                $time_e = date('Y-m-d H:i:s', strtotime("+1 hour -1 second", strtotime($time_s)));
                 break;
             default:
-                $endAdd = '';
+                $time_s = date($formater, $time);
+                $time_e = date($formater, $time);
                 break;
         }
         $time_s_format =  date($formater, strtotime($time_s));
         $time_e_format =  date($formater, strtotime($time_e));
-        $date = $time_s_format . " ~ " . $time_e_format;
-
-        return $date;
+        return $returnType ? [$time_s_format, $time_e_format] : $time_s_format . " ~ " . $time_e_format;
     }
 
 
     /**
      * getFormatOffsetTime
-     * @param  string||array $data     输入的时间 以 "2019-01-01 ~ 2019-01-02" 格式传入，或以数组格式["2019-01-01", "2019-01-02"]
-     * @param  string $formater 输出的格式
-     * @param  string $accuracy 精度范围
-     * @return array          输出数组 [start time,end time];
+     * @param  String||Array $data     输入的时间 以 "2019-01-01 ~ 2019-01-02" 格式传入，或以数组格式["2019-01-01", "2019-01-02"]
+     * @param  String $formater 输出的格式
      */
     public function getFormatOffsetTime($dateStr, $formater = "Y-m-d H:i:s")
     {
@@ -467,7 +480,7 @@ class AdminBase extends Base
 
     /**
      * getDetail
-     * @param  integer  $type  0:date('Z') ;  1: request_timezone_offset; false: both (0,1) ;
+     * @param  Integer  $type  0:date('Z') ;  1: request_timezone_offset; false: both (0,1) ;
      */
     public function getTimezoneOffset($type = false)
     {
