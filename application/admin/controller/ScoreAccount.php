@@ -69,7 +69,7 @@ class ScoreAccount extends AdminBase
             $isJoinUser = $export ? true : false;
             //筛选用户信息
             if (isset($filter['keyword']) && $filter['keyword']) {
-                $map[] = ['cu.loginname|cu.nativname|cu.phone', 'like', "%{$filter['keyword']}%"];
+                $map[] = ['cu.loginname|cu.nativename|cu.phone', 'like', "%{$filter['keyword']}%"];
                 $isJoinUser = true;
             }
             // //筛选部门
