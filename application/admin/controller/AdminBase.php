@@ -436,8 +436,8 @@ class AdminBase extends Base
         $time = !$date ? strtotime('now') : strtotime($date) ;
         switch ($accuracy) {
             case 'Y':
-                $time_s =  date('Y-m-d', strtotime("first day of this ", $time));
-                $time_e = date('Y-m-d', strtotime("last day of this year", $time));
+                $time_s =  date('Y-01-01', $time);
+                $time_e = date('Y-m-d', strtotime("+1 year -1 day", strtotime($time_s)));
                 break;
             case 'm':
                 $time_s = date('Y-m-d', strtotime("first day of this month", $time));
