@@ -53,7 +53,7 @@ class Nav extends Model
         $redis = new RedisData();
         $data = json_decode($redis->get($rKey), true);
         if (!$data || $exp === -1) {
-            $data  = $this->where([['is_delete', '=', 0]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+            $data  = $this->where([['is_delete', '=', Db::raw(0)]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
             $redis->setex($rKey, $exp, json_encode($data));
         }
         return $data;

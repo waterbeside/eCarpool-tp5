@@ -62,7 +62,7 @@ class ScoreWinners extends AdminBase
         //   $map[] = ['','exp', Db::raw($region_map_sql)];
         // }
 
-        $map[] = ['t.is_delete', '<>', 1];
+        $map[] = ['t.is_delete', '=', Db::raw(0)];
         //筛选奖品信息
         if (isset($filter['keyword_prize']) && $filter['keyword_prize']) {
             $map[] = ['pr.name', 'like', "%{$filter['keyword_prize']}%"];

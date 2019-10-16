@@ -2,13 +2,12 @@
 
 namespace app\api\controller\v1;
 
+use think\Db;
 use app\api\controller\ApiBase;
 use app\carpool\model\ImGroupInvitation;
 use app\carpool\model\User as UserModel;
-use com\Nim as NimServer;
+use com\nim\Nim as NimServer;
 use my\RedisData;
-
-use think\Db;
 
 /**
  * 用户群相关接口
@@ -362,7 +361,7 @@ class ImGroup extends ApiBase
         $username = input('post.username');
 
         if ($type == 1) {
-            $userData = $UserModel->where([['loginname', '=', $username], ['is_delete', '=', 0], ['is_active', '=', 1]])->find();
+            $userData = $UserModel->where([['loginname', '=', $username], ['is_delete', '=', Db::raw(0)], ['is_active', '=', 1]])->find();
             if (!$userData) {
                 $this->jsonReturn(10004, lang('User does not exist or has resigned'));
             }

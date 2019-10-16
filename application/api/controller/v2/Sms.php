@@ -3,16 +3,15 @@
 namespace app\api\controller\v2;
 
 use think\facade\Log;
+use think\Db;
 use app\api\controller\ApiBase;
 use app\carpool\model\User as UserModel;
 use app\user\model\JwtToken;
 use app\score\model\AccountMix as ScoreAccountModel;
 use my\RedisData;
-use com\Nim as NimServer;
+use com\nim\Nim as NimServer;
 use app\common\model\Configs;
 use app\user\model\UserOauth as UserOauthModel;
-
-use think\Db;
 
 /**
  * 发送短信
@@ -252,7 +251,7 @@ class Sms extends ApiBase
         /******* 非群发的验证场景 ******/
         if ($usageSetting['isSendCode']) {
             if ($usageSetting['isGetPhoneUser']) {
-                $phoneUserData = UserModel::where([['phone', '=', $phone], ['is_delete', '=', 0]])->find();
+                $phoneUserData = UserModel::where([['phone', '=', $phone], ['is_delete', '=', Db::raw(0)]])->find();
             }
 
             if ($usageSetting['isCheckUser']) { // 验证是否登入
@@ -286,7 +285,7 @@ class Sms extends ApiBase
                     if ($userData['phone'] == $phone) {
                         $this->jsonReturn(10100, [], lang('Already bound, please enter a new phone number'));
                     }
-                    $phoneUserData2 = UserModel::where([['loginname', '=', $phone],['is_delete', '=', 0]])->find();
+                    $phoneUserData2 = UserModel::where([['loginname', '=', $phone],['is_delete', '=', Db::raw(0)]])->find();
                     if ($phoneUserData2) {
                         $this->jsonReturn(10006, [], lang('The mobile phone number has been marked with a new account, whether to merge?'));
                     }
@@ -302,7 +301,7 @@ class Sms extends ApiBase
                             $this->jsonReturn(10100, [], lang('The phone number has been bound to this account, no need to merge.'));
                         }
                     }
-                    $phoneUserData2 = UserModel::where([['loginname', '=', $phone],['is_delete', '=', 0]])->find();
+                    $phoneUserData2 = UserModel::where([['loginname', '=', $phone],['is_delete', '=', Db::raw(0)]])->find();
                     if (!$phoneUserData2) {
                         $this->jsonReturn(10006, [], lang('No need to merge'));
                     }
@@ -444,7 +443,7 @@ class Sms extends ApiBase
                         return $this->jsonReturn(992, [], lang('The new password should be no less than 6 characters'));
                     }
                     $hashPassword = md5($password); //加密后的密码
-                    $status = UserModel::where([['phone', '=', $phone], ['is_delete', '=', 0]])->update(['md5password' => $hashPassword]);
+                    $status = UserModel::where([['phone', '=', $phone], ['is_delete', '=', Db::raw(0)]])->update(['md5password' => $hashPassword]);
                     // dump($status);
                     if ($status !== false) {
                         $step = 0;
@@ -454,7 +453,7 @@ class Sms extends ApiBase
                             $uid = $userData['uid'];
                             // $JwtToken->invalidate($jwt, -4);
                         } else {
-                            $phoneUserData = UserModel::where([['phone', '=', $phone], ['is_delete', '=', 0]])->find();
+                            $phoneUserData = UserModel::where([['phone', '=', $phone], ['is_delete', '=', Db::raw(0)]])->find();
                             $uid = $phoneUserData['uid'];
                         }
                         $JwtToken->invalidateByUid($uid, -4, []);
@@ -471,11 +470,11 @@ class Sms extends ApiBase
                     break;
                 }
                 $UserModel = new UserModel();
-                $phoneUserData = $UserModel->where([['loginname', '=', $phone], ['is_delete', '=', 0]])->find();
+                $phoneUserData = $UserModel->where([['loginname', '=', $phone], ['is_delete', '=', Db::raw(0)]])->find();
                 if ($phoneUserData) {
                     $this->jsonReturn(10006, [], lang('The phone number has been registered for another account'));
                 }
-                $phoneUserData2 = $UserModel->where([['phone', '=', $phone], ['is_delete', '=', 0]])->find();
+                $phoneUserData2 = $UserModel->where([['phone', '=', $phone], ['is_delete', '=', Db::raw(0)]])->find();
                 try {
                     if ($phoneUserData2) {
                         $UserModel->where([['phone', '=', $phone], ['loginname', '<>', $phone]])->setField('phone', ''); //解绑其它帐号
@@ -527,7 +526,7 @@ class Sms extends ApiBase
                 }
 
                 // $phoneUserData = UserModel::where([['phone','=',$phone]])->find(); //取得要合并的手机号信息。
-                $phoneUserData = $UserModel->where([['loginname', '=', $phone],['is_delete', '=', 0]])->find();
+                $phoneUserData = $UserModel->where([['loginname', '=', $phone],['is_delete', '=', Db::raw(0)]])->find();
 
                 if (!$phoneUserData) {
                     $this->jsonReturn(-1, lang('No need to merge'));

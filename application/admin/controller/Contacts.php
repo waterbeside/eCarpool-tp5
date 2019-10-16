@@ -136,7 +136,7 @@ class Contacts extends AdminBase
         if (!$loginname) {
             return $this->jsonReturn(992, 'Error params');
         }
-        $uid = UserModel::where([['loginname', '=', $loginname], ['is_delete', '=', 0]])->value('uid');
+        $uid = UserModel::where([['loginname', '=', $loginname], ['is_delete', '=', Db::raw(0)]])->value('uid');
         if (!$uid) {
             return $this->jsonReturn(20002, '该用户不存在或已删除');
         }

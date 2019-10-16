@@ -61,9 +61,9 @@ class AccountMix extends AccountModel
         $accountInfo = null;
         if ($type == '0' || $type == "score") { //直接从积分帐号取
             if ($account_id) {
-                $accountInfo = $this->where([['id', '=', $account_id], ['is_delete', '=', 0]])->find();
+                $accountInfo = $this->where([['id', '=', $account_id], ['is_delete', '=', Db::raw(0)]])->find();
             } else {
-                $accountInfo = $this->where([['account', '=', $account], ['is_delete', '=', 0]])->find();
+                $accountInfo = $this->where([['account', '=', $account], ['is_delete', '=', Db::raw(0)]])->find();
             }
             if (!$accountInfo) {
                 return false;
@@ -72,7 +72,7 @@ class AccountMix extends AccountModel
                 $accountInfo['carpool'] = $this->getCarpoolAccount($accountInfo['carpool_account']);
             }
         } elseif ($type == '2' || $type == "carpool") { //从拼车帐号取
-            $accountInfo = $this->where([['carpool_account', '=', $account], ['is_delete', '=', 0]])->find();
+            $accountInfo = $this->where([['carpool_account', '=', $account], ['is_delete', '=', Db::raw(0)]])->find();
             $accountInfo = $accountInfo ? $accountInfo->toArray() : [];
             if ($returnAll) {
                 $accountInfo['carpool'] = $this->getCarpoolAccount($account);
@@ -115,7 +115,7 @@ class AccountMix extends AccountModel
         $account  = null;
         $accountField = 'carpool_account';
         $map = [];
-        $map[] = ['is_delete', '=', 0];
+        $map[] = ['is_delete', '=', Db::raw(0)];
         if (!$account_id) {
             $account      = isset($params['account']) ? $params['account'] : null;
             $type         = isset($params['type']) ? $params['type'] : "carpool";
@@ -212,8 +212,8 @@ class AccountMix extends AccountModel
     {
         Db::connect('database_score')->startTrans();
         try {
-            $scoreAccount_t = Db::connect('database_score')->table('t_account')->where([['carpool_account', '=', $tAccount], ['is_delete', '<>', 1]])->find(); //取出目标员工号的积分账号信息
-            $scoreAccount_o = Db::connect('database_score')->table('t_account')->where([['carpool_account', '=', $oAccount], ['is_delete', '<>', 1]])->find(); //取出手机号的积分账号信息
+            $scoreAccount_t = Db::connect('database_score')->table('t_account')->where([['carpool_account', '=', $tAccount], ['is_delete', '=', Db::raw(0)]])->find(); //取出目标员工号的积分账号信息
+            $scoreAccount_o = Db::connect('database_score')->table('t_account')->where([['carpool_account', '=', $oAccount], ['is_delete', '=', Db::raw(0)]])->find(); //取出手机号的积分账号信息
             $region_id_t  = $this->getCarpoolDepartmentID($tAccount);
             $region_id_o  = $this->getCarpoolDepartmentID($oAccount);
 

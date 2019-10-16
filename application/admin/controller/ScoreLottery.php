@@ -32,7 +32,7 @@ class ScoreLottery extends AdminBase
     public function index($filter = [], $type = "all", $result = "all", $page = 1, $pagesize = 20, $export = 0)
     {
         $map = [];
-        $map[] = ['t.is_delete', '<>', 1];
+        $map[] = ['t.is_delete', '=', Db::raw(0)];
 
         //构建sql
         $fields = 't.* ';

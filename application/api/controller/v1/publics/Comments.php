@@ -44,7 +44,7 @@ class Comments extends ApiBase
             $map[] = ["t.type", "=", $type];
         }
         if (is_numeric($filter['is_delete']) && $filter['is_delete'] > -1) {
-            $map[] = ['t.is_delete', "=", $filter['is_delete']];
+            $map[] = ['t.is_delete', "=", Db::raw($filter['is_delete'])];
         }
         if ($filter['pid']) {
             $map[] = ["t.parent_id", "=", $filter['pid']];

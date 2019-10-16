@@ -41,7 +41,7 @@ class Docs extends ApiBase
         ];
 
         $lists  = DocsModel::field($field)->alias('t')->join($join)->where($map)->order('t.cid DESC , t.create_time DESC')->select();
-        // $category_list = $this->category_model->field('id,name,title')->where([['is_delete','=',0]])->select();
+        // $category_list = $this->category_model->field('id,name,title')->where([['is_delete','=',Db::raw(0)]])->select();
 
         return $this->jsonReturn(0, ['lists' => $lists]);
     }

@@ -104,7 +104,7 @@ class Category extends Model
         }
         $CategoryModel = new Category();
         $map = [
-            ['is_delete', '=', 0],
+            ['is_delete', '=', Db::raw(0)],
             ['status', '=', 1],
             ['model', '=', $model]
         ];
@@ -131,7 +131,7 @@ class Category extends Model
             return $data;
         }
         if (!$data || $exp === -1) {
-            $data  = $this->where([['is_delete', '=', 0]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+            $data  = $this->where([['is_delete', '=', Db::raw(0)]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
             $redis->setex($rKey, $exp, json_encode($data));
         }
         return $data;

@@ -127,9 +127,9 @@ class Score extends AdminBase
             //查找是否已开通拼车帐号，拼整理data
             $accountDetial = null;
             if (($type == '0' || $type == "score")  &&  $account_id) { //直接从积分帐号取
-                $accountDetial = ScoreAccountModel::where([['id', '=', $account_id], ['is_delete', '<>', 1]])->lock(true)->find();
+                $accountDetial = ScoreAccountModel::where([['id', '=', $account_id], ['is_delete', '=', Db::raw(0)]])->lock(true)->find();
             } elseif ($accountField) {
-                $accountDetial = ScoreAccountModel::where([[$accountField, '=', $account], ['is_delete', '<>', 1]])->lock(true)->find();
+                $accountDetial = ScoreAccountModel::where([[$accountField, '=', $account], ['is_delete', '=', Db::raw(0)]])->lock(true)->find();
             }
             if ($accountDetial && $accountDetial['id']) {
                 $data['account_id'] = $accountDetial['id'];
@@ -340,7 +340,7 @@ class Score extends AdminBase
             ->where($map)
             ->order('t.cid DESC , t.create_time DESC')
             ->paginate(15, false, ['page' => $page]);
-        // $category_list = $this->category_model->field('id,name,title')->where([['is_delete','=',0]])->select();
+        // $category_list = $this->category_model->field('id,name,title')->where([['is_delete', '=', Db::raw(0)]])->select();
         $category_list = DocsCategoryModel::column('title', 'name');
         return $this->fetch('doc', ['lists' => $lists, 'category_list' => $category_list, 'cate' => $cate, 'keyword' => $keyword]);
     }
@@ -369,7 +369,7 @@ class Score extends AdminBase
                 }
             }
         } else {
-            $category_list = DocsCategoryModel::where([['is_delete', '=', 0]])->select();
+            $category_list = DocsCategoryModel::where([['is_delete', '=', Db::raw(0)]])->select();
             $cate_data = '';
             foreach ($category_list as $key => $value) {
                 if ($value['name'] == $cate) {
@@ -416,7 +416,7 @@ class Score extends AdminBase
                 ['docs_category c', 't.cid = c.id', 'left'],
             ];
             $data = DocsModel::field($field)->alias('t')->join($join)->find($id);
-            $category_list = DocsCategoryModel::where([['is_delete', '=', 0]])->select();
+            $category_list = DocsCategoryModel::where([['is_delete', '=', Db::raw(0)]])->select();
 
             return $this->fetch('doc_edit', ['data' => $data, 'category_list' => $category_list]);
         }

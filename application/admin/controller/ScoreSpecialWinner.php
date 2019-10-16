@@ -50,7 +50,7 @@ class ScoreSpecialWinner extends AdminBase
             $map[] = $authDeptData['region_map'];
         }
 
-        $map[] = ['t.is_delete', '<>', 1];
+        $map[] = ['t.is_delete', '=', Db::raw(0)];
 
         //筛选奖品信息
         if (isset($filter['keyword_prize']) && $filter['keyword_prize']) {

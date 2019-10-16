@@ -30,7 +30,7 @@ class ScoreOrder extends AdminBase
     public function index($filter = [], $status = "0", $page = 1, $pagesize = 15)
     {
         $map = [];
-        $map[] = ['t.is_delete', '<>', 1];
+        $map[] = ['t.is_delete', '=', Db::raw(0)];
 
         if (is_numeric($status)) {
             $map[] = ['t.status', '=', $status];
@@ -167,7 +167,7 @@ class ScoreOrder extends AdminBase
     public function goods($filter = [])
     {
         $map = [];
-        $map[] = ['o.is_delete', '<>', 1];
+        $map[] = ['o.is_delete', '=', Db::raw(0)];
         $map[] = ['o.status', '=', 0];
         if (isset($filter['time']) && $filter['time']) {
             $time_arr = explode(' ~ ', $filter['time']);
@@ -226,8 +226,8 @@ class ScoreOrder extends AdminBase
                 $this->error("Params error");
             }
             /*if(!$order_no ){
-        $this->error("Params error");
-      }*/
+                $this->error("Params error");
+            }*/
 
             $data = OrderModel::alias('t')->where('id', $id)->json(['content'])->find();
             if (!$data || $data['is_delete'] == 1) {
@@ -264,7 +264,7 @@ class ScoreOrder extends AdminBase
             $this->error("商品不存在");
         }
 
-        $map[] = ['t.is_delete', '<>', 1];
+        $map[] = ['t.is_delete', '=', Db::raw(0)];
         $map[] = ['t.status', '=', 0];
         $map[] = ['t.content->"' . $gid . '"', '>', ':good_num'];
         $time_arr = $this->formatFilterTimeRange($filter['time'], 'Y-m-d H:i:s', 'd');

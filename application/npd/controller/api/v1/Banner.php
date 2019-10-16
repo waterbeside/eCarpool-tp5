@@ -2,14 +2,11 @@
 
 namespace app\npd\controller\api\v1;
 
+use think\Db;
 use app\api\controller\ApiBase;
-
 use app\npd\model\Banner as BannerModel;
 use app\common\model\I18nLang as I18nLangModel;
 use my\RedisData;
-
-
-use think\Db;
 
 /**
  * Api Banner
@@ -42,7 +39,7 @@ class Banner extends ApiBase
         if (!$res) {
             $map  = [];
             $map[] = ['status', '=', 1];
-            $map[]  = ['is_delete', "=", 0];
+            $map[]  = ['is_delete', "=", Db::raw(0)];
             $map[] = ['type', '=', $type];
 
             $whereExp = '';

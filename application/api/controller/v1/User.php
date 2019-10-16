@@ -2,12 +2,11 @@
 
 namespace app\api\controller\v1;
 
+use think\Db;
 use app\api\controller\ApiBase;
 use app\carpool\model\UserPosition;
 use app\carpool\model\User as UserModel;
 use app\user\model\Department as DepartmentModel;
-
-use think\Db;
 
 /**
  * 用户相关接口
@@ -34,7 +33,7 @@ class User extends ApiBase
         $this->checkPassport(1);
         $field = 't.uid, t.name , t.loginname, t.phone, t.mobile, t.sex,  t.Department as department, d.fullname as full_department';
         $map   = [];
-        $map[] = ['is_delete', '<>', 1];
+        $map[] = ['is_delete', '=', Db::raw(0)];
         $map[] = ['uid', '=', $id];
         $join[] = ['t_department d', 'd.id = t.department_id', 'left'];
         $data  = UserModel::field($field)->alias('t')->join($join)->where($map)->find();
@@ -59,8 +58,8 @@ class User extends ApiBase
         switch ($type) {
             case 1:  //推荐同部门好友
                 $map = [
-                    ['is_active', '=', 1],
-                    ['is_delete', '=', 0],
+                    ['is_active', '=', Db::raw(1)],
+                    ['is_delete', '=', Db::raw(0)],
                     ['company_id', '=', $userData['company_id']],
                     ['uid', '<>', $uid],
                     ['', 'exp', Db::raw('im_md5password IS NOT NULL')],

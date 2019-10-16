@@ -76,7 +76,7 @@ class ContentCategory extends AdminBase
                 $this->jsonReturn(-1, '保存失败');
             }
         } else {
-            $category_level_list       = $this->category_model->where('is_delete', 0)->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
+            $category_level_list       = $this->category_model->where('is_delete', Db::raw(0))->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
             foreach ($category_level_list as $key => $value) {
                 $category_level_list[$key]['pid'] = $value['parent_id'];
             }
@@ -124,7 +124,7 @@ class ContentCategory extends AdminBase
                 }
             }
         } else {
-            $category_level_list       = $this->category_model->where('is_delete', 0)->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
+            $category_level_list       = $this->category_model->where('is_delete', Db::raw(0))->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
             foreach ($category_level_list as $key => $value) {
                 $category_level_list[$key]['pid'] = $value['parent_id'];
             }

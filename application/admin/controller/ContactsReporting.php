@@ -5,6 +5,7 @@ namespace app\admin\controller;
 use app\carpool\model\ContactsReporting as ReportingModel;
 use app\admin\controller\AdminBase;
 use app\user\model\Department;
+use think\Db;
 
 /**
  * 通讯录管理
@@ -31,7 +32,7 @@ class ContactsReporting extends AdminBase
             $map[] = ['u.name|u.loginname|u.nativename', 'like', $filter['keyword']];
         }
         if (isset($filter['is_delete']) && is_numeric($filter['is_delete'])) {
-            $map[] = ['t.is_delete', '=', $filter['is_delete'] == 1 ? 1 : 0];
+            $map[] = ['t.is_delete', '=', $filter['is_delete'] == 1 ? Db::raw(1) : Db::raw(0)];
         }
         $field = "t.*, u.name, u.loginname, u.nativename, u.Department";
         $lists = ReportingModel::alias('t')

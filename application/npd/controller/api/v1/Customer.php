@@ -2,13 +2,11 @@
 
 namespace app\npd\controller\api\v1;
 
+use think\Db;
 use app\api\controller\ApiBase;
-
 use app\npd\model\Customer as CustomerModel;
 use app\npd\model\Category;
 use my\RedisData;
-
-use think\Db;
 
 /**
  * Api Customer
@@ -37,10 +35,10 @@ class Customer extends ApiBase
             $this->jsonReturn(0, $returnData, 'Successful');
         }
         $map = [
-            ['is_delete', '=', 0],
+            ['is_delete', '=', Db::raw(0)],
         ];
         if ($is_recommend) {
-            $map[] = ['is_recommend', '=', 1];
+            $map[] = ['is_recommend', '=', Db::raw(1)];
         }
         if (!empty($group)) {
             $map[] = $group === 'other' ? ['r_group', 'in', ['', 'other'] ] : ['r_group', '=', $group];

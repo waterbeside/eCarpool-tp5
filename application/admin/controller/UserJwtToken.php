@@ -7,6 +7,7 @@ use app\user\model\JwtToken;
 use app\user\model\Department;
 use app\admin\controller\AdminBase;
 use think\facade\Validate;
+use think\Db;
 
 /**
  * JWt管理
@@ -43,7 +44,8 @@ class UserJwtToken extends AdminBase
         }
         //筛选信息
         if (isset($filter['is_delete']) && is_numeric($filter['is_delete'])) {
-            $map[] = ['t.is_delete', '=', $filter['is_delete']];
+            $is_delete = $filter['is_delete'] ? Db::raw(1) : Db::raw(0);
+            $map[] = ['t.is_delete', '=', $is_delete];
         }
         if (isset($filter['keyword']) && $filter['keyword']) {
             $map[] = ['u.uid|u.loginname|u.phone|u.name|nativename', 'like', "%{$filter['keyword']}%"];

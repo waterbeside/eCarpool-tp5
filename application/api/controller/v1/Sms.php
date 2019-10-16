@@ -2,14 +2,13 @@
 
 namespace app\api\controller\v1;
 
+use think\Db;
 use app\api\controller\ApiBase;
 use app\carpool\model\User as UserModel;
 use app\user\model\UserOauth;
 use think\facade\Cache;
 use my\RedisData;
-use com\Nim as NimServer;
-
-use think\Db;
+use com\nim\Nim as NimServer;
 
 /**
  * 发送短信
@@ -101,8 +100,8 @@ class Sms extends ApiBase
     {
         Db::connect('database_score')->startTrans();
         try {
-            $scoreAccount_t = Db::connect('database_score')->table('t_account')->where([['carpool_account', '=', $tAccount], ['is_delete', '<>', 1]])->find(); //取出目标员工号的积分账号信息
-            $scoreAccount_o = Db::connect('database_score')->table('t_account')->where([['carpool_account', '=', $oAccount], ['is_delete', '<>', 1]])->find(); //取出手机号的积分账号信息
+            $scoreAccount_t = Db::connect('database_score')->table('t_account')->where([['carpool_account', '=', $tAccount], ['is_delete', '=', Db::raw(0)]])->find(); //取出目标员工号的积分账号信息
+            $scoreAccount_o = Db::connect('database_score')->table('t_account')->where([['carpool_account', '=', $oAccount], ['is_delete', '=', Db::raw(0)]])->find(); //取出手机号的积分账号信息
             if (!$scoreAccount_t) {
                 throw new \Exception('10002');
             } else {
@@ -233,8 +232,8 @@ class Sms extends ApiBase
                         $this->jsonReturn(10006, [], lang('The mobile phone number has been marked with a new account, whether to merge?'));
                     }
                     /*  if($phoneUserData && $phoneUserData['phone'] == $phones[0]){
-                  $this->jsonReturn(10006,[],'该手机号已绑定其它帐号');
-                }*/
+                    $this->jsonReturn(10006,[],'该手机号已绑定其它帐号');
+                    }*/
                     break;
                 case 104: //合并账号
                     if ($userData['phone'] == $phone) {
@@ -384,7 +383,7 @@ class Sms extends ApiBase
                         return $this->jsonReturn(992, [], lang('The new password should be no less than 6 characters'));
                     }
                     $hashPassword = md5($password); //加密后的密码
-                    $status = UserModel::where([['phone', '=', $phone], ['is_delete', '<>', 1], ['is_active', '=', 1]])
+                    $status = UserModel::where([['phone', '=', $phone], ['is_delete', '=', Db::raw(0)], ['is_active', '=', Db::raw(1)]])
                         ->update(['md5password' => $hashPassword]);
                     if ($status !== false) {
                         break;

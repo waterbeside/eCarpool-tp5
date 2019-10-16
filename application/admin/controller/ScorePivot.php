@@ -36,7 +36,7 @@ class ScorePivot extends AdminBase
     {
         // ********** stop - 0 预处理筛选参数；
         $mapBase = [];
-        $mapBase[] = ['o.is_delete', '=', 0];
+        $mapBase[] = ['o.is_delete', '=', Db::raw(0)];
 
         //筛选状态
         if (is_numeric($filter['status'])) {
@@ -68,7 +68,7 @@ class ScorePivot extends AdminBase
         // step - 1 算出当前筛选的所有商品
         $fieldsGoods = "t.gid,g.id, g.name, g.price, g.amount, sum(t.gid) as num";
         $mapGoods = [];
-        $mapGoods[] = ['t.is_delete', '=', 0];
+        $mapGoods[] = ['t.is_delete', '=', Db::raw(0)];
         $joinGoods = [
             ['goods g', 'g.id = t.gid', 'left'],
             ['order o', 'o.id = t.oid', 'left'],

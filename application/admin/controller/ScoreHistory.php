@@ -33,7 +33,7 @@ class ScoreHistory extends AdminBase
             ['carpool.t_department d', 't.region_id = d.id', 'left'],
         ];
         $map = [];
-        $map[] = ['t.is_delete', '<>', 1];
+        $map[] = ['t.is_delete', '=', Db::raw(0)];
         //地区排查 检查管理员管辖的地区部门
         $authDeptData = $this->authDeptData;
         if (isset($authDeptData['region_map'])) {
@@ -94,7 +94,7 @@ class ScoreHistory extends AdminBase
     public function lists($type = 1, $account = null, $account_id = null, $filter = null, $page = 1, $pagesize = 20)
     {
         $map = [];
-        $map[] = ['is_delete', '<>', 1];
+        $map[] = ['is_delete', '=', Db::raw(0)];
 
         // dump($filter);
         if ($filter['reason']) {
@@ -206,7 +206,7 @@ class ScoreHistory extends AdminBase
             ['t_account ac', 't.account_id = ac.id', 'left'],
         ];
         $map = [];
-        $map[] = ['t.is_delete', '=', 0];
+        $map[] = ['t.is_delete', '=', Db::raw(0)];
         $map[] = ['t.reason', '=', 100];
         $map[] = ['', 'exp', Db::raw('t.account_id IS NOT NULL')];
 
@@ -275,7 +275,7 @@ class ScoreHistory extends AdminBase
         $map_c_base  = [
             ['time', '>=', $time_arr[0]],
             ['time', '<', $time_arr[1]],
-            ['is_delete', '=', 0],
+            ['is_delete', '=', Db::raw(0)],
             ['reason', '=', 100],
         ];
         // if (isset($authDeptData['region_map'])) {

@@ -2,14 +2,12 @@
 
 namespace app\npd\controller\api\v1;
 
+use think\Db;
 use app\api\controller\ApiBase;
-
 use app\npd\service\Product as ProductService;
 use app\npd\model\Product as ProductModel;
 use app\npd\model\Customer as CustomerModel;
 use app\npd\model\Category;
-
-use think\Db;
 
 /**
  * Api Product
@@ -34,7 +32,7 @@ class Product extends ApiBase
         $mapExp = '';
         $orderBy = 'is_top DESC , sort DESC';
         $map = [
-            ['is_delete', '=', 0],
+            ['is_delete', '=', Db::raw(0)],
             ['status', '=', 1],
         ];
         $cate_data = null;

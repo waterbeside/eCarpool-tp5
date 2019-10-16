@@ -5,6 +5,7 @@ namespace app\carpool\model;
 use app\common\model\Configs;
 use app\common\model\BaseModel;
 use my\RedisData;
+use think\Db;
 
 // use think\Model;
 
@@ -74,7 +75,7 @@ class User extends BaseModel
         $field = "u.*, c.company_name, d.name as department_name , d.path, d.fullname as department_fullname ";
         $map = [
             ['loginname', '=', $account],
-            ['is_delete', '=', 0],
+            ['is_delete', '=', Db::raw(0)],
         ];
         $carpoolUser_jion =  [
             ['company c', 'u.company_id = c.company_id', 'left'],
@@ -242,7 +243,7 @@ class User extends BaseModel
      */
     public function checkedPassword($loginname, $password)
     {
-        $userData = $this->where([['loginname', '=', $loginname], ['is_delete', '<>', 1]])->find();
+        $userData = $this->where([['loginname', '=', $loginname], ['is_delete', '=', Db::raw(0)]])->find();
         if (!$userData) {
             $this->errorCode = 10002;
             $this->errorMsg = lang('User does not exist');
@@ -418,5 +419,57 @@ class User extends BaseModel
             return false;
         }
         return $checkActiveRes;
+    }
+
+    /**
+     * 查询部门的用户数
+     *
+     * @param integer $department_id 部门id
+     * @param integer $type 类型，0为只查有效用户，1为有邮箱的有效用户, 2为全部用户
+     * @param integer $recache 0默认先读缓存，1为直接查库重新生成缓存
+     * @return integer
+     */
+    public function countDepartmentUser($department_id, $type = 0, $recache = 0)
+    {
+        $time = time();
+        $cacheKey = "carpool:department:member_count:type_$type";
+        $redis = new RedisData();
+        $count = false;
+        if (!$recache) {
+            $cacheData = $redis->hGet($cacheKey, $department_id);
+            if ($cacheData) {
+                try {
+                    $cacheData = json_decode($cacheKey, true);
+                    $count = isset($cacheData['num']) ? $cacheData['num'] : false;
+                    $query_time = isset($cacheData['query_time']) ? $cacheData['query_time'] : 0;
+                    $count =  $time - $query_time > 3600 * 24 ? false : $count;
+                } catch (\Exception $e) {
+                    $count = false;
+                }
+            }
+        }
+        if (!is_numeric($count)) {
+            $map = [];
+            if (is_numeric($type) &&  $type == 0) {
+                $map[] = ['u.is_delete', '=', Db::raw(0)];
+                $map[] = ['u.is_active', '=', Db::raw(1)];
+            } elseif (is_numeric($type) &&  $type == 1) {
+                $map[] = ['u.is_delete', '=', Db::raw(0)];
+                $map[] = ['u.is_active', '=', Db::raw(1)];
+                $map[] = ['u.mail', '<>', ''];
+            }
+            $map[] = ['', 'exp', Db::raw("FIND_IN_SET($department_id,d.path) OR u.department_id =  $department_id")];
+
+            $join = [
+                ['t_department d', 'u.department_id = d.id', 'left'],
+            ];
+            $count = $this->alias('u')->join($join)->where($map)->count();
+            $cacheData = [
+                'num' => $count,
+                'query_time' => $time,
+            ];
+            $redis->hSet($cacheKey, $department_id, json_encode($cacheData));
+        }
+        return $count;
     }
 }

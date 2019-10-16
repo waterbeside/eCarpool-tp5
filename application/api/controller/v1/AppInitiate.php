@@ -74,7 +74,7 @@ class AppInitiate extends ApiBase
         if ($userData) {
             $map  = [];
             $map[] = ['status', '=', 1];
-            $map[]  = ['is_delete', "=", 0];
+            $map[]  = ['is_delete', "=", Db::raw(0)];
             $map[] = ['type', '=', 1];
 
 

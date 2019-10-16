@@ -22,7 +22,7 @@ class DocsCategory extends AdminBase
      */
     public function index()
     {
-        $lists = DocsCategoryModel::order('listorder Desc')->where('is_delete', 0)->select();
+        $lists = DocsCategoryModel::order('listorder Desc')->where('is_delete', Db::raw(0))->select();
         return $this->assign('lists', $lists)->fetch();
     }
 

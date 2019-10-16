@@ -41,7 +41,7 @@ class ScoreAccount extends AdminBase
             $map = [];
             $join = [];
 
-            $map[] = ['ac.is_delete', '<>', 1];
+            $map[] = ['ac.is_delete', '=', Db::raw(0)];
 
             $fields .= ' ,cu.uid ,cu.name as name , cu.nativename as nativename, cu.phone as phone , cu.company_id ,
                 cu.loginname, cu.Department, cu.sex , cu.companyname, 
@@ -251,10 +251,9 @@ class ScoreAccount extends AdminBase
                 $this->jsonReturn(-1, [], 'lost account');
             }
             $map = [];
-            $map[] = ['is_delete', '<>', 1];
+            $map[] = ['is_delete', '=', Db::raw(0)];
             $fieldName = "carpool_account";
-            $map[$fieldName] = $account;
-            $map["is_delete"] = 0;
+            $map[] = [$fieldName, '=', $account];
             $data = ScoreAccountModel::where($map)->field("id,account,platform,register_date,identifier,balance")->find();
             $this->jsonReturn(0, $data, 'success');
         }
@@ -269,10 +268,9 @@ class ScoreAccount extends AdminBase
                 $this->jsonReturn(-1, [], 'lost account');
             }
             $map = [];
-            $map[] = ['is_delete', '<>', 1];
+            $map[] = ['is_delete', '=', Db::raw(0)];
             $fieldName = "carpool_account";
-            $map[$fieldName] = $account;
-            $map["is_delete"] = 0;
+            $map[] = [$fieldName, '=', $account];
             $data = ScoreAccountModel::where($map)->value("balance");
             $this->jsonReturn(0, $data, 'success');
         }

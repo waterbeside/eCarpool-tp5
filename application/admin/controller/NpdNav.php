@@ -74,7 +74,7 @@ class NpdNav extends AdminBase
                 $this->jsonReturn(-1, '保存失败');
             }
         } else {
-            $nav_level_list       = $this->nav_model->where('is_delete', 0)->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
+            $nav_level_list       = $this->nav_model->where('is_delete', Db::raw(0))->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
             foreach ($nav_level_list as $key => $value) {
                 $nav_level_list[$key]['pid'] = $value['pid'];
             }
@@ -116,7 +116,7 @@ class NpdNav extends AdminBase
                 }
             }
         } else {
-            $nav_level_list       = $this->nav_model->where('is_delete', 0)->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
+            $nav_level_list       = $this->nav_model->where('is_delete', Db::raw(0))->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
             foreach ($nav_level_list as $key => $value) {
                 $nav_level_list[$key]['pid'] = $value['pid'];
             }

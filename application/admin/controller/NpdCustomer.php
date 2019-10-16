@@ -27,7 +27,7 @@ class NpdCustomer extends AdminBase
     public function index($filter = ['keyword' => ''], $page = 1, $pagesize = 20)
     {
         $map  = [];
-        $map[]  = ['is_delete', "=", 0];
+        $map[]  = ['is_delete', "=", Db::raw(0)];
         if (isset($filter['keyword']) && $filter['keyword']) {
             $map[] = ['name', 'like', "%{$filter['keyword']}%"];
         }
@@ -114,11 +114,8 @@ class NpdCustomer extends AdminBase
                 'name' => iconv_substr($data['name'], 0, 250),
                 'thumb' => $data['thumb'],
                 'r_group' => $data['r_group'],
+                'is_recommend' => isset($data['is_recommend']) ? $data['is_recommend'] : 0,
             ];
-
-            if (isset($data['is_recommend'])) {
-                $upData['is_recommend'] = $data['is_recommend'];
-            }
 
             $CustomerModel = new CustomerModel();
 

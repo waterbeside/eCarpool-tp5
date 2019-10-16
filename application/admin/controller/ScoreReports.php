@@ -5,6 +5,7 @@ namespace app\admin\controller;
 use app\carpool\model\User as CarpoolUserModel;
 use app\score\model\Account as ScoreAccountModel;
 use app\admin\controller\AdminBase;
+use my\RedisData;
 use think\Db;
 
 /**
@@ -14,8 +15,8 @@ use think\Db;
  */
 class ScoreReports extends AdminBase
 {
-    protected $exclude_scoreAccounnt_id = ['25', '96', '776', '9', '12', '2'];
-    protected $exclude_carpoolAccounnt  = ['GET0285739', 'GET0296132', 'GET0294174', 'GET0296293', 'GET0295503', 'GET0296269'];
+    protected $exclude_scoreAccounnt_id = ['25', '96', '776', '9', '12', '2','2900'];
+    protected $exclude_carpoolAccounnt  = ['GET0285739', 'GET0296132', 'GET0294174', 'GET0296293', 'GET0295503', 'GET0296269', 'GET0302776'];
 
     /**
      * [index description]
@@ -38,9 +39,6 @@ class ScoreReports extends AdminBase
         $join = '';
         $where_base = " t.is_delete = 0  AND t.time >=  '" . $period[0] . "' AND t.time < '" . $period[1] . "' ";
 
-        // if (is_numeric($rule_number)) {
-        //   $where_base .= "rule_number = $rule_number ";
-        // }
         if ($uid) {
             $loginname = CarpoolUserModel::where('uid', $uid)->value('loginname');
             $account_id = ScoreAccountModel::where('carpool_account', $loginname)->value('id');
@@ -110,6 +108,42 @@ class ScoreReports extends AdminBase
         return $this->jsonReturn(0, ['total' => $returnNum]);
     }
 
+    public function month_statis($start, $end, $region_id = null, $returnType = 2)
+    {
+        $filter['end']      = str_replace('.', '-', input('param.end'));
+        $filter['start']    = str_replace('.', '-', input('param.start'));
+        $filter['end']      = $filter['end'] ? $filter['end'] : date('Y-m');
+        $filter['start']    = $filter['start'] ? $filter['start'] : date('Y-m', strtotime('-11 month', time()));
+    }
+
+
+    /**
+     * 取得指定月份分数数据
+     *
+     * @param Array $data [month=>当前月份(Y-m格式), type=>类型, region_id, is_minus=>是否减分]
+     * @return Array
+     */
+    public function getMonthSum($data = null)
+    {
+        $yearMonth_current = date("Y-m"); //当前年月
+        $month = $data['month'];
+        $month = $month ? $month : input('param.month');
+        $type = $data['type'] ? $data['type'] : 0;
+        $region_id = $data['region_id'];
+        if ($month) {
+            $date = $this->getTimeRange($month, 'Y-m-d H:i:s', 'm', 1);
+        } else {
+            return false;
+        }
+        dump($date);
+
+        $cacheKey = "carpool:reports:trips:month_{$month}:department_{$region_id},type_{$type}";
+        $redis = $this->redis();
+        $itemData = $redis->cache($cacheKey);
+        if ($itemData === false) {
+            
+        }
+    }
 
 
     /**

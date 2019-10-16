@@ -27,7 +27,7 @@ class NpdProductGallery extends AdminBase
     public function index($pid = -1, $filter = ['keyword' => ''], $pagesize = 20)
     {
         $map   = [];
-        $map[] = ['t.is_delete', '=', 0];
+        $map[] = ['t.is_delete', '=', Db::raw(0)];
 
         if (isset($filter['keyword']) && $filter['keyword']) {
             $map[] = ['title|title_en', 'like', "%{$filter['keyword']}%"];

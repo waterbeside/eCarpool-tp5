@@ -55,7 +55,7 @@ class Ads extends ApiBase
 
         $map  = [];
         $map[] = ['status', '=', 1];
-        $map[]  = ['is_delete', "=", 0];
+        $map[]  = ['is_delete', "=", Db::raw(0)];
         $map[] = ['type', '=', $type];
 
         $whereExp = '';

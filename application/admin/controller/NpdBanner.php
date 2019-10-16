@@ -31,7 +31,7 @@ class NpdBanner extends AdminBase
 
 
         $map  = [];
-        $map[]  = ['is_delete', "=", 0];
+        $map[]  = ['is_delete', "=", Db::raw(0)];
         if (isset($filter['keyword']) && $filter['keyword']) {
             $map[] = ['title', 'like', "%{$filter['keyword']}%"];
         }

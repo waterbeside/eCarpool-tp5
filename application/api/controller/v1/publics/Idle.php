@@ -2,12 +2,10 @@
 
 namespace app\api\controller\v1\publics;
 
+use think\Db;
 use app\api\controller\ApiBase;
 use app\content\model\Idle as IdleModel;
 use my\RedisData;
-
-
-use think\Db;
 
 /**
  * 二手市场公开信息
@@ -39,7 +37,7 @@ class Idle extends ApiBase
 
         $fields = "t.id,t.user_id,t.title,t.desc,t.images,t.location,t.price,t.status,t.is_seller,t.post_time,u.name,u.phone,u.loginname";
         $map = [
-            ["t.is_delete", "<>", 1],
+            ["t.is_delete", "=", Db::raw(0)],
             ["u.loginname", "exp", Db::raw("IS NOT NULL")],
             // ["show_level",">",0],
         ];

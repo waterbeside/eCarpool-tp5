@@ -2,8 +2,8 @@
 
 namespace app\npd\controller\api\v1;
 
+use think\Db;
 use app\api\controller\ApiBase;
-
 use app\npd\model\Article as ArticleModel;
 use app\npd\model\Category;
 
@@ -27,7 +27,7 @@ class Article extends ApiBase
     public function index($cid = 0, $pagesize = 30)
     {
         $map = [
-            ['is_delete', '=', 0],
+            ['is_delete', '=', Db::raw(0)],
             ['status', '=', 1],
         ];
         $cate_data = null;
@@ -76,7 +76,7 @@ class Article extends ApiBase
         $map   = [];
         $map = [
             ['status', '=', 1],
-            ['is_delete', '=', 0],
+            ['is_delete', '=', Db::raw(0)],
         ];
         if (is_numeric($id)) {
             $map[] = ['t.id', '=', $id];

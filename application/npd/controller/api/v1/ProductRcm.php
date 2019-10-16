@@ -2,9 +2,9 @@
 
 namespace app\npd\controller\api\v1;
 
+use think\Db;
 use app\api\controller\ApiBase;
 use app\npd\model\ProductRecommend;
-use think\Db;
 
 /**
  * Api Product_rcm
@@ -26,8 +26,8 @@ class ProductRcm extends ApiBase
     public function index($pagesize = 30)
     {
         $where = [
-            ['is_delete','=','0'],
-            ['status','=','1'],
+            ['is_delete','=', Db::raw(0)],
+            ['status', '=', 1],
         ];
         $list = ProductRecommend::where($where)->order('sort DESC, id DESC')->select();
         $returnData = [

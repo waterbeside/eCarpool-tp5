@@ -2,6 +2,7 @@
 
 namespace app\npd\controller\api\v1;
 
+use think\Db;
 use app\api\controller\ApiBase;
 use app\npd\model\Gallery as GalleryModel;
 use my\RedisData;
@@ -23,9 +24,9 @@ class Gallery extends ApiBase
         $list = $redis->cache($cacheKey);
         if (!$list) {
             $where = [
-                'status' => 1,
-                'is_delete' => 0,
-                'model' => $model,
+                ['status', '=', 1],
+                ['is_delete', '=', Db::raw(0)],
+                ['model', '=', $model],
             ];
             if (is_numeric($aid) && $aid > 0) {
                 $where['aid'] = $aid;

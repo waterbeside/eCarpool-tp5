@@ -51,7 +51,7 @@ class ScoreOrder extends AdminBase
 
 
         $map = [];
-        $map[] = ['t.is_delete', '<>', 1];
+        $map[] = ['t.is_delete', '=', Db::raw(0)];
         //筛选状态
         if (is_numeric($status)) {
             $map[] = ['t.status', '=', $status];
@@ -311,8 +311,8 @@ class ScoreOrder extends AdminBase
     public function goods($filter = ['status' => 0])
     {
         $map = [];
-        $map[] = ['o.is_delete', '=', 0];
-        $map[] = ['t.is_delete', '=', 0];
+        $map[] = ['o.is_delete', '=', Db::raw(0)];
+        $map[] = ['t.is_delete', '=', Db::raw(0)];
 
         //筛选状态
         if (is_numeric($filter['status'])) {
@@ -386,8 +386,8 @@ class ScoreOrder extends AdminBase
                 $this->error("Params error");
             }
             /*if(!$order_no ){
-        $this->error("Params error");
-      }*/
+                $this->error("Params error");
+            }*/
 
             $data = OrderModel::alias('t')->where('id', $id)->json(['content'])->find();
             if (!$data || $data['is_delete'] == 1) {
@@ -435,7 +435,7 @@ class ScoreOrder extends AdminBase
 
         $map = [];
         $map[] = ['t.gid', '=', $gid];
-        $map[] = ['o.is_delete', '=', 0];
+        $map[] = ['o.is_delete', '=', Db::raw(0)];
         //筛选状态
         if (is_numeric($status)) {
             $map[] = ['o.status', '=', $status];

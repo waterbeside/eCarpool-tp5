@@ -36,8 +36,8 @@ class UserOauth extends AdminBase
             $map[] = ['d.fullname|u.companyname|c.company_name', 'like', "%{$filter['keyword_dept']}%"];
         }
         //是否已解绑
-        $filter['is_delete'] = isset($filter['is_delete']) ? $filter['is_delete'] : 0;
-        $map[] = ['o.is_delete', '=', $filter['is_delete']];
+        $filter['is_delete'] = isset($filter['is_delete']) && is_numeric($filter['is_delete'])? $filter['is_delete'] : 0;
+        $map[] = ['o.is_delete', '=', Db::raw($filter['is_delete'])];
 
 
         //类型

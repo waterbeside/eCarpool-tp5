@@ -33,9 +33,9 @@ class ContentLabel extends AdminBase
 
         $map = [];
         if ($recycled) {
-            $map[] = ['is_delete', '=', 1];
+            $map[] = ['is_delete', '=', Db::raw(1)];
         } else {
-            $map[] = ['is_delete', '=', 0];
+            $map[] = ['is_delete', '=', Db::raw(0)];
         }
 
         if (isset($filter['keyword']) && $filter['keyword']) {

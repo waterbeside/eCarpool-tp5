@@ -5,6 +5,7 @@ namespace app\admin\controller;
 use app\common\model\Docs as DocsModel;
 use app\common\model\DocsCategory as DocsCategoryModel;
 use app\admin\controller\AdminBase;
+use think\Db;
 
 /**
  * 文档管理
@@ -49,7 +50,7 @@ class Docs extends AdminBase
         $lists  = $this->docs_model->field($field)->alias('t')->join($join)
         ->where($map)->order('t.cid DESC , t.create_time DESC')
         ->paginate(15, false, ['page' => $page]);
-        // $category_list = $this->category_model->field('id,name,title')->where([['is_delete','=',0]])->select();
+        // $category_list = $this->category_model->field('id,name,title')->where([['is_delete','=',Db::raw(0)]])->select();
         $category_list = $this->category_model->column('title', 'id');
         return $this->fetch('index', ['lists' => $lists, 'category_list' => $category_list, 'cid' => $cid, 'keyword' => $keyword]);
     }

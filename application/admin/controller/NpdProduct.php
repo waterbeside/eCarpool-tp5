@@ -32,7 +32,7 @@ class NpdProduct extends AdminBase
     public function index($cid = 0, $filter = ['keyword' => ''], $page = 1)
     {
         $map   = [];
-        $map[] = ['t.is_delete', '=', 0];
+        $map[] = ['t.is_delete', '=', Db::raw(0)];
         $field = 't.*,c.name as c_name';
         $CategoryModel = new CategoryModel();
         if ($cid > 0) {

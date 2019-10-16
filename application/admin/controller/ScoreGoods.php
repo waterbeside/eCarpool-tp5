@@ -54,8 +54,8 @@ class ScoreGoods extends AdminBase
             $map[] = ['t.status', '=', $filter['status']];
         }
         if (isset($filter['is_hidden']) && is_numeric($filter['is_hidden']) && $filter['is_hidden'] !== 0) {
-            $is_delete = $filter['is_hidden'] ? 1 : 0;
-            $map[] = ['t.is_delete', '=', $filter['is_hidden']];
+            $is_delete = $filter['is_hidden'] ? Db::raw(1) : Db::raw(0);
+            $map[] = ['t.is_delete', '=', $is_delete];
         }
         if ($keyword) {
             $map[] = ['t.name|t.desc', 'like', "%{$keyword}%"];

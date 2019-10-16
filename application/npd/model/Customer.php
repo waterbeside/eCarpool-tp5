@@ -24,7 +24,7 @@ class Customer extends Model
         $lists = json_decode($redis->get($cacheKey), true);
 
         if (!$lists || $recache) {
-            $lists  = $this->where([['is_delete', '=', 0]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+            $lists  = $this->where([['is_delete', '=', Db::raw(0)]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
             $redis->setex($cacheKey, 3600 * 4, json_encode($lists));
         }
         return $lists;

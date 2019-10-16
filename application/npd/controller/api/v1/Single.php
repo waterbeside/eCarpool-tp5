@@ -2,12 +2,10 @@
 
 namespace app\npd\controller\api\v1;
 
+use think\Db;
 use app\api\controller\ApiBase;
-
 use app\npd\model\Single as SingleModel;
 use app\npd\model\Category;
-
-use think\Db;
 
 /**
  * Api Single
@@ -29,7 +27,7 @@ class Single extends ApiBase
     public function index($cid = 0)
     {
         $map = [
-            ['is_delete', '=', 0],
+            ['is_delete', '=', Db::raw(0)],
             ['status', '=', 1],
         ];
         $cate_data = null;
@@ -70,7 +68,7 @@ class Single extends ApiBase
         $map   = [];
         $map = [
             ['status', '=', 1],
-            ['is_delete', '=', 0],
+            ['is_delete', '=', Db::raw(0)],
         ];
         if (is_numeric($id)) {
             $map[] = ['t.id', '=', $id];

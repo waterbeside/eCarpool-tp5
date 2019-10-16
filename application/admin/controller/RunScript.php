@@ -43,8 +43,8 @@ class RunScript extends AdminBase
 
         $startTime = date('Y-m-d H:i:s', strtotime($time));
         $map = [
-            ['is_delete', '=', 0],
-            ['region_id', '=', 0],
+            ['is_delete', '=', Db::raw(0)],
+            ['region_id', '=', Db::raw(0)],
             ['time', '>=', $startTime],
         ];
         $len = $Queue->count();
@@ -72,8 +72,8 @@ class RunScript extends AdminBase
             foreach ($lists as $key => $value) {
                 $msg .= "<br />";
                 $upMap = [
-                    ['is_delete', '=', 0],
-                    ['region_id', '=', 0],
+                    ['is_delete', '=', Db::raw(0)],
+                    ['region_id', '=', Db::raw(0)],
                     ['time', '>=', $value['run_start_time'] ? $value['run_start_time'] : $startTime],
                 ];
                 if ($value['carpool_account']) {
@@ -182,5 +182,16 @@ class RunScript extends AdminBase
             $msg .= "完成全部操作";
         }
         return $this->fetch('index/multi_jump', ['url' => $url, 'msg' => $msg]);
+    }
+
+
+    /**
+     * 创建部门IM群
+     */
+    public function create_department_im()
+    {
+        $DepartmentImModel = app()->model('\app\user\model\DepartmentIm');
+        $DepartmentModel = app()->model('\app\user\model\Department');
+        $data = $DepartmentImModel->checkDepartmentIm();
     }
 }

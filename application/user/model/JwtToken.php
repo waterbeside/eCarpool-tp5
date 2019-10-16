@@ -6,6 +6,7 @@ use my\RedisData;
 use app\common\model\BaseModel;
 use Firebase\JWT\JWT;
 use think\facade\Log;
+use think\Db;
 
 // use think\Model;
 
@@ -49,7 +50,7 @@ class JwtToken extends BaseModel
     {
         $map = [
             ['uid', '=', $uid],
-            ['is_delete', '=', 0],
+            ['is_delete', '=', Db::raw(0)],
         ];
         if (!empty($client) && is_array($client)) {
             $map[] = ['client', 'in', $client];

@@ -62,7 +62,7 @@ class Category extends Model
         $data = json_decode($redis->get($rKey), true);
 
         if (!$data || $recache) {
-            $data  = $this->where([['is_delete', '=', 0]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+            $data  = $this->where([['is_delete', '=', Db::raw(0)]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
             $redis->set($rKey, json_encode($data));
         }
         return $data;

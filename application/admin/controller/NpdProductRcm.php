@@ -26,7 +26,7 @@ class NpdProductRcm extends AdminBase
     public function index($filter = ['keyword' => ''])
     {
         $map   = [];
-        $map[] = ['t.is_delete', '=', 0];
+        $map[] = ['t.is_delete', '=', Db::raw(0)];
 
         if (isset($filter['keyword']) && $filter['keyword']) {
             $map[] = ['title|title_en', 'like', "%{$filter['keyword']}%"];

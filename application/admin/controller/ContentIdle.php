@@ -34,9 +34,9 @@ class ContentIdle extends AdminBase
         ];
 
         if (isset($filter['is_delete']) && $filter['is_delete']) {
-            $map[] = ["t.is_delete", "=", 1];
+            $map[] = ["t.is_delete", "=", Db::raw(1)];
         } else {
-            $map[] = ["t.is_delete", "<>", 1];
+            $map[] = ["t.is_delete", "=", Db::raw(0)];
         }
         if (isset($filter['keyword']) && $filter['keyword']) {
             $map[] = ['t.title|t.desc', 'like', '%' . $filter['keyword'] . '%'];

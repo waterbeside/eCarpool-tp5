@@ -5,6 +5,7 @@ namespace app\admin\controller;
 use app\content\model\Ads as AdsModel;
 use app\admin\controller\AdminBase;
 use app\user\model\Department;
+use think\Db;
 
 // use my\RedisData;
 
@@ -30,7 +31,7 @@ class Ads extends AdminBase
 
 
         $map  = [];
-        $map[]  = ['is_delete', "=", 0];
+        $map[]  = ['is_delete', "=", Db::raw(0)];
         if (isset($filter['keyword']) && $filter['keyword']) {
             $map[] = ['title', 'like', "%{$filter['keyword']}%"];
         }
