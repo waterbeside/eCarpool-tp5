@@ -411,7 +411,7 @@ body {background:#FFF; color:$color-black-l1}
     }
     td[field=status] .status_0 { color: #ccc}
     .layui-badge {
-       transform: scale(.8)  translate(8px,0); margin-left: 1px;
+        transform: scale(.8)  translate(8px,0); margin-left: 1px;
     }
   }
 }
@@ -498,9 +498,9 @@ body {background:#FFF; color:$color-black-l1}
   $padding : 8px;
   .am-card { box-sizing: border-box; background: #fff; border-bottom-width: 2px;
     &-heading { padding-bottom: $padding; border-bottom: 1px dotted $color-border;
-       h3 { float: left; color:#aaa}
-       h4 { float: right; margin-right: 10px;}
-       h5 { float: right; color:#aaa}
+      h3 { float: left; color:#aaa}
+      h4 { float: right; margin-right: 10px;}
+      h5 { float: right; color:#aaa}
     }
     &-body {
       clear: both;
@@ -772,7 +772,7 @@ body {background:#FFF; color:$color-black-l1}
   .total-item {   min-width: 200px; flex-grow:1;margin: 4px;}
   .total-item-carpool { min-width: 300px; width: 100%}
   .total-value {
-    .small { float: left; display: inline-block; text-align: left;
+    .small { display: inline-block; text-align: left;
       span { display: block; font-size: 14px;}
     }
   }
