@@ -10,6 +10,7 @@ use app\admin\controller\AdminBase;
 use think\facade\Config;
 use think\Db;
 use think\facade\Cache;
+use my\RedisData;
 use my\Tree;
 
 /**
@@ -133,7 +134,25 @@ class Department extends AdminBase
     }
 
 
-
+    /**
+     * 计算部门人数
+     *
+     * @param [type] $department_id
+     * @param integer $type
+     * @return void
+     */
+    public function public_count_user($department_id, $type = 0, $recache = 0)
+    {
+        if (!$department_id) {
+            $this->jsonReturn(992, 'Error param');
+        }
+        $user = new User();
+        $count = $user->countDepartmentUser($department_id, $type, $recache);
+        $returnData = [
+            'num' => $count,
+        ];
+        $this->jsonReturn(0, $returnData, 'Successful');
+    }
 
     /**
      * 临时方法，创建所有部门数据

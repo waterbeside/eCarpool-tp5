@@ -7,7 +7,6 @@
             <li {php} echo !$deep ?  'class="layui-this"' : '';{/php}><a href="{:url('index')}"  >部门管理</a></li>
             <li {php} echo $deep ==1 ?  'class="layui-this"' : '';{/php}><a href="{:url('index',['pid'=>'p_1'])}"  >地区列表</a></li>
             <li {php} echo $deep ==3 ?  'class="layui-this"' : '';{/php}><a href="{:url('index',['pid'=>'p_3'])}"  >分公司列表</a></li>
-
         </ul>
         <div class="layui-tab-content">
             <div class="layui-tab-item layui-show">
@@ -45,7 +44,15 @@
                 <!-- /面包屑导行 -->
 
 
-                <blockquote class="layui-elem-quote">共检得 <b>{$lists->total()}</b> 条数据</blockquote>
+                <blockquote class="layui-elem-quote">
+                    共检得 <b>{$lists->total()}</b> 条数据； 每页 <b>{$pagesize}</b> 条数据； 本页 <b>{:count($lists)}</b> 条数据；
+                </blockquote>
+                <blockquote class="layui-elem-quote layui-elem-quote-gray">
+                    <div>本页:</div>
+                    <div class="msg-count-t0"></div>
+                    <div class="msg-count-t1"></div>
+                </blockquote>
+
                 <table class="layui-table">
                     <thead>
                     <tr>
@@ -55,32 +62,39 @@
                         {php} if($deep){ {/php}
                         <th lay-data="{field:'fullname', width:120}">PATH</th>
                         {php} } {/php}
+                        <th lay-data="{field:'c1'}">成员</th>
+                        <th lay-data="{field:'c2'}">成员(邮)</th>
+
                         <th width="120px" lay-data="{field:'options', width:120}">操作</th>
                     </tr>
                     </thead>
                     <tbody>
                     {foreach name="lists" item="vo"}
-                    <tr>
+                    <tr class="row-{$vo.id}">
                         <td>{$vo.id}</td>
                         <td>{$vo.pid}</td>
-                        <td><a href="{:url('index',['pid'=>$vo['id']])}">{$vo.name}</a></td>
+                        <td><div class="d_name"><a href="{:url('index',['pid'=>$vo['id']])}">{$vo.name}</a></div></td>
                         {php} if($deep){ {/php}
                         <td class="layui-breadcrumb">
-                            {php}
-                            $item_full_array = explode(',',$vo['fullname']);
-                            $item_path_array = explode(',',$vo['path']);
-                            foreach($item_full_array as $k => $p ){
-                                $sep = $k ?  "/" : "";
-                                $pid = isset($item_path_array[$k+1]) ? $item_path_array[$k+1] : '';
-                                if($pid){
-                                echo '<a href="'.url('index',['pid'=>$pid]).'">'.$p.'</a>';
-                                }else{
-                                echo '<a href="'.url('index',['pid'=>$vo['id']]).'"><cite><b >'.$p.'</b></cite></a>';
+                            <div class="d_fullname">
+                                {php}
+                                $item_full_array = explode(',',$vo['fullname']);
+                                $item_path_array = explode(',',$vo['path']);
+                                foreach($item_full_array as $k => $p ){
+                                    $sep = $k ?  "/" : "";
+                                    $pid = isset($item_path_array[$k+1]) ? $item_path_array[$k+1] : '';
+                                    if($pid){
+                                    echo '<a href="'.url('index',['pid'=>$pid]).'">'.$p.'</a>';
+                                    }else{
+                                    echo '<a href="'.url('index',['pid'=>$vo['id']]).'"><cite><b >'.$p.'</b></cite></a>';
+                                    }
                                 }
-                            }
-                            {/php}
+                                {/php}
+                            </div>
                         </td>
                         {php} } {/php}
+                        <td><div class="j-count-t0 j-count-t0-{$vo.id}" data-id="{$vo.id}">-</div></td>
+                        <td><div class="j-count-t1 j-count-t1-{$vo.id}" data-id="{$vo.id}">-</div></td>
                         <td>
                             <!-- <a  href="{:url('admin/department/edit',['id'=>$vo['id']])}" class="layui-btn layui-btn-xs " data-title="編輯"  data-trigger="modal"     title="编辑" ><i class="layui-icon">&#xe642;</i></a> -->
                             <a  href="{:url('index',['pid'=>$vo['id']])}"  class="layui-btn  layui-btn-xs" ><i class="fa fa-eye"></i> 查看子部门</a>
@@ -94,11 +108,156 @@
 
             </div>
         </div>
+        <div class="blank50"></div>
+
     </div>
+
+    <div class="am-bottom-tool-bar" style="display: none">
+        <form class="layui-form layui-form-pane" onsubmit="return false;">
+            <div class="layui-inline">&nbsp;&nbsp; 快速筛选：</div>
+            <div class="layui-inline">
+                <div class="layui-input-inline">
+                    <input type="text" name="ff_name" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="关键词" class="layui-input" style="width:130px"  >
+                </div>
+            </div>
+            <div class="layui-inline" >
+                <div class="layui-input-inline" style="width:100px">
+                    <select name="ff_count_type" >
+                        <option value="0">用户数</option>
+                        <option value="1" >有邮箱的用户数</option>
+                    </select>
+                </div>
+                <div class="layui-input-inline">
+                    <input type="text" name="ff_count_num" value="> 0" placeholder=">0" class="layui-input" style="width:130px"  >
+                </div>
+            </div>
+        </form>
+    </div>
+    <!-- 底部工具栏 -->
 </div>
 {/block}
 {block name="script"}
 <script>
+    function show_tool() {
+        $('.am-bottom-tool-bar').show()
+    }
+    PAGE_EXEC = {
+        init: function() {
+            var _this = this;
+            setTimeout(function(){
+                _this.startGetCount(0);
+            },500)
+            setTimeout(function(){
+                _this.startGetCount(1);
+            },1000)
+        },
+        countData : {
+            type_0: {},
+            type_1: {},
+        },
+        startGetCount: function(type, index) {
+            var _this = this;
+            index = index || 0;
+            var $rows = $(`.j-count-t${type}`);
+            var len = $rows.length;
+            var $msgTarget = $(`.msg-count-t${type}`);
+            var msg = '';
+            if(index < len ) {
+                var $row = $rows.eq(index)
+                var did = $row.data('id');
+                msg = '<i class="fa fa-circle-o-notch fa-spin"></i>';
+                msg += ` 正在查询: 第 ${index+1} 行, 部门id = ${did} 的`
+                msg += type == 1 ? '有邮箱的用户数' : '用户数';
+                $msgTarget.html(msg)
+                _this.loadCount(did, type, function(){
+                    _this.startGetCount(type, index+1);
+                });
+            } else {
+                msg = type == 1 ? '有邮箱的用户数查询完成！' : '用户数查询完成！';
+                $msgTarget.html(msg)
+                _this.statis(type);
+            }
+            return false;
+        },
+        /**
+         * 通过接口查询用户数
+         */
+        loadCount: function(did, type, callback) {
+            var _this = this;
+            var url = '{:url("admin/department/public_count_user")}'
+            var $targetbox = $(`.j-count-t${type}-${did}`);
+            $targetbox.html('<i class="fa fa-circle-o-notch fa-spin"></i>')
+            $.ajax({
+                url:url,
+                type:'get',
+                dataType:'json',
+                data:{
+                    department_id: did,
+                    type: type,
+                },
+            }).then(function(res){
+                if(res.code === 0){
+                    var data =res.data;
+                    $targetbox.html(data.num);
+                    _this.countData[`type_${type}`][`id_${did}`] = data.num;
+                }else{
+                    $targetbox.html('-');
+                }
+                if(typeof callback === 'function') {
+                    callback(res);
+                }
+            }).catch(function(err){
+                $targetbox.html('-');
+                console.log(err);
+                if(typeof callback === 'function') {
+                    callback(err);
+                }
+            })
+        },
 
+        statis: function(type){
+            var _this = this;
+            var data = _this.countData[`type_${type}`];
+            var min = null;
+            var max = null;
+            var sum = 0;
+            var gt200_count = 0;
+            var lt200_count = 0;
+            var gt200_list = [];
+            var lt200_list = [];
+            for (var idKey in data) {
+                var item = parseInt(data[idKey]);
+                var keySplit = idKey.split('_');
+                var did = keySplit[1];
+                min = min === null || item < min ? item : min;
+                max = max === null || item > max ? item : max;
+                sum += item;
+                if (item > 200) {
+                    gt200_count ++;
+                    gt200_list.push(did);
+                } else {
+                    lt200_count ++;
+                    lt200_list.push(did);
+                }
+            }
+            var returnData = {
+                min,
+                max,
+                gt200_count,
+                lt200_count,
+                gt200_list,
+                lt200_list
+            }
+            var $msgTarget = $(`.msg-count-t${type}`);
+            var msg = $msgTarget.html();
+            msg += `<br/>最小数: ${min}； 最大数: ${max}； <=200的部门组数: ${lt200_count} ； >200的部门组数: ${gt200_count} `
+            $msgTarget.html(msg);
+            return returnData;
+        },
+        fastFilter: function(){
+            
+        }
+    }
+    PAGE_EXEC.init();
 </script>
 {/block}
