@@ -8,7 +8,7 @@ use app\carpool\model\Department as DepartmentModel_o;
 use app\user\model\Department as DepartmentModel;
 use app\user\model\User as UserModel;
 use app\user\model\JwtToken;
-use com\Nim as NimServer;
+use com\nim\Nim as NimServer;
 use app\carpool\model\Address;
 use Firebase\JWT\JWT;
 use think\Db;

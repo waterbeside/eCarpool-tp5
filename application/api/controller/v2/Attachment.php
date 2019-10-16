@@ -2,13 +2,13 @@
 
 namespace app\api\controller\v2;
 
+use think\Db;
 use app\api\controller\ApiBase;
 use app\common\model\Attachment as AttachmentModel;
 use app\carpool\model\User as UserModel;
 use think\facade\Log;
 use think\facade\Env;
-use think\Db;
-use com\Nim as NimServer;
+use com\nim\Nim as NimServer;
 
 /**
  * 附件相关
