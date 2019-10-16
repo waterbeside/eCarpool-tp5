@@ -2,15 +2,13 @@
 
 namespace app\api\controller\v1\publics;
 
+use think\Db;
 use app\api\controller\ApiBase;
 use app\carpool\service\Trips as TripsService;
 use app\carpool\service\TripsReport as TripsReportService;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
 use my\RedisData;
-
-
-use think\Db;
 
 /**
  * 报表相关

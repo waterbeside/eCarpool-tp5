@@ -2,15 +2,12 @@
 
 namespace app\api\controller\v1;
 
+use think\Db;
 use app\api\controller\ApiBase;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
-
 use app\carpool\model\InfoActiveLine;
-
-
 use my\RedisData;
-use think\Db;
 
 /**
  * 行程上传座标

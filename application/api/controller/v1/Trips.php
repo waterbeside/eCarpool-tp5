@@ -3,6 +3,7 @@
 namespace app\api\controller\v1;
 
 use think\facade\Env;
+use think\Db;
 use app\api\controller\ApiBase;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
@@ -17,7 +18,6 @@ use app\carpool\service\TripsList as TripsListService;
 use app\carpool\service\TripsDetail as TripsDetailService;
 use InfoController;
 use my\RedisData;
-use think\Db;
 
 /**
  * 行程相关
