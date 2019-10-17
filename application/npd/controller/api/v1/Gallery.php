@@ -29,7 +29,7 @@ class Gallery extends ApiBase
                 ['model', '=', $model],
             ];
             if (is_numeric($aid) && $aid > 0) {
-                $where['aid'] = $aid;
+                $where[] = ['aid', '=', $aid ];
             }
             $list = GalleryModel::where($where)->order('sort DESC, id DESC')->select();
             if ($list) {
