@@ -353,3 +353,18 @@ function ajaxSubmit(setting){
       }
   });
 }
+
+
+/**
+ * [cCetPicFromContent]
+ * 获取文本中首张图片地址
+ * @param  [string]] content [富文本]
+ * @return [string]          [图片路径]
+ */
+function cGetPicFromContent(content){
+  var $content = $(content);
+  var $imgs = $content.find('img');
+  var $img = $imgs.eq(0);
+  var url = $img.attr('src');
+  return url ? url : '';
+}

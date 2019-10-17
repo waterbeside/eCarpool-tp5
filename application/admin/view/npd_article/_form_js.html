@@ -1,7 +1,8 @@
 <script>
     PAGE_EXEC = {
 
-
+        ue : null,
+        thumbInputName: 'thumb',
         datas: {
             langs: [{
                     code: 'zh-cn',
@@ -19,7 +20,7 @@
             var _this = this;
             var $thumbInput = cRenderUploadBtn({
                 wrapper: '.j-upload-thumb',
-                inputName: 'thumb',
+                inputName: _this.thumbInputName,
                 url: "{:url('admin/Uploader/images')}",
                 data: {
                     "module": "admin/NPD/article/thumb"
@@ -50,6 +51,7 @@
                 initialFrameHeight: 300,
             })
 
+            this.ue = ue;
             //执行一个laydate实例
             layui.laydate.render({
                 type: 'datetime',
@@ -83,6 +85,17 @@
             });
             $("#editForm select[name='lang']").html(options)
         },
+        
+        getPic: function() {
+            var _this = this;
+            var content = _this.ue.getContent() ;
+            var url = cGetPicFromContent(content);
+            var $targetInput = $('.article-item-eidt').find('input[name="'+_this.thumbInputName+'"]');
+            var $targetImgShow = $targetInput.siblings('.j-upload-btn').find('.j-upload-img');
+            $targetInput.val(url);
+            $targetImgShow.attr('src', url);
+
+        }
 
 
     }
