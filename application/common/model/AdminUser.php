@@ -38,9 +38,9 @@ class AdminUser extends Model
         }
         $map = array();
         if (is_int($identifier)) {
-            $map['id'] = $identifier;
+            $map[] = ['id', '=', $identifier];
         } else {
-            $map['username'] = $identifier;
+            $map[] = ['username', '=', $identifier];
         }
 
         $user = $this->where($map)->find();
