@@ -54,7 +54,7 @@ class Nim extends Base
 
     /**
      * 更新云信ID
-     * @param  $accid     [云信ID，最大长度32字节，必须保证一个APP内唯一（只允许字母、数字、半角下划线_、@、半角点以及半角-组成，不区分大小写，会统一小写处理）]
+     * @param  array||string $accid  当为数组时，为直接指定请求云信接口的所有参数，其它参数会效 [云信ID，最大长度32字节，必须保证一个APP内唯一（只允许字母、数字、半角下划线_、@、半角点以及半角-组成，不区分大小写，会统一小写处理）]
      * @param  $name      [云信ID昵称，最大长度64字节，用来PUSH推送时显示的昵称]
      * @param  $props     [json属性，第三方可选填，最大长度1024字节]
      * @param  $token     [云信ID可以指定登录token值，最大长度128字节，并更新，如果未指定，会自动生成token，并在创建成功后返回]
@@ -63,12 +63,16 @@ class Nim extends Base
     public function updateUserId($accid, $name = '', $props = '{}', $token = '')
     {
         $url = 'https://api.netease.im/nimserver/user/update.action';
-        $data = array(
-            'accid' => $accid,
-            'name'  => $name,
-            'props' => $props,
-            'token' => $token
-        );
+        if (is_array($accid)) {
+            $data = $accid;
+        } else {
+            $data = array(
+                'accid' => $accid,
+                'name'  => $name,
+                'props' => $props,
+                'token' => $token
+            );
+        }
         if ($this->RequestType == 'curl') {
             $result = $this->postDataCurl($url, $data);
         } else {
@@ -458,10 +462,11 @@ class Nim extends Base
      * @param  $custom      [自定义高级群扩展属性，第三方可以跟据此属性自定义扩展自己的群属性。（建议为json）,最大长度1024字节.]
      * @return $result      [返回array数组对象]
      */
-    public function createGroup($tname, $owner, $members, $announcement = '', $intro = '', $msg = '', $magree = '0', $joinmode = '0', $custom = '0')
+    public function createGroup($tname, $owner = '', $members = '', $announcement = '', $intro = '', $msg = '', $magree = '0', $joinmode = '0', $custom = '0')
     {
         $url = 'https://api.netease.im/nimserver/team/create.action';
-        $data = array(
+        
+        $data = is_array($tname) ? $tname : array(
             'tname' => $tname,
             'owner' => $owner,
             'members' => json_encode($members),
