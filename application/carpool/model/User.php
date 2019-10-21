@@ -396,16 +396,17 @@ class User extends BaseModel
     /**
      * 验证用户是否离职
      *
-     * @param [type] $username
+     * @param string $username 员工号
+     * @param integer $is_sync 是否顺便同步员工的新信息
      * @return void
      */
-    public function checkDimission($username)
+    public function checkDimission($username, $is_sync = 0)
     {
         $checkActiveUrl  = config('others.local_hr_sync_api.single');
         $params = [
             'query' => [
                 'code' => $username,
-                'is_sync' => 0,
+                'is_sync' => $is_sync,
             ]
         ];
         $checkActiveRes = $this->clientRequest($checkActiveUrl, $params, 'GET');
