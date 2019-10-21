@@ -24,6 +24,7 @@ return [
     'Name error' => 'Name error',
     'The user is banned' => 'The user is banned',
     'The user is deleted' => 'The user is deleted',
+    'The user has left' => 'The user has left',
     'The phone number you entered is not the phone number of the current account' => 'The phone number you entered is not the phone number of the current account.',
 
     'Please enter the correct old password' => 'Please enter the correct old password',
