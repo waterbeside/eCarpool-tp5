@@ -373,4 +373,28 @@ class Department extends Model
         }
         return $res;
     }
+
+    /**
+     * 取得指定深度的部门名
+     *
+     * @param array||integer $department 部门数据或id;
+     * @return string
+     */
+    public function getDeepName($department, $deep = 3)
+    {
+        $data = null;
+        if (is_array($department)) {
+            $data = $department;
+        } elseif (is_numeric($department)) {
+            $data = $this->getItem($department);
+        } else {
+            return '';
+        }
+        if (!$data) {
+            return '';
+        }
+        $fullname = $data['fullname'];
+        $namePathArray = explode(',', $fullname);
+        return isset($namePathArray[$deep]) ? $namePathArray[$deep] : '';
+    }
 }
