@@ -95,18 +95,18 @@ class Passport extends ApiBase
 
 
         $userModel = new UserModel();
-        $userData = $userModel->where('loginname', $data['username'])->find();
+        $where = [
+            ['loginname', '=', $data['username']],
+        ];
+        $userData = $userModel->where($where)->where([['is_delete','=',Db::raw(0)]])->find();
         if (!$userData) {
-            $userData = $userModel->where('phone', $data['username'])->find();
+            $userData = $userModel->where($where)->find();
+            if ($userData) {
+                return $this->jsonReturn(10003, lang('The user is deleted'));
+            } else {
+                return $this->jsonReturn(10001, lang('User name or password error'));
+            }
         }
-        if (!$userData) {
-            $this->jsonReturn(10001, lang('User name or password error'));
-            return false;
-        }
-        if ($userData['is_delete']) {
-            $this->jsonReturn(10003, lang('The user is deleted'));
-        }
-
         if (!$userData['is_active']) {
             $this->jsonReturn(10003, [], lang('The user is banned'));
         }
@@ -119,6 +119,16 @@ class Passport extends ApiBase
             $this->jsonReturn(10001, lang('Name error'));
         }
 
+        //验证用户是否离职
+        $checkActiveRes = $userModel->checkDimission($userData['loginname'], 1);
+        if (!$checkActiveRes) {
+            if ($userModel->errorCode == 10003) {
+                $errorMsg = lang('The user is deleted');
+            } else {
+                $errorMsg = lang('Login failed');
+            }
+            $this->jsonReturn(-1, [], $errorMsg, ['error' => $userModel->errorMsg]);
+        }
 
         $jwt = $this->createPassportJwt(['uid' => $userData['uid'], 'loginname' => $userData['loginname'], 'client' => $data['client']], 3600*24);
         $returnData = array(
