@@ -6,6 +6,7 @@ use app\npd\model\Product as ProductModel;
 use app\npd\model\ProductData as ProductDataModel;
 use app\npd\model\ProductMerchandizing;
 use app\npd\model\ProductPatent;
+use app\npd\model\Customer;
 
 use app\npd\model\Category as CategoryModel;
 use app\admin\controller\AdminBase;
@@ -276,4 +277,67 @@ class NpdProduct extends AdminBase
             $this->jsonReturn(-1, '删除失败');
         }
     }
+
+    /**
+     * GET:取得产品客户列表, POST:更新产品客户
+     *
+     * @param integer $id 产品id
+     * @return mixed
+     */
+    public function customers($pid = 0, $rt = 0)
+    {
+        if ($this->request->isPost()) {
+            if (!$pid) {
+                return $this->jsonReturn(992, 'Error pid');
+            }
+            $data = input('post.data');
+            if (!is_array($data)) {
+                $data = explode(',', $data);
+            }
+            $formatData = [];
+            foreach ($data as $key => $value) {
+                if (is_numeric($value)) {
+                    $formatData[] = $value;
+                }
+            }
+            $upData = [
+                'customers' => implode(',', $formatData),
+            ];
+            $res = ProductModel::where('id', $pid)->update($upData);
+            if ($res === false) {
+                return $this->jsonReturn(-1, 'Failed');
+            }
+            return $this->jsonReturn(0, 'Successful');
+        } else {
+            $returnData = [
+                'pid' => $pid,
+                'data' => null,
+                'lists' => null,
+                'total' => 0,
+            ];
+            $data     = ProductModel::find($pid);
+            if (!$data) {
+                return $rt ? $this->jsonReturn(20002, $data, '找不到产品数据') : $this->fetch('', $returnData);
+            }
+            $returnData['data'] = $data;
+            $listID = $data['customers'];
+            if (!$listID) {
+                return $rt ? $this->jsonReturn(0, $data, '找不到客户数据') : $this->fetch('', $returnData);
+            }
+            $listIDArray = explode(',', $listID);
+    
+            $map = [
+                ['id','in', $listIDArray],
+            ];
+            $order = Db::raw("find_in_set( id, '$listID' )");
+            $list = Customer::where($map)->order($order)->select();
+            $returnData['lists'] = $list;
+            $returnData['total'] = count($list);
+    
+            return $this->fetch('', $returnData);
+        }
+
+        
+    }
+
 }

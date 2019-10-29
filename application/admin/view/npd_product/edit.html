@@ -23,10 +23,13 @@
             <div class="layui-form-item">
                 <label class="layui-form-label">客户组合</label>
                 <div class="layui-input-block">
-                <input type="hidden" name="customers" value="{$data.customers}">
-                <div class="customers-wrapper">
-                    <select lay-ignore name="customers_arr" id="" multiple placeholder="请选择" class="hidden"  value="{$data.customers}">  </select>
-                </div>
+                    <a onclick="openLayer('{:url('admin/NpdProduct/customers',['pid'=>$data['id']])}',{area: ['86%', '90%'], title:'产品客户 #{$data.id}'});" href="javascript:void(0);" class="layui-btn layui-btn-primary   " title="产品客户">
+                        产品客户修改
+                    </a>
+                    <!-- <input type="hidden" name="customers" value="{$data.customers}">
+                    <div class="customers-wrapper">
+                        <select lay-ignore name="customers_arr" id="" multiple placeholder="请选择" class="hidden"  value="{$data.customers}">  </select>
+                    </div> -->
                 </div>
             </div>
             

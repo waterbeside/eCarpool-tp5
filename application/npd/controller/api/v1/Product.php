@@ -99,7 +99,8 @@ class Product extends ApiBase
         $cate_data = $ProductService->getCateDetail($data['cid']);
         $breadcrumd  = $ProductService->getCateBreadcrumb($cate_data);
 
-        $customer_list = CustomerModel::where([['id', 'in', $data['customers']], ['is_delete', '=', 0]])->select();
+        $customerListOrder = Db::raw("find_in_set( id, '{$data["customers"]}' )");
+        $customer_list = CustomerModel::where([['id', 'in', $data['customers']], ['is_delete', '=', 0]])->order($customerListOrder)->select();
         $returnData = [
             'data' => $data,
             'category' => $cate_data,

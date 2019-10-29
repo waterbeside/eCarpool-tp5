@@ -73,17 +73,20 @@
                     <td>{$vo.sort}</td>
                     <td>{$vo.create_time}</td>
                     <td>
-                    <a onclick="openLayer('{:url('admin/NpdProductGallery/index',['pid'=>$vo['id']])}',{area: ['86%', '90%'], title:'产品图册 #{$vo.id}'});"
-                        href="javascript:void(0);" class="layui-btn layui-btn-primary  layui-btn-xs " title="产品图册"><i
-                        class="fa fa-image"></i></a>
-                    <a onclick="openLayer('{:url('admin/NpdProduct/edit',['id'=>$vo['id']])}',{area: ['96%', '90%'], title:'编辑产品 #{$vo.id}'});"
-                        href="javascript:void(0);" class="layui-btn layui-btn-xs " title="编辑"><i
-                        class="layui-icon">&#xe642;</i></a>
-                    <a href="{:url('admin/NpdProduct/delete',['id'=>$vo['id']])}"
-                        class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除"><i
-                        class="layui-icon">&#xe640;</i></a>
-                    <a href="{:url('npd/Product/detail',['id'=>$vo['id']])}" target="_blank"
-                        class="layui-btn layui-btn-primary layui-btn-xs" title="view"><i class="fa fa-eye"></i></a>
+                    <a onclick="openLayer('{:url('admin/NpdProductGallery/index',['pid'=>$vo['id']])}',{area: ['86%', '90%'], title:'产品图册 #{$vo.id}'});" href="javascript:void(0);" class="layui-btn layui-btn-primary  layui-btn-xs " title="产品图册">
+                        <i class="fa fa-image"></i>
+                    </a>
+                    <a onclick="openLayer('{:url('admin/NpdProduct/customers',['pid'=>$vo['id']])}',{area: ['86%', '90%'], title:'产品客户 #{$vo.id}'});" href="javascript:void(0);" class="layui-btn layui-btn-primary  layui-btn-xs " title="产品客户">
+                        <i class="fa fa-users"></i>
+                    </a>
+                    <a onclick="openLayer('{:url('admin/NpdProduct/edit',['id'=>$vo['id']])}',{area: ['96%', '90%'], title:'编辑产品 #{$vo.id}'});" href="javascript:void(0);" class="layui-btn layui-btn-xs " title="编辑">
+                        <i class="layui-icon">&#xe642;</i>
+                    </a>
+                    <a href="{:url('admin/NpdProduct/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除">
+                        <i class="layui-icon">&#xe640;</i>
+                    </a>
+                    <!-- <a href="{:url('npd/Product/detail',['id'=>$vo['id']])}" target="_blank"
+                        class="layui-btn layui-btn-primary layui-btn-xs" title="view"><i class="fa fa-eye"></i></a> -->
                     </td>
                 </tr>
                 {/foreach}
