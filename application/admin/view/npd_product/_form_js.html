@@ -111,11 +111,11 @@ FORM_PAGE_EXEC = {
     renderUeditor:function(target_id,type){
         type = type || 0;
         var toolbars = [
-            ['undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript',
-            '|','justifyleft','justifyright','justifycenter','|','blockquote','pasteplain','autotypeset'],
+            ['source','|','undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript',
+            '|','justifyleft','justifyright','justifycenter','|','blockquote','pasteplain','autotypeset', 'removeformat'],
             ['inserttable','insertrow','insertcol', 'mergeright', 'mergedown',  'deleterow',  'deletecol',  'splittorows', 'splittocols', 'splittocells', 
         'inserttitle', 'mergecells', 
-            ,'|', 'removeformat','horizontal','|']
+            ,'|', 'horizontal','|', 'link', 'unlink']
         ];
         var url="{:url('/api/ueditor')}";
         var maximumWords = 3000;
