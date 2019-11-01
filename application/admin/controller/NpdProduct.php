@@ -205,11 +205,13 @@ class NpdProduct extends AdminBase
             'is_recommend' => isset($data['is_recommend']) ? $data['is_recommend'] : 0,
             'publish_time' => $data['publish_time'],
             'update_time' => date('Y-m-d H:i:s'),
-            'customers' => $data['customers'],
             'status' => isset($data['status']) ? $data['status'] : 0,
             'sort' => isset($data['sort']) ? $data['sort'] : 0,
             'is_top' => isset($data['is_top']) ? $data['is_top'] : 0,
         ];
+        if (isset($data['customers'])) {
+            $returnData['primary']['customers'] = $data['customers'];
+        }
         if (!$pid) {
             $returnData['primary']['create_time'] = date('Y-m-d H:i:s');
             $returnData['primary']['is_delete'] = 0;
