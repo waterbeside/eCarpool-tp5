@@ -857,9 +857,15 @@ class Trips extends ApiBase
             }
         } elseif (is_numeric($uid)) {
             $redis = new RedisData();
+            $userData = $this->getUserData(1);
+            $company_id = $userData['company_id'];
+
             $cacheKey_01 = $this->cacheKey_myInfo . "u{$uid}";
             $cacheKey_02 = $this->cacheKey_myTrip . "u{$uid}";
-            $redis->delete($cacheKey_01, $cacheKey_02);
+            $cacheKey_03 = "carpool:citys:company_id_$company_id:type_1";
+            $cacheKey_04 = "carpool:citys:company_id_$company_id:type_2";
+
+            $redis->delete($cacheKey_01, $cacheKey_02, $cacheKey_03, $cacheKey_04);
         }
     }
 
