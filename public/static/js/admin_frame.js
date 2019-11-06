@@ -30,7 +30,7 @@
         }else{
             var index = $.inArray(name, arr);
             if( index == -1){
-                var iframe = '<iframe src="'+href+'" name="'+name+'"></iframe>';
+                var iframe = '<div class="iframe-wrapper"><iframe src="'+href+'" name="'+name+'"></iframe></div>';
                 element.tabAdd('tab', {
                     title: name
                     ,content: iframe
