@@ -52,7 +52,6 @@ class DepartmentIm extends BaseModel
         $nim = $this->getNim();
     }
 
-    
 
     /**
      * 检查部门的tid是否有效

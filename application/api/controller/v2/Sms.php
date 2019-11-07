@@ -549,6 +549,7 @@ class Sms extends ApiBase
                     ];
                     Db::connect('database_carpool')->table('user')->where('uid', $phoneUserData['uid'])->update($update_phoneUserData); //更改原手机账号状态为禁用。
                     $extra = $userData['extra_info'] ? json_decode($userData['extra_info'], true) : [];
+                    $extra = $extra ? $extra :[];
                     $extra['merge_id'] = isset($extra['merge_id']) && is_array($extra['merge_id']) ? array_push($extra['merge_id'], $phoneUserData['uid']) : [$phoneUserData['uid']];
                     $update_userData = [
                         "phone" => $phone,

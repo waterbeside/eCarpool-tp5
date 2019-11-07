@@ -4,6 +4,7 @@ namespace app\admin\controller;
 
 use app\carpool\model\User as UserModel;
 use app\admin\controller\AdminBase;
+use app\user\service\DepartmentIm as DepartmentImService;
 use Firebase\JWT\JWT;
 use my\RedisData;
 use my\Queue;
@@ -168,8 +169,6 @@ class RunScript extends AdminBase
                     ];
                     $res = $JwtModel::where($upMap)->update($upData);
                 }
-                
-
                 if ($res !== false) {
                     $msg .=  "id:" . $id . "  OK";
                 } else {
@@ -192,6 +191,7 @@ class RunScript extends AdminBase
     {
         $DepartmentImModel = app()->model('\app\user\model\DepartmentIm');
         $DepartmentModel = app()->model('\app\user\model\Department');
-        $data = $DepartmentImModel->checkDepartmentIm();
+        $DepartmentImService = new DepartmentImService();
+        $data = $DepartmentImService->checkDepartmentIm(456);
     }
 }
