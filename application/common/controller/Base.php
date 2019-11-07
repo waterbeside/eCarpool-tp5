@@ -240,4 +240,39 @@ class Base extends Controller
             return false;
         }
     }
+
+    /**
+     * 给指定的json字段加值
+     *
+     * @param array $data 更新的数据
+     * @param array||string $target 原json字段的值
+     * @return array 返回处理后的字典数组
+     */
+    public function addDataToData($data, $target)
+    {
+        if (is_string($target)) {
+            $target = json_decode($target, true);
+        }
+        $target = $target && is_array($target) ? $target : [];
+        $data   = $data && is_array($data) ? $data : [];
+        foreach ($data as $key => $value) {
+            $target[$key] = $value;
+        }
+        return $target;
+    }
+    
+    /**
+     * 从json字段里取值
+     *
+     * @param string $key KEY
+     * @param array||string $target 原json字段的值
+     */
+    public function getValueByKey($key, $target, $default = null)
+    {
+        if (is_string($target)) {
+            $target = json_decode($target, true);
+        }
+        $target = $target && is_array($target) ? $target : [];
+        return isset($target[$key]) ? $target[$key] : $default;
+    }
 }
