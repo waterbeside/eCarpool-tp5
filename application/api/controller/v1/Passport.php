@@ -155,7 +155,10 @@ class Passport extends ApiBase
     {
         //验证字段是否可以被改
         $field = strtolower($field);
-        $fields = array('carnumber', 'carcolor', 'cartype', 'password', 'sex', 'company_id', 'department', 'name', 'mobile', 'myaddress');
+        $fields = [
+            'carnumber', 'carcolor', 'cartype', 'password', 'company_id',
+            'name', 'mobile', 'myaddress', 'bbs_home_page_bg_img'
+        ];
         if (!in_array($field, $fields)) {
             return $this->jsonReturn(-10002, "Error");
         }
@@ -164,97 +167,98 @@ class Passport extends ApiBase
         $uid = $userData['uid'];
 
         $value = trim($this->request->param($field));
-        switch ($field) {
-            case 'password':
-                $old_password = trim($value);
-                if ($old_password == '') {
-                    $this->jsonReturn(10001, [], lang('Please enter the correct old password'));
-                }
-                if ($userData['md5password'] != md5($old_password)) {
-                    $this->jsonReturn(10001, [], lang('Please enter the correct old password'));
-                }
-                $pw_new = $this->request->param('pw_new');
-                $pw_confirm = $this->request->param('pw_confirm');
+        if ($field == 'password') {
+            $old_password = trim($value);
+            if ($old_password == '') {
+                $this->jsonReturn(10001, [], lang('Please enter the correct old password'));
+            }
+            if ($userData['md5password'] != md5($old_password)) {
+                $this->jsonReturn(10001, [], lang('Please enter the correct old password'));
+            }
+            $pw_new = $this->request->param('pw_new');
+            $pw_confirm = $this->request->param('pw_confirm');
 
-                if ($pw_new  != $pw_confirm) {
-                    return $this->jsonReturn(-10002, [], lang('Two passwords are different'));
-                    // return $this->error('两次密码不一至');
-                }
-                if (strlen($pw_new) < 6) {
-                    return $this->jsonReturn(-10002, [], lang('The new password should be no less than 6 characters'));
-                    // return $this->error('密码不能少于6位');
-                }
-                $hashPassword = md5($pw_new); //加密后的密码
-                $status = UserModel_o::where("uid", $uid)->update(['md5password' => $hashPassword]);
-                if ($status !== false) {
-                    //TODO: 单点登入如果开启，则执行踢出工动作。
-                    $jwt = $this->getJwt();
-                    $JwtToken = new JwtToken();
-                    $JwtToken->invalidate($jwt, -4);
+            if ($pw_new  != $pw_confirm) {
+                return $this->jsonReturn(-10002, [], lang('Two passwords are different'));
+                // return $this->error('两次密码不一至');
+            }
+            if (strlen($pw_new) < 6) {
+                return $this->jsonReturn(-10002, [], lang('The new password should be no less than 6 characters'));
+                // return $this->error('密码不能少于6位');
+            }
+            $hashPassword = md5($pw_new); //加密后的密码
+            $status = UserModel_o::where("uid", $uid)->update(['md5password' => $hashPassword]);
+            if ($status !== false) {
+                //TODO: 单点登入如果开启，则执行踢出工动作。
+                $jwt = $this->getJwt();
+                $JwtToken = new JwtToken();
+                $JwtToken->invalidate($jwt, -4);
 
-                    return $this->jsonReturn(0, [], "success");
-                    // $this->success('修改成功');
-                } else {
-                    return $this->jsonReturn(-1, [], "fail");
-                    // $this->error('修改失败');
-                }
-                break;
+                return $this->jsonReturn(0, [], "success");
+                // $this->success('修改成功');
+            } else {
+                return $this->jsonReturn(-1, [], "fail");
+                // $this->error('修改失败');
+            }
+        } elseif ($field == 'department') { // 不再允许修改
+            $department_id = $value;
+            $departmentData = DepartmentModel_o::where(['departmentid' => $department_id])->find();
 
-            case 'department':
-                $department_id = $value;
-                $departmentData = DepartmentModel_o::where(['departmentid' => $department_id])->find();
-
-                if (!$departmentData) {
-                    return $this->jsonReturn(-1, [], "fail");
-                }
-                $status = UserModel_o::where("uid", $uid)->update(['Department' => $departmentData['department_name']]);
-                if ($status !== false) {
-                    return $this->jsonReturn(0, [], "success");
-                } else {
-                    return $this->jsonReturn(-1, [], "fail");
-                }
-                break;
-
-            case 'myaddress':
-                return $this->change_address();
-                break;
-
-            case 'name':
+            if (!$departmentData) {
+                return $this->jsonReturn(-1, [], "fail");
+            }
+            $status = UserModel_o::where("uid", $uid)->update(['Department' => $departmentData['department_name']]);
+            if ($status !== false) {
+                return $this->jsonReturn(0, [], "success");
+            } else {
+                return $this->jsonReturn(-1, [], "fail");
+            }
+        } elseif ($field == 'myaddress') {
+            return $this->change_address();
+        } elseif ($field == 'name') {
+            if ($value == '') {
+                return $this->jsonReturn(-1, [], lang('Can not be empty'));
+            }
+            $status = UserModel_o::where("uid", $uid)->update([$field => $value]);
+            if ($status !== "false") {
+                $appKey     = config('secret.nim.appKey');
+                $appSecret  = config('secret.nim.appSecret');
+                $NIM = new NimServer($appKey, $appSecret);
+                $upNimData = [
+                    'accid' => $this->userBaseInfo['loginname'],
+                    'name'  => $value,
+                ];
+                $upNimRes = $NIM->updateUinfoByData($upNimData);
+                return $this->jsonReturn(0, "Successful");
+            } else {
+                return $this->jsonReturn(-1, "Failed");
+            }
+        } elseif ($field == 'bbs_home_page_bg_img') {
+            if (empty($value)) {
+                return $this->jsonReturn(-1, [], lang('Can not be empty'));
+            }
+            $extra = $this->addDataToData(['bbs_home_page_bg_img' => $value], $userData['extra_info']);
+            $status = UserModel_o::where("uid", $uid)->update(['extra_info' => json_encode($extra)]);
+            if ($status !== false) {
+                return $this->jsonReturn(0, "Successful");
+            } else {
+                return $this->jsonReturn(-1, "Failed");
+            }
+        } else {
+            if (!in_array($field, array('carnumber', 'carcolor'))) {
                 if ($value == '') {
-                    return $this->jsonReturn(-1, [], lang('Can not be empty'));
+                    return $this->jsonReturn(-1, lang('Can not be empty'));
                 }
-                $status = UserModel_o::where("uid", $uid)->update([$field => $value]);
-                if ($status !== "false") {
-                    $appKey     = config('secret.nim.appKey');
-                    $appSecret  = config('secret.nim.appSecret');
-                    $NIM = new NimServer($appKey, $appSecret);
-                    $upNimData = [
-                        'accid' => $this->userBaseInfo['loginname'],
-                        'name'  => $value,
-                    ];
-                    $upNimRes = $NIM->updateUinfoByData($upNimData);
-                    return $this->jsonReturn(0, "success");
-                } else {
-                    return $this->jsonReturn(-1, "Failed");
-                }
-                break;
-
-            default:
-                if (!in_array($field, array('carnumber', 'carcolor'))) {
-                    if ($value == '') {
-                        return $this->jsonReturn(-1, lang('Can not be empty'));
-                    }
-                }
-                $status = UserModel_o::where("uid", $uid)->update([$field => $value]);
-                // var_dump($status);
-                if ($status !== false) {
-                    return $this->jsonReturn(0, "success");
-                    // $this->success('修改成功');
-                } else {
-                    return $this->jsonReturn(-1, "Failed");
-                    // $this->error('修改失败');
-                }
-                break;
+            }
+            $status = UserModel_o::where("uid", $uid)->update([$field => $value]);
+            // var_dump($status);
+            if ($status !== false) {
+                return $this->jsonReturn(0, "Successful");
+                // $this->success('修改成功');
+            } else {
+                return $this->jsonReturn(-1, "Failed");
+                // $this->error('修改失败');
+            }
         }
     }
 
