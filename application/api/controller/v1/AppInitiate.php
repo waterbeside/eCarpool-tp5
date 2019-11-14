@@ -107,17 +107,13 @@ class AppInitiate extends ApiBase
         /**
          * 检查更新
          */
-        $map   = [];
         $version = intval($version_code);
         // dump($version);exit;
         $platform_str = isset($platform_list[$platform]) ? $platform_list[$platform] : '';
         // dump($platform_str);exit;
 
-        // $map[] = ['is_new', '=', 1];
-        $map[] = ['app_id', '=', $app_id];
-        $map[] = ['platform', '=', $platform_str];
-        $versionData  = VersionModel::where($map)->order('update_version_id DESC')->find();
-
+        $VersionModel = new VersionModel();
+        $versionData  = $VersionModel->findByPlatform($platform_str);
 
         $returnVersionData = [
             'forceUpdate' => 'N',
@@ -128,20 +124,14 @@ class AppInitiate extends ApiBase
         ];
 
         if ($versionData) {
-            $mapDetail = [
-                ['app_id', '=', $app_id],
-                ['platform', '=', $platform_str],
-                ['language_code', '=', $lang],
-                ['version_code', '=', $versionData['latest_version']],
-
-            ];
-            $versionDescription  = VersionDetailsModel::where($mapDetail)->find();
+            $VersionDetailsModel = new VersionDetailsModel();
+            $versionDescription  = $VersionDetailsModel->findByVer($versionData['latest_version'], $platform_str, $lang);
             // dump($versionDescription);exit;
-
             $returnVersionData['desc'] = $versionDescription['description'] ? $versionDescription['description'] : "";
 
             if ($versionData['is_new']) {
-                if ($versionData['min_versioncode'] < $version   && $version  < $versionData['max_versioncode']) {
+                $isInWhiteList = in_array($version, explode(',', $versionData['white_list']));
+                if (($versionData['min_versioncode'] < $version   && $version  < $versionData['max_versioncode'])) {
                     $returnVersionData['forceUpdate'] = 'F';
                     $returnVersionData['is_update'] = 2;
                 } elseif ($versionData && $version < $versionData['current_versioncode']) {

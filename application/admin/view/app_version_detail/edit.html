@@ -1,10 +1,14 @@
 <div class="layui-tab-content">
     <div class="layui-tab-item layui-show">
         <form class="layui-form form-container" action="{:url('admin/AppVersionDetail/edit')}" method="post" id="editForm">
+            <input type="hidden" name="version_code"  value="{$data.version_code}"" class="layui-input ">
+            <input type="hidden" name="platform" value="{$data.platform}"    class="layui-input ">
+
             <div class="layui-form-item">
                 <label class="layui-form-label">版本</label>
                 <div class="layui-input-block">
                     <div class="layui-form-mid">{$data.version_code}</div>
+
                     <!-- <input type="text" name="name" value="{$data.version_code}" disabled  placeholder="请输入版本" class="layui-input layui-disabled"> -->
                 </div>
             </div>

@@ -6,6 +6,7 @@ use app\carpool\model\UpdateVersion as VersionModel;
 use app\carpool\model\VersionDetails as VersionDetailsModel;
 use app\admin\controller\AdminBase;
 use think\Db;
+use my\RedisData;
 
 /**
  * app版本管理
@@ -66,6 +67,7 @@ class AppVersionDetail extends AdminBase
 
             $model = new VersionDetailsModel();
             if ($model->allowField(true)->save($data)) {
+                $model->DeleteCacheByVer($data['version_code'], $data['platform'], $data['language_code']);
                 $this->log("版本详情添加成功", 0);
                 $this->jsonReturn(0, '添加成功');
             } else {
@@ -109,6 +111,7 @@ class AppVersionDetail extends AdminBase
             $model = new VersionDetailsModel();
             $data['version_detail_id'] = $id;
             if ($model->allowField(true)->save($data, $id) !== false) {
+                $model->DeleteCacheByVer($data['version_code'], $data['platform'], $data['language_code']);
                 $this->log("版本详情更新成功; id=$id", 0);
                 $this->jsonReturn(0, '更新成功');
             } else {

@@ -8,7 +8,7 @@
                     <?php if($data['platform'] == 'iOS'){ ?>
                         <i class="fa fa-apple"></i> iOS
                     <?php }else{ ?>
-                        <i class="fa fa-android"></i> android
+                        <i class="fa fa-android"></i> Android
                     <?php } ?>
                     </div>
                 </div>
@@ -40,11 +40,22 @@
                     <div class="layui-form-mid layui-word-aux">强制更新范围</div>
                 </div>
             </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">白名单</label>
+                <div class="layui-input-block">
+                    <input type="text" name="white_list" value="{$data.white_list}" placeholder="" class="layui-input">
+                    <div class="layui-form-mid layui-word-aux">不在此名单的版本号都要求强制更新，名单请使用整数版本号，格式请以英文逗号隔开，如： 591001,591002,591003。<br/> 当前最新版本号会在保存时会自动保存到此字段。</div>
+                </div>
+
+            </div>
+
             <div class="layui-form-item">
                 <label class="layui-form-label">is_new</label>
                 <div class="layui-input-block">
                     <input type="radio" name="is_new" value="1" title="是" {if condition="$data.is_new==1"}checked="checked"{/if}>
                     <input type="radio" name="is_new" value="0" title="否" {if condition="$data.is_new==0"}checked="checked"{/if}>
+                    <div class="layui-form-mid layui-word-aux">是否检查更新</div>
                 </div>
             </div>
 

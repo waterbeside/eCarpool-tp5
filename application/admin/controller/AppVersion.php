@@ -6,6 +6,7 @@ use app\carpool\model\UpdateVersion as VersionModel;
 use app\carpool\model\VersionDetails as VersionnDetailsModel;
 use app\admin\controller\AdminBase;
 use think\Db;
+use my\RedisData;
 
 /**
  * app版本管理
@@ -86,16 +87,33 @@ class AppVersion extends AdminBase
     {
         if ($this->request->isPost()) {
             $data            = $this->request->param();
-
-
             $validate = new \app\carpool\validate\UpdateVersion;
             if (!$validate->check($data)) {
                 return $this->jsonReturn(-1, $validate->getError());
             }
 
-            $model = new VersionModel();
+            $VersionModel = new VersionModel();
             $data['update_version_id'] = $id;
-            if ($model->allowField(true)->save($data, $id) !== false) {
+            $model = $VersionModel->get($id);
+            $platform = $model['platform'];
+
+            $white_list_array = array_filter(explode(',', $data['white_list']));
+            if (!in_array($data['current_versioncode'], $white_list_array)) {
+                $white_list_array[] = $data['current_versioncode'];
+            }
+
+            $data['white_list'] = implode(',', $white_list_array);
+            if ($model->save($data) !== false) {
+                // $newData = $model->toArray();
+                // $detailData = VersionnDetailsModel::where([['platform','=',$platform],['version_code','=', $newData['latest_version']]])
+                //     ->select();
+                // $newData['details'] = null;
+                // foreach ($detailData as $key => $value) {
+                //     $newData['details'][$value['language_code']] = $value;
+                // }
+                $VersionModel->DeleteCacheByPlatform($platform);
+                $VersionModel->findByPlatform($platform);
+
                 $this->log('更新版本成功' . json_encode($this->request->post()), 0);
                 $this->jsonReturn(0, '更新成功');
             } else {
