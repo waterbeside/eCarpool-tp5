@@ -12,6 +12,7 @@ use com\nim\Nim as NimServer;
 use app\carpool\model\Address;
 use Firebase\JWT\JWT;
 use think\Db;
+use my\RedisData;
 
 /**
  * 发放通行证jwt
@@ -240,6 +241,8 @@ class Passport extends ApiBase
             $extra = $this->addDataToData(['bbs_home_page_bg_img' => $value], $userData['extra_info']);
             $status = UserModel_o::where("uid", $uid)->update(['extra_info' => json_encode($extra)]);
             if ($status !== false) {
+                $redis = new RedisData();
+                $redis->delete("carpool:tweet:user:info:$uid");
                 return $this->jsonReturn(0, "Successful");
             } else {
                 return $this->jsonReturn(-1, "Failed");
