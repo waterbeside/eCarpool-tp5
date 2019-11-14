@@ -348,7 +348,7 @@ class Trips
                 $inputData['start_gid'] = $datas['start']['gid'];
             }
             if (isset($datas['end']['gid']) &&  $datas['end']['gid']) {
-                $inputData['end_gid'] = $datas['start']['gid'];
+                $inputData['end_gid'] = $datas['end']['gid'];
             }
         }
         return $inputData;
