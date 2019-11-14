@@ -339,9 +339,14 @@ class Trips extends ApiBase
         $map_type             = input('post.map_type');
 
         $datas['start']       = input('post.start');
-        $datas['start']       = is_array($datas['start']) ? $datas['start'] : json_decode($datas['start'], true);
         $datas['end']         = input('post.end');
-        $datas['end']         = is_array($datas['end']) ? $datas['end'] : json_decode($datas['end'], true);
+        try {
+            $datas['start']       = is_array($datas['start']) ? $datas['start'] : json_decode($datas['start'], true);
+            $datas['end']         = is_array($datas['end']) ? $datas['end'] : json_decode($datas['end'], true);
+        } catch (\Exception $e) {  //其他错误
+            $msg =  $e->getMessage();
+            $this->jsonReturn(992, [], 'Error Param', ['error'=>$msg, 'data'=>$datas]);
+        }
         $datas['seat_count']  = input('post.seat_count');
         $datas['distance']    = input('post.distance', 0);
         $datas['time']        = is_numeric($time) ? date('YmdHi', $time) : date('YmdHi', strtotime($time . ":00"));
