@@ -30,7 +30,7 @@ class RedisData extends Redis
      *
      * @param string $cacheKey 缓存key
      * @param * $value 要缓存的值
-     * @param integer $ex  有效时长 (秒)
+     * @param integer $ex  有效时长 (秒) 当大于0时才设置有效时
      * @return array
      */
     public function cache($cacheKey, $value = false, $ex = 0)
@@ -38,7 +38,7 @@ class RedisData extends Redis
         if ($value === null) {
             return $this->delete($cacheKey);
         } elseif ($value !== false) {
-            $value = json_encode($value);
+            $value = is_string($value) ? $value : json_encode($value);
             if ($ex > 0) {
                 return $this->setex($cacheKey, $ex, $value);
             } else {
