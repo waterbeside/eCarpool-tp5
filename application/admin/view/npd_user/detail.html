@@ -1,0 +1,45 @@
+<div class="amain-body P-user-detail">
+
+    <?php
+    if($data['is_delete']){
+        echo '<blockquote class="layui-elem-quote">该账号已被逻辑删除</blockquote>';
+    }
+    ?>
+
+    <table class="layui-table">
+        <tbody>
+            <tr>
+                <td class="label" width="130">{:lang('Account')}</td>
+                <td>{$data.account}</td>
+            </tr>
+            <tr>
+                <td class="label">Nickname</td>
+                <td>{$data.nickname}</td>
+            </tr>
+            <tr>
+                <td class="label">Salt</td>
+                <td>{$data.salt}</td>
+            </tr>
+            <tr>
+                <td class="label">{:lang('Remark')}</td>
+                <td>{$data.remark}</td>
+            </tr>
+            <tr>
+                <td class="label">{:lang('status')}</td>
+                <td>{$data.status}</td>
+            </tr>
+            <tr>
+                <td class="label">{:lang('is_delete')}</td>
+                <td>{$data.is_delete}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+// form.render();
+
+
+
+
+</script>

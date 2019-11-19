@@ -1,0 +1,111 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body P-user-list">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <ul class="amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/NpdUser/index')}"  >NPD授权用户管理</a></li>
+            <li class="btn-item btn-item-right">
+                <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/NpdUser/add')}"  data-title="添加授权账户"  data-trigger="modal" >
+                <i class="fa fa-plus"></i> 添加用户</a>
+            </li>
+        </ul>
+
+
+        <div class="layui-tab-content">
+            <form class="layui-form layui-form-pane" action="{:url('admin/NpdUser/index')}" method="get">
+            <div class="layui-inline">
+                <label class="layui-form-label">检索</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="关键词" class="layui-input" style="width:140px" >
+                </div>
+                <div class="layui-input-inline">
+                    <select name="filter[status]">
+                        <option value="" <?php if(!isset($filter['status']) || !is_numeric('status') ){ echo 'selected="selected"';  } ?> > 是否禁用：不限</option>
+                        <option value="0" <?php if(isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 0 ){ echo 'selected="selected"'; } ?> > 禁用</option>
+                        <option value="1" <?php if(isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 1  ){ echo 'selected="selected"'; } ?> > 正常</option>
+                    </select>
+                </div>
+                <div class="layui-input-inline">
+                    <select name="filter[is_delete]">
+                        <option value="0" <?php if(isset($filter['is_delete']) && is_numeric($filter['is_delete']) && $filter['is_delete'] == 0 ){ echo 'selected="selected"'; } ?> > 正常用户</option>
+                        <option value="1" <?php if(isset($filter['is_delete']) && is_numeric($filter['is_delete']) && $filter['is_delete'] == 1  ){ echo 'selected="selected"'; } ?> > 已删用户</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <input type="hidden" name="export" value="0">
+                <button class="layui-btn"><i class="fa fa-search"></i></button>
+            </div>
+            </form>
+            <hr>
+
+            <table lay-filter="listtable" class="layui-table">
+            <thead>
+                <tr>
+                    <th lay-data="{field:'id', width:100 }" >ID</th>
+                    <th lay-data="{field:'account'}">用户名</th>
+                    <th lay-data="{field:'nickname', width:140}">暱稱</th>
+                    <th lay-data="{field:'status', width:140}">状态</th>
+                    <th lay-data="{field:'remark'}">备注</th>
+                    <th lay-data="{field:'options', width:100}">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            {foreach name="lists" item="vo"}
+            <tr>
+                <td>
+                <div <?php echo  ($vo['is_delete']  ? 'class="is_delete"' : ''); ?>>
+                    {$vo.id}
+                </div>
+                </td>
+                <td>
+                    <a href="{:url('admin/NpdUser/public_detail',['id'=>$vo['id']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
+                        {$vo.account}
+                    </a>
+                </td>
+                
+                <td>{$vo.nickname}</td>
+
+                <td>{php}echo $vo['status']==1 && $vo['is_delete']===0 ? '正常' : ($vo['is_delete']==1 ? '<i class="fa fa-times"></i> 已删' : '禁用');{/php}</td>
+                <td>{$vo.remark}</td>
+                <td>
+                <!-- <a href="{:url('admin/nim/im_user',['uid'=>$vo['id']])}"  class="layui-btn   layui-btn-xs " data-title="云信账号"  data-trigger="modal" title="編輯云帐号">IM</a> -->
+                <a href="{:url('admin/NpdUser/edit',['id'=>$vo['id']])}"  class="layui-btn   layui-btn-xs " data-title="編輯成員"  data-trigger="modal" title="編輯"><i class="layui-icon">&#xe642;</i></a>
+                <a href="{:url('admin/NpdUser/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除" ><i class="layui-icon">&#xe640;</i></a>
+
+                </td>
+            </tr>
+            {/foreach}
+            </tbody>
+            </table>
+            <!--分页-->
+            {$lists|raw}
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+PAGE_EXEC = {
+    init: function(){
+        initLayuiTable({ limit: {$pagesize} })
+        var $tableWrapper = $(".P-user-list [lay-filter=LAY-table-1] .layui-table-box");
+        var $tableWrapper_main = $tableWrapper.find(".layui-table-main");
+        var $tr = $tableWrapper_main.find('tr');
+        var $tableWrapper_l = $tableWrapper.find(".layui-table-fixed .layui-table-body");
+        $tr.each(function(index, el) {
+        if($(el).find("[data-field=uid]").find('.is_delete').length > 0){
+            $(el).addClass('delete');
+            $(el).find('.ajax-delete').hide();
+            $tableWrapper_l.find('tr').eq(index).addClass('delete')
+        }
+        });
+    }
+}
+PAGE_EXEC.init()
+
+</script>
+{/block}
