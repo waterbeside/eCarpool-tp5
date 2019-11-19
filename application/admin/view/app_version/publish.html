@@ -28,6 +28,14 @@
             </div>
 
             <div class="layui-form-item">
+                <label class="layui-form-label">MD5</label>
+                <div class="layui-input-block">
+                    <input type="text" name="md5" value="{$data.md5}" placeholder="" class="layui-input">
+                    <div class="layui-form-mid layui-word-aux">文件md5</div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
                 <label class="layui-form-label">更新范围</label>
                 <div class="layui-input-block">
                     <div class="layui-input-inline">
@@ -47,7 +55,6 @@
                     <input type="text" name="white_list" value="{$data.white_list}" placeholder="" class="layui-input">
                     <div class="layui-form-mid layui-word-aux">不在此名单的版本号都要求强制更新，名单请使用整数版本号，格式请以英文逗号隔开，如： 591001,591002,591003。<br/> 当前最新版本号会在保存时会自动保存到此字段。</div>
                 </div>
-
             </div>
 
             <div class="layui-form-item">
