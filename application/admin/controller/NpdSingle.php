@@ -9,7 +9,7 @@ use think\Db;
 
 /**
  * NpdSingle 单页文章管理
- * Class Category
+ * Class NpdSingle
  * @package app\admin\controller
  */
 
