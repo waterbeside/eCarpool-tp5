@@ -98,6 +98,7 @@ return [
     'Images cannot be larger than {:size}' => 'Hình ảnh không được lớn hơn {:size}',
     "File not found" => 'Không tìm thấy tệp',
     "This attachment cannot be deleted" => 'Không thể xóa tệp đính kèm này',
+    'The file is too large to upload' => 'Tệp quá lớn',
 
     //评分
     "You can't rate this" => "Bạn không thể đánh giá điều này",

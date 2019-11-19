@@ -50,23 +50,31 @@ class Attachment extends ApiBase
 
         if ($dev) {
             dump(input());
+            dump($file);
             dump(isset($_FILES["file"]) ? $_FILES["file"] : "");
             dump(isset($_REQUEST["file"]) ? $_REQUEST["file"] : "");
         }
         if (!$file) {
-            $this->jsonReturn(-1, lang('Please upload attachments'));
+            $this->jsonReturn(-1, lang('The file is too large to upload'));
+            // $this->jsonReturn(-1, lang('Please upload attachments'));
         }
         //计算md5和sha1散列值，作用避免文件重复上传
         $md5 = $file->hash('md5');
         $sha1 = $file->hash('sha1');
         $upInfo = $file->getInfo();
 
+        if ($dev) {
+            dump($upInfo);
+            dump($upInfo['type']);
+        }
+        
+
         $site_domain  = trim($systemConfig['site_upload_domain']) ? trim($systemConfig['site_upload_domain']) : $this->request->root(true);
         $upload_path = trim($systemConfig['site_upload_path']) . DIRECTORY_SEPARATOR . "$type";
         switch ($type) {
             case 'image':
                 if (strpos($upInfo['type'], 'image') === false) {
-                    $this->jsonReturn(-1, lang('Not image file format'));
+                    $this->jsonReturn(-1, ['type'=>$upInfo['type']], lang('Not image file format'));
                 }
 
                 // if($upInfo['size'] > 819200){
@@ -90,7 +98,6 @@ class Attachment extends ApiBase
 
             default:
                 $this->jsonReturn(992, lang('Wrong format'));
-
                 break;
         }
 

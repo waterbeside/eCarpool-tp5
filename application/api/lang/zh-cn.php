@@ -95,6 +95,8 @@ return [
     'Images cannot be larger than {:size}' => '图片不能大于{:size}',
     "File not found" => '找不到文件',
     "This attachment cannot be deleted" => '该附件不可以删除',
+    'The file is too large to upload' => '文件过大',
+
 
     //评分
     "You can't rate this" => "你不能对此评分",
