@@ -46,7 +46,8 @@
                     <th lay-data="{field:'id', width:100 }" >ID</th>
                     <th lay-data="{field:'account'}">用户名</th>
                     <th lay-data="{field:'nickname', width:140}">暱稱</th>
-                    <th lay-data="{field:'status', width:140}">状态</th>
+                    <th lay-data="{field:'status', width:100}">状态</th>
+                    <th lay-data="{field:'create_time', width:160}">创建时间</th>
                     <th lay-data="{field:'remark'}">备注</th>
                     <th lay-data="{field:'options', width:100}">操作</th>
                 </tr>
@@ -68,6 +69,7 @@
                 <td>{$vo.nickname}</td>
 
                 <td>{php}echo $vo['status']==1 && $vo['is_delete']===0 ? '正常' : ($vo['is_delete']==1 ? '<i class="fa fa-times"></i> 已删' : '禁用');{/php}</td>
+                <td>{$vo.create_time}</td>
                 <td>{$vo.remark}</td>
                 <td>
                 <!-- <a href="{:url('admin/nim/im_user',['uid'=>$vo['id']])}"  class="layui-btn   layui-btn-xs " data-title="云信账号"  data-trigger="modal" title="編輯云帐号">IM</a> -->
