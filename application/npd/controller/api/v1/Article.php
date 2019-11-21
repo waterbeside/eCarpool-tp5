@@ -3,7 +3,7 @@
 namespace app\npd\controller\api\v1;
 
 use think\Db;
-use app\api\controller\ApiBase;
+use app\npd\controller\api\NpdApiBase;
 use app\npd\model\Article as ArticleModel;
 use app\npd\model\Category;
 
@@ -12,7 +12,7 @@ use app\npd\model\Category;
  * Class Article
  * @package app\npd\controller\api\v1
  */
-class Article extends ApiBase
+class Article extends NpdApiBase
 {
 
     protected function initialize()
@@ -69,6 +69,8 @@ class Article extends ApiBase
      */
     public function read($id = 0)
     {
+        $this->checkPassport(true);
+
         if (!$id) {
             $this->jsonReturn(992, 'Error id');
         }
