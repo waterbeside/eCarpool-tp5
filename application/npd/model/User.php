@@ -4,6 +4,7 @@ namespace app\npd\model;
 
 use think\Db;
 use think\Model;
+use my\RedisData;
 
 class User extends Model
 {
@@ -50,5 +51,46 @@ class User extends Model
         $salt = getRandomString(6);
         $password = $this->hashPassword($pass, $salt, $type);
         return ['salt'=>$salt, 'password'=>$password ];
+    }
+
+    /**
+     * 取得账号详情
+     *
+     * @param integer $uid 用户id
+     * @param integer $exp 缓存有效时间
+     */
+    public function findByUid($uid = "", $exp = 60 * 5)
+    {
+        if (!$uid) {
+            return false;
+        }
+        $cacheKey = "npd_site:user:detail:uid_" . $uid;
+        $redis = new RedisData();
+        $cacheData = $redis->cache($cacheKey);
+        if ($cacheData) {
+            return $cacheData;
+        }
+        $res = $this->find($uid);
+
+        if ($res) {
+            $res = $res->toArray();
+            $exp_offset = getRandValFromArray([1,2,3]);
+            $exp +=  $exp_offset * 60;
+            $cacheData = $redis->cache($cacheKey, $res, $exp);
+        }
+        return $res;
+    }
+
+    /**
+     * 删除用户详情数据
+     *
+     * @param string|integer $account|uid
+     * @return void
+     */
+    public function deleteDetailCache($account = "", $byID = false)
+    {
+        $cacheKey = $byID ? "npd_site:user:detail:uid_" . $account : "npd_site:user:detail:ac_" . strtolower($account);
+        $redis = new RedisData();
+        $redis->delete($cacheKey);
     }
 }
