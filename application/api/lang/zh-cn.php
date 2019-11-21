@@ -23,7 +23,7 @@ return [
     'The phone number you entered is incorrect' => '您输入的手机号有误',
     'Name error' => '姓名错误',
     'The user is banned' => '该用户被封禁',
-    'The user is deleted' => '该用户已被删除或已离积',
+    'The user is deleted' => '该用户已被删除',
     'The user has left' => '该用户已离积',
     'The phone number you entered is not the phone number of the current account' => '你输入的手机号不是当前账号绑定的手机号。',
 
