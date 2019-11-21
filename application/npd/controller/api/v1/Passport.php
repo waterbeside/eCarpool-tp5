@@ -2,8 +2,9 @@
 
 namespace app\npd\controller\api\v1;
 
-use app\api\controller\ApiBase;
-use app\carpool\model\User as UserModel;
+use app\npd\controller\api\NpdApiBase;
+use app\carpool\model\User as CarpoolUser;
+use app\npd\model\User as NpdUser;
 use app\user\model\Department as DepartmentModel;
 use app\user\model\JwtToken;
 use Firebase\JWT\JWT;
@@ -14,7 +15,7 @@ use think\Db;
  * Class Passport
  * @package app\npd\controller\api\v1
  */
-class Passport extends ApiBase
+class Passport extends NpdApiBase
 {
 
     protected function initialize()
@@ -25,45 +26,32 @@ class Passport extends ApiBase
     /**
      * 取得登入用户信息
      */
-    public function index($type = 1)
+    public function index()
     {
         $this->checkPassport(true);
 
         $userInfo = $this->userBaseInfo;
+        $uid = $userInfo['uid'];
+        $userInfo_ex = $this->getUserData(true);
+        $userData = $userInfo_ex['data'];
 
-        if (in_array($type, [1, 2])) {
-            $uid = $userInfo['uid'];
-            $userInfo_ex = $this->getUserData(true);
-            $userInfo_ex['avatar'] = $userInfo_ex['imgpath'];
-            $userInfo_ex['department'] = $userInfo_ex['Department'];
+        $userData['avatar'] = isset($userData['imgpath']) ? $userData['imgpath'] : '';
+        $userData['department'] = isset($userData['Department']) ? $userData['Department'] : '';
 
-            if ($type == 2) {
-                $fields = [
-                    'uid', 'loginname', 'name', 'nativename',
-                    'department', 'company_id', 'department_id',
-                    'phone', 'mobile', 'avatar', 'imgpath', 'sex',
-                    'companyname', 'home_address_id', 'company_address_id', 'indentifier',
-                    'im_md5password', 'is_active', 'modifty_time', 'extra_info',
-                    'carnumber', 'carcolor', 'client_id',
-                ];
-            }
-            if ($type == 1) {
-                $fields = [
-                    'uid', 'loginname', 'name', 'nativename',
-                    'department', 'company_id', 'department_id',
-                    'avatar', 'imgpath'
-                ];
-            }
-            $userInfo = $this->filtFields($userInfo_ex, $fields);
-            if (isset($userInfo['sex'])) {
-                $userInfo['sex'] = intval($userInfo['sex']);
-            }
-            if (isset($userInfo['company_id'])) {
-                $userInfo['company_id'] = intval($userInfo['company_id']);
-            }
+        if (strtolower($userInfo_ex['iss'])=== 'npd') {
+            $fields = [
+                'id', 'account', 'nickname'
+            ];
+        } else {
+            $fields = [
+                'uid', 'loginname', 'name', 'nativename',
+                'department', 'company_id', 'department_id',
+                'avatar', 'imgpath'
+            ];
         }
-
-        return $this->jsonReturn(0, $userInfo, "success");
+        $userData = $this->filtFields($userData, $fields);
+        $userInfo_ex['data'] = $userData;
+        return $this->jsonReturn(0, $userInfo_ex, "success");
     }
 
 
@@ -92,52 +80,79 @@ class Passport extends ApiBase
         if (!in_array($data['client'], array('web_npd'))) {
             $this->jsonReturn(-1, 'client error');
         };
+        
+        $data['usertype'] = isset($data['usertype']) ? $data['usertype'] : 'carpool';
 
-
-        $userModel = new UserModel();
-        $where = [
-            ['loginname', '=', $data['username']],
-        ];
-        $userData = $userModel->where($where)->where([['is_delete','=',Db::raw(0)]])->find();
-        if (!$userData) {
-            $userData = $userModel->where($where)->find();
-            if ($userData) {
-                return $this->jsonReturn(10003, lang('The user is deleted'));
-            } else {
-                return $this->jsonReturn(10001, lang('User name or password error'));
+        if ($data['usertype'] === 'npd') { // 如果是NPD账户
+            $NpdUser = new NpdUser();
+            $where = [
+                ['account', '=', $data['username']],
+            ];
+            $userData = $NpdUser->where($where)->where([['is_delete','=',Db::raw(0)]])->find();
+            if (!$userData) {
+                $userData = $NpdUser->where($where)->find();
+                if ($userData) {
+                    return $this->jsonReturn(10003, lang('The user is deleted'));
+                } else {
+                    return $this->jsonReturn(10001, lang('User name or password error'));
+                }
             }
-        }
-        if (!$userData['is_active']) {
-            $this->jsonReturn(10003, [], lang('The user is banned'));
-        }
-
-        if (strtolower($userData['md5password']) != strtolower($userData->hashPassword($data['password']))) {
-            $this->jsonReturn(10001, lang('User name or password error'));
-        }
-
-        if (isset($data['name']) && $data['name'] != $userData['nativename']) {
-            $this->jsonReturn(10001, lang('Name error'));
-        }
-
-        //验证用户是否离职
-        $checkActiveRes = $userModel->checkDimission($userData['loginname'], 1);
-        if (!$checkActiveRes) {
-            if ($userModel->errorCode == 10003) {
-                $errorMsg = lang('The user is deleted');
-            } else {
-                $errorMsg = lang('Login failed');
+            if (!$userData['status']) {
+                $this->jsonReturn(10003, [], lang('The user is banned'));
             }
-            $this->jsonReturn(-1, [], $errorMsg, ['error' => $userModel->errorMsg]);
+            if (strtolower($userData['password']) != strtolower($NpdUser->hashPassword($data['password'], $userData['salt'], 1))) {
+                $this->jsonReturn(10001, lang('User name or password error'));
+            }
+            $iss = 'npd';
+            $userData['uid'] = $userData['id'];
+            $userData['loginname'] = $userData['account'];
+            $userData['imgpath'] = '';
+        } else { // 如果是Carpool账户
+            $CarpoolUser = new CarpoolUser();
+            $where = [
+                ['loginname', '=', $data['username']],
+            ];
+            $userData = $CarpoolUser->where($where)->where([['is_delete','=',Db::raw(0)]])->find();
+            if (!$userData) {
+                $userData = $CarpoolUser->where($where)->find();
+                if ($userData) {
+                    return $this->jsonReturn(10003, lang('The user is deleted'));
+                } else {
+                    return $this->jsonReturn(10001, lang('User name or password error'));
+                }
+            }
+            if (!$userData['is_active']) {
+                $this->jsonReturn(10003, [], lang('The user is banned'));
+            }
+            if (strtolower($userData['md5password']) != strtolower($CarpoolUser->hashPassword($data['password']))) {
+                $this->jsonReturn(10001, lang('User name or password error'));
+            }
+            if (isset($data['name']) && $data['name'] != $userData['nativename']) {
+                $this->jsonReturn(10001, lang('Name error'));
+            }
+            //验证用户是否离职
+            $checkActiveRes = $CarpoolUser->checkDimission($userData['loginname'], 1);
+            if (!$checkActiveRes) {
+                if ($CarpoolUser->errorCode == 10003) {
+                    $errorMsg = lang('The user is deleted');
+                } else {
+                    $errorMsg = lang('Login failed');
+                }
+                $this->jsonReturn(-1, [], $errorMsg, ['error' => $CarpoolUser->errorMsg]);
+            }
+            $iss = 'carpool';
+            $userData['nickname'] = $userData['name'];
         }
+        $jwtPaylod = ['uid' => $userData['uid'], 'loginname' => $userData['loginname'], 'client' => $data['client']];
+        $jwt = $this->createPassportJwt($jwtPaylod, 3600*24, $iss);
 
-        $jwt = $this->createPassportJwt(['uid' => $userData['uid'], 'loginname' => $userData['loginname'], 'client' => $data['client']], 3600*24);
         $returnData = array(
             'user' => array(
                 'uid' => $userData['uid'],
                 'loginname' => $userData['loginname'],
-                'name' => $userData['name'],
-                'company_id' => $userData['company_id'],
+                'nickname' => $userData['nickname'],
                 'avatar' => $userData['imgpath'],
+                'usertype'=> $iss,
             ),
             'token'    => $jwt
         );
