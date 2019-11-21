@@ -16,7 +16,7 @@ use think\facade\Lang;
 class ApiBase extends Base
 {
 
-    protected $jwtInfo;
+    public $jwtInfo;
     public $jwt = null;
     public $userBaseInfo;
     public $passportError;
@@ -143,14 +143,14 @@ class ApiBase extends Base
      * @param integer $ex 有效时长，单位为s，默认为null则自动根据client设置
      * @return string jwt
      */
-    public function createPassportJwt($data, $ex = null)
+    public function createPassportJwt($data, $ex = null, $iss = 'carpool')
     {
         $ex = $ex && is_numeric($ex) ? $ex : (in_array(strtolower($data['client']), ['ios', 'android']) ?  36 * 30 * 86400 : 48 * 3600);
         $exp = time() + $ex;
         $jwtData  = array(
             'exp' => $exp, //过期时间
             'iat' => time(), //发行时间
-            'iss' => 'carpool', //发行者，值为固定carpool
+            'iss' => $iss ? $iss : 'carpool', //发行者，值为固定carpool
             'uid' => $data['uid'],
             'loginname' => $data['loginname'],
             'client' => $data['client'], //客户端
