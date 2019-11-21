@@ -2,8 +2,7 @@
 
 namespace app\npd\controller\api\v1;
 
-use app\api\controller\ApiBase;
-
+use app\npd\controller\api\NpdApiBase;
 use app\npd\model\Nav as NavModel;
 use my\RedisData;
 use my\Tree;
@@ -16,7 +15,7 @@ use think\Db;
  * Class Nav
  * @package app\npd\controller\api\v1
  */
-class Nav extends ApiBase
+class Nav extends NpdApiBase
 {
 
     protected function initialize()

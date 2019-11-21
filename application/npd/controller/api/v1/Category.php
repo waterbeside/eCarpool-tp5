@@ -2,8 +2,7 @@
 
 namespace app\npd\controller\api\v1;
 
-use app\api\controller\ApiBase;
-
+use app\npd\controller\api\NpdApiBase;
 use app\npd\model\Category as CateModel;
 use my\Tree;
 
@@ -15,7 +14,7 @@ use think\Db;
  * Class Category
  * @package app\npd\controller\api\v1
  */
-class Category extends ApiBase
+class Category extends NpdApiBase
 {
 
     protected function initialize()
@@ -46,7 +45,6 @@ class Category extends ApiBase
                     'thumb' => $value['thumb'],
                 ];
                 $list[] = $data;
-
             }
             $tree = new Tree();
             $tree->init($list);

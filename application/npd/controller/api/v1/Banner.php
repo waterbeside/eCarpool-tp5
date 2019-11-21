@@ -3,7 +3,7 @@
 namespace app\npd\controller\api\v1;
 
 use think\Db;
-use app\api\controller\ApiBase;
+use app\npd\controller\api\NpdApiBase;
 use app\npd\model\Banner as BannerModel;
 use app\common\model\I18nLang as I18nLangModel;
 use my\RedisData;
@@ -13,7 +13,7 @@ use my\RedisData;
  * Class Banner
  * @package app\npd\controller\api\v1
  */
-class Banner extends ApiBase
+class Banner extends NpdApiBase
 {
 
     protected function initialize()

@@ -3,7 +3,7 @@
 namespace app\npd\controller\api\v1;
 
 use think\Db;
-use app\api\controller\ApiBase;
+use app\npd\controller\api\NpdApiBase;
 use app\npd\model\Customer as CustomerModel;
 use app\npd\model\Category;
 use my\RedisData;
@@ -13,7 +13,7 @@ use my\RedisData;
  * Class Customer
  * @package app\npd\controller\api\v1
  */
-class Customer extends ApiBase
+class Customer extends NpdApiBase
 {
 
     protected function initialize()

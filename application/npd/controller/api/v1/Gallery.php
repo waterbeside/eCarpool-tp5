@@ -3,7 +3,7 @@
 namespace app\npd\controller\api\v1;
 
 use think\Db;
-use app\api\controller\ApiBase;
+use app\npd\controller\api\NpdApiBase;
 use app\npd\model\Gallery as GalleryModel;
 use my\RedisData;
 
@@ -12,7 +12,7 @@ use my\RedisData;
  * Class Gallery
  * @package app\npd\controller\api\v1
  */
-class Gallery extends ApiBase
+class Gallery extends NpdApiBase
 {
     public function index($model = null, $aid = 0)
     {

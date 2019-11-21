@@ -3,7 +3,7 @@
 namespace app\npd\controller\api\v1;
 
 use think\Db;
-use app\api\controller\ApiBase;
+use app\npd\controller\api\NpdApiBase;
 use app\npd\service\Product as ProductService;
 use app\npd\model\Product as ProductModel;
 use app\npd\model\Customer as CustomerModel;
@@ -14,7 +14,7 @@ use app\npd\model\Category;
  * Class Product
  * @package app\npd\controller\api\v1
  */
-class Product extends ApiBase
+class Product extends NpdApiBase
 {
 
     protected function initialize()

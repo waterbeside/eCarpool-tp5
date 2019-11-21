@@ -3,7 +3,7 @@
 namespace app\npd\controller\api\v1;
 
 use think\Db;
-use app\api\controller\ApiBase;
+use app\npd\controller\api\NpdApiBase;
 use app\npd\model\ProductRecommend;
 
 /**
@@ -11,7 +11,7 @@ use app\npd\model\ProductRecommend;
  * Class ProductRcm
  * @package app\npd\controller\api\v1
  */
-class ProductRcm extends ApiBase
+class ProductRcm extends NpdApiBase
 {
 
     protected function initialize()

@@ -3,7 +3,7 @@
 namespace app\npd\controller\api\v1;
 
 use think\Db;
-use app\api\controller\ApiBase;
+use app\npd\controller\api\NpdApiBase;
 use app\npd\model\Single as SingleModel;
 use app\npd\model\Category;
 
@@ -12,7 +12,7 @@ use app\npd\model\Category;
  * Class Single
  * @package app\npd\controller\api\v1
  */
-class Single extends ApiBase
+class Single extends NpdApiBase
 {
 
     protected function initialize()
