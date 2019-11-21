@@ -112,6 +112,8 @@ class NpdUser extends AdminBase
 
             if ($user->allowField(true)->save($data, ['id' => $id]) !== false) {
                 $this->log('保存NPD用户成功，id=' . $id, 0);
+                $user->deleteDetailCache($id, true);
+
                 return $this->jsonReturn(0, '保存成功');
             } else {
                 $this->log('保存NPD用户失败，id=' . $id, -1);
