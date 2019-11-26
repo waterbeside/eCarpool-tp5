@@ -33,7 +33,7 @@ class Address extends ApiBase
         $this->checkPassport(1);
         $uid = $this->userBaseInfo['uid'];
         // $resultSet = Db::query('call get_my_address('.$uid.')');
-        $res = Db::connect('database_carpool')->query('call get_my_address(:uid)', [
+        $res = Db::connect('database_carpool')->query('call get_my_address_ex(:uid)', [
             'uid' => $uid,
         ]);
 
