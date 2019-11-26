@@ -34,9 +34,8 @@ class Address extends Model
             'longtitude' => $data['longitude'],
         ];
         $res = $this
-            ->field("address_type,addressname,longtitude as longitude,latitude,create_time,company_id,city,addressid")
+            ->field("address_type,addressname,longtitude as longitude,latitude,create_time,company_id,city,addressid,address,district")
             ->where($findMap)->find();
-
         if ($res) {
             $data = array_merge($data, $res->toArray());
             if (isset($data['company_id'])) {
@@ -45,6 +44,7 @@ class Address extends Model
             return $data;
         }
         //如果没有数据，则创建
+        $city = isset($data['city']) && $data['city'] ? $data['city'] : "";
         $inputData = [
             'address_type' => 1,
             'addressname' => $data['addressname'],
@@ -52,11 +52,18 @@ class Address extends Model
             'latitude'   => $data['latitude'],
             'create_time'   => date("Y-m-d H:i:s"),
             'company_id'   => intval($data['company_id']),
-            'city'       => isset($data['city']) && $data['city'] ? $data['city'] : "--",
+            'city'       => $city ? $city : '--',
         ];
         if (isset($data['create_uid'])) {
             $inputData['create_uid'] = $data['create_uid'];
         }
+        if (isset($data['address']) && $data['address']) {
+            $inputData['address'] = $data['address'];
+        }
+        if (isset($data['district']) && $data['district']) {
+            $inputData['district'] = $data['district'];
+        }
+
         $createID = $this->insertGetId($inputData);
         if ($createID) {
             $data['addressid'] = intval($createID);

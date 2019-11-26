@@ -69,19 +69,27 @@ class Address extends AdminBase
         $res = $AddressModel->regeo($lnglat);
         if ($res && $res['info'] === 'OK' && $res['regeocode']) {
             $regeocode = $res['regeocode'];
+            $addressComponent = $regeocode['addressComponent'];
             $city = $regeocode['addressComponent']['city'];
             $city = $city ? $city : $regeocode['addressComponent']['province'];
             if (empty($city)) {
                 return $this->jsonReturn(-1, $regeocode, '逆地理编码查询失败');
             }
-            if ($data->city !== $city) {
+            
+            if ($data->city !== $city || empty($data->address) || empty($data->district)) {
                 $data->city = $city;
                 // $saveRes = $data->save();
                 $map = [
                     'longtitude' =>  $data->longtitude,
                     'latitude' =>  $data->latitude,
                 ];
-                $saveRes = AddressModel::where($map)->update(['city' => $city]);
+                $upData = [
+                    'city' => $city,
+                    'district' => $addressComponent['province'].$addressComponent['city'].$addressComponent['district'],
+                    'address' => $regeocode['formatted_address'],
+                    'status' => 2,
+                ];
+                $saveRes = AddressModel::where($map)->update($upData);
                 if ($saveRes === false) {
                     return $this->jsonReturn(-1, '校正失败');
                 }

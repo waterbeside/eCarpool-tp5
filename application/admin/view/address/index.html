@@ -53,6 +53,9 @@
             <div class="title">{{ item.addressname }}</div>
             <div class="time">{{ item.create_time }}</div>
             <div class="geo">{{ item.longtitude }}, {{ item.latitude }}</div>
+            <div class="address">{{ item.address }}</div>
+            <div class="district">{{ item.district }}</div>
+
         </li>
     {{#  }); }}
     {{#  if(d.length === 0){ }}
@@ -222,6 +225,7 @@
             }
             $itembox.addClass('current').siblings('.item').removeClass('current');
 
+            console.log('item');
             console.log(item);
             var lnglat = [item.longtitude, item.latitude];
             console.log(lnglat)
@@ -243,7 +247,7 @@
 
                 var city = res.addressComponent.city;
                     city = city ? city : res.addressComponent.province;
-                if (city != item.city) {
+                if (city != item.city || !item.address || !item.district) {
                     $('#panel-box .btn-revise').addClass('show');
                 }
                 
@@ -329,6 +333,7 @@
             marker.setPosition(lnglat);
 
             geocoder.getAddress(lnglat, function(status, result) {
+                console.log(result);
                 if (status === 'complete' && result.regeocode) {
                     var address = result.regeocode.formattedAddress;
                     if (typeof(success) === 'function') {
@@ -358,13 +363,20 @@
                 layer.msg(res.desc);
                 console.log(res);
                 if (res.code === 0 ) {
-                    var city = res.data.addressComponent.city;
+                    var addressComponent = res.data.addressComponent;
+                    var city = addressComponent.city;
+                    var formatted_address = res.data.formatted_address;
+                    var district = addressComponent.province + addressComponent.city + addressComponent.district;
                     city = typeof(city) ==='string' && city ? city : res.data.addressComponent.province;
                     _this.data.list[id].city = city;
+                    _this.data.list[id].address = formatted_address;
+                    _this.data.list[id].district = district;
                     _this.renderList();
                     var $itembox = $('.item-'+id);
                     $itembox.addClass('current').siblings('.item').removeClass('current');
                     $('#panel-box .detail .data-1 .city').html(city);
+                    $('#panel-box .detail .data-1 .district').html(district);
+                    $('#panel-box .detail .data-1 .address').html(formatted_address);
                 }
                 layer.close(loading);
             }).catch(function(err){

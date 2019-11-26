@@ -279,6 +279,8 @@ class Passport extends ApiBase
         $data['latitude']         =  $this->request->post('latitude');
         $data['longitude']        =  $this->request->post('longitude');
         $data['city']             = $this->request->post('city');
+        $data['address']             = $this->request->post('address');
+        $data['district']             = $this->request->post('district');
         $from                     = $this->request->post('from');
         if ($from == "work") {
             $from = "company";
