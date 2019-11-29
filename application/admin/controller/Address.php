@@ -30,7 +30,28 @@ class Address extends AdminBase
             $map = [];
             if (isset($filter['keyword']) && $filter['keyword']) {
                 $keyword = $filter['keyword'];
-                $map[] = ['', 'exp', Db::raw("addressname like '%{$keyword}%' or city = '{$keyword}' ")];
+                $keywordSplit = explode('&&', $keyword);
+                foreach ($keywordSplit as $key => $value) {
+                    $keywordSplit_2 = explode(':', $value);
+                    if (count($keywordSplit_2) < 2) {
+                        $map[] = ['', 'exp', Db::raw("addressname like '%{$keyword}%' or city = '{$keyword}' ")];
+                    } else {
+                        $fields = $keywordSplit_2[0];
+                        $fieldsSplit = explode('|', $fields);
+                        $fieldsArray = array_intersect($fieldsSplit, ['id','addressname','city','address','district','status']);
+                        $field = implode('|', $fieldsArray);
+                        $v = $keywordSplit_2[1];
+                        // if (in_array($fields[0], ['addressname','city','address','dist'])) {
+                        // }
+                        if ($v == 'null') {
+                            $map[] = ['', 'exp', Db::raw("$field is null ")];
+                        } elseif (count($fieldsArray) === 1 && in_array($field, ['id', 'status'])) {
+                            $map[] = [$field, '=', $v];
+                        } else {
+                            $map[] = [$field, 'like', "%{$v}%"];
+                        }
+                    }
+                }
             }
 
             $results = AddressModel::where($map)->order('create_time DESC , addressid DESC ')
@@ -70,14 +91,19 @@ class Address extends AdminBase
         if ($res && $res['info'] === 'OK' && $res['regeocode']) {
             $regeocode = $res['regeocode'];
             $addressComponent = $regeocode['addressComponent'];
-            $city = $regeocode['addressComponent']['city'];
-            $city = $city ? $city : $regeocode['addressComponent']['province'];
-            if (empty($city)) {
+
+            $city = $addressComponent['city'];
+            $district = $addressComponent['district'];
+            $province = $addressComponent['province'];
+            $city = empty($city) ? '' : ( is_array($city) ? join(',', $city) : $city ) ;
+            $district = empty($district) ? '' : ( is_array($district) ? join(',', $district) : $district ) ;
+            $city_x = $city ? $city : $regeocode['addressComponent']['province'];
+            if (empty($city_x)) {
                 return $this->jsonReturn(-1, $regeocode, '逆地理编码查询失败');
             }
             
-            if ($data->city !== $city || empty($data->address) || empty($data->district)) {
-                $data->city = $city;
+            if ($data->city !== $city_x || empty($data->address) || empty($data->district)) {
+                $data->city = $city_x;
                 // $saveRes = $data->save();
                 $map = [
                     'longtitude' =>  $data->longtitude,
@@ -85,7 +111,7 @@ class Address extends AdminBase
                 ];
                 $upData = [
                     'city' => $city,
-                    'district' => $addressComponent['province'].$addressComponent['city'].$addressComponent['district'],
+                    'district' => $province.$city.$district,
                     'address' => $regeocode['formatted_address'],
                     'status' => 2,
                 ];
@@ -94,10 +120,12 @@ class Address extends AdminBase
                     return $this->jsonReturn(-1, '校正失败');
                 }
             }
+            return $this->jsonReturn(0, $regeocode, '校正城市信息成功');
+        } elseif (isset($res['info'])) {
+            return $this->jsonReturn(-1, $res['info'], '逆地理编码查询失败');
         } else {
-            return $this->jsonReturn(-1, $regeocode, '逆地理编码查询失败');
+            return $this->jsonReturn(-1, '逆地理编码查询失败');
         }
-        return $this->jsonReturn(0, $regeocode, '校正城市信息成功');
     }
 
     /**

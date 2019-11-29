@@ -32,27 +32,31 @@ class Address extends ApiBase
     {
         $this->checkPassport(1);
         $uid = $this->userBaseInfo['uid'];
-        // $resultSet = Db::query('call get_my_address('.$uid.')');
-        $res = Db::connect('database_carpool')->query('call get_my_address_ex(:uid)', [
-            'uid' => $uid,
-        ]);
 
-        if ($res) {
+        $addressModel = new AddressModel();
+        $result =  $addressModel->myCache($uid);
+        if (!$result) {
+            $res = Db::connect('database_carpool')->query('call get_my_address_ex(:uid)', [
+                'uid' => $uid,
+            ]);
+            if (!$res) {
+                return $this->jsonReturn(20002, "fail");
+            }
             $result = $res[0];
             foreach ($result as $key => $value) {
                 $result[$key]['longitude'] = $value['longtitude'];
                 $result[$key]['addressid'] = intval($value['addressid']);
                 unset($result[$key]['longtitude']);
             }
-            $returnData  = array(
-                'lists' => $result,
-                'total' => count($result)
-            );
-            $this->jsonReturn(0, $returnData, "success");
-            // $this->success('加载成功','',$returnData);
-        } else {
-            $this->jsonReturn(-1, "", "fail");
+            $addressModel->myCache($uid, $result, 60);
         }
+        // $resultSet = Db::query('call get_my_address('.$uid.')');
+        $returnData  = array(
+            'lists' => $result,
+            'total' => count($result)
+        );
+        $this->jsonReturn(0, $returnData, "success");
+        // $this->success('加载成功','',$returnData);
     }
 
     /**
