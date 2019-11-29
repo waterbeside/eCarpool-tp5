@@ -125,7 +125,10 @@ class Reports extends ApiBase
                 $where = " t.status <> 2 AND carownid IS NOT NULL AND carownid > 0 AND t.time >=  " . $period[0] . " AND t.time < " . $period[1] . "";
                 $tableAll = " SELECT carownid, passengerid ,time , MAX(infoid) as infoid FROM info as t WHERE $where GROUP BY carownid , time, passengerid "; //取得当月所有，去除拼同司机同时间同乘客的数据。
                 $limit = " LIMIT 50 ";
-                $sql = "SELECT u.uid, u.nativename as name, u.loginname , u.companyname , count(ta.passengerid) as num FROM ( $tableAll ) as ta LEFT JOIN user as u on ta.carownid =  u.uid  GROUP BY  carownid   ORDER BY num DESC $limit";
+                $sql = "SELECT u.uid, u.nativename as name, u.loginname , u.companyname , count(ta.passengerid) as num 
+                    FROM ( $tableAll ) as ta LEFT JOIN user as u on ta.carownid =  u.uid  
+                    GROUP BY  carownid   
+                    ORDER BY num DESC $limit";
 
                 $datas  =  Db::connect('database_carpool')->query($sql);
                 $returnData = array(
@@ -215,5 +218,25 @@ class Reports extends ApiBase
         $firstday = date("Y-m-01", strtotime($date));
         $lastday = date("Y-m-d", strtotime("$firstday +1 month"));
         return array(date($format, strtotime($firstday)), date($format, strtotime($lastday)));
+    }
+
+    /*计算期间*/
+    public function user_carpool_statis()
+    {
+        $userData = $this->getUserData(1);
+        $uid =  $userData['uid'];
+        $cacheKey = "carpool:reports:user_carpool_statis:$uid";
+        $redis = new RedisData();
+        $returnData = $redis->cache($cacheKey);
+        if (!$returnData) {
+            $result = Db::connect('database_carpool')->query("call load_userinfo_by_uid(:uid)", [
+                'uid' => $uid,
+            ]);
+            if ($result) {
+                $returnData = $result[0][0];
+                $redis->cache($cacheKey, $returnData, 60 * 5);
+            }
+        }
+        return $this->jsonReturn(0, $returnData, "success");
     }
 }
