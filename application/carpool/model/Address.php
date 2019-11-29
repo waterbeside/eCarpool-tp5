@@ -4,6 +4,7 @@ namespace app\carpool\model;
 
 use think\facade\Cache;
 use think\Model;
+use my\RedisData;
 
 class Address extends Model
 {
@@ -66,6 +67,7 @@ class Address extends Model
 
         $createID = $this->insertGetId($inputData);
         if ($createID) {
+            $this->deleteMyCache($data['create_uid']);
             $data['addressid'] = intval($createID);
             $data = array_merge($data, $inputData);
         } else {
@@ -103,5 +105,24 @@ class Address extends Model
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    public function myCache($uid, $value = false, $ex = 60 * 5)
+    {
+        $cacheKey = "carpool:address:my_$uid";
+        $redis = new RedisData();
+        if ($value === false) {
+            $result =  $redis->cache($cacheKey);
+            return $result;
+        } else {
+            $redis->cache($cacheKey, $value, $ex);
+        }
+    }
+
+    public function deleteMyCache($uid)
+    {
+        $cacheKey = "carpool:address:my_$uid";
+        $redis = new RedisData();
+        $redis->delete($cacheKey);
     }
 }
