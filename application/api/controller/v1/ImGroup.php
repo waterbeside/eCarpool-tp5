@@ -111,29 +111,28 @@ class ImGroup extends ApiBase
         $userData = $this->getUserData(1);
         $uid =  $userData['uid'];
 
-        $owner         = input('request.owner');
-        $type          = input('request.type/d', 1);
-        $source        = input('request.source');
-        $identifier    = input('request.identifier');
-        $signature     = input('request.signature');
-        $group         = input('request.group');
-        $duration      = input('request.duration');
-        $is_overseas      = input('request.is_overseas', 0);
-
+        $owner         = input('post.owner');
+        $type          = input('post.type/d', 1);
+        $source        = input('post.source');
+        $identifier    = input('post.identifier');
+        $signature     = input('post.signature');
+        $group         = input('post.group');
+        $duration      = input('post.duration');
+        $is_overseas   = input('post.is_overseas', 0);
         $now           = time();
         $baseInvitationUrl = $this->baseInvitationUrl;
 
         $inventMsg     = str_replace("{{username}}", $userData['name'], $this->inventMsg);
 
-        if (!isset($_REQUEST['identifier'])) {
+        if (empty($identifier)) {
             $this->jsonReturn(992, [], 'empty identifier');
         }
 
-        if (!isset($_REQUEST['type'])) {
+        if (empty($type)) {
             $this->jsonReturn(992, [], 'empty type');
         }
 
-        if (!isset($_REQUEST['source'])) {
+        if (empty($source)) {
             $this->jsonReturn(992, [], 'empty source');
         }
 
