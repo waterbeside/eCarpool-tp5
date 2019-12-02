@@ -7,10 +7,25 @@
 
             <blockquote class="layui-elem-quote">Welcome</blockquote>
 
+            
+
             <div class="layui-tab-item layui-show">
+                <h3>Domains validity: </h3>
+                <table class="layui-table">
+                        <?php foreach($config['domains_validity'] as $k => $v) { ?> 
+                        <tr >
+                            <td style="width: 200px;">{$v.domain}</td>
+                            <td>
+                                {$v.validFrom} ~ <b>{$v.validTo}</b>
+                                余 <b>{$v.surplus} </b> 天
+                            </td>
+                        </tr>
+                        <?php } ?>
+                </table>
+                <h3>Server info: </h3>
                 <table class="layui-table">
                     <tr>
-                        <td style="width: 400px;">Website domain</td>
+                        <td style="width: 200px;">Website domain</td>
                         <td>{$config.url}</td>
                     </tr>
                     <tr>

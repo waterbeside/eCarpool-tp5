@@ -6,6 +6,7 @@ use think\facade\Config;
 use app\admin\controller\AdminBase;
 use app\admin\service\Server;
 use think\Db;
+use my\RedisData;
 
 /**
  * 后台首页
@@ -25,7 +26,8 @@ class Index extends AdminBase
      */
     public function main()
     {
-
+// phpinfo();
+        $redis = new RedisData();
         $version = Db::query('SELECT VERSION() AS ver');
         $Server = new Server();
         try {
@@ -34,6 +36,33 @@ class Index extends AdminBase
             $CPU2= $Server->GetCPUUse();
         } catch (\Exception $e) {
         }
+
+        $domains = ['cm.gitsite.net', 'h5.gitsite.net', 'esqueler.com', 'm.carpool.gitsite.net'];
+        // $res = $Server->getCertInfo('cm.gitsite.net');
+        $domainsValidity = [];
+        $cacheKey_domains = 'carpool_admin:domains_validity';
+        $domainsValidity = $redis->cache($cacheKey_domains);
+        if (empty($domainsValidity)) {
+            foreach ($domains as $key => $value) {
+                $res = $Server->getCertInfo($value);
+                $data = [
+                    'domain' => $domains[$key],
+                    'validTo_t' => $res ? $res['validTo_time_t'] : 0,
+                    'validFrom_t' => $res ? $res['validFrom_time_t'] : 0,
+                    'validTo' => $res ? date('Y-m-d H:i', $res['validTo_time_t']) : '',
+                    'validFrom' => $res ? date('Y-m-d H:i', $res['validFrom_time_t']) : '',
+                ];
+                $domainsValidity[] = $data;
+            }
+            $redis->cache($cacheKey_domains, $domainsValidity, 60 * 60 * 24 * 3);
+        }
+        foreach ($domainsValidity as $key => $value) {
+            $surplus_t = $value['validTo_t'] - time();
+            $domainsValidity[$key]['surplus_t'] = $surplus_t;
+            $domainsValidity[$key]['surplus']  = floor($surplus_t / (60 * 60 * 24));
+        }
+
+        
         $config  = [
             'url'             => $_SERVER['HTTP_HOST'],
             'document_root'   => $_SERVER['DOCUMENT_ROOT'],
@@ -46,6 +75,7 @@ class Index extends AdminBase
             'disk' => $Server->getDisk(),
             'memory' => $Server->getMemory(),
             'cpu' => isset($CPU1) && isset($CPU2) ? $Server->getCPUPercent($CPU1, $CPU2) : [],
+            'domains_validity' => $domainsValidity,
         ];
         return $this->fetch('main', ['config' => $config]);
     }

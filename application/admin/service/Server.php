@@ -4,6 +4,7 @@ namespace app\admin\service;
 
 use app\common\service\Service;
 use my\RedisData;
+use my\CertSerialUtil;
 
 class Server extends Service
 {
@@ -108,5 +109,36 @@ class Server extends Service
             $mem[$v] = $mem[$v] ? $mem[$v] : 0;
         }
         return $mem;
+    }
+
+    /**
+    * 获取证书有效期
+    * @param String $domain 要查询的域名；
+    */
+    public function getCertInfo($domain)
+    {
+        $context = stream_context_create(['ssl' => [
+            'capture_peer_cert' => true,
+            'capture_peer_cert_chain' => false,
+            ],
+        ]);
+        try {
+            $client = stream_socket_client("ssl://".$domain.":443", $errno, $errstr, 30, STREAM_CLIENT_CONNECT, $context);
+            if ($client==false) {
+                return false;
+            }
+
+            $params = stream_context_get_params($client);
+            // var_dump($params['options']['ssl']['peer_certificate']);
+            // $cert_info = CertSerialUtil::getSerial($params, $errMsg);
+
+            $cert = $params['options']['ssl']['peer_certificate'];
+            // var_dump($cert);
+            $cert_info = openssl_x509_parse($cert);
+            openssl_x509_free($cert);
+        } catch (\Exception $e) {
+            return false;
+        }
+        return $cert_info;
     }
 }
