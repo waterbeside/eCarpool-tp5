@@ -124,7 +124,7 @@ class Trips extends ApiBase
     /**
      * 墙上空座位
      */
-    public function wall_list($pagesize = 20, $keyword = "", $city = null, $map_type = null)
+    public function wall_list($pagesize = 20, $keyword = "", $city = null, $map_type = -1)
     {
         $TripsService = new TripsService();
         $TripsListService = new TripsListService();
@@ -132,6 +132,8 @@ class Trips extends ApiBase
         $company_id = $userData['company_id'];
         $time_e = strtotime("+20 day");
         $time_s = strtotime("-1 hour");
+        $page = input('get.page', 1);
+
         $map = [
             // ['d.company_id','=',$company_id], // from buildCompanyMap;
             // ['love_wall_ID','>',0],
@@ -150,11 +152,31 @@ class Trips extends ApiBase
             $map[] = ['s.city', '=', $city];
         }
 
-        if (is_numeric($map_type)) {
+        if (is_numeric($map_type) && $map_type > -1) {
             $map[] = ['t.map_type', '=', $map_type];
         }
 
-        $returnData = $TripsListService->wall_list($map, $pagesize);
+        $redis = new RedisData();
+        $cacheKeyData = [
+            'from' => 'wall',
+            'page' => $page,
+            'pagesize' => $pagesize,
+            'company_id' => $company_id,
+            'map_type' => $map_type,
+            'city' => $city ? $city : 'all',
+        ];
+        $cacheKey = $TripsService->buildListCacheKey($cacheKeyData);
+        $returnData = false;
+        if ($cacheKey && !$keyword) {
+            $returnData = $redis->cache($cacheKey);
+        }
+        if (!$returnData) {
+            $returnData = $TripsListService->wall_list($map, $pagesize);
+            if ($cacheKey && !$keyword && $returnData) {
+                $ex = $page > 1 ? 3 : 60 * 2;
+                $redis->cache($cacheKey, $returnData, $ex);
+            }
+        }
         if ($returnData === false) {
             return $this->jsonReturn(20002, lang('No data'));
         }
@@ -264,25 +286,43 @@ class Trips extends ApiBase
         return $returnType ? $this->jsonReturn($code, $res, $msg) : ( $res['lists'] ? $res['lists'] : [] );
     }
 
-
     /**
-     * 删除我的缓存
-     *
-     * @param integer|array $uid 用户uid
-     * @return void
+     * 地图上的墙上空座位
      */
-    protected function removeCache($uid)
+    public function map_cars($map_type = -1)
     {
-        if (is_array($uid)) {
-            $uid = array_unique($uid);
-            foreach ($uid as $v) {
-                $this->removeCache($v);
-            }
-        } elseif (is_numeric($uid)) {
-            $redis = new RedisData();
-            $cacheKey_01 = $this->cacheKey_myInfo . "u{$uid}";
-            $cacheKey_02 = $this->cacheKey_myTrip . "u{$uid}";
-            $redis->delete($cacheKey_01, $cacheKey_02);
+        $TripsService = new TripsService();
+        $TripsListService = new TripsListService();
+        $userData = $this->getUserData(1);
+        $company_id = $userData['company_id'];
+        $time_e = strtotime("+20 day");
+        $time_s = strtotime("-1 hour");
+
+        $redis = new RedisData();
+        $company_ids = $TripsService->getCompanyIds($company_id);
+        if (is_array($company_ids)) {
+            $company_ids = implode(',', $company_ids);
         }
+        $cacheKey = "carpool:trips:mapCars:mapType_{$map_type}:company_{$company_ids}";
+        $returnData = $redis->cache($cacheKey);
+        if (!$returnData) {
+            $map = [
+                ['t.status', '<', 2],
+                ['t.time', '<', (date('YmdHi', $time_e))],
+                ['t.time', '>', (date('YmdHi', $time_s))],
+            ];
+            $map[] = $TripsService->buildCompanyMap($userData, 'd');
+            if (is_numeric($map_type) && $map_type > -1) {
+                $map[] = ['t.map_type', '=', $map_type];
+            }
+            $returnData = $TripsListService->wall_list($map, 0);
+            if ($returnData) {
+                $redis->cache($cacheKey, $returnData, 60 * 5);
+            }
+        }
+        if ($returnData === false) {
+            return $this->jsonReturn(20002, lang('No data'));
+        }
+        $this->jsonReturn(0, $returnData, "success");
     }
 }

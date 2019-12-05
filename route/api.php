@@ -53,6 +53,7 @@ Route::group([], function () {
     Route::rule('api/:version/trips/info/:id', 'api/:version.trips/info_detail', 'GET')->pattern(['id' => '\d+']); //约车需求详情
     Route::rule('api/:version/trips/info', 'api/:version.trips/info_list', 'GET'); //我的行程
 
+    Route::rule('api/:version/trips/map_cars', 'api/:version.trips/map_cars', 'GET'); //显示在地图上的行程
     Route::rule('api/:version/trips/history', 'api/:version.trips/history', 'GET');
     Route::rule('api/:version/trips/check_my_status', 'api/:version.trips/check_my_status', 'GET');
     Route::rule('api/:version/trips', 'api/:version.trips/index', 'GET'); //我的行程
