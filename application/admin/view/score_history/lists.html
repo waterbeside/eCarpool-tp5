@@ -54,7 +54,7 @@
                         <td>
                             {php}
                                 if(isset($reasons[$vo['reason']])){
-                                    echo  $vo['operand'] > 0 ? $reasons[$vo['reason']] : '';
+                                    echo isset($vo['extra']['message']) && intval($vo['operand']) === 0 ? '' : $reasons[$vo['reason']] ;
                                 } else {
                                     echo $vo['reason'];
                                 }
