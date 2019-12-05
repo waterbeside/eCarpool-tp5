@@ -28,8 +28,9 @@
                 </div>
                 <div class="layui-input-inline">
                     <select name="filter[status]">
-                        <option value="0" <?php if(isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 1 ){ echo 'selected="selected"'; } ?> > 状态: 正常</option>
-                        <option value="1" <?php if(isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 0  ){ echo 'selected="selected"'; } ?> > 状态: 禁用</option>
+                        <option value="" > 状态: 不限</option>
+                        <option value="1" <?php if(isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 1 ){ echo 'selected="selected"'; } ?> > 状态: 正常</option>
+                        <option value="0" <?php if(isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 0  ){ echo 'selected="selected"'; } ?> > 状态: 禁用</option>
                     </select>
                 </div>
                 <div class="layui-input-inline">
@@ -54,7 +55,7 @@
                         <th lay-data="{field:'start_name', width:120, }">起点</th>
                         <th lay-data="{field:'end_name', width:120, }">终点</th>
                         <th lay-data="{field:'department_ids'}">可用地区或部门</th>
-                        <th lay-data="{field:'admin_department_id'}">地区管理组</th>
+                        <th lay-data="{field:'admin_department_id',  width:180,}">地区管理组</th>
                         <th lay-data="{field:'status', width:80}">状态</th>
                         <th lay-data="{field:'sort', width:80}">排序</th>
                         <th lay-data="{field:'options', width:120, fixed:'right'}">操作</th>
@@ -72,9 +73,10 @@
                         <td>{$vo.start_name}</td>
                         <td>{$vo.end_name}</td>
                         <td>
-                            <?php foreach($vo['deptData'] as $k => $v){ ?>
+                            <?php foreach($vo['deptData'] as $k => $v){ 
+                            if ($v) { ?>
                             <div class="item my-tag-item" data-id="{$v.id}" title="{$v.fullname}">{$v.fullname|str_replace=","," / ",###}</div>
-                            <?php } ?>
+                            <?php }} ?>
                         </td>
                         <td>{$vo.admin_full_department}</td>
                         <td><?php echo ($vo['is_delete'] === 1 ? '已删' : ($vo['status'] === 1 ? '正常' : '禁用')); ?></td>

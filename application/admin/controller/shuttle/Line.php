@@ -50,9 +50,13 @@ class Line extends AdminBase
             $map[] = ['t.start_name|t.end_name', 'like', "%{$filter['keyword']}%"];
         }
 
+        if (isset($filter['status']) && is_numeric($filter['status'])) {
+            $map[] = ['t.status', '=', $filter['status']];
+        }
+
         //筛选是否被删的
         $is_delete = isset($filter['is_delete']) &&  $filter['is_delete'] ? Db::raw(1) : Db::raw(0);
-            $map[] = ['t.is_delete', '=', $is_delete];
+        $map[] = ['t.is_delete', '=', $is_delete];
 
         $join = [
             ['t_department d', 't.admin_department_id = d.id', 'left']
