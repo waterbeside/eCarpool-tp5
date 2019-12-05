@@ -134,28 +134,45 @@ class TripsList
      */
     public function wall_list($map, $pagesize = 20)
     {
+
         $TripsService = new TripsService();
-
         $fields = $TripsService->buildQueryFields('wall_list');
-
         $join = $TripsService->buildTripJoins("s,e,d,department");
 
-        $results = WallModel::alias('t')->field($fields)->join($join)->where($map)->order(' time ASC, t.love_wall_ID ASC  ')
+        if ($pagesize === 0) {
+            $res = WallModel::alias('t')->field($fields)->join($join)->where($map)->order(' time ASC, t.love_wall_ID ASC ')->select();
+            if (!$res) {
+                return false;
+            }
+            $page = [
+                'total' => count($res),
+                'currentPage' => 1,
+                'lastPage' => 1,
+                'pageSize' => 0,
+            ];
+        } else {
+            $results = WallModel::alias('t')->field($fields)->join($join)->where($map)->order(' time ASC, t.love_wall_ID ASC ')
             ->paginate($pagesize, false, ['query' => request()->param()])->toArray();
-        if (!$results['data']) {
-            return false;
+            if (!$results['data']) {
+                return false;
+            }
+            $page = $this->getPageData($results);
+            $res = $results['data'];
         }
+
         $lists = [];
-        foreach ($results['data'] as $key => $value) {
+        foreach ($res as $key => $value) {
             $lists[$key] = $TripsService->unsetResultValue($TripsService->formatResultValue($value), "list");
             //取点赞数
             // $lists[$key]['like_count']    = WallLike::where('love_wall_ID', $value['id'])->count();
             //取已坐数
-            $lists[$key]['took_count']    =  InfoModel::where([['love_wall_ID', '=', $value['id']], ["status", "<>", 2]])->count();
+            if ($pagesize > 0) {
+                $lists[$key]['took_count']    =  InfoModel::where([['love_wall_ID', '=', $value['id']], ["status", "<>", 2]])->count();
+            }
         }
         $returnData = [
             'lists' => $lists,
-            'page' => $this->getPageData($results),
+            'page' => $page,
         ];
         return $returnData;
     }
