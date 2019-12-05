@@ -10,6 +10,7 @@ use app\carpool\model\user as UserModel;
 use app\common\model\PushMessage;
 use app\user\model\Department as DepartmentModel;
 use think\Db;
+use my\RedisData;
 
 class Trips
 {
@@ -17,6 +18,8 @@ class Trips
     public $errorCode = 0;
     public $errorMsg = '';
     public $data = [];
+    protected $cacheKey_myTrip = "carpool:trips:my:";
+    protected $cacheKey_myInfo = "carpool:trips:my_info:";
 
     protected function error($code, $msg, $data = [])
     {
@@ -401,19 +404,124 @@ class Trips
         return $fields;
     }
 
-
-    public function buildCompanyMap($userData, $prefix = 't')
+    /**
+     * 取得能相互拼车的Company_id
+     */
+    public function getCompanyIds($company_id)
     {
-        $company_id = $userData['company_id'];
         $ConfigsModel = new ConfigsModel();
         $groups = $ConfigsModel->getConfig('trip_company_group', true);
         if ($groups && is_array($groups)) {
             foreach ($groups as $k => $v) {
                 if (is_array($v) && in_array($company_id, $v)) {
-                    return [$prefix . '.company_id', 'in', $v];
+                    return $v;
                 }
             }
         }
+        return $company_id;
+    }
+    /**
+     * 创建拼车列表以公司id的筛选map
+     *
+     * @param Number||Array $userData 用户数据或者公司id
+     * @param string $prefix
+     * @return void
+     */
+    public function buildCompanyMap($userData, $prefix = 't')
+    {
+        $company_id = is_numeric($userData) ? $userData : $userData['company_id'];
+        $company_id = $this->getCompanyIds($company_id);
+        if (is_array($company_id)) {
+            return [$prefix . '.company_id', 'in', $company_id];
+        }
         return [$prefix . '.company_id', '=', $company_id];
+    }
+
+    public function buildListCacheKey($data)
+    {
+        $from = $data['from'] ?? '';
+        $company_ids = $data['company_ids'] ?? false;
+        $company_id = $data['company_id'] ?? false;
+        $page = $data['page'] ?? 1;
+        $pagesize = $data['pagesize'] ?? 0;
+        $city = $data['city'] ?? 'all';
+        $map_type = $data['map_type'];
+
+        if (!$map_type) {
+            return false;
+        }
+        if (empty($company_ids)) {
+            if (!$company_id) {
+                return false;
+            }
+            $company_ids = $this->getCompanyIds($company_id);
+            $company_ids = is_array($company_ids) ? implode(',', $company_ids) : $company_ids;
+        }
+        $cacheKey = "carpool:trips:{$from}_list:companyId_{$company_ids}:city_{$city}:pz_{$pagesize}:p_{$page}";
+        return $cacheKey;
+    }
+
+    /**
+     * 删除我的缓存
+     *
+     * @param integer|array $uid 用户uid
+     * @return void
+     */
+    public function removeCache($uid, $userData = null, $dataStart = null)
+    {
+        if (is_array($uid)) {
+            $uid = array_unique($uid);
+            foreach ($uid as $v) {
+                $this->removeCache($v);
+            }
+        } elseif (is_numeric($uid)) {
+            $redis = new RedisData();
+            // $userData = $this->getUserData(1);
+            $userModel = new UserModel();
+            $userData = $userModel->findByUid($uid);
+            $company_id = $userData['company_id'];
+            $company_ids = $this->getCompanyIds($company_id);
+            $company_ids = is_array($company_ids) ? implode(',', $company_ids) : $company_ids;
+
+            $cacheKey_01 = $this->cacheKey_myInfo . "u{$uid}";
+            $cacheKey_02 = $this->cacheKey_myTrip . "u{$uid}";
+            $cacheKey_03 = "carpool:citys:company_id_$company_id:type_1";
+            $cacheKey_04 = "carpool:citys:company_id_$company_id:type_2";
+
+            $redis->delete($cacheKey_01, $cacheKey_02, $cacheKey_03, $cacheKey_04);
+
+            /** 删除空座位列表缓存 */
+            $cacheKeyData_n = [
+                'from' => 'wall',
+                'page' => 1,
+                'pagesize' => 20,
+                'company_id' => $company_id,
+                'map_type' => -1,
+                'city' => $dataStart['city'] ?? 'all',
+            ];
+            
+            $cacheKeyData_0 = $cacheKeyData_n;
+            $cacheKeyData_0['map_type'] = 0;
+            $cacheKeyData_1 = $cacheKeyData_n;
+            $cacheKeyData_1['map_type'] = 1;
+            $cacheKeyData_n_1 = $cacheKeyData_n;
+            $cacheKeyData_n_1['city'] = 'all';
+            $cacheKeyData_0_1 = $cacheKeyData_0;
+            $cacheKeyData_0_1['city'] = 'all';
+            $cacheKeyData_1_1 = $cacheKeyData_1;
+            $cacheKeyData_1_1['city'] = 'all';
+            $listCacheKey_n = $this->buildListCacheKey($cacheKeyData_n);
+            $listCacheKey_0 = $this->buildListCacheKey($cacheKeyData_0);
+            $listCacheKey_1 = $this->buildListCacheKey($cacheKeyData_1);
+            $listCacheKey_n_1 = $this->buildListCacheKey($cacheKeyData_n_1);
+            $listCacheKey_0_1 = $this->buildListCacheKey($cacheKeyData_0_1);
+            $listCacheKey_1_1 = $this->buildListCacheKey($cacheKeyData_1_1);
+            $redis->delete($listCacheKey_n, $listCacheKey_0, $listCacheKey_1, $listCacheKey_0_1, $listCacheKey_1_1, $listCacheKey_n_1);
+
+            $cacheKey_mapcars_n = "carpool:trips:mapCars:mapType_-1:company_{$company_ids}";
+            $cacheKey_mapcars_0 = "carpool:trips:mapCars:mapType_0:company_{$company_ids}";
+            $cacheKey_mapcars_1 = "carpool:trips:mapCars:mapType_1:company_{$company_ids}";
+            $redis->delete($cacheKey_mapcars_n, $cacheKey_mapcars_0, $cacheKey_mapcars_1);
+        }
     }
 }

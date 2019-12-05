@@ -415,7 +415,7 @@ class Trips extends ApiBase
 
         // var_dump($model->attributes['infoid']);
         if ($result) {
-            $this->removeCache($uid);
+            $TripsService->removeCache($uid, $datas['start']);
             $this->jsonReturn(0, ['createAddress' => $createAddress, 'id' => $result], 'success');
         } else {
             $this->jsonReturn(-1, lang('Fail'));
@@ -534,7 +534,7 @@ class Trips extends ApiBase
                 InfoModel::where([["love_wall_ID", '=', $id], ["status", "in", [0, 1, 4]]])->update($upInfoData);
             }
             $extra = $TripsChangeService->errorMsg ? ['pushMsg' => $TripsChangeService->errorMsg] : [];
-            $this->removeCache($actor);
+            $TripsService->removeCache($actor);
             if ($wall_id > 0) {
                 $this->removeWallCache($wall_id);
             }
@@ -551,7 +551,7 @@ class Trips extends ApiBase
             $datas->save();
             $TripsChangeService->pushMsg($checkData);
             $extra = $TripsChangeService->errorMsg ? ['pushMsg' => $TripsChangeService->errorMsg] : [];
-            $this->removeCache($actor);
+            $TripsService->removeCache($actor);
             if ($wall_id > 0) {
                 $this->removeWallCache($wall_id);
             }
@@ -580,7 +580,7 @@ class Trips extends ApiBase
             if ($res) {
                 $TripsChangeService->pushMsg($checkData);
                 $extra = $TripsChangeService->errorMsg ? ['pushMsg' => $TripsChangeService->errorMsg] : [];
-                $this->removeCache($actor);
+                $TripsService->removeCache($actor);
                 return $this->jsonReturn(0, [], 'success', $extra);
             }
         }
@@ -611,7 +611,7 @@ class Trips extends ApiBase
             }
             $res = $datas->save($inputData);
             if ($res) {
-                $this->removeCache($actor);
+                $TripsService->removeCache($actor);
                 return $this->jsonReturn(0, [], 'success');
             }
         }
@@ -845,33 +845,6 @@ class Trips extends ApiBase
             return $this->jsonReturn(20002, ['lists' => []], 'No Data');
         }
         return $this->jsonReturn(0, ['lists' => $res], 'Success');
-    }
-
-    /**
-     * 删除我的缓存
-     *
-     * @param integer|array $uid 用户uid
-     * @return void
-     */
-    protected function removeCache($uid)
-    {
-        if (is_array($uid)) {
-            $uid = array_unique($uid);
-            foreach ($uid as $v) {
-                $this->removeCache($v);
-            }
-        } elseif (is_numeric($uid)) {
-            $redis = new RedisData();
-            $userData = $this->getUserData(1);
-            $company_id = $userData['company_id'];
-
-            $cacheKey_01 = $this->cacheKey_myInfo . "u{$uid}";
-            $cacheKey_02 = $this->cacheKey_myTrip . "u{$uid}";
-            $cacheKey_03 = "carpool:citys:company_id_$company_id:type_1";
-            $cacheKey_04 = "carpool:citys:company_id_$company_id:type_2";
-
-            $redis->delete($cacheKey_01, $cacheKey_02, $cacheKey_03, $cacheKey_04);
-        }
     }
 
     /**
