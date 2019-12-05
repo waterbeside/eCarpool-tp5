@@ -1,0 +1,157 @@
+<div class="amain-body ">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <div class="layui-tab-content">
+
+            <form class="layui-form  " action="{:url('admin/shuttle.line/edit',['id'=>$data['id']])}" method="post" style="margin-right:15px;" id="editForm">
+
+                <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
+                    <legend>起点</legend>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="start_name" value="{$data.start_name}" required lay-verify="required" placeholder="起点名称"
+                                class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">经度</label>
+                        <div class="layui-input-block">
+                            <input type="number" name="start_longitude" value="{$data.start_longitude}" required lay-verify="required" placeholder="起点经度 longitude"
+                                class="layui-input">
+                    </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">纬度</label>
+                        <div class="layui-input-block">
+                            <input type="number" name="start_latitude" value="{$data.start_latitude}" required lay-verify="required" placeholder="起点纬度 latitude"
+                                class="layui-input">
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
+                    <legend>终点</legend>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="end_name" value="{$data.end_name}" required lay-verify="required" placeholder="终点名称"
+                                class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">经度</label>
+                        <div class="layui-input-block">
+                            <input type="number" name="end_longitude" value="{$data.end_longitude}" required lay-verify="required" placeholder="终点经度 longitude"
+                                class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">纬度</label>
+                        <div class="layui-input-block">
+                            <input type="number" name="end_latitude" value="{$data.end_latitude}" required lay-verify="required" placeholder="终点纬度 latitude"
+                                class="layui-input">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
+                    <legend>其它设置</legend>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">授权区域</label>
+                        <div class="layui-input-block J-region-wrapper">
+                            <input type="hidden" name="department_ids" value="{$department_ids}" class="layui-input layui-input-inline " readonly>
+                            <a onclick="openLayer('{:url('admin/Department/list_dialog',['multi'=>1])}','选择区域/部门');"
+                                href="javascript:void(0);" class="layui-btn  layui-btn-primary J-btn-department"
+                                data-target="department_ids:id" data-show-target=".J-dept-select-wrapper"
+                                data-paramstr='{"default_id":"{$department_ids}"}'>
+                                <i class="fa fa-book"></i> <span>选择区域/部门</span>
+                            </a>
+                            <div class="J-dept-select-wrapper"></div>
+                            <div class="layui-form-mid layui-word-aux">选择后，该部门下的用户能看到本路线</div>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">后台管理授权区域</label>
+                        <div class="layui-input-block J-region-wrapper">
+                            <input type="hidden" name="admin_department_id" value="{$data.admin_department_id}" class="layui-input layui-input-inline " readonly>
+                            <a onclick="openLayer('{:url('admin/Department/list_dialog')}','选择区域/部门');"
+                                href="javascript:void(0);" class="layui-btn  layui-btn-primary J-btn-department"
+                                data-target="admin_department_id:id" data-show-target=".J-dept-select-wrapper"
+                                data-paramstr='{"default_id":"{$data.admin_department_id}"}'>
+                                <i class="fa fa-book"></i> <span><?php echo $data['admin_full_department'] ?? ' 选择区域/部门' ?></span>
+                            </a>
+                            <div class="layui-form-mid layui-word-aux">高于或等于该部门的地区权限管理账号才可管理此行程</div>
+                        </div>
+                    </div>
+
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">所属类型</label>
+                        <div class="layui-input-block">
+                            <select name="type">
+                                {foreach name="$shuttle_line_type" key='key' item="vo"}
+                                <option value="{$key}" {if condition="$data.type==$key"} selected="selected"{/if}> {$vo}</option>
+                                {/foreach}
+                            </select>
+                            <div class="layui-form-mid layui-word-aux">选择上班路线还是下班路线</div>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-block">
+                            <select name="status">
+                                <option value="1" {if condition="$data.status === 1"} selected="selected"{/if}> 启用</option>
+                                <option value="0" {if condition="$data.status === 0"} selected="selected"{/if}> 禁用</option>
+                            </select>
+                            <div class="layui-form-mid layui-word-aux">是否可选</div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">排序</label>
+                        <div class="layui-input-block">
+                            <input type="number" name="sort" value="{$data.sort}"  placeholder="排序" class="layui-input">
+                            <div class="layui-form-mid layui-word-aux">越大越前</div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <input type="hidden" name="id" value="{$data.id}" />
+                        <button class="layui-btn" lay-submit lay-filter="*">保存</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+                
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    PAGE_EXEC = {
+        datas: {
+            deptsData: <?php echo $deptsData ? json_encode($deptsData) : '[]'; ?>,
+        },
+        init: function () {
+            var _this = this;
+            form.render();
+            element.init();
+            MyDept().renderShowBox(_this.datas.deptsData, $('.J-dept-select-wrapper'));
+
+        },
+    }
+
+
+    $(function () {
+        PAGE_EXEC.init();
+
+    });
+</script>
