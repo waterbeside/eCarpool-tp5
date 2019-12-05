@@ -51,7 +51,6 @@ class ScoreAccount extends AdminBase
             $join[] =  ['carpool.company c', 'cu.company_id = c.company_id', 'left'];
             $join[] =  ['carpool.t_department d', 'cu.department_id = d.id', 'left'];
 
-
             //地区排查 检查管理员管辖的地区部门
             $authDeptData = $this->authDeptData;
             if (isset($authDeptData['region_map'])) {

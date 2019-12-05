@@ -9,13 +9,13 @@
             <li class="layui-this"><a href="{:url('admin/ScoreOrder/index')}"  showloading >{:lang('Order inquiry')}</a></li>
             <li ><a href="{:url('admin/ScoreOrder/goods')}"  showloading >{:lang('Goods order quantity statistics')}</a></li>
             <li class="btn-item-right">
-                <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="exportExcel(0)"  ><i class="fa fa-file-excel-o"></i> {:lang('Export')} CSV</a>
-                <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="exportExcel(1)"  ><i class="fa fa-file-excel-o"></i> {:lang('Export')} XLS (GBK)</a>
+                <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="PAGE_EXEC.exportExcel(0)"  ><i class="fa fa-file-excel-o"></i> {:lang('Export')} CSV</a>
+                <a class="layui-btn layui-btn-sm  layui-btn-excel " href="javascript:void(0);" onclick="PAGE_EXEC.exportExcel(1)"  ><i class="fa fa-file-excel-o"></i> {:lang('Export')} XLS (GBK)</a>
             </li>
         </ul>
 
         <div class="amain-content">
-            <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreOrder/index')}" method="get" onsubmit="submitForm()">
+            <form class="layui-form layui-form-pane" id="filter-form" action="{:url('admin/ScoreOrder/index')}" method="get" onsubmit="PAGE_EXEC.submitForm()">
                 <div class="layui-inline">
                     <div class="layui-input-inline">
                         <input type="text" name="filter[order_num]" value="{$filter['order_num'] ? $filter['order_num'] :''}" placeholder="{:lang('Order number')}" class="layui-input">
@@ -69,10 +69,10 @@
             <div class="layui-tab amain-content-tab">
                 <div class="tab-title-wrapper">
                 <ul class="layui-tab-title">
-                    <li <?php echo !isset($status) || $status==="" || $status==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="changeStatus('all')" href="javascript:void(0);" >{:lang("All orders")}</a></li>
+                    <li <?php echo !isset($status) || $status==="" || $status==="all" ? 'class="layui-this"' : '' ; ?> ><a onclick="PAGE_EXEC.changeStatus('all')" href="javascript:void(0);" >{:lang("All orders")}</a></li>
                     {foreach name="statusList" key="key" item="vo"}
                     <li <?php echo isset($status) && $status!=="all" && intval($status) === intval($key) ? 'a class="layui-this"' : 'b' ; ?> >
-                    <a onclick="changeStatus('<?php echo $key;?>')" href="javascript:void(0);">{:lang("sl:".$vo)}</a>
+                    <a onclick="PAGE_EXEC.changeStatus('<?php echo $key;?>')" href="javascript:void(0);">{:lang("sl:".$vo)}</a>
                     </li>
                     {/foreach}
                 </ul>
@@ -86,50 +86,57 @@
                 <div class="layui-tab-item layui-show">
                     <blockquote class="layui-elem-quote">  <?php echo lang('A total of %s data were found',['<b>'.$lists->total().'</b>']) ?></blockquote>
 
-
                     <div class="order-list">
-                    <form class="layui-form">
-                        {if !count($lists)>0}{:lang("No Data")}{/if}
-                        {foreach name="lists" item="vo"}
-                        <div class="am-card order-item ">
-                        <div class="am-card-padding-inner">
-                            <div class="am-card-heading">
-                            <h3># {$vo.uuid|iconv_substr=0,8}/{$vo.id}</h3>
-                            <h5><i class="fa fa-clock-o"></i> <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$vo.creation_time|strtotime}000</span></h5>
-                            <h4 class="layui-badge goodOrder-status_{$vo.status}"><?php echo $statusList[$vo['status']] ? lang("sl:".$statusList[$vo['status']]): $vo['status']; ?> </h4>
-                            <div class="layui-clear"></div>
-                            </div>
-                            <div class="user">
-                            <div class="user-item name">{:lang('Full name')}：<b>{$vo.nativename}</b></div>
-                            <div class="user-item" > {:lang('Phone')}：<b>{$vo.phone}</b> </div>
-                            <div class="user-item"> {:lang('Acount')}：<b>{$vo.loginname}</b>  </div>
-                            <div class="user-item"> {:lang('Company')}：<b><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></b>  </div>
-                            <div class="user-item" title="{$vo.Department}/{$vo.companyname}"> {:lang('Department')}：<b>{$vo.Department}</b>  </div>
-                            </div>
-                            <div class="am-card-body">
-                            <div class="goods">
-                                <?php foreach($vo['goods'] as $good_i => $good){ ?>
-                                <div class="good" title="{$good.name} &times; {$good.num}">
-                                    <div class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
-                                    <h5 class="layui-elip">{$good.name}</h5>
-                                    <div class="num"> &times; {$good.num} </div>
+                        <form class="layui-form">
+                            {if !count($lists)>0}{:lang("No Data")}{/if}
+                            {foreach name="lists" item="vo"}
+                            <div class="am-card order-item " data-id = "{$vo.id}">
+                            <div class="am-card-padding-inner">
+                                <div class="am-card-heading">
+                                    <h3>
+                                        <label>
+                                            <?php if (isset($status) && intval($status) === 0) { ?> 
+                                                <input type="checkbox" name="id[]" value="{$vo.id}" lay-ignore  />
+                                            <?php } ?>
+                                            #{$vo.uuid|iconv_substr=0,8}/{$vo.id}
+                                        </label>
+                                    </h3>
+                                    <h5><i class="fa fa-clock-o"></i> <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$vo.creation_time|strtotime}000</span></h5>
+                                    <h4 class="layui-badge goodOrder-status_{$vo.status}"><?php echo $statusList[$vo['status']] ? lang("sl:".$statusList[$vo['status']]): $vo['status']; ?> </h4>
+                                    <div class="layui-clear"></div>
                                 </div>
-                                <?php } ?>
+                                <div class="user">
+                                    <div class="user-item name">{:lang('Full name')}：<b>{$vo.nativename}</b></div>
+                                    <div class="user-item" > {:lang('Phone')}：<b>{$vo.phone}</b> </div>
+                                    <div class="user-item"> {:lang('Acount')}：<b>{$vo.loginname}</b>  </div>
+                                    <div class="user-item"> {:lang('Company')}：<b><?php echo isset($companys[$vo['company_id']]) ? $companys[$vo['company_id']] : ''; ?></b>  </div>
+                                    <div class="user-item" title="{$vo.Department}/{$vo.companyname}"> {:lang('Department')}：<b>{$vo.Department}</b>  </div>
+                                </div>
+                                <div class="am-card-body">
+                                <div class="goods">
+                                    <?php foreach($vo['goods'] as $good_i => $good){ ?>
+                                    <div class="good" title="{$good.name} &times; {$good.num}">
+                                        <div class="cover-thumb " style="<?php echo $good['thumb'] ? 'background-image:url(\''.$good['thumb'].'\')' : ''; ?>"> </div>
+                                        <h5 class="layui-elip">{$good.name}</h5>
+                                        <div class="num"> &times; {$good.num} </div>
+                                    </div>
+                                    <?php } ?>
+                                </div>
+                                <div class="btns-wrapper">
+
+                                    <?php if($auth['admin/ScoreOrder/delete'] ){ ?>
+                                    <a href="{:url('admin/ScoreOrder/delete',['id'=>$vo['id']])}" class="ibtn layui-btn-radius  layui-btn layui-btn-primary  layui-btn-xs ajax-delete" title="{:lang('Delete order')}" data-hint="{:lang('Are you sure to delete the order')}?"><i class="layui-icon">&#xe640;</i> {:lang('Delete order')}</a>
+                                    <?php } ?>
+                                    <?php if($auth['admin/ScoreOrder/cancel'] ){ ?>
+                                    <a href="{:url('admin/ScoreOrder/cancel',['id'=>$vo['id']])}" class="ibtn layui-btn-radius  layui-btn layui-btn-danger layui-btn-xs ajax-delete" title="{:lang('Cancel order')}" data-hint="{:lang('Are you sure to cancel the order')}?"><i class="fa fa-undo"></i> {:lang('Cancel order')}</a>
+                                    <?php } ?>
+                                    <a href="{:url('admin/ScoreOrder/detail',['id'=>$vo['id']])}"  data-title="{:lang('Order details')} #{$vo.id}"  data-trigger="modal" title="{:lang('Order details')} #{$vo.id}" class="ibtn layui-btn layui-btn  layui-btn-radius   "> <i class="fa fa-list"></i> {:lang('Order details')}</a>
+                                </div>
+                                </div>
                             </div>
-                            <div class="btns-wrapper">
-                                <?php if($auth['admin/ScoreOrder/delete'] ){ ?>
-                                <a href="{:url('admin/ScoreOrder/delete',['id'=>$vo['id']])}" class="ibtn layui-btn-radius  layui-btn layui-btn-primary  layui-btn-xs ajax-delete" title="{:lang('Delete order')}" data-hint="{:lang('Are you sure to delete the order')}?"><i class="layui-icon">&#xe640;</i> {:lang('Delete order')}</a>
-                                <?php } ?>
-                                <?php if($auth['admin/ScoreOrder/cancel'] ){ ?>
-                                <a href="{:url('admin/ScoreOrder/cancel',['id'=>$vo['id']])}" class="ibtn layui-btn-radius  layui-btn layui-btn-danger layui-btn-xs ajax-delete" title="{:lang('Cancel order')}" data-hint="{:lang('Are you sure to cancel the order')}?"><i class="fa fa-undo"></i> {:lang('Cancel order')}</a>
-                                <?php } ?>
-                                <a href="{:url('admin/ScoreOrder/detail',['id'=>$vo['id']])}"  data-title="{:lang('Order details')} #{$vo.id}"  data-trigger="modal" title="{:lang('Order details')} #{$vo.id}" class="ibtn layui-btn layui-btn  layui-btn-radius   "> <i class="fa fa-list"></i> {:lang('Order details')}</a>
                             </div>
-                            </div>
-                        </div>
-                        </div>
-                        {/foreach}
-                    </form>
+                            {/foreach}
+                        </form>
                     </div>
 
                 </div>
@@ -140,54 +147,200 @@
             {$lists|raw}
 
         </div>
+        <div class="blank80"></div>
+        <?php if (isset($status) && intval($status) === 0) { ?> 
+        <div class="am-bottom-tool-bar">
+            <div class="am-bottom-tool-bar-inner " lay-filter="form-bottom-tool">
+                <div class="form-wrapper layui-form">
+                <div class="layui-input-inline">
+                    <input type="checkbox" name="checkall" lay-filter="checkall" title="全选" lay-skin="primary" >
+                    <span> 已选： <b class="j-hasCheck ">0</b></span>
+                </div>
+                </div>
+                <div class="btns-wrapper">
+                    <button type="button" class="layui-btn layui-btn-success" onclick="PAGE_EXEC.finish()" >批量完结</button>
+                </div>
+            </div>
+        </div>
+        <!-- 底部工具栏 -->
+        <?php } ?>
+
     </div>
 </div>
 
 {/block}
 {block name="script"}
 <script>
-function exportExcel(type){
-    var form = $("#filter-form");
-    form.find("input[name='export']").val(1);
-    form.find("input[name='encoding']").val(type);
-    form.attr('target','_blank') ;
-    form.submit();
-    form.find("input[name='export']").val(0);
-    form.attr('target','_self') ;
-}
-function changeStatus(status){
-    var form = $("#filter-form");
-    form.find("input[name='status']").val(status);
-    form.submit();
-}
-function submitForm(){
-    var form = $("#filter-form");
-    var isExport = form.find("input[name='export']").val();
-    if(isExport!=1){
-        layer.load(1);
+PAGE_EXEC = {
+    data :{
+        checkedCount :0 ,
+    },
+    init: function() {
+        var _this = this;
+        laydate.render({
+            elem: '#filter_time'
+            ,range: '~' //或 range: '~' 来自定义分割字符
+            ,lang:'{$active_lang == "zh-cn" ? "cn" : "en"}'
+            ,done: function(value, date, endDate){
+                /*layer.load(1);
+                var url = "<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>";
+                // location.href = url;
+                var form = $("<form method='get'></form>");
+                form.attr({ "action": url });
+                var input = $("<input type='hidden'>");
+                input.attr({ "name": "filter[time]" });
+                input.val(value);
+                form.append(input);
+                $(document.body).append(form);
+                form.submit();*/
+            }
+        });
+        $(".layui-tab-title li a").click(function(){
+            layer.load(1);
+        })
+        // initLayuiTable({ limit: {$pagesize} })
+        var $listWrapper = $('.P-order-list .order-list');
+        var $items = $listWrapper.find('.am-card');
+        var $checkBoxs = $listWrapper.find('input[type="checkbox"]');
+        form.on('checkbox(checkall)', function(data){
+            var value = data.elem.checked;
+            $checkBoxs.prop('checked', value);
+            _this.changeCheckStyle($checkBoxs,value);
+        });
+        $items.each(function(index, el) {
+            var $checkBox = $(el).find('input[type="checkbox"]');
+            $checkBox.change(function(event) {
+                _this.changeCheckStyle($checkBox,$(this).prop('checked'));
+            });
+        });
+    },
+    exportExcel: function(type){
+        var form = $("#filter-form");
+        form.find("input[name='export']").val(1);
+        form.find("input[name='encoding']").val(type);
+        form.attr('target','_blank') ;
+        form.submit();
+        form.find("input[name='export']").val(0);
+        form.attr('target','_self') ;
+    },
+    changeStatus: function(status){
+        var form = $("#filter-form");
+        form.find("input[name='status']").val(status);
+        form.submit();
+    },
+    submitForm: function(){
+        var form = $("#filter-form");
+        var isExport = form.find("input[name='export']").val();
+        if(isExport!=1){
+            layer.load(1);
+        }
+    },
+    /**
+     * 计算被checked复选框的个数，并显示
+     * @return {[type]} [description]
+     */
+    countCheck: function(){
+        var $toolbarWrapper = $(".am-bottom-tool-bar");
+        var $listWrapper = $('.P-order-list .order-list');
+        var $items = $listWrapper.find('.am-card');
+        var item_count = $items.length;
+        var item_checked_count = $listWrapper.find('.am-card.checked').length;
+        this.data.checkedCount = item_checked_count;
+        if(item_count > item_checked_count){
+            $toolbarWrapper.find('input[name="checkall"]').prop('checked', false)
+        }else{
+            $toolbarWrapper.find('input[name="checkall"]').prop('checked', true)
+        }
+        $toolbarWrapper.find(".j-hasCheck").html(item_checked_count);
+        form.render(null, 'form-bottom-tool');
+    },
+    /**
+     * 更改被check的行的样式
+     * @param  $(dom)   $el   checkbox
+     * @param  boolean  $el   值
+     */
+    changeCheckStyle: function($el,value){
+        var _this = this;
+        if(value){
+            $el.closest('.am-card').addClass('checked');
+        }else{
+            $el.closest('.am-card').removeClass('checked');
+        }
+        _this.countCheck();
+    },
+    /**
+     * 改变完结的订单
+     */
+    finish: function() {
+        var setting = {
+            api: '{:url("admin/ScoreOrder/finish")}'
+        }
+        this.changeSelect(setting);
+        return false;
+    },
+
+    changeSelect: function(setting) {
+        var _this = this;
+        var defaults = {
+            confirmMsg:"是否确定执行",
+        }
+        var ids = [];
+        var $toolbarWrapper = $(".am-bottom-tool-bar");
+        var $listWrapper = $('.P-order-list .order-list');
+        var $items = $listWrapper.find('.am-card.checked');
+        $items.each(function(index, el) {
+            ids.push($(el).data('id'));
+        });
+        var idCount = ids.length;
+
+        var options = $.extend({}, defaults, setting);
+        if(typeof(options.data)=='undefined'){
+            options.data = {}
+        }
+        options.data.id = ids;
+
+        if(idCount < 1){
+        layer.msg('请选选择要操作的数据');
+            return false;
+        }
+        layer.confirm('已选'+idCount+'条数据，'+options.confirmMsg, {
+                btn: ['确定', '取消']
+            }, function (index, layero) {
+                return _this.changeSubmit(options)
+            }
+        );
+        return false;
+    },
+    changeSubmit:function(setting) {
+        var loading = layer.load(2,{ shade: [0.2,'#fff']});
+        $.ajax({
+            url:setting.api,
+            data:setting.data,
+            type:'post',
+            dataType:'json',
+        }).done(function(res){
+            if(res.code === 0){
+                layer.msg('成功');
+                setTimeout(function(){
+                reload();
+                },500)
+            }else{
+                var msg = typeof res.desc !== 'undefined' ? res.desc : '失败，请稍候再试';
+                layer.msg(msg);
+                console.log(res);
+            }
+        }).fail(function(err){
+            layer.msg('失败，请稍候再试');
+            console.log(err);
+        }).always(function(){
+            layer.close(loading);
+        });
+        return false;
     }
+
 }
-// initLayuiTable({ limit: {$pagesize} })
-laydate.render({
-    elem: '#filter_time'
-    ,range: '~' //或 range: '~' 来自定义分割字符
-    ,lang:'{$active_lang == "zh-cn" ? "cn" : "en"}'
-    ,done: function(value, date, endDate){
-        /*layer.load(1);
-        var url = "<?php echo url('admin/ScoreOrder/index',['status'=>$status]) ?>";
-        // location.href = url;
-        var form = $("<form method='get'></form>");
-        form.attr({ "action": url });
-        var input = $("<input type='hidden'>");
-        input.attr({ "name": "filter[time]" });
-        input.val(value);
-        form.append(input);
-        $(document.body).append(form);
-        form.submit();*/
-    }
-});
-$(".layui-tab-title li a").click(function(){
-    layer.load(1);
-})
+
+PAGE_EXEC.init();
+
 </script>
 {/block}

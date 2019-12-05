@@ -137,11 +137,11 @@ var DETAIL_PAGE_EXEC = {
             btn: [myLang.r('Yes'),myLang.r('No')] //按钮
         }, function(){
             ajaxSubmit({
-            url:"<?php echo url('admin/ScoreOrder/finish');?>",
-            data:{id:id},
-            success:function(res){
-                console.log(res);
-            }
+                url:"<?php echo url('admin/ScoreOrder/finish');?>",
+                data:{id:id},
+                success:function(res){
+                    console.log(res);
+                }
             })
         }
         );

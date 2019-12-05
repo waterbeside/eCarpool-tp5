@@ -72,8 +72,8 @@
                     </div>
                     <div class="am-card-body">
                         <h5 class="am-card-title layui-elip" >
-                        <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"   data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}">{$vo.title}
-                        </a>
+                            <a href="{:url('admin/ContentIdle/read',['id'=>$vo['id']])}"   data-title="详情 #{$vo.id}"  data-trigger="modal" title="详情 #{$vo.id}">{$vo.title}
+                            </a>
                         </h5>
                         <span class="id">#{$vo.id} <input type="checkbox" name="id[]" value="{$vo.id}" /></span>
                         <p class="name-bar"><span class="name">{$vo.name} / {$vo.loginname}</span><span class="time">{$vo.post_time}</span></p>
@@ -108,29 +108,30 @@
     <div class="am-bottom-tool-bar">
         <div class="am-bottom-tool-bar-inner " lay-filter="form-bottom-tool">
             <div class="form-wrapper layui-form">
-            <div class="layui-input-inline">
-                <input type="checkbox" name="checkall" lay-filter="checkall" title="全选" lay-skin="primary" >
-                <span> 已选： <b class="j-hasCheck ">0</b></span>
-            </div>
+                <div class="layui-input-inline">
+                    <input type="checkbox" name="checkall" lay-filter="checkall" title="全选" lay-skin="primary" >
+                    <span> 已选： <b class="j-hasCheck ">0</b></span>
+                </div>
             </div>
             <div class="btns-wrapper">
                 <div class="btn-drop">
-                <button type="button" class="layui-btn layui-btn-success drop-btn" >审</button>
-                <ul class="drop-box">
-                    <?php foreach($showLevel_list as $key => $value){
-                    if($key < 0 || $key > 0){
-                        echo '<li class="" data-value = "'.$key.'"><a href="javascript:void(0);" onclick="PAGE_EXEC.audit(\''.$key.'\')">'.$value.'</a></li>';
-                    }
-                    } ?>
+                    <button type="button" class="layui-btn layui-btn-success drop-btn" >审</button>
+                    <ul class="drop-box">
+                        <?php foreach($showLevel_list as $key => $value){
+                        if($key < 0 || $key > 0){
+                            echo '<li class="" data-value = "'.$key.'"><a href="javascript:void(0);" onclick="PAGE_EXEC.audit(\''.$key.'\')">'.$value.'</a></li>';
+                        }
+                        } ?>
+                    </ul>
                 </div>
                 <div class="btn-drop" style="margin-left:4px;">
-                <button type="button" class="layui-btn layui-btn-normal drop-btn" >改变状态</button>
-                <ul class="drop-box">
-                    <?php foreach($status_list as $key => $value){
-                        echo '<li class="" data-value = "'.$key.'"><a href="javascript:void(0);" onclick="PAGE_EXEC.status(\''.$key.'\')">'.$value.'</a></li>';
-                    } ?>
+                    <button type="button" class="layui-btn layui-btn-normal drop-btn" >改变状态</button>
+                    <ul class="drop-box">
+                        <?php foreach($status_list as $key => $value){
+                            echo '<li class="" data-value = "'.$key.'"><a href="javascript:void(0);" onclick="PAGE_EXEC.status(\''.$key.'\')">'.$value.'</a></li>';
+                        } ?>
+                    </ul>
                 </div>
-
             </div>
         </div>
     </div>
@@ -149,30 +150,30 @@ PAGE_EXEC = {
     init: function(){
         var _this = this;
         laydate.render({
-        elem: '#filter_time'
-        ,range: '~' //或 range: '~' 来自定义分割字符
+            elem: '#filter_time'
+            ,range: '~' //或 range: '~' 来自定义分割字符
         });
 
         var $listWrapper = $('.P-idle-list .idle-list');
         var $items = $listWrapper.find('.am-card');
         var $checkBoxs = $listWrapper.find('input[type="checkbox"]');
         form.on('checkbox(checkall)', function(data){
-        var value = data.elem.checked;
-        $checkBoxs.prop('checked', value);
-        _this.changeCheckStyle($checkBoxs,value);
+            var value = data.elem.checked;
+            $checkBoxs.prop('checked', value);
+            _this.changeCheckStyle($checkBoxs,value);
         });
 
         $items.each(function(index, el) {
-        var $checkBox = $(el).find('input[type="checkbox"]');
-        var $imgBox   = $(el).find(".cover-thumb");
-        $checkBox.change(function(event) {
-            _this.changeCheckStyle($checkBox,$(this).prop('checked'));
-        });
-        $imgBox.click(function(){
-            var value = $checkBox.prop('checked');
-            $checkBox.prop('checked', !value);
-            _this.changeCheckStyle($checkBox,!value);
-        })
+            var $checkBox = $(el).find('input[type="checkbox"]');
+            var $imgBox   = $(el).find(".cover-thumb");
+            $checkBox.change(function(event) {
+                _this.changeCheckStyle($checkBox,$(this).prop('checked'));
+            });
+            $imgBox.click(function(){
+                var value = $checkBox.prop('checked');
+                $checkBox.prop('checked', !value);
+                _this.changeCheckStyle($checkBox,!value);
+            })
 
         });
     },
@@ -185,9 +186,9 @@ PAGE_EXEC = {
     changeCheckStyle: function($el,value){
         var _this = this;
         if(value){
-        $el.closest('.am-card').addClass('checked');
+            $el.closest('.am-card').addClass('checked');
         }else{
-        $el.closest('.am-card').removeClass('checked');
+            $el.closest('.am-card').removeClass('checked');
         }
         _this.countCheck();
     },
@@ -204,9 +205,9 @@ PAGE_EXEC = {
         var item_checked_count = $listWrapper.find('.am-card.checked').length;
         this.data.checkedCount = item_checked_count;
         if(item_count > item_checked_count){
-        $toolbarWrapper.find('input[name="checkall"]').prop('checked', false)
+            $toolbarWrapper.find('input[name="checkall"]').prop('checked', false)
         }else{
-        $toolbarWrapper.find('input[name="checkall"]').prop('checked', true)
+            $toolbarWrapper.find('input[name="checkall"]').prop('checked', true)
         }
         $toolbarWrapper.find(".j-hasCheck").html(item_checked_count);
         form.render(null, 'form-bottom-tool');
@@ -216,25 +217,25 @@ PAGE_EXEC = {
     changeSubmit:function(setting){
         var loading = layer.load(2,{ shade: [0.2,'#fff']});
         $.ajax({
-        url:setting.api,
-        data:setting.data,
-        type:'post',
-        dataType:'json',
+            url:setting.api,
+            data:setting.data,
+            type:'post',
+            dataType:'json',
         }).done(function(res){
-        if(res.code === 0){
-            layer.msg('成功');
-            setTimeout(function(){
-            reload();
-            },500)
-        }else{
-            layer.msg('失败，请稍候再试');
-            console.log(res);
-        }
+            if(res.code === 0){
+                layer.msg('成功');
+                setTimeout(function(){
+                reload();
+                },500)
+            }else{
+                layer.msg('失败，请稍候再试');
+                console.log(res);
+            }
         }).fail(function(err){
-        layer.msg('失败，请稍候再试');
-        console.log(err);
+            layer.msg('失败，请稍候再试');
+            console.log(err);
         }).always(function(){
-        layer.close(loading);
+            layer.close(loading);
         });
         return false;
     },
@@ -242,26 +243,26 @@ PAGE_EXEC = {
     changeSelect:function(setting){
         var _this = this;
         var defaults = {
-        confirmMsg:"是否确定执行",
+            confirmMsg:"是否确定执行",
         }
         var ids = [];
         var $toolbarWrapper = $(".am-bottom-tool-bar");
         var $listWrapper = $('.P-idle-list .idle-list');
         var $items = $listWrapper.find('.am-card.checked');
         $items.each(function(index, el) {
-        ids.push($(el).data('id'));
+            ids.push($(el).data('id'));
         });
         var idCount = ids.length;
 
         var options = $.extend({}, defaults, setting);
         if(typeof(options.data)=='undefined'){
-        options.data = {}
+            options.data = {}
         }
         options.data.id = ids;
 
         if(idCount < 1){
         layer.msg('请选选择要操作的数据');
-        return false;
+            return false;
         }
         layer.confirm('已选'+idCount+'条数据，'+options.confirmMsg, {
                 btn: ['确定', '取消']
@@ -275,10 +276,10 @@ PAGE_EXEC = {
 
     audit: function(show_level){
         var setting = {
-        data : {
-            show_level:show_level,
-        },
-        api: '{:url("audit")}'
+            data : {
+                show_level:show_level,
+            },
+            api: '{:url("audit")}'
         }
         this.changeSelect(setting);
         return false;
@@ -286,10 +287,10 @@ PAGE_EXEC = {
 
     status: function(status){
         var setting = {
-        data : {
-            status:status,
-        },
-        api: '{:url("status")}'
+            data : {
+                status:status,
+            },
+            api: '{:url("status")}'
         }
         this.changeSelect(setting);
         return false;
@@ -299,9 +300,9 @@ PAGE_EXEC = {
         var loading = layer.load(2,{ shade: [0.2,'#fff']});
         var api = '{:url("recache")}';
         $.ajax({
-        url:api,
-        type:'post',
-        dataType:'json',
+            url:api,
+            type:'post',
+            dataType:'json',
         }).done(function(res){
         if(res.code === 0){
             layer.msg('成功');
@@ -310,16 +311,14 @@ PAGE_EXEC = {
             console.log(res);
         }
         }).fail(function(err){
-        layer.msg('失败，请稍候再试');
-        console.log(err);
+            layer.msg('失败，请稍候再试');
+            console.log(err);
         }).always(function(){
-        layer.close(loading);
+            layer.close(loading);
         });
         return false;
 
     }
-
-
 
 }
 PAGE_EXEC.init();
