@@ -358,8 +358,8 @@ function ajaxSubmit(setting){
 /**
  * [cCetPicFromContent]
  * 获取文本中首张图片地址
- * @param  [string]] content [富文本]
- * @return [string]          [图片路径]
+ * @param  {String} content [富文本]
+ * @return {String}          [图片路径]
  */
 function cGetPicFromContent(content){
   var $content = $(content);
@@ -367,4 +367,22 @@ function cGetPicFromContent(content){
   var $img = $imgs.eq(0);
   var url = $img.attr('src');
   return url ? url : '';
+}
+
+/**
+ * 为is_delete行添加样式
+ * @param {String} pageClassName 父级盒子className
+ */
+function cSetLayTableDelRowStyle(pageClassName) {
+  var $tableWrapper = $("." + pageClassName + " [lay-filter=LAY-table-1] .layui-table-box");
+  var $tableWrapper_main = $tableWrapper.find(".layui-table-main");
+  var $tr = $tableWrapper_main.find('tr');
+  var $tableWrapper_l = $tableWrapper.find(".layui-table-fixed .layui-table-body");
+  $tr.each(function(index, el) {
+      if($(el).find("[data-field=id]").find('.is_delete').length > 0){
+          $(el).addClass('delete');
+          $(el).find('.ajax-delete').hide();
+          $tableWrapper_l.find('tr').eq(index).addClass('delete')
+      }
+  });
 }
