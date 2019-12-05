@@ -385,22 +385,37 @@ class ScoreOrder extends AdminBase
             if (!$id) {
                 $this->error("Params error");
             }
+            $where = [
+                ['is_delete', '=', Db::raw(0)]
+            ];
+            $where[] = is_array($id) ? ['id', 'in', $id] : ['id', '=', $id];
             /*if(!$order_no ){
                 $this->error("Params error");
             }*/
 
-            $data = OrderModel::alias('t')->where('id', $id)->json(['content'])->find();
-            if (!$data || $data['is_delete'] == 1) {
+            $res = OrderModel::alias('t')->where($where)->json(['content'])->select();
+            if (!$res) {
                 $this->error(lang('Order does not exist'));
             }
-            $this->checkDeptAuthByDid($data['region_id'], 1); //检查地区权限
-
-            if (intval($data['status']) !== 0) {
-                $statusMsg = isset($statusList[$data['status']]) ? $statusList[$data['status']] : $data['status'];
-                $this->error(lang('The order status is [%s], no operation is allowed', [$statusMsg]));
+            $resCount = count($res);
+            foreach ($res as $key => $data) {
+                $checkAuthRes = $this->checkDeptAuthByDid($data['region_id'], 0); //检查地区权限
+                if (!$checkAuthRes) {
+                    return $this->error('你所属的地区权限，并不能操作你选择的个别数据');
+                    break;
+                }
+                
+                if (intval($data['status']) !== 0) {
+                    $statusMsg = isset($statusList[$data['status']]) ? $statusList[$data['status']] : $data['status'];
+                    if ($resCount === 1) {
+                        $this->error(lang('The order status is [%s], no operation is allowed', [$statusMsg]));
+                    } else {
+                        $this->error("有个别的订单状态为\"{$statusMsg}\", 操作失败，请刷新列表后重新选择再试");
+                    }
+                }
             }
-
-            $result = OrderModel::where('id', $id)->update(["status" => 1, "handler" => -1 * intval($admin_id)]);
+            $where[] = ['status', '=', Db::raw(0)];
+            $result = OrderModel::where($where)->update(["status" => 1, "handler" => -1 * intval($admin_id)]);
 
             if ($result) {
                 $this->log('完结订单成功' . json_encode($this->request->post()), 0);
