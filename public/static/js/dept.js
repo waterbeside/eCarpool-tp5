@@ -1,9 +1,7 @@
 function MyDept(setting){
-
-    
     this.deptsData = null;
     this.$targetShowWrapper = null;
-    this.$targetIDInput = null;
+    this.$targetIDInput = typeof setting !== 'undefined' && typeof setting.$targetIDInput  !== 'undefined' ?  setting.$targetIDInput : null;
     this.ids = [];
     
 
@@ -34,7 +32,27 @@ function MyDept(setting){
       var html = '<div class="item my-tag-item" data-id="'+data.id+'" title="'+data.fullname+'"><span>'+data.name+'</span><a class="close" onclick="MyDept().closeItem()" ><i class="fa fa-close"></i></a></div>';
       return html;
     }
+    
+    this.getTargetIDInput = function(event_targer) {
+      var returnData = false;
+      var $wrapper =  event_targer.closest('.J-region-wrapper');
+      $wrapper =  $wrapper.length > 0 ? $wrapper : event_targer.closest('form');
 
+      var $jBtn = $wrapper.find('.J-btn-department');
+      var targetString = $jBtn.data('target');
+      if(targetString){
+          var targetInputArray = targetString.split(',');
+          for (var i in targetInputArray) {
+              var el = targetInputArray[i];
+              var targetElArray = el.split(':');
+              if(typeof targetElArray[1] != "undefined" &&  targetElArray[1] === 'id' ){
+                  returnData = $wrapper.find('input[name="'+targetElArray[0]+'"]');
+                  break;
+              }
+          }
+      }
+      return returnData;
+    }
     /**
      * 关闭已选项功作
      */
@@ -43,6 +61,10 @@ function MyDept(setting){
       var $target = $(e.target);
       var $item = $target.closest('.item');
       var id = $item.data('id');
+      var $wrapper =  $target.closest('.J-region-wrapper');
+      $wrapper =  $wrapper.length > 0 ? $wrapper : $target.closest('form');
+      var $jBtn = $wrapper.find('.J-btn-department');
+
 
       var deptsData = typeof(this.deptsData) == "object"  ? this.deptsData : {};
       if(deptsData && typeof(deptsData[id])!="undefined"){
@@ -53,8 +75,11 @@ function MyDept(setting){
 
       if(typeof(this.$targetIDInput)=='object' && this.$targetIDInput){
         this.$targetIDInput.val(this.ids.join(','));
+        $jBtn.attr('data-paramstr','{"default_id":"'+this.ids.join(',')+'"}');  //重置父面的默认id
       }else{
-        var o_ids = $target.closest('form').find("input[name='region_id']").val();
+        var $targetIDInput = this.getTargetIDInput($target);
+        $targetIDInput = $targetIDInput || $target.closest('form').find("input[name='region_id']");
+        var o_ids = $targetIDInput.val();
         var o_ids_array = o_ids.split(',');
         var n_v = ''
         $(o_ids_array).each(function(index,item){
@@ -63,7 +88,9 @@ function MyDept(setting){
             n_v += item;
           }
         })
-        $target.closest('form').find("input[name='region_id']").val(n_v);
+        $targetIDInput.val(n_v);
+        $jBtn.attr('data-paramstr','{"default_id":"'+n_v+'"}');  //重置父面的默认id
+
       }
 
       // var newDataString = JSON.stringify(deptsData);
@@ -129,6 +156,5 @@ function MyDept(setting){
 
     
     return this;
-
 }
 
