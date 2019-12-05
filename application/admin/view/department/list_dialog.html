@@ -154,12 +154,14 @@
                 var $targetWrapper = targetDatas.targetWrapper;
                 var targetShowString = $targetWrapper.data("data-show-target");
             }
+            var targetString = $targetWrapper.data('target');
 
             // var old_data_str = MyCookies.get('department_selected_list');
             // if(old_data_str){
             //   this.datas.deptsData = $.parseJSON(old_data_str);
             // }
-            this.deptObj = new MyDept({deptsData:this.datas.deptsData});
+            var myDeptSetting = {deptsData:this.datas.deptsData};
+            this.deptObj = new MyDept(myDeptSetting);
             if(this.datas.deptsData){
                 var deptsData = this.datas.deptsData;
                 for(var id in deptsData){
@@ -202,9 +204,10 @@
         selectedTemplate: function(data,type){
             var html = '<div class="item my-tag-item" data-id="'+data.id+'" title="'+data.fullname+'"><span>'+data.name+'</span><a class="close" onclick="DialogList_EXEC.closeItem()"><i class="fa fa-close"></i></a></div>';
             return html;
-            },
-            cancelSelected: function(){
-                this.deptClickItem({
+        },
+        
+        cancelSelected: function(){
+            this.deptClickItem({
                 'id' : '',
                 'name' : '',
                 'fullname' : '',
@@ -252,6 +255,11 @@
                 this.done(data);
             }
         },
+        getWrapper: function(event_targer) {
+            var $wrapper =  event_targer.closest('.J-region-wrapper');
+            $wrapper =  $wrapper.length > 0 ? $wrapper : event_targer.closest('form');
+            return $wrapper;
+        },
         /**
          * 关闭已选项功作
          */
@@ -274,6 +282,29 @@
                 $item.remove();
             },400);
         },
+
+        getTargetIDInput: function() {
+            var targetDatas = this.getTarget(); //取得来自父窗的点击对像
+            var returnData = false;
+            if(targetDatas){
+                var $target = targetDatas.target
+                var $targetWrapper = targetDatas.targetWrapper;
+                var targetString = $targetWrapper.data('target');
+                var $wrapper =  this.getWrapper($targetWrapper);
+                if(targetString){
+                    var targetInputArray = targetString.split(',');
+                    for (var i in targetInputArray) {
+                        var el = targetInputArray[i];
+                        var targetElArray = el.split(':');
+                        if(typeof targetElArray[1] != "undefined" &&  targetElArray[1] === 'id' ){
+                            returnData = $wrapper.find('input[name="'+targetElArray[0]+'"]');
+                            break;
+                        }
+                    }
+                }
+            }
+            return returnData;
+        },
         /**
          * 点击完成按钮
          * @return {[type]} [description]
@@ -290,7 +321,7 @@
                 var $target = targetDatas.target
                 var $targetWrapper = targetDatas.targetWrapper;
                 var targetString = $targetWrapper.data('target');
-                var $wrapper =  $targetWrapper.closest('form');
+                var $wrapper =  this.getWrapper($targetWrapper);
                 var page_exec_str = $targetWrapper.data("page-exec");
                 var targetShowString = $targetWrapper.data("show-target");
             }
