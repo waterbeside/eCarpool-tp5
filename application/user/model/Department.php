@@ -285,7 +285,7 @@ class Department extends Model
      */
     public function getDeptDataIdList($ids, $field = null)
     {
-        $deptsArray = explode(',', $ids);
+        $deptsArray = is_array($ids) ? $ids : explode(',', $ids);
         $deptsData = [];
         foreach ($deptsArray as $key => $value) {
             $deptsItemData = $this->getItem($value);
@@ -305,7 +305,7 @@ class Department extends Model
 
     public function getDeptDataList($ids, $field = null)
     {
-        $deptsArray = explode(',', $ids);
+        $deptsArray = is_array($ids) ? $ids : explode(',', $ids);
         $deptsData = [];
         foreach ($deptsArray as $key => $value) {
             $deptsItemData = $this->getItem($value);
