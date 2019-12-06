@@ -331,6 +331,10 @@ class Trips
 
     public function createTripBaseData($datas, $mapType)
     {
+        $start_longitude = $datas['start']['longitude'];
+        $start_latitude = $datas['start']['latitude'];
+        $end_longitude = $datas['end']['longitude'];
+        $end_latitude = $datas['end']['latitude'];
         $inputData = [
             'status'    => 0,
             'subtime'   => date('YmdHi'),
@@ -341,10 +345,9 @@ class Trips
             'startpid'  => $mapType ? (isset($datas['start']['gid']) &&  $datas['start']['gid'] ? -1 : 0) : $datas['start']['addressid'],
             'endpid'  => $mapType ? (isset($datas['end']['gid']) &&  $datas['end']['gid'] ? -1 : 0) : $datas['end']['addressid'],
             'startname'  => $datas['start']['addressname'],
-            'start_latlng'  => Db::raw("geomfromtext('point(" . $datas['start']['longitude'] . " " . $datas['start']['latitude'] . ")')"),
+            'start_latlng'  => Db::raw("geomfromtext('point(" . $start_longitude . " " . $start_latitude . ")')"),
             'endname'  => $datas['end']['addressname'],
-            'end_latlng'  => Db::raw("geomfromtext('point(" . $datas['end']['longitude'] . " " . $datas['end']['latitude'] . ")')"),
-
+            'end_latlng'  => Db::raw("geomfromtext('point(" . $end_longitude . " " . $end_latitude . ")')"),
         ];
         if ($mapType) {
             if (isset($datas['start']['gid']) &&  $datas['start']['gid']) {
@@ -523,5 +526,102 @@ class Trips
             $cacheKey_mapcars_1 = "carpool:trips:mapCars:mapType_1:company_{$company_ids}";
             $redis->delete($cacheKey_mapcars_n, $cacheKey_mapcars_0, $cacheKey_mapcars_1);
         }
+    }
+
+    /**
+     * 发布行程时检查行程是否有重复
+     * @param  Timestamp   $time       出发时间的时间戳
+     * @param  Integer     $uid        发布者ID
+     * @param  String      $offsetTime 时间偏差范围
+     */
+    public function checkRepetition($time, $uid, $offsetTime = 60 * 30, $level = [[60*10,10],[60*30,20]])
+    {
+        $startTime = $time - $offsetTime;
+        $endTime =   $time + $offsetTime;
+        $map = [
+            ["status", "in", [0,1,4]],
+            ["time", ">=", date('YmdHi', $startTime)],
+            ["time", "<=", date('YmdHi', $endTime)],
+            // ["go_time",">=",$startTime],
+            // ["go_time","<=",$endTime],
+        ];
+        $map1 = $map;
+        $map1[] = ["carownid", "=", $uid];
+        $map2 = $map;
+        $map2[] = ["carownid|passengerid", "=", $uid];
+
+        $res_wall = WallModel::where($map1)->select();
+        $res_info = InfoModel::where($map2)->select();
+        $res = [];
+        if ($res_wall) {
+            foreach ($res_wall as $key => $value) {
+                $data = [
+                    'from'=>'wall',
+                    'love_wall_ID' => $value['love_wall_ID'],
+                    'info_id' => 0,
+                    'd_uid' => $value['carownid'],
+                    'p_uid' => 0,
+                    'time'=>strtotime($value['time'] . '00'),
+                ];
+                $res[] = $data;
+            }
+        }
+        
+        if ($res_info) {
+            foreach ($res_info as $key => $value) {
+                $data = [
+                    'from'=>'info',
+                    'love_wall_ID' => $value['love_wall_ID'],
+                    'info_id' => $value['infoid'],
+                    'd_uid' => $value['carownid'],
+                    'p_uid' => $value['passengerid'],
+                    'd_uid'=>'wall',
+                    'time'=>strtotime($value['time'] . '00'),
+                ];
+                $res[] = $data;
+            }
+        }
+        if (empty($res)) {
+            return false;
+        }
+        $level_checked = [];
+        $level_timeList = [];
+        $level_dataList = [];
+        $errorMsg = '';
+
+        foreach ($level as $k => $levelItem) {
+            $itemOffset = is_array($levelItem) ? $levelItem[0] : $levelItem;
+            $existCount = 0;
+            $timeList = [];
+            $dataList = [];
+            foreach ($res as $key => $value) {
+                $time_s = $time - $itemOffset;
+                $time_e = $time + $itemOffset;
+                if ($value['time'] > $time_s && $value['time'] < $time_e) {
+                    $existCount += 1;
+                    $timeList[] = $value['time'];
+                    $dataList[] = $value;
+                }
+            }
+            rsort($timeList);
+            $level_checked[$k] = $existCount;
+            $level_timeList[$k] = $timeList;
+            $level_dataList[$k] = $dataList;
+            if ($existCount > $k) {
+                if ($k > 0) {
+                    $min = is_array($levelItem) && isset($levelItem[1]) ? $levelItem[1] : intval($itemOffset/60) ;
+                    $errorMsg = lang("You have multiple trips in {:time} minutes, please do not post in a similar time", ["time" => $min]);
+                } else {
+                    $returnTime = date('Y-m-d H:i', $timeList[0]);
+                    $errorMsg = lang("You have already made one trip at {:time}, please do not post in a similar time", ["time" => $returnTime]);
+                }
+                break;
+            }
+        }
+        if (empty($errorMsg)) {
+            return false;
+        }
+        $this->error(30007, $errorMsg);
+        return $level_dataList;
     }
 }

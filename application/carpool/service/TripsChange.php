@@ -132,15 +132,19 @@ class TripsChange
             if ($isDriver) {
                 return $this->error(-1, lang('You can`t take your own'));
             }
+            $TripsService = new TripsService();
+            if ($TripsService->checkRepetition(strtotime($tripData->time . '00'), $uid)) {
+                return $this->error(30007, $TripsService->errorMsg);
+            }
 
-            //计算前后范围内有没有重复行程
-            if ($InfoModel->checkRepetition(strtotime($tripData->time . '00'), $uid, 60 * 5)) {
-                return $this->error(30007, $InfoModel->errorMsg);
-            }
-            //计算前后范围内有没有重复行程
-            if ($WallModel->checkRepetition(strtotime($tripData->time . '00'), $uid, 60 * 5)) {
-                return $this->error(30007, $WallModel->errorMsg);
-            }
+            // //计算前后范围内有没有重复行程
+            // if ($InfoModel->checkRepetition(strtotime($tripData->time . '00'), $uid, 60 * 5)) {
+            //     return $this->error(30007, $InfoModel->errorMsg);
+            // }
+            // //计算前后范围内有没有重复行程
+            // if ($WallModel->checkRepetition(strtotime($tripData->time . '00'), $uid, 60 * 5)) {
+            //     return $this->error(30007, $WallModel->errorMsg);
+            // }
 
 
             $seat_count = $tripData->seat_count;

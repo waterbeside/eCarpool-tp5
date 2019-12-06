@@ -368,12 +368,12 @@ class Trips extends ApiBase
         }
 
         //计算前后范围内有没有重复行程
-        if ($InfoModel->checkRepetition($time, $uid, 60 * 5)) {
-            $this->jsonReturn(30007, [], $InfoModel->errorMsg);
+        if ($TripsService->checkRepetition($time, $uid)) {
+            $this->jsonReturn(30007, [], $TripsService->errorMsg);
         }
-        if ($WallModel->checkRepetition($time, $uid, 60 * 5)) {
-            $this->jsonReturn(30007, [], $WallModel->errorMsg);
-        }
+        // if ($WallModel->checkRepetition($time, $uid, 60 * 10)) {
+        //     $this->jsonReturn(30007, [], $WallModel->errorMsg);
+        // }
 
         $createAddress = array();
 
@@ -565,7 +565,7 @@ class Trips extends ApiBase
             //     return $this->jsonReturn(30007, [], $InfoModel->errorMsg);
             // }
             // 如果你有一趟空座位
-            $checkWallRes = $WallModel->checkRepetition(strtotime($datas->time . '00'), $uid, 60 * 5);
+            $checkWallRes = $WallModel->checkRepetition(strtotime($datas->time . '00'), $uid, 60 * 8);
             if ($checkWallRes) {
                 if ($step == 1) {
                     $datas->love_wall_ID  = $checkWallRes['love_wall_ID'];
