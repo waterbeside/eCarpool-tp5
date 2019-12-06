@@ -62,6 +62,7 @@ return [
     "The departure time has passed. Please select the time again" => 'The departure time has passed. Please select the time again.',
     "You have already made one trip at {:time}, should not be published twice within the same time" => "You have already made one trip at {:time}, should not be published twice within the same time",
     "You have already made one trip at {:time}, please do not post in a similar time" => "You have already made one trip at {:time}, please do not post in a similar time",
+    "You have multiple trips in {:time} minutes, please do not post in a similar time" => "You have multiple trips in {:time} minutes, please do not post in a similar time",
     'The number of empty seats cannot be empty' => 'The number of empty seats cannot be empty',
     'The trip has been completed or cancelled. Operation is not allowed' => 'The trip has been completed or cancelled. Operation is not allowed',
     'The trip not started, unable to operate' => 'The trip not started, unable to operate',
