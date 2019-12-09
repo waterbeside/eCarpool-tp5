@@ -52,6 +52,11 @@
                         <input type="text" name="filter[time]" class="layui-input" id="filter_time" placeholder="{:lang('Time range')}" value="{$filter['time'] ? $filter['time'] :''}"  style="width:180px" autocomplete="off">
                     </div>
                 </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="pagesize" value="{$pagesize}" placeholder="{:lang('Pagesize')}" class="layui-input">
+                    </div>
+                </div>
 
                 <div class="layui-inline">
                     <input type="hidden" name="status" value="{$status}">
