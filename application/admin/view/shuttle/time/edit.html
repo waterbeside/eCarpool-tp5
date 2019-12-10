@@ -1,0 +1,90 @@
+<style>
+    .P-shuttle-time-form .time-wrapper .item {line-height: 40px; border-bottom:1px dotted #DDD; background:#F0F0F0; padding:8px 0 4px 10px;}
+    .P-shuttle-time-form .time-wrapper .btns { display: block; float:right; text-align: right;}
+    .P-shuttle-time-form .time-wrapper .btns .btn {padding: 2px 8px;}
+</style>
+<div class="amain-body P-shuttle-time-form">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <div class="layui-tab-content">
+
+            <form class="layui-form" action="{:url('admin/shuttle.time/edit',['id'=>$data['id']])}" method="post" style="margin-right:15px;" id="editForm">
+
+                <fieldset class="layui-elem-field" style="padding:24px 12px 12px">
+                    <legend>时间设置</legend>
+                    <div class="time-wrapper" id="time-list">
+                        <div class="layui-form-item item">
+                            <div class="item-inner" >
+                                <div class="layui-input-inline"  style="width: 80px;">
+                                    <input type="number"  min="0" max="23" name="hours" value="{$data.hours}" placeholder="时" class="layui-input"  >
+                                </div>
+                                <div class="layui-input-inline" style="width:12px">时</div>
+                                <div class="layui-input-inline" style="width:80px">
+                                    <input type="number" min="-59" max="59" name="minutes" value="{$data.minutes}" placeholder="分" class="layui-input" >
+                                </div> 
+                                <div class="layui-input-inline" style="width:12px">分</div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <blockquote class="layui-elem-quote layui-elem-quote-warning">
+                        注：当分钟为负数时，则为该小时下能选多个分钟数，而负多少，侧间隔步长为多少。
+                    </blockquote>
+                </fieldset>
+
+                <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
+                    <legend>其它设置</legend>
+
+
+                    <div class="layui-form-item">
+                            <label class="layui-form-label">所属类型</label>
+                            <div class="layui-input-block">
+                                <select name="type">
+                                    {foreach name="$shuttle_line_type" key='key' item="vo"}
+                                    <option value="{$key}" {if condition="$data.type==$key"} selected="selected"{/if}> {$vo}</option>
+                                    {/foreach}
+                                </select>
+                                <div class="layui-form-mid layui-word-aux">选择上班路线还是下班路线</div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">状态</label>
+                            <div class="layui-input-block">
+                                <select name="status">
+                                    <option value="1" {if condition="$data.status === 1"} selected="selected"{/if}> 启用</option>
+                                    <option value="0" {if condition="$data.status === 0"} selected="selected"{/if}> 禁用</option>
+                                </select>
+                                <div class="layui-form-mid layui-word-aux">是否可选</div>
+                            </div>
+                        </div>
+                </fieldset>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <input type="hidden" name="id" value="{$data.id}" />
+                        <button class="layui-btn" lay-submit lay-filter="*" lay-submit>保存</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    PAGE_EXEC = {
+        init: function () {
+            var _this = this;
+            form.render();
+            element.init();
+        },
+    
+    }
+
+    $(function () {
+        PAGE_EXEC.init();
+    });
+</script>
