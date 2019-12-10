@@ -45,13 +45,17 @@ class Line extends AdminBase
             // $map[] = ['','EXP',Db::raw($departmentSql)];
         }
 
-        //筛选用户信息
+        //筛选信息
         if (isset($filter['keyword']) && $filter['keyword']) {
             $map[] = ['t.start_name|t.end_name', 'like', "%{$filter['keyword']}%"];
         }
 
         if (isset($filter['status']) && is_numeric($filter['status'])) {
             $map[] = ['t.status', '=', $filter['status']];
+        }
+
+        if (isset($filter['type']) && is_numeric($filter['type'])) {
+            $map[] = ['t.type', '=', $filter['type']];
         }
 
         //筛选是否被删的

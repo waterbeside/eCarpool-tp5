@@ -9,7 +9,7 @@
         <ul class="amain-tool-bar" >
             <li class="layui-this"><a href="{:url('admin/shuttle.line/index')}"  >班车路线管理</a></li>
             <li class="btn-item btn-item-right">
-                <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/shuttle.line/add')}"  data-title="添加用户"  data-trigger="modal" >
+                <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/shuttle.line/add')}"  data-title="添加路线"  data-trigger="modal" >
                 <i class="fa fa-plus"></i> 添加路线</a>
             </li>
         </ul>
@@ -25,6 +25,13 @@
                     <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" >
                         {$regionData ? str_replace(',',' / ',$regionData['fullname']) : lang('Region or department')}
                     </a>
+                </div>
+                <div class="layui-input-inline">
+                    <select name="filter[type]">
+                        <option value="" > 类型: 不限</option>
+                        <option value="1" <?php if(isset($filter['type']) && is_numeric($filter['type']) && $filter['type'] == 1 ){ echo 'selected="selected"'; } ?> > 上班</option>
+                        <option value="2" <?php if(isset($filter['type']) && is_numeric($filter['type']) && $filter['type'] == 2  ){ echo 'selected="selected"'; } ?> > 下班</option>
+                    </select>
                 </div>
                 <div class="layui-input-inline">
                     <select name="filter[status]">
