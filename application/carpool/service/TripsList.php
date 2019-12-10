@@ -68,6 +68,12 @@ class TripsList
             $datas[$key]['show_owner']  = $value['trip_type'] || ($value['infoid'] > 0 && $uid == $value['passengerid']  &&  $value['carownid'] > 0)  ?  1 : 0;
             $datas[$key]['is_driver']   =  $uid == $value['carownid']  ?  1 : 0;
             $datas[$key]['status'] = intval($value['status']);
+            if (isset($value['d_mobile'])) {
+                $datas[$key]['d_mobile'] = !empty($value['d_mobile']) ? $value['d_mobile'] : $value['d_phone'];
+            }
+            if (isset($value['p_mobile'])) {
+                $datas[$key]['p_mobile'] = !empty($value['p_mobile']) ? $value['p_mobile'] : $value['p_phone'];
+            }
             $datas[$key]['took_count']  = $value['infoid'] > 0 ? ($datas[$key]['is_driver'] ? 1 : 0) : InfoModel::where([['love_wall_ID', '=', $value['love_wall_ID']], ['status', '<>', 2]])->count(); //取已坐数
         }
         $returnData = [
