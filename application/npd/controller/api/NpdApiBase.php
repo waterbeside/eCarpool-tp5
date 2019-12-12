@@ -69,4 +69,23 @@ class NpdApiBase extends ApiBase
         ];
         return $this->userData;
     }
+
+    /**
+     * 替换附件地址的域名
+     */
+    public function replaceAttachmentDomain($data, $field = '')
+    {
+        if (is_string($data)) {
+            $urls = config('npd.replace_attachment_url');
+            foreach ($urls as $key => $value) {
+                $data = str_replace($key, $value, $data);
+            }
+        }
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $data[$key][$field] = $this->replaceAttachmentDomain($data[$key][$field]);
+            }
+        }
+        return $data;
+    }
 }

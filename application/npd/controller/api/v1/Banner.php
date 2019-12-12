@@ -27,12 +27,10 @@ class Banner extends NpdApiBase
      */
     public function index($type = 1)
     {
-
         $lang = (new I18nLangModel())->formatLangCode($this->language);
         $lang = $lang ? $lang : "en";
 
         $cacheKey  = "npd:banner:type_$type:lang_$lang";
-
 
         $redis = new RedisData();
         $res = $redis->cache($cacheKey);
@@ -59,7 +57,7 @@ class Banner extends NpdApiBase
             $res_filt[] = [
                 "id" => $value["id"],
                 "title" => $value["title"],
-                "image" => $value["image"],
+                "image" => $this->replaceAttachmentDomain($value["image"]),
                 "link_type" => $value["link_type"],
                 "link" => $value["link"],
                 "create_time" => $value["create_time"],

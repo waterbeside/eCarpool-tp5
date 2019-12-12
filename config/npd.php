@@ -22,5 +22,9 @@ return [
         'asia',
         'north america',
         'other',
+    ],
+
+    "replace_attachment_url" => [
+        'http://gitsite.net:8082/' => 'https://cm.gitsite.net/',
     ]
 ];
