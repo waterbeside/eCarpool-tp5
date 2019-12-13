@@ -294,6 +294,7 @@ class Passport extends ApiBase
         //处理起点
         if (!isset($data['addressid']) || !$data['addressid'] || !is_numeric($data['addressid'])) {
             $AddressModel = new Address();
+            $data['create_uid'] = $uid;
             $res = $AddressModel->addFromTrips($data);
             if (!$res) {
                 $errorMsg = $AddressModel->errorMsg ? $AddressModel->errorMsg  : lang("Fail");

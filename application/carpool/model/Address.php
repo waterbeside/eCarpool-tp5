@@ -67,7 +67,9 @@ class Address extends Model
 
         $createID = $this->insertGetId($inputData);
         if ($createID) {
-            $this->deleteMyCache($data['create_uid']);
+            if (isset($data['create_uid'])) {
+                $this->deleteMyCache($data['create_uid']);
+            }
             $data['addressid'] = intval($createID);
             $data = array_merge($data, $inputData);
         } else {
