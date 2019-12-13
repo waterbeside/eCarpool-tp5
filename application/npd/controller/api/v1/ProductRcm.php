@@ -29,7 +29,11 @@ class ProductRcm extends NpdApiBase
             ['is_delete','=', Db::raw(0)],
             ['status', '=', 1],
         ];
-        $list = ProductRecommend::where($where)->order('sort DESC, id DESC')->select();
+        $list = ProductRecommend::where($where)->order('sort DESC, id DESC')->select()->toArray();
+        foreach ($list as $key => $value) {
+            $list[$key]['image'] = $this->replaceAttachmentDomain($value['image']);
+            $list[$key]['image_en'] = $this->replaceAttachmentDomain($value['image_en']);
+        }
         $returnData = [
             'list' => $list,
         ];

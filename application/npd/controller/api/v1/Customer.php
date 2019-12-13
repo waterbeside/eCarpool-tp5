@@ -52,7 +52,7 @@ class Customer extends NpdApiBase
         $lists_to_array = $lists_res->toArray();
         $lists = $lists_to_array['data'];
         $returnData = [
-            'list' => $lists,
+            'list' => $this->replaceAttachmentDomain($lists, 'thumb'),
             'pagination' => $pagination,
         ];
         $redis->cache($cacheKey, $returnData, 60);

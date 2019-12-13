@@ -70,7 +70,8 @@ class Product extends NpdApiBase
         $lists_to_array = $lists_res->toArray();
         $lists = $lists_to_array['data'];
         $returnData = [
-            'list' => $lists,
+            'list' => $this->replaceAttachmentDomain($lists, 'thumb'),
+            // 'list' => $lists,
             'pagination' => $pagination,
             'category' => $cate_data,
             'breadcrumd' => $breadcrumd,
@@ -101,6 +102,7 @@ class Product extends NpdApiBase
 
         $customerListOrder = Db::raw("find_in_set( id, '{$data["customers"]}' )");
         $customer_list = CustomerModel::where([['id', 'in', $data['customers']], ['is_delete', '=', 0]])->order($customerListOrder)->select();
+        $data['thumb'] = $this->replaceAttachmentDomain($data['thumb']);
         $returnData = [
             'data' => $data,
             'category' => $cate_data,

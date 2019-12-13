@@ -54,7 +54,7 @@ class Article extends NpdApiBase
         $lists_to_array = $lists_res->toArray();
         $lists = $lists_to_array['data'];
         $returnData = [
-            'list' => $lists,
+            'list' => $this->replaceAttachmentDomain($lists, 'thumb'),
             'pagination' => $pagination,
             'category' => $cate_data,
             'breadcrumd' => $breadcrumd,
@@ -97,7 +97,7 @@ class Article extends NpdApiBase
         $cate_data = $Category->getDetail($data['cid']);
         $breadcrumd = $Category->getCateBreadcrumb($cate_data, 'article');
 
-
+        $data['content'] = $this->replaceAttachmentDomain($data["content"]);
         $returnData = [
             'data' => $data,
             'category' => $cate_data,

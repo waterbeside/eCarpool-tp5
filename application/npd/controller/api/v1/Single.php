@@ -46,6 +46,7 @@ class Single extends NpdApiBase
         $field = 'id, title, cid, update_time, create_time, publish_time , content, sort, status, lang';
         $data = SingleModel::field($field)->where($map)->order('sort DESC')->find();
 
+        $data['content'] = $this->replaceAttachmentDomain($data["content"]);
         $returnData = [
             'data' => $data,
             'category' => $cate_data,
@@ -87,7 +88,7 @@ class Single extends NpdApiBase
         $cate_data = $Category->getDetail($data['cid']);
         $breadcrumd = $Category->getCateBreadcrumb($cate_data, 'article');
 
-
+        $data['content'] = $this->replaceAttachmentDomain($data["content"]);
         $returnData = [
             'data' => $data,
             'category' => $cate_data,

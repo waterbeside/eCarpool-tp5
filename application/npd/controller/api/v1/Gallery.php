@@ -31,13 +31,14 @@ class Gallery extends NpdApiBase
             if (is_numeric($aid) && $aid > 0) {
                 $where[] = ['aid', '=', $aid ];
             }
-            $list = GalleryModel::where($where)->order('sort DESC, id DESC')->select();
+            $list = GalleryModel::where($where)->order('sort DESC, id DESC')->select()->toArray();
             if ($list) {
                 $redis->cache($cacheKey, $list, 60 * 3);
             }
         }
         $returnData = [
-            'list' => $list,
+            // 'list' => $list,
+            'list' => $this->replaceAttachmentDomain($list, 'url'),
         ];
         return $this->jsonReturn(0, $returnData, 'Succefully');
     }
