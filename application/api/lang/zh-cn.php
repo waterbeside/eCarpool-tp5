@@ -61,7 +61,7 @@ return [
     "The departure time has passed. Please select the time again" => "出发时间已经过了，请重选时间。",
     "You have already made one trip at {:time}, should not be published twice within the same time" => "您在 {:time} 已有一趟行程，在相近时间内请勿重复发布",
     "You have already made one trip at {:time}, please do not post in a similar time" => "您在 {:time} 已有一趟行程，请不要在相近时间多次添加行程",
-    "You have multiple trips in {:time} minutes, please do not post in a similar time" => "你在{:time}分钟内已有多趟行程，请不要在相近时间内多次添加行程",
+    "You have multiple trips in {:time} minutes, please do not post in a similar time" => "你在该出发时间的{:time}分钟前后已有多趟行程，请不要在相近时间内多次添加行程",
     'The number of empty seats cannot be empty' => '空座位个数不能为空',
     'The trip has been completed or cancelled. Operation is not allowed' => '该行程已结束或取消，不允许操作。',
     'The trip not started, unable to operate' => '行程未开始，无法操作',
