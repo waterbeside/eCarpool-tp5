@@ -349,7 +349,8 @@ class Trips extends ApiBase
         }
         $datas['seat_count']  = input('post.seat_count');
         $datas['distance']    = input('post.distance', 0);
-        $datas['time']        = is_numeric($time) ? date('YmdHi', $time) : date('YmdHi', strtotime($time . ":00"));
+        $time_x =  is_numeric($time) ? $time : strtotime($time . ":00");
+        $datas['time']        = date('YmdHi', $time_x);
 
         if (empty($time)) {
             $this->jsonReturn(-1, [], lang('Please select date and time'));
@@ -363,15 +364,15 @@ class Trips extends ApiBase
         $WallModel    = new WallModel();
 
         //检查出发时间是否已经过了
-        if (date('YmdHi', time()) > $datas['time']) {
+        if (time() > $time_x) {
             $this->jsonReturn(-1, [], lang("The departure time has passed. Please select the time again"));
         }
 
         //计算前后范围内有没有重复行程
-        if ($TripsService->checkRepetition($time, $uid)) {
+        if ($TripsService->checkRepetition($time_x, $uid)) {
             $this->jsonReturn(30007, [], $TripsService->errorMsg);
         }
-        // if ($WallModel->checkRepetition($time, $uid, 60 * 10)) {
+        // if ($WallModel->checkRepetition($time_x, $uid, 60 * 10)) {
         //     $this->jsonReturn(30007, [], $WallModel->errorMsg);
         // }
 
@@ -783,7 +784,7 @@ class Trips extends ApiBase
             $uids = array_merge($uids, $passengerids);
         }
         if (!in_array($myUid, $uids)) {
-            $returnMsg = ang('You are not the driver or passenger of this trip') . lang('.') . lang('Not allowed to view other`s location information') . lang('.');
+            $returnMsg = lang('You are not the driver or passenger of this trip') . lang('.') . lang('Not allowed to view other`s location information') . lang('.');
             $this->jsonReturn(0, $returnData, $returnMsg);
         }
         //验证允许时间
