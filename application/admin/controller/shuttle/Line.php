@@ -125,6 +125,7 @@ class Line extends AdminBase
                 $errorMsg = $e->getMessage();
                 return $this->jsonReturn(-1, null, '添加失败', ['errMsg'=>$errorMsg]);
             }
+            $ShuttleLine->delectListCache($data['type']);
             return $this->jsonReturn(0, '保存成功');
         } else {
             $this->assign('shuttle_line_type', config('carpool.shuttle_line_type'));
@@ -172,6 +173,9 @@ class Line extends AdminBase
                 $errorMsg = $e->getMessage();
                 return $this->jsonReturn(-1, null, '保存失败', ['errMsg'=>$errorMsg]);
             }
+            $ShuttleLine->delListCache(1);
+            $ShuttleLine->delListCache(2);
+            $ShuttleLine->delItemCache($id);
             return $this->jsonReturn(0, '保存成功');
         } else {
             $fields = "t.*, d.fullname as admin_full_department";
