@@ -2,7 +2,6 @@
 
 namespace app\carpool\model;
 
-use think\facade\Cache;
 use my\RedisData;
 use app\common\model\BaseModel;
 
@@ -19,4 +18,29 @@ class ShuttleTime extends BaseModel
 
     protected $insert = [];
     protected $update = [];
+
+    /**
+     * 取得接口列表缓存的Key
+     *
+     * @param integer $type 上下班类型
+     * @return string
+     */
+    public function getListCacheKey($type)
+    {
+        return "carpool:shuttle:timeList:type_{$type}";
+    }
+
+
+    /**
+     * 清除接口列表的缓存
+     *
+     * @param integer $type 上下班类型
+     * @return void
+     */
+    public function delListCache($type)
+    {
+        $cacheKey = $this->getListCacheKey($type);
+        $redis = new RedisData();
+        return $redis->del($cacheKey);
+    }
 }
