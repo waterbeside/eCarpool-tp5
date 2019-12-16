@@ -59,7 +59,7 @@ class Time extends AdminBase
 
 
     /**
-     * 添加路线
+     * 添加时刻
      * @return mixed
      */
     public function add()
@@ -102,7 +102,7 @@ class Time extends AdminBase
 
 
     /**
-     * 编辑路线
+     * 编辑时间
      * @param $id
      * @return mixed
      */
@@ -129,7 +129,7 @@ class Time extends AdminBase
 
 
     /**
-     * 删除路线
+     * 删除时间
      * @param $id 数据id
      */
     public function delete($id)
