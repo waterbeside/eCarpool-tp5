@@ -5,7 +5,12 @@
         <div class="layui-tab-content">
 
             <form class="layui-form  " action="{:url('admin/shuttle.line/edit',['id'=>$data['id']])}" method="post" style="margin-right:15px;" id="editForm">
-
+                <blockquote class="layui-elem-quote layui-elem-quote-warning">
+                    辅助工具：
+                    <a href="https://lbs.amap.com/console/show/picker" target="_blank"><i class="fa fa-map-marker"></i> 高德经纬度查询</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="https://www.w3cschool.cn/tools/index?name=cpicker" target="_blank"><i class="fa fa-tachometer"></i> 在线拾色</a>
+                    <a href="http://www.5tu.cn/colors/yansebiao.html" target="_blank"><i class="fa fa-tachometer"></i> 在线拾色2</a>
+                </blockquote>
                 <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
                     <legend>起点</legend>
                     <div class="layui-form-item">
@@ -59,6 +64,13 @@
 
                 <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
                     <legend>其它设置</legend>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">颜色</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="color" value="{$data.color}" placeholder="16进制色 #FFFFFF" class="layui-input">
+                        </div>
+                    </div>
 
                     <div class="layui-form-item">
                         <label class="layui-form-label">授权区域</label>

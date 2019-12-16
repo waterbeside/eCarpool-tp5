@@ -73,7 +73,7 @@
                     <tr>
                         <td>
                         <div <?php echo  ($vo['is_delete']  ? 'class="is_delete"' : ''); ?>>
-                            {$vo.id}
+                            <i class="fa fa-circle" style="color:{$vo.color ?? 'rgba(100,100,100,0.1)'}"></i> {$vo.id}
                         </div>
                         </td>
                         <td><?php echo ($vo['type'] === 1 ? '上班' : ($vo['type'] === 2 ? '下班' : '其它')); ?></td>

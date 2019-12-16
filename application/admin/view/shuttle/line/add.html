@@ -1,59 +1,54 @@
 <div class="amain-body ">
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
-
         <div class="layui-tab-content">
-
             <form class="layui-form  " action="{:url('admin/shuttle.line/add')}" method="post" style="margin-right:15px;" id="editForm">
-                
-
+                <blockquote class="layui-elem-quote layui-elem-quote-warning">
+                    辅助工具：
+                    <a href="https://lbs.amap.com/console/show/picker" target="_blank"><i class="fa fa-map-marker"></i> 高德经纬度查询</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="https://www.w3cschool.cn/tools/index?name=cpicker" target="_blank"><i class="fa fa-tachometer"></i> 在线拾色</a>
+                    <a href="http://www.5tu.cn/colors/yansebiao.html" target="_blank"><i class="fa fa-tachometer"></i> 在线拾色2</a>
+                </blockquote>
                 <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
                     <legend>起点</legend>
                     <div class="layui-form-item">
                         <label class="layui-form-label">名称</label>
                         <div class="layui-input-block">
-                            <input type="text" name="start_name" value="" required lay-verify="required" placeholder="起点名称"
-                                class="layui-input">
+                            <input type="text" name="start_name" value="" required lay-verify="required" placeholder="起点名称" class="layui-input">
                         </div>
                     </div>
                     <div class="layui-form-item">
                         <label class="layui-form-label">经度</label>
                         <div class="layui-input-block">
-                            <input type="number" name="start_longitude" value="" required lay-verify="required" placeholder="起点经度 longitude"
-                                class="layui-input">
-                    </div>
+                            <input type="number" name="start_longitude" value="" required lay-verify="required" placeholder="起点经度 longitude" class="layui-input">
+                        </div>
                     </div>
                     <div class="layui-form-item">
                         <label class="layui-form-label">纬度</label>
                         <div class="layui-input-block">
-                            <input type="number" name="start_latitude" value="" required lay-verify="required" placeholder="起点纬度 latitude"
-                                class="layui-input">
+                            <input type="number" name="start_latitude" value="" required lay-verify="required" placeholder="起点纬度 latitude" class="layui-input">
                         </div>
                     </div>
                 </fieldset>
                 
                 <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
                     <legend>终点</legend>
-
                     <div class="layui-form-item">
                         <label class="layui-form-label">名称</label>
                         <div class="layui-input-block">
-                            <input type="text" name="end_name" value="" required lay-verify="required" placeholder="终点名称"
-                                class="layui-input">
+                            <input type="text" name="end_name" value="" required lay-verify="required" placeholder="终点名称" class="layui-input">
                         </div>
                     </div>
                     <div class="layui-form-item">
                         <label class="layui-form-label">经度</label>
                         <div class="layui-input-block">
-                            <input type="number" name="end_longitude" value="" required lay-verify="required" placeholder="终点经度 longitude"
-                                class="layui-input">
+                            <input type="number" name="end_longitude" value="" required lay-verify="required" placeholder="终点经度 longitude" class="layui-input">
                         </div>
                     </div>
                     <div class="layui-form-item">
                         <label class="layui-form-label">纬度</label>
                         <div class="layui-input-block">
-                            <input type="number" name="end_latitude" value="" required lay-verify="required" placeholder="终点纬度 latitude"
-                                class="layui-input">
+                            <input type="number" name="end_latitude" value="" required lay-verify="required" placeholder="终点纬度 latitude" class="layui-input">
                         </div>
                     </div>
                 </fieldset>
@@ -61,6 +56,13 @@
                 <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
                     <legend>其它设置</legend>
 
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">颜色</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="color" value="" placeholder="16进制色 #FFFFFF"
+                                class="layui-input">
+                        </div>
+                    </div>
                     <div class="layui-form-item">
                         <label class="layui-form-label">授权区域</label>
                         <div class="layui-input-block J-region-wrapper">
@@ -77,18 +79,18 @@
                     </div>
 
                     <div class="layui-form-item">
-                            <label class="layui-form-label">后台管理授权区域</label>
-                            <div class="layui-input-block J-region-wrapper">
-                                <input type="hidden" name="admin_department_id" value="" class="layui-input layui-input-inline " readonly>
-                                <a onclick="openLayer('{:url('admin/Department/list_dialog')}','选择区域/部门');"
-                                    href="javascript:void(0);" class="layui-btn  layui-btn-primary J-btn-department"
-                                    data-target="admin_department_id:id" data-show-target=".J-dept-select-wrapper"
-                                    data-paramstr='{"default_id":""}'>
-                                    <i class="fa fa-book"></i> <span>选择区域/部门</span>
-                                </a>
-                                <div class="layui-form-mid layui-word-aux">高于或等于该部门的地区权限管理账号才可管理此行程</div>
-                            </div>
+                        <label class="layui-form-label">后台管理授权区域</label>
+                        <div class="layui-input-block J-region-wrapper">
+                            <input type="hidden" name="admin_department_id" value="" class="layui-input layui-input-inline " readonly>
+                            <a onclick="openLayer('{:url('admin/Department/list_dialog')}','选择区域/部门');"
+                                href="javascript:void(0);" class="layui-btn  layui-btn-primary J-btn-department"
+                                data-target="admin_department_id:id" data-show-target=".J-dept-select-wrapper"
+                                data-paramstr='{"default_id":""}'>
+                                <i class="fa fa-book"></i> <span>选择区域/部门</span>
+                            </a>
+                            <div class="layui-form-mid layui-word-aux">高于或等于该部门的地区权限管理账号才可管理此行程</div>
                         </div>
+                    </div>
 
                     <div class="layui-form-item">
                         <label class="layui-form-label">所属类型</label>
@@ -119,6 +121,7 @@
                             <div class="layui-form-mid layui-word-aux">越大越前</div>
                         </div>
                     </div>
+                    
                 </fieldset>
 
                 <div class="layui-form-item">
