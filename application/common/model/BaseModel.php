@@ -4,7 +4,6 @@ namespace app\common\model;
 
 use think\Model;
 use my\RedisData;
-use think\exception\HttpResponseException;
 
 class BaseModel extends Model
 {
@@ -12,6 +11,23 @@ class BaseModel extends Model
     public $errorMsg = null;
     public $errorCode = 0;
     public $errorData = null;
+
+    public function error($code, $msg, $data = [])
+    {
+        $this->errorCode = $code;
+        $this->errorMsg = $msg;
+        $this->errorData = $data;
+        return false;
+    }
+
+    public function getError()
+    {
+        return [
+            'code' => $this->errorCode,
+            'msg' => $this->errorMsg,
+            'data' => $this->errorData,
+        ];
+    }
 
     /**
      * 创建redis对像
