@@ -63,6 +63,16 @@ Route::group([], function () {
     Route::rule('api/:version/trips/:from/:id', 'api/:version.trips/cancel', 'DELETE')->pattern(['id' => '\d+']); //取消行程
     Route::rule('api/:version/trip_active/gps', 'api/:version.trip_active/gps', 'GET');
 
+    //班车行程相关
+    Route::rule('api/:version/shuttle/line', 'api/:version.shuttle.line/index', 'GET'); // 路线列表
+    Route::rule('api/:version/shuttle/time', 'api/:version.shuttle.time/index', 'GET'); // 时刻列表
+    Route::rule('api/:version/shuttle/trip/cars', 'api/:version.shuttle.trip/cars', 'GET'); // 班车空座位列表
+    Route::rule('api/:version/shuttle/trip/requests', 'api/:version.shuttle.trip/requests', 'GET'); // 班车需求列表
+    Route::rule('api/:version/shuttle/trip/pickup', 'api/:version.shuttle.trip/pickup', 'POST'); // 接乘客
+    Route::rule('api/:version/shuttle/trip/hitchhiking', 'api/:version.shuttle.trip/hitchhiking', 'POST'); // 乘客上车
+    Route::rule('api/:version/shuttle/trip', 'api/:version.shuttle.trip/save', 'POST'); // 发布班车行程
+    Route::rule('api/:version/shuttle/trip/:id/passengers', 'api/:version.shuttle.trip/passengers', 'GET')->pattern(['id' => '\d+']); //行程的乘客列表
+    Route::rule('api/:version/shuttle/trip/:id', 'api/:version.shuttle.trip/show', 'GET')->pattern(['id' => '\d+']); //行程明细
 
 
     //地址相关
