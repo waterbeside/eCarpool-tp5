@@ -258,4 +258,17 @@ class ApiBase extends Base
             return false;
         }
     }
+
+    /**
+     * 取得分页数据
+     */
+    public function getPageData($results)
+    {
+        return [
+            'total' => $results['total'],
+            'pageSize' => $results['per_page'],
+            'lastPage' => $results['last_page'],
+            'currentPage' => intval($results['current_page']),
+        ];
+    }
 }
