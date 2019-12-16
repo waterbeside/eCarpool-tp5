@@ -2,6 +2,8 @@
 
 namespace app\carpool\service;
 
+use app\common\service\Service;
+use app\carpool\model\ShuttleTrip as ShuttleTripModel;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
 use app\carpool\model\Address;
@@ -12,22 +14,11 @@ use app\user\model\Department as DepartmentModel;
 use think\Db;
 use my\RedisData;
 
-class Trips
+class Trips extends Service
 {
 
-    public $errorCode = 0;
-    public $errorMsg = '';
-    public $data = [];
     protected $cacheKey_myTrip = "carpool:trips:my:";
     protected $cacheKey_myInfo = "carpool:trips:my_info:";
-
-    protected function error($code, $msg, $data = [])
-    {
-        $this->errorCode = $code;
-        $this->errorMsg = $msg;
-        $this->data = $data;
-        return false;
-    }
 
     /**
      * 创件状态筛选map
@@ -60,14 +51,23 @@ class Trips
 
     /**
      * 创件要select的用户字段
+     *
+     * @param mixed $a 别名
+     * @param array $fields 要显示的字段
      */
     public function buildUserFields($a = "u", $fields = [])
     {
         $format_array = [];
         $fields = !empty($fields) ? $fields : ['uid', 'loginname', 'name','nativename', 'phone', 'mobile', 'Department', 'sex', 'company_id', 'department_id', 'companyname', 'imgpath', 'carnumber', 'carcolor', 'im_id'];
-
+        if (is_array($a)) {
+            $aa = $a;
+            $a = $aa[0];
+            $pf = isset($aa[1]) ? $aa[1].'_' : '';
+        } else {
+            $pf = $a.'_';
+        }
         foreach ($fields as $key => $value) {
-            $format_array[$key] = $a . "." . $value . " as " . $a . "_" . mb_strtolower($value);
+            $format_array[$key] = $a . "." . $value . " as " . $pf . mb_strtolower($value);
         }
         return join(",", $format_array);
     }
@@ -491,7 +491,7 @@ class Trips
             $cacheKey_03 = "carpool:citys:company_id_$company_id:type_1";
             $cacheKey_04 = "carpool:citys:company_id_$company_id:type_2";
 
-            $redis->delete($cacheKey_01, $cacheKey_02, $cacheKey_03, $cacheKey_04);
+            $redis->del($cacheKey_01, $cacheKey_02, $cacheKey_03, $cacheKey_04);
 
             /** 删除空座位列表缓存 */
             $cacheKeyData_n = [
@@ -519,22 +519,24 @@ class Trips
             $listCacheKey_n_1 = $this->buildListCacheKey($cacheKeyData_n_1);
             $listCacheKey_0_1 = $this->buildListCacheKey($cacheKeyData_0_1);
             $listCacheKey_1_1 = $this->buildListCacheKey($cacheKeyData_1_1);
-            $redis->delete($listCacheKey_n, $listCacheKey_0, $listCacheKey_1, $listCacheKey_0_1, $listCacheKey_1_1, $listCacheKey_n_1);
+            $redis->del($listCacheKey_n, $listCacheKey_0, $listCacheKey_1, $listCacheKey_0_1, $listCacheKey_1_1, $listCacheKey_n_1);
 
             $cacheKey_mapcars_n = "carpool:trips:mapCars:mapType_-1:company_{$company_ids}";
             $cacheKey_mapcars_0 = "carpool:trips:mapCars:mapType_0:company_{$company_ids}";
             $cacheKey_mapcars_1 = "carpool:trips:mapCars:mapType_1:company_{$company_ids}";
-            $redis->delete($cacheKey_mapcars_n, $cacheKey_mapcars_0, $cacheKey_mapcars_1);
+            $redis->del($cacheKey_mapcars_n, $cacheKey_mapcars_0, $cacheKey_mapcars_1);
         }
     }
 
     /**
-     * 发布行程时检查行程是否有重复
-     * @param  Timestamp   $time       出发时间的时间戳
-     * @param  Integer     $uid        发布者ID
-     * @param  String      $offsetTime 时间偏差范围
+     * 通过时间范围取得合并的数据内容
+     *
+     * @param  integer     $time       出发时间的时间戳
+     * @param  integer     $uid        发布者ID
+     * @param  string      $offsetTime 时间偏差范围
+     *
      */
-    public function checkRepetition($time, $uid, $offsetTime = 60 * 30, $level = [[60*10,10],[60*30,20]])
+    public function getUnionListByTimeOffset($time, $uid, $offsetTime = 60 * 30)
     {
         $startTime = $time - $offsetTime;
         $endTime =   $time + $offsetTime;
@@ -557,11 +559,13 @@ class Trips
             foreach ($res_wall as $key => $value) {
                 $data = [
                     'from'=>'wall',
+                    'id'  => $value['love_wall_ID'],
+                    'time'=>strtotime($value['time'] . '00'),
+                    'user_type' => 1,
                     'love_wall_ID' => $value['love_wall_ID'],
                     'info_id' => 0,
                     'd_uid' => $value['carownid'],
                     'p_uid' => 0,
-                    'time'=>strtotime($value['time'] . '00'),
                 ];
                 $res[] = $data;
             }
@@ -571,19 +575,22 @@ class Trips
             foreach ($res_info as $key => $value) {
                 $data = [
                     'from'=>'info',
+                    'id' => $value['infoid'],
+                    'time'=>strtotime($value['time'] . '00'),
+                    'user_type' => $value['carownid'] > 0 && $value['carownid'] == $uid ? 1 : 0,
                     'love_wall_ID' => $value['love_wall_ID'],
                     'info_id' => $value['infoid'],
                     'd_uid' => $value['carownid'],
                     'p_uid' => $value['passengerid'],
-                    'd_uid'=>'wall',
-                    'time'=>strtotime($value['time'] . '00'),
                 ];
                 $res[] = $data;
             }
         }
-        if (empty($res)) {
-            return false;
-        }
+        return $res;
+    }
+
+    public function checkRepetitionByList($list, $time, $itemOffset, $level = [[60*10,10],[60*30,20]])
+    {
         $level_checked = [];
         $level_timeList = [];
         $level_dataList = [];
@@ -594,7 +601,7 @@ class Trips
             $existCount = 0;
             $timeList = [];
             $dataList = [];
-            foreach ($res as $key => $value) {
+            foreach ($list as $key => $value) {
                 $time_s = $time - $itemOffset;
                 $time_e = $time + $itemOffset;
                 if ($value['time'] > $time_s && $value['time'] < $time_e) {
@@ -623,5 +630,35 @@ class Trips
         }
         $this->error(30007, $errorMsg);
         return $level_dataList;
+    }
+
+    /**
+     * 发布行程时检查行程是否有重复
+     * @param  integer     $time       出发时间的时间戳
+     * @param  integer     $uid        发布者ID
+     * @param  string      $offsetTime 时间偏差范围
+     */
+    public function checkRepetition($time, $uid, $offsetTime = 60 * 30, $level = [[60*10,10],[60*30,20]])
+    {
+        $res = $this->getUnionListByTimeOffset($time, $uid, $offsetTime);
+        if (empty($res)) {
+            return false;
+        }
+        return $this->checkRepetitionByList($res, $time, $offsetTime, $level);
+    }
+
+    /**
+     * 发布行程时检查行程是否有重复 (包含ShuttleTrip, love_wall , info)
+     * @param  integer     $time       timestamp 出发时间的时间戳
+     * @param  integer     $uid        发布者ID
+     * @param  string      $offsetTime 时间偏差范围
+     */
+    public function getRepetition($time, $uid, $offsetTime = 60 * 30, $level = [[60*10,10],[60*30,20]])
+    {
+        $ShuttleTripModel = new ShuttleTripModel();
+        $list_trip = $ShuttleTripModel->getListByTimeOffset($time, $uid, $offsetTime);
+        $list_wallinfo = $this->getUnionListByTimeOffset($time, $uid, $offsetTime);
+        $list = array_merge($list_trip, $list_wallinfo);
+        return $this->checkRepetitionByList($list, $time, $offsetTime, $level);
     }
 }
