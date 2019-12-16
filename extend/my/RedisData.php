@@ -36,9 +36,9 @@ class RedisData extends Redis
     public function cache($cacheKey, $value = false, $ex = 0)
     {
         if ($value === null) {
-            return $this->delete($cacheKey);
+            return $this->del($cacheKey);
         } elseif ($value !== false) {
-            $value = is_string($value) ? $value : json_encode($value);
+            $value = $this->formatValue($value);
             if ($ex > 0) {
                 return $this->setex($cacheKey, $ex, $value);
             } else {
@@ -46,8 +46,47 @@ class RedisData extends Redis
             }
         } else {
             $str =  $this->get($cacheKey);
-            $redData = $str  !== false ? json_decode($str, true) : false;
+            $redData = $this->formatRes($str);
             return $redData;
         }
+    }
+
+
+    /**
+     * hGet、hSet合并使用
+     *
+     * @param string $cacheKey
+     * @param [type] $field
+     * @param boolean $value
+     * @param integer $ex
+     * @return void
+     */
+    public function hCache($cacheKey, $field, $value = false, $ex = 0)
+    {
+        if ($value !== false) {
+            $value = $this->formatValue($value);
+            $this->hSet($cacheKey, $field, $value);
+            return true;
+            if ($ex > 0) {
+                $this->expire($cacheKey, $ex);
+            }
+        } else {
+            $str =  $this->hGet($cacheKey, $field);
+            $redData = $this->formatRes($str);
+            return $redData;
+        }
+    }
+
+
+    public function formatValue($value)
+    {
+        $value = is_string($value) ? $value : json_encode($value);
+        return $value;
+    }
+
+    public function formatRes($res)
+    {
+        $redData = $res !== false ? json_decode($res, true) : false;
+        return $redData;
     }
 }
