@@ -1,7 +1,7 @@
 <style>
     .P-shuttle-line-form .geo-wrapper .item {line-height: 40px; border-bottom:1px dotted #DDD; background:#F0F0F0; padding:8px 0 4px 10px;}
     .P-shuttle-line-form .geo-wrapper .item  .layui-input { display: inline-block;}
-    .P-shuttle-line-form .geo-wrapper .item .color-show { font-size: 14px;}
+    .P-shuttle-line-form .geo-wrapper .item .color-show { font-size: 14px; text-shadow: 0 2px 6px rgba(0,0,0,.4);}
     .P-shuttle-line-form .geo-wrapper .btns { display: block; float:right; text-align: right; width: 100px;}
     .P-shuttle-line-form .geo-wrapper .btns .btn {padding: 2px 8px;}
 </style>
@@ -24,14 +24,7 @@
                     <div class="geo-wrapper" id="geo-list">
                         <div class="layui-form-item item">
                             <div class="item-inner" >
-                                <div class="layui-input-inline" style="width: 120px;" >
-                                    <i class="fa fa-circle color-show"></i>
-                                    <input type="text" name="color" value="" placeholder="颜色 #FFFFFF" class="layui-input" style="width: 90px;" 
-                                        onfocus="PAGE_EXEC.setColorFocus(this)" 
-                                        onchange="PAGE_EXEC.setColor(this)"
-                                        onblur="PAGE_EXEC.setColor(this)"
-                                    >
-                                </div>
+                                
                                 <div class="layui-input-inline" style="width: 310px;" >
                                     <input type="text" name="start_name" value="" required  placeholder="起点名称" class="layui-input" style="width: 120px;">
                                     <input type="number" name="start_longitude" value="" required placeholder="起点经度 longitude" class="layui-input" style="width: 90px;">
@@ -39,12 +32,19 @@
                                 </div>
                                 
                                 <div style="float: left; width: 20px; line-height: 36px; padding: 0;">
-                                    <i class="fa fa-arrow-right"></i>
+                                    <i class="fa fa-arrow-right color-show"></i>
                                 </div>
                                 <div class="layui-input-inline" style="width: 310px;" >
                                     <input type="text" name="end_name" value="" required  placeholder="终点名称" class="layui-input" style="width: 120px;">
                                     <input type="number" name="end_longitude" value="" required placeholder="终点经度 longitude" class="layui-input" style="width: 90px;">
                                     <input type="number" name="end_latitude" value="" required placeholder="终点纬度 latitude" class="layui-input" style="width: 90px;">
+                                </div>
+                                <div class="layui-input-inline" style="width: 120px;" >
+                                    <input type="text" name="color" value="" placeholder="颜色 #FFFFFF" class="layui-input" style="width: 90px;" 
+                                        onfocus="PAGE_EXEC.setColorFocus(this)" 
+                                        onchange="PAGE_EXEC.setColor(this)"
+                                        onblur="PAGE_EXEC.setColor(this)"
+                                    >
                                 </div>
                                 
                                 <div class="layui-input-inline btns">
