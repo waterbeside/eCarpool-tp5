@@ -74,7 +74,7 @@ class Line extends ApiBase
             if ($keyword) {
                 $map[] = ['start_name|end_name','line',"%$keyword%"];
             }
-            $modelObj = ShuttleLineModel::field('is_delete, status, create_time, update_time, admin_department_id, sort', true)->where($map)->order('sort Desc');
+            $modelObj = ShuttleLineModel::field('is_delete, status, create_time, update_time, admin_department_id', true)->where($map)->order('sort Desc');
             if ($pagesize > 0) {
                 $results =    $modelObj->paginate($pagesize, false, ['query' => request()->param()])->toArray();
                 if (!$results['data']) {
