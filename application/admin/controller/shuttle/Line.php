@@ -90,10 +90,13 @@ class Line extends AdminBase
      * 添加路线
      * @return mixed
      */
-    public function add()
+    public function add($data = null, $returnType = 1)
     {
         if ($this->request->isPost()) {
-            $data = $this->request->param();
+            $data = $data ? $data : $this->request->param();
+            if ($data['batch']) {
+                return $this->batch_add();
+            }
             $validate_result = $this->validate($data, 'app\carpool\validate\ShuttleLine');
             if ($validate_result !== true) {
                 return $this->jsonReturn(-1, $validate_result);
@@ -123,15 +126,52 @@ class Line extends AdminBase
             } catch (\Exception $e) {
                 Db::connect('database_carpool')->rollback();
                 $errorMsg = $e->getMessage();
-                return $this->jsonReturn(-1, null, '添加失败', ['errMsg'=>$errorMsg]);
+                return $returnType ? $this->jsonReturn(-1, null, '添加失败', ['errMsg'=>$errorMsg]) : [-1, null, '添加失败',  ['errMsg'=>$errorMsg]];
             }
-            $ShuttleLine->delectListCache($data['type']);
-            return $this->jsonReturn(0, '保存成功');
+            $ShuttleLine->delListCache($data['type']);
+            return $returnType ? $this->jsonReturn(0, '保存成功') : [0, '保存成功'];
         } else {
             $this->assign('shuttle_line_type', config('carpool.shuttle_line_type'));
-            return $this->fetch('add');
+            $tpl = input('param.batch/d', 0) == 1 ? 'batch_add' : 'add';
+            return $this->fetch($tpl);
         }
     }
+
+    public function batch_add()
+    {
+        if ($this->request->isPost()) {
+            $addCount = 0;
+            $data = $this->request->param();
+            $lines = $data['lines'];
+            foreach ($lines as $key => $value) {
+                $upData = [
+                    'batch' => false,
+                    'start_name' => $value['start_name'],
+                    'start_longitude' => $value['start_longitude'],
+                    'start_latitude' => $value['start_latitude'],
+                    'end_name' => $value['end_name'],
+                    'end_longitude' => $value['end_longitude'],
+                    'end_latitude' => $value['end_latitude'],
+                    'color' => $value['color'],
+                    'department_ids' => $data['department_ids'],
+                    'admin_department_id' => $data['admin_department_id'],
+                    'type' => $data['type'],
+                    'status' => $data['status'],
+                    'map_type' => $data['map_type'],
+                    'sort' => $data['sort'],
+                ];
+                $res = $this->add($upData, 0);
+                if ($res) {
+                    $code = $res[0] ?? -1;
+                    if ($code === 0) {
+                        $addCount ++;
+                    }
+                }
+            }
+            return $this->jsonReturn($addCount > 0 ? 0 : -1, "成功添加{$addCount}条数据");
+        }
+    }
+
 
 
     /**

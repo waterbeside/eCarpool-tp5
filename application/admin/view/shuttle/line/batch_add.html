@@ -1,0 +1,216 @@
+<style>
+    .P-shuttle-line-form .geo-wrapper .item {line-height: 40px; border-bottom:1px dotted #DDD; background:#F0F0F0; padding:8px 0 4px 10px;}
+    .P-shuttle-line-form .geo-wrapper .item  .layui-input { display: inline-block;}
+    .P-shuttle-line-form .geo-wrapper .item .color-show { font-size: 14px;}
+    .P-shuttle-line-form .geo-wrapper .btns { display: block; float:right; text-align: right; width: 100px;}
+    .P-shuttle-line-form .geo-wrapper .btns .btn {padding: 2px 8px;}
+</style>
+<div class="amain-body P-shuttle-line-form">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <div class="layui-tab-content">
+            <form class="layui-form " action="{:url('admin/shuttle.line/add',['batch'=>1])}" method="post" style="margin-right:15px;" id="editForm">
+                <blockquote class="layui-elem-quote layui-elem-quote-warning">
+                    辅助工具：
+                    <a href="https://lbs.amap.com/console/show/picker" target="_blank"><i class="fa fa-map-marker"></i> 高德经纬度查询</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="https://www.w3cschool.cn/tools/index?name=cpicker" target="_blank"><i class="fa fa-tachometer"></i> 在线拾色</a>
+                    <a href="http://www.5tu.cn/colors/yansebiao.html" target="_blank"><i class="fa fa-tachometer"></i> 在线拾色2</a>
+                    <div style="display: inline-block; margin-left: 20px;">
+                        <div class='u-color'></div>
+                    </div>
+                </blockquote>
+                <fieldset class="layui-elem-field" style="padding:24px 12px 12px 12px;">
+                    <legend>GEO</legend>
+                    <div class="geo-wrapper" id="geo-list">
+                        <div class="layui-form-item item">
+                            <div class="item-inner" >
+                                <div class="layui-input-inline" style="width: 120px;" >
+                                    <i class="fa fa-circle color-show"></i>
+                                    <input type="text" name="color" value="" placeholder="颜色 #FFFFFF" class="layui-input" style="width: 90px;" 
+                                        onfocus="PAGE_EXEC.setColorFocus(this)" 
+                                        onchange="PAGE_EXEC.setColor(this)"
+                                        onblur="PAGE_EXEC.setColor(this)"
+                                    >
+                                </div>
+                                <div class="layui-input-inline" style="width: 310px;" >
+                                    <input type="text" name="start_name" value="" required  placeholder="起点名称" class="layui-input" style="width: 120px;">
+                                    <input type="number" name="start_longitude" value="" required placeholder="起点经度 longitude" class="layui-input" style="width: 90px;">
+                                    <input type="number" name="start_latitude" value="" required placeholder="起点纬度 latitude" class="layui-input"  style="width: 90px;">
+                                </div>
+                                
+                                <div style="float: left; width: 20px; line-height: 36px; padding: 0;">
+                                    <i class="fa fa-arrow-right"></i>
+                                </div>
+                                <div class="layui-input-inline" style="width: 310px;" >
+                                    <input type="text" name="end_name" value="" required  placeholder="终点名称" class="layui-input" style="width: 120px;">
+                                    <input type="number" name="end_longitude" value="" required placeholder="终点经度 longitude" class="layui-input" style="width: 90px;">
+                                    <input type="number" name="end_latitude" value="" required placeholder="终点纬度 latitude" class="layui-input" style="width: 90px;">
+                                </div>
+                                
+                                <div class="layui-input-inline btns">
+                                    <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this)"><i class="fa fa-plus"></i></a>
+                                    <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this,1)"><i class="fa fa-copy"></i></a>
+                                    <a href="javascript:void(0)" class="btn btn-delete" onclick="MyDynItem.del(this,{dl_action:2})"><i class="fa fa-times"></i></a>
+                                </div>
+    
+                            </div>
+                        </div>
+                    </div>
+
+                </fieldset>
+
+                <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
+                    <legend>其它设置</legend>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">授权区域</label>
+                        <div class="layui-input-block J-region-wrapper">
+                            <input type="hidden" name="department_ids" value="" class="layui-input layui-input-inline " readonly>
+                            <a onclick="openLayer('{:url('admin/Department/list_dialog',['multi'=>1])}','选择区域/部门');"
+                                href="javascript:void(0);" class="layui-btn  layui-btn-primary J-btn-department"
+                                data-target="department_ids:id" data-show-target=".J-dept-select-wrapper"
+                                data-paramstr='{"default_id":""}'>
+                                <i class="fa fa-book"></i> <span>选择区域/部门</span>
+                            </a>
+                            <div class="J-dept-select-wrapper"></div>
+                            <div class="layui-form-mid layui-word-aux">选择后，该部门下的用户能看到本路线</div>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">后台管理授权区域</label>
+                        <div class="layui-input-block J-region-wrapper">
+                            <input type="hidden" name="admin_department_id" value="" class="layui-input layui-input-inline " readonly>
+                            <a onclick="openLayer('{:url('admin/Department/list_dialog')}','选择区域/部门');"
+                                href="javascript:void(0);" class="layui-btn  layui-btn-primary J-btn-department"
+                                data-target="admin_department_id:id" data-show-target=".J-dept-select-wrapper"
+                                data-paramstr='{"default_id":""}'>
+                                <i class="fa fa-book"></i> <span>选择区域/部门</span>
+                            </a>
+                            <div></div>
+                            <div class="layui-form-mid layui-word-aux">高于或等于该部门的地区权限管理账号才可管理此行程</div>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">所属类型</label>
+                        <div class="layui-input-block">
+                            <select name="type">
+                                {foreach name="$shuttle_line_type" key='key' item="vo"}
+                                <option value="{$key}"> {$vo}</option>
+                                {/foreach}
+                            </select>
+                            <div class="layui-form-mid layui-word-aux">选择上班路线还是下班路线</div>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-block">
+                            <select name="status">
+                                <option value="1"> 启用</option>
+                                <option value="0"> 禁用</option>
+                            </select>
+                            <div class="layui-form-mid layui-word-aux">是否可选</div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">地图类型</label>
+                        <div class="layui-input-block">
+                            <select name="map_type">
+                                <option value="0"> 高德</option>
+                                <option value="1"> Google</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">排序</label>
+                        <div class="layui-input-block">
+                            <input type="number" name="sort" value="0"  placeholder="排序" class="layui-input">
+                            <div class="layui-form-mid layui-word-aux">越大越前</div>
+                        </div>
+                    </div>
+                    
+                </fieldset>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="*add_form">保存</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+    PAGE_EXEC = {
+        colorInput: null,
+        init: function () {
+            var _this = this;
+            var colorpicker = layui.colorpicker;
+            colorpicker.render({
+                elem: '.u-color',
+                change: function(color){
+                    if ( _this.colorInput) {
+                        _this.colorInput.val(color);
+                        _this.colorInput.closest('.item-inner').find('.color-show').css({'color':color})
+                    }else {
+                        $('#editForm').find('input[name="color"]:last').val(color);
+                        $('#editForm').find('input[name="color"]:last').closest('.item-inner').find('.color-show').css({'color':color})
+                    }
+                }
+            });
+            form.render();
+            element.init();
+
+            /**
+             * 提交
+             */
+            form.on('submit(*add_form)', function (data) {
+                return _this.submitData(data);
+            });
+        },
+
+        setColorFocus: function(obj){
+            PAGE_EXEC.colorInput = $(obj);
+        },
+
+        setColor: function(obj){
+            var color = $(obj).val();
+            $(obj).closest('.item-inner').find('.color-show').css({'color':color})
+        },
+
+        /**
+        *提效数据
+        */
+        submitData:function(data){
+            var fieldData = data.field;
+            var upData = $.extend({},data.field);
+            var merchandizingData = [];
+            
+            let lines = MyDynItem.getData("#geo-list", ['start_name','start_longitude','start_latitude','end_name','end_longitude','end_latitude', 'color']);
+            upData.lines = lines;
+            
+            ajaxSubmit({
+                url: data.form.action,
+                dataType:'json',
+                type: data.form.method,
+                data: upData,
+                unrefresh: $(data.form).data('unrefresh') ? $(data.form).data('unrefresh') : false,
+                jump : $(data.form).data('jump') ? $(data.form).data('jump') : "" ,
+                jumpWin: $(data.form).data('jump-target') == "parent" ? parent : null
+            });
+            return false;
+        },
+    
+    }
+
+    $(function () {
+        PAGE_EXEC.init();
+    });
+    
+</script>
