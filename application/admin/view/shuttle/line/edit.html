@@ -64,11 +64,13 @@
 
                 <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
                     <legend>其它设置</legend>
-
                     <div class="layui-form-item">
                         <label class="layui-form-label">颜色</label>
-                        <div class="layui-input-block">
-                            <input type="text" name="color" value="{$data.color}" placeholder="16进制色 #FFFFFF" class="layui-input">
+                        <div class="layui-input-inline">
+                            <input type="text" name="color" value="{$data.color}" placeholder="16进制色 #FFFFFF" class="layui-input" >
+                        </div>
+                        <div style="display: inline-block; margin-left: -11px;">
+                            <div id='u-color'></div>
                         </div>
                     </div>
 
@@ -124,6 +126,15 @@
                         </div>
                     </div>
                     <div class="layui-form-item">
+                        <label class="layui-form-label">地图类型</label>
+                        <div class="layui-input-block">
+                            <select name="map_type">
+                                <option value="0" {if condition="$data.map_type === 0"} selected="selected"{/if}> 高德</option>
+                                <option value="1" {if condition="$data.map_type === 1"} selected="selected"{/if}> Google</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
                         <label class="layui-form-label">排序</label>
                         <div class="layui-input-block">
                             <input type="number" name="sort" value="{$data.sort}"  placeholder="排序" class="layui-input">
@@ -153,6 +164,14 @@
             form.render();
             element.init();
             MyDept().renderShowBox(_this.datas.deptsData, $('.J-dept-select-wrapper'));
+            var colorpicker = layui.colorpicker;
+            colorpicker.render({
+                elem: '#u-color',
+                color:'{$data.color}',
+                change: function(color, elem){
+                    $('#editForm').find('input[name="color"]').val(color);
+                }
+            });
 
         },
     }
