@@ -47,27 +47,24 @@ class Trips extends ApiBase
             $cacheKey = $this->cacheKey_myTrip . "u{$uid}";
             $cacheField = "pz{$pagesize}_p{$page}_fd{$fullData}";
             $cacheExp = 60 * 2;
-            $cacheData = $redis->hGet($cacheKey, $cacheField);
+            $cacheData = $redis->hCache($cacheKey, $cacheField);
+            if ($cacheData == "-1") {
+                return $this->jsonReturn(20002, lang('No data'));
+            }
             if ($cacheData) {
-                if ($cacheData == "-1") {
-                    return $this->jsonReturn(20002, lang('No data'));
-                }
-                $returnData = json_decode($cacheData, true);
-                return $this->jsonReturn(0, $returnData, "success");
+                return $this->jsonReturn(0, $cacheData, "success");
             }
         }
         $returnData = $TripsListService->myList($userData, $pagesize, $type);
 
         if ($returnData === false) {
             if (!$type) {
-                $redis->hSet($cacheKey, $cacheField, -1);
-                $redis->expire($cacheKey, 5);
+                $redis->hCache($cacheKey, $cacheField, -1, 5);
             }
             return $this->jsonReturn(20002, lang('No data'));
         }
         if (!$type) {
-            $redis->hSet($cacheKey, $cacheField, json_encode($returnData));
-            $redis->expire($cacheKey, $cacheExp);
+            $redis->hCache($cacheKey, $cacheField, $returnData, $cacheExp);
         }
         $this->jsonReturn(0, $returnData, "success");
     }
@@ -87,22 +84,21 @@ class Trips extends ApiBase
         // 查缓存
         $cacheKey = "carpool:trips:history:u{$uid}:pz{$pagesize}_p{$page}";
         $cacheExp = 60 * 3;
-        $cacheData = $redis->get($cacheKey);
+        $cacheData = $redis->cache($cacheKey);
+        if ($cacheData == "-1") {
+            return $this->jsonReturn(20002, lang('No data'));
+        }
         if ($cacheData) {
-            if ($cacheData == "-1") {
-                return $this->jsonReturn(20002, lang('No data'));
-            }
-            $returnData = json_decode($cacheData, true);
-            return $this->jsonReturn(0, $returnData, "success");
+            return $this->jsonReturn(0, $cacheData, "success");
         }
 
         $returnData = $TripsListService->history($userData, $pagesize);
         if ($returnData === false) {
-            $redis->setex($cacheKey, $cacheExp, -1);
+            $redis->cache($cacheKey, -1, $cacheExp);
             return $this->jsonReturn(20002, lang('No data'));
         }
 
-        $redis->setex($cacheKey, $cacheExp, json_encode($returnData));
+        $redis->cache($cacheKey, $returnData, $cacheExp);
         $this->jsonReturn(0, $returnData, "success");
         // $TripsService->unsetResultValue($this->index($pagesize, 1, 1));
     }
@@ -369,7 +365,7 @@ class Trips extends ApiBase
         }
 
         //计算前后范围内有没有重复行程
-        if ($TripsService->checkRepetition($time_x, $uid)) {
+        if ($TripsService->getRepetition($time_x, $uid)) {
             $this->jsonReturn(30007, [], $TripsService->errorMsg);
         }
         // if ($WallModel->checkRepetition($time_x, $uid, 60 * 10)) {
@@ -644,7 +640,7 @@ class Trips extends ApiBase
         $exp = "30";   //缓存过期时间
         $cacheKey = [];
         $cacheKey['not_rated'] = "carpool:trips:check_my_status:not_rated:" . $uid;
-        $cacheData = $redis->get($cacheKey['not_rated']);
+        $cacheData = $redis->cache($cacheKey['not_rated']);
         if ($cacheData) {
             $returnList = json_decode($cacheData, true);
             $returnList = $returnList ? $returnList : [];
@@ -698,7 +694,7 @@ class Trips extends ApiBase
                     $returnList[] = $returnValue;
                 }
             }
-            $redis->setex($cacheKey['not_rated'], $exp, json_encode($returnList));
+            $redis->cache($cacheKey['not_rated'], $returnList, $exp);
         }
 
         $returnData = [
@@ -864,7 +860,7 @@ class Trips extends ApiBase
         } elseif (is_numeric($wid)) {
             $redis = new RedisData();
             $cacheKey = $this->cacheKey_passengers."wall_$wid";
-            $redis->delete($cacheKey);
+            $redis->del($cacheKey);
         }
     }
 }
