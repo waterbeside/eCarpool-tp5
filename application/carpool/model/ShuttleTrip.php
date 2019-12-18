@@ -6,7 +6,7 @@ use think\facade\Cache;
 use my\RedisData;
 use app\common\model\BaseModel;
 
-// use think\Db;
+use think\Db;
 
 class ShuttleTrip extends BaseModel
 {
@@ -20,6 +20,16 @@ class ShuttleTrip extends BaseModel
     protected $insert = [];
     protected $update = [];
 
+    /**
+     * 取得单项数据缓存Key设置
+     *
+     * @param integer $id 主键
+     * @return string
+     */
+    public function getItemCacheKey($id)
+    {
+        return "carpool:shuttle:line:$id";
+    }
 
     /**
      * 取得列表cacheKey;
@@ -123,46 +133,13 @@ class ShuttleTrip extends BaseModel
      */
     public function getListField($alias = '')
     {
-        $fieldArray = ['id', 'comefrom', 'user_type','trip_id', 'line_id', 'plate', 'status', 'time', 'create_time'];
+        $fieldArray = ['id', 'comefrom', 'user_type','trip_id', 'line_id', 'plate', 'status', 'time', 'create_time', 'seat_count'];
         $newFieldArray = [];
         foreach ($fieldArray as $key => $value) {
             $newField = $alias ? $alias.'.'.$value : $value;
             $newFieldArray[] = $newField;
         }
         return implode(',', $newFieldArray);
-    }
-
-    /**
-     * 取得单行数据
-     *
-     * @param integer $id ID
-     * @param * $field 选择返回的字段，当为数字时，为缓存时效
-     * @param integer $ex 缓存时效
-     * @return void
-     */
-    public function getItem($id, $field = '*', $ex = 60 * 5)
-    {
-        if (is_numeric($field)) {
-            $ex = $field;
-            $field = "*";
-        }
-        $cacheKey =  "carpool:shuttle:trip:$id";
-        $redis = new RedisData();
-        $res = $redis->cache($cacheKey);
-        if (!$res) {
-            $res = $this->find($id)->toArray();
-            $redis->cache($cacheKey, $res, $ex);
-        }
-        $returnData = [];
-        if ($field != '*') {
-            $fields = is_array($field) ? $field : explode(',', $field);
-            foreach ($fields as $key => $value) {
-                $returnData[$value] = isset($res[$value]) ? $res[$value] : null;
-            }
-        } else {
-            $returnData =  $res;
-        }
-        return $returnData;
     }
 
     /**
@@ -241,5 +218,21 @@ class ShuttleTrip extends BaseModel
                 $redis->del($my_cacheKey);
             }
         }
+    }
+
+    /**
+     * 计算乘客个数
+     *
+     * @param [type] $id
+     * @return void
+     */
+    public function countPassengers($id)
+    {
+        $map = [
+            ['t.user_type', '=', Db::raw(0)],
+            ['t.trip_id', '=', $id],
+            ['t.status', 'between', [0,3]],
+        ];
+        return $this->where($map)->count();
     }
 }
