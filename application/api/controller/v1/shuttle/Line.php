@@ -27,7 +27,7 @@ class Line extends ApiBase
     }
 
 
-    public function index($type = 1, $page = 1, $pagesize = 0)
+    public function index($type = 1, $show_count = 1, $page = 1, $pagesize = 0)
     {
         $redis = new RedisData();
         $departmentModel = new Department();
@@ -110,13 +110,16 @@ class Line extends ApiBase
                 $redis->hCache($cacheKey, $rowCacheKey, $returnData, $ex);
             }
         }
-        foreach ($returnData['lists'] as $key => $value) {
-            $countData = [
-                'cars' => $shuttleTrip->countByLine($value['id'], 'cars'),
-                'requests' => $shuttleTrip->countByLine($value['id'], 'requests'),
-            ];
-            $returnData['lists'][$key]['countData'] = $countData;
+        if (is_numeric($show_count) && $show_count > 0) {
+            foreach ($returnData['lists'] as $key => $value) {
+                $countData = [
+                    'cars' => $shuttleTrip->countByLine($value['id'], 'cars'),
+                    'requests' => $shuttleTrip->countByLine($value['id'], 'requests'),
+                ];
+                $returnData['lists'][$key]['countData'] = $countData;
+            }
         }
+        
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
 }
