@@ -66,7 +66,7 @@ class ShuttleTrip extends Service
         $repetitionList = $TripsService->getRepetition($rqData['time'], $uid);
         if ($repetitionList) {
             $errorData = $TripsService->getError();
-            $this->error($errorData['code'], $errorData['msg'], $repetitionList);
+            $this->error($errorData['code'], $errorData['msg'], ['lists'=>$repetitionList]);
             return false;
         }
 
@@ -94,8 +94,9 @@ class ShuttleTrip extends Service
         $cData = [
             'create_type' => $rqData['create_type'],
             'line_id' => $rqData['line_id'],
-            'trip_id' => $rqData['trip_id'],
-            'uid' => $rqData['uid'],
+            'trip_id' => $trip_id,
+            'uid' => $uid,
+            'myType' => 'my',
         ];
 
         $ShuttleTripModel->delCacheAfterAdd($cData);
