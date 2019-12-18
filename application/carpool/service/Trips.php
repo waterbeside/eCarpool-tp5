@@ -54,8 +54,10 @@ class Trips extends Service
      *
      * @param mixed $a 别名
      * @param array $fields 要显示的字段
+     * @param integer $returnType  返回类型
+     * @return mixed
      */
-    public function buildUserFields($a = "u", $fields = [])
+    public function buildUserFields($a = "u", $fields = [], $returnType = 0)
     {
         $format_array = [];
         $fields = !empty($fields) ? $fields : ['uid', 'loginname', 'name','nativename', 'phone', 'mobile', 'Department', 'sex', 'company_id', 'department_id', 'companyname', 'imgpath', 'carnumber', 'carcolor', 'im_id'];
@@ -64,12 +66,13 @@ class Trips extends Service
             $a = $aa[0];
             $pf = isset($aa[1]) ? $aa[1].'_' : '';
         } else {
-            $pf = $a.'_';
+            $pf = $a ? $a.'_' : '';
         }
         foreach ($fields as $key => $value) {
-            $format_array[$key] = $a . "." . $value . " as " . $pf . mb_strtolower($value);
+            $endStr = in_array($returnType, [0, 1]) ? " as " . $pf . mb_strtolower($value) : '';
+            $format_array[$key] =  $a . "." . $value . $endStr;
         }
-        return join(",", $format_array);
+        return in_array($returnType, [0, 2]) ? join(",", $format_array) : $format_array;
     }
 
     /**
