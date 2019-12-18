@@ -47,12 +47,12 @@ class Trips extends ApiBase
             $cacheKey = $this->cacheKey_myTrip . "u{$uid}";
             $cacheField = "pz{$pagesize}_p{$page}_fd{$fullData}";
             $cacheExp = 60 * 2;
-            $cacheData = $redis->hGet($cacheKey, $cacheField);
+            $cacheData = $redis->hCache($cacheKey, $cacheField);
             if ($cacheData) {
                 if ($cacheData == "-1") {
                     return $this->jsonReturn(20002, lang('No data'));
                 }
-                $returnData = json_decode($cacheData, true);
+                $returnData = $cacheData;
             }
         }
 
@@ -60,14 +60,12 @@ class Trips extends ApiBase
             $returnData = $TripsListService->myList($userData, $pagesize, $type);
             if ($returnData === false) {
                 if (!$type) {
-                    $redis->hSet($cacheKey, $cacheField, -1);
-                    $redis->expire($cacheKey, 5);
+                    $redis->hCache($cacheKey, $cacheField, -1, 5);
                 }
                 return $this->jsonReturn(20002, lang('No data'));
             }
             if (!$type) {
-                $redis->hSet($cacheKey, $cacheField, json_encode($returnData));
-                $redis->expire($cacheKey, $cacheExp);
+                $redis->hCache($cacheKey, $cacheField, $returnData, $cacheExp);
             }
         }
         
@@ -92,30 +90,31 @@ class Trips extends ApiBase
         $TripsListService = new TripsListService();
 
         // 查缓存
-        $cacheKey = "carpool:trips:history:u{$uid}:pz{$pagesize}_p{$page}";
-        $cacheExp = 60 * 3;
-        $cacheData = $redis->get($cacheKey);
+        $cacheKey = "carpool:trips:history:u{$uid}";
+        $rowCacheKey = "pz{$pagesize}_p{$page}";
+        $cacheExp = 60 * 5;
+        $cacheData = $redis->hCache($cacheKey, $rowCacheKey);
         if ($cacheData) {
             if ($cacheData == "-1") {
                 return $this->jsonReturn(20002, lang('No data'));
             }
-            $returnData = json_decode($cacheData, true);
+            $returnData = $cacheData;
         }
 
         if (!isset($returnData)) {
             $returnData = $TripsListService->history($userData, $pagesize);
             if ($returnData === false) {
-                $redis->setex($cacheKey, $cacheExp, -1);
+                $redis->hCache($cacheKey, $rowCacheKey, -1, $cacheExp);
                 return $this->jsonReturn(20002, lang('No data'));
             }
-            $redis->setex($cacheKey, $cacheExp, json_encode($returnData));
+            $redis->hCache($cacheKey, $rowCacheKey, $returnData, $cacheExp);
         }
         
         // TODO::添加显示乘客到列表
-        foreach ($returnData['lists'] as $k => $v) {
-            $returnData['lists'][$k]['passengers'] = $v['love_wall_ID'] > 0 ?
-                $this->passengers($v['love_wall_ID'], null, 0, ['p_name','p_sex','p_phone','p_mobile','status','subtime','time'], 3600) : [];
-        }
+        // foreach ($returnData['lists'] as $k => $v) {
+        //     $returnData['lists'][$k]['passengers'] = $v['love_wall_ID'] > 0 ?
+        //         $this->passengers($v['love_wall_ID'], null, 0, ['p_name','p_sex','p_phone','p_mobile','status','subtime','time'], 3600) : [];
+        // }
         $this->jsonReturn(0, $returnData, "success");
         // $TripsService->unsetResultValue($this->index($pagesize, 1, 1));
     }
