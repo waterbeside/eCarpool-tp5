@@ -68,6 +68,8 @@ Route::group([], function () {
     Route::rule('api/:version/shuttle/time', 'api/:version.shuttle.time/index', 'GET'); // 时刻列表
     Route::rule('api/:version/shuttle/trip/cars', 'api/:version.shuttle.trip/cars', 'GET'); // 班车空座位列表
     Route::rule('api/:version/shuttle/trip/requests', 'api/:version.shuttle.trip/requests', 'GET'); // 班车需求列表
+    Route::rule('api/:version/shuttle/trip/my', 'api/:version.shuttle.trip/my', 'GET'); // 历史行程
+    Route::rule('api/:version/shuttle/trip/history', 'api/:version.shuttle.trip/history', 'GET'); // 我的行程
     Route::rule('api/:version/shuttle/trip/pickup', 'api/:version.shuttle.trip/pickup', 'POST'); // 接乘客
     Route::rule('api/:version/shuttle/trip/hitchhiking', 'api/:version.shuttle.trip/hitchhiking', 'POST'); // 乘客上车
     Route::rule('api/:version/shuttle/trip', 'api/:version.shuttle.trip/save', 'POST'); // 发布班车行程
