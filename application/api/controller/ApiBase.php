@@ -260,15 +260,111 @@ class ApiBase extends Base
     }
 
     /**
+     * 通过数据构造器取数据
+     */
+    public function getListDataByCtor($ctor, $pagesize = 0)
+    {
+        if ($pagesize > 0) {
+            $results =    $ctor->paginate($pagesize, false, ['query' => request()->param()])->toArray();
+            $resData = $results['data'] ?? [];
+            $pageData = $this->getPageData($results);
+        } else {
+            $resData =    $ctor->select()->toArray();
+            $total = count($resData);
+            $pageData = [
+                'total' => $total,
+                'pageSize' => 0,
+                'lastPage' => 1,
+                'currentPage' => 1,
+            ];
+        }
+        $returnData = [
+            'lists' => $resData,
+            'page' => $pageData,
+        ];
+        return $returnData;
+    }
+
+    /**
      * 取得分页数据
      */
     public function getPageData($results)
     {
         return [
-            'total' => $results['total'],
-            'pageSize' => $results['per_page'],
-            'lastPage' => $results['last_page'],
-            'currentPage' => intval($results['current_page']),
+            'total' => $results['total'] ?? 0,
+            'pageSize' => $results['per_page'] ?? 1,
+            'lastPage' => $results['last_page'] ?? 1,
+            'currentPage' => intval($results['current_page']) ?? 1,
         ];
+    }
+
+    /**
+     * 为数组元素添加字符串
+     *
+     * @param array $array 要处理的数组
+     * @param string $preStr 要添加在开头的字符串
+     * @param string $endStr 要添加在尾部的字符串
+     * @return void
+     */
+    public function arrayAddString($array, $preStr = '', $endStr = '')
+    {
+        foreach ($array as $k => $v) {
+            $array[$k] = $preStr.$v.$endStr;
+        }
+        return $array;
+    }
+
+
+    /**
+     * 筛选数据字类
+     *
+     * @param array $data 数据
+     * @param array $filterFields 筛选的字段
+     * @param boolean $notSet 参数2设定的字段是否作为排除用
+     * @param string $keyFill 为字段添加前缀
+     * @param integer $keyDo 负数为转小写，正数为转大写，0为不处理
+     * @return array
+     */
+    public function filterDataFields($data, $filterFields = [], $notSet = false, $keyFill = '', $keyDo = 0)
+    {
+        $filterFields = is_string($filterFields) ? explode(',', $filterFields) : $filterFields ;
+        if (!empty($filterFields) && is_array($filterFields)) {
+            $newData = [];
+            foreach ($filterFields as $k => $field) {
+                if ($notSet) {
+                    unset($data[$field]);
+                } else {
+                    $newData[$field] = $data[$field] ?? null;
+                }
+            }
+            $data = $notSet ? $data : $newData;
+        }
+        if (is_string($keyFill) && (!empty($keyFill) || $keyDo !== 0)) {
+            foreach ($data as $k => $value) {
+                $newKey = $keyDo > 0 ? strtoupper($k) : ($keyDo < 0 ? strtolower($k) : $k);
+                $data[$keyFill.$newKey] = $value;
+                unset($data[$k]);
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * 筛选列表字段
+     *
+     * @param array $data 数据
+     * @param array $filterFields 筛选的字段
+     * @param boolean $notSet 参数2设定的字段是否作为排除用
+     * @param string $keyFill 为字段添加前缀
+     * @param integer $keyDo 负数为转小写，正数为转大写，0为不处理
+     * @return array
+     */
+    public function filterListFields($list, $filterFields = [], $notSet = false, $keyFix = '', $keyDo = 0)
+    {
+        foreach ($list as $key => $value) {
+            $itemData = $this->filterDataFields($value, $filterFields, $notSet, $keyFix, $keyDo);
+            $list[$key] = $itemData;
+        }
+        return $list;
     }
 }
