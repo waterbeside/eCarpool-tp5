@@ -30,22 +30,24 @@ class Time extends ApiBase
 
         $returnData = null;
         $cacheKey  = $ShuttleTimeModel->getListCacheKey($type);
-        $returnData = $redis->cache($cacheKey);
+        $resData = $redis->cache($cacheKey);
 
-        if (is_array($returnData) && empty($returnData)) {
+        if (is_array($resData) && empty($resData)) {
             return $this->jsonReturn(20002, [], lang('No data'));
         }
 
-        if (!$returnData) {
+        if (!$resData) {
             $map  = [
                 ['is_delete', "=", Db::raw(0)],
                 ['status', "=", Db::raw(1)],
+                ['hours', "between", [0 ,23]],
+                ['minutes', "between", [-59 ,59]],
             ];
             if (is_numeric($type) && $type > -1) {
                 $map[] = ['type', '=', $type];
             }
             $resData = $ShuttleTimeModel->distinct(true)->field('type, hours, minutes')
-                ->where($map)->order('hours ASC, minutes ASC')->select()->toArray();
+                ->where($map)->order('hours ASC, minutes ASC, type ASC')->select()->toArray();
             if (empty($resData)) {
                 if (!$keyword) {
                     $redis->cache($cacheKey, [], $ex);
@@ -53,10 +55,10 @@ class Time extends ApiBase
                 return $this->jsonReturn(20002, [], lang('No data'));
             }
             $redis->cache($cacheKey, $resData, $ex);
-            $returnData = [
-                'lists' => $resData,
-            ];
         }
+        $returnData = [
+            'lists' => $resData,
+        ];
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
 }
