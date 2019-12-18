@@ -93,4 +93,66 @@ class BaseModel extends Model
             return false;
         }
     }
+
+    /**
+     * 取得单项数据缓存key的默认值
+     *
+     * @param integer $id 表主键
+     * @return string
+     */
+    public function getItemCacheKey($id)
+    {
+        return ($this->connection).':'.($this->table).':'.$id;
+    }
+
+    /**
+     * 取得单行数据
+     *
+     * @param integer $id ID
+     * @param * $field 选择返回的字段，当为数字时，为缓存时效
+     * @param integer $ex 缓存时效
+     * @return void
+     */
+    public function getItem($id, $field = '*', $ex = 60 * 5)
+    {
+        if (is_numeric($field)) {
+            $ex = $field;
+            $field = "*";
+        }
+        $res = false;
+        if (is_numeric($ex)) {
+            $cacheKey =  $this->getItemCacheKey($id);
+            $redis = new RedisData();
+            $res = $redis->cache($cacheKey);
+        }
+        if (!$res) {
+            $res = $this->find($id)->toArray();
+            if (is_numeric($ex)) {
+                $redis->cache($cacheKey, $res, $ex);
+            }
+        }
+        $returnData = [];
+        if ($field != '*') {
+            $fields = is_array($field) ? $field : array_map('trim', explode(',', $field));
+            foreach ($fields as $key => $value) {
+                $returnData[$value] = isset($res[$value]) ? $res[$value] : null;
+            }
+        } else {
+            $returnData =  $res;
+        }
+        return $returnData;
+    }
+    
+    /**
+     * 删除单项数据缓存
+     *
+     * @param integer $id 主键
+     * @return void
+     */
+    public function delItemCache($id)
+    {
+        $cacheKey =  $this->getItemCacheKey($id);
+        $redis = new RedisData();
+        $redis->del($cacheKey);
+    }
 }
