@@ -31,8 +31,11 @@ class Goods extends BaseModel
      * 通过id取出商品详情
      * @param  Int  $id 商品id
      */
-    public function getItem($id, $ex = 60 * 60)
+    public function getItem($id, $fields = 60 * 60, $ex = 60 * 60)
     {
+        if (is_numeric($fields)) {
+            $ex = $fields;
+        }
         $good = $this->getFromRedis($id, 1);
         $cacheKey = "carpool_management:score:goods:" . $id;
         $good =  $good ? $good : $this->itemCache($cacheKey);

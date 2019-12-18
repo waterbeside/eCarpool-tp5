@@ -216,13 +216,15 @@ class Department extends Model
         return $this->itemCache($id, $value, $ex, 'departmentChildrens');
     }
 
-
     /**
      * 取单条数据
      */
-    public function getItem($id, $cache_time = 3600 * 24)
+    public function getItem($id, $fields = 3600 * 24, $cache_time = 3600 * 24)
     {
-        $data =  $this->itemCache($id);
+        if (is_numeric($fields)) {
+            $cache_time = $fields;
+        }
+        // $data =  $this->itemCache($id);
         $department = $this->itemCache($id);
         if (!$department || !$cache_time) {
             $department =  $this->find($id);
