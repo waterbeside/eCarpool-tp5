@@ -143,7 +143,7 @@ class ShuttleTrip extends BaseModel
     }
 
     /**
-     * 通过时间范围取得合并的数据内容
+     * 通过时间范围取得行程数据内容
      *
      * @param  integer     $time       出发时间的时间戳
      * @param  integer     $uid        发布者ID
@@ -166,6 +166,7 @@ class ShuttleTrip extends BaseModel
                 $data = [
                     'from'=>'shuttle_trip',
                     'id'  => $value['id'],
+                    'line_id'  => $value['line_id'],
                     'time'=>strtotime($value['time']),
                     'user_type' => $value['user_type'],
                     'comefrom' => $value['comefrom'],
@@ -181,16 +182,11 @@ class ShuttleTrip extends BaseModel
     }
 
     /**
-     * Undocumented function
+     * 添加行程后清除缓存
      *
+     * @param array $data 数据;
      * @return void
      */
-    public function hitchhiking()
-    {
-        
-    }
-
-
     public function delCacheAfterAdd($data)
     {
         $redis = new RedisData();
@@ -205,8 +201,7 @@ class ShuttleTrip extends BaseModel
 
             // 清除指定trip_id的乘客列表缓存
             if (isset($data['trip_id']) && $data['trip_id'] > 0  && in_array($data['create_type'], ['hitchhiking', 'pickup'])) {
-                $passengers_cacheKey = $this->getPassengersCacheKey($data['trip_id']);
-                $redis->del($passengers_cacheKey);
+                $this->delPassengersCache($data['trip_id']);
             }
         }
 
@@ -214,10 +209,36 @@ class ShuttleTrip extends BaseModel
         if (isset($data['myType']) && isset($data['uid'])) {
             $myTypes = explode(',', $data['myType']);
             foreach ($myTypes as $key => $value) {
-                $my_cacheKey = $this->getMyListCacheKey($data['uid'], trim($value));
-                $redis->del($my_cacheKey);
+                $this->delMyListCache($data['uid'], trim($value));
             }
         }
+    }
+
+    /**
+     * 清除乘客列表缓存
+     *
+     * @param integer $id 行程id
+     * @return void
+     */
+    public function delPassengersCache($id)
+    {
+        $cacheKey = $this->getPassengersCacheKey($id);
+        $redis = new RedisData();
+        $redis->del($cacheKey);
+    }
+
+    /**
+     * 清除我的行程或历史行程缓存
+     *
+     * @param integer $uid 用户uid
+     * @param string $type 'my' or 'history'
+     * @return void
+     */
+    public function delMyListCache($uid, $type = 'my')
+    {
+        $cacheKey = $this->getMyListCacheKey($uid, $type);
+        $redis = new RedisData();
+        $redis->del($cacheKey);
     }
 
     /**
