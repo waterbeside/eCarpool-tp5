@@ -93,6 +93,7 @@ class Trip extends ApiBase
                 ['t.line_id', '=', $line_id],
                 ['t.status', 'between', [0,1]],
                 ['t.time', 'between', $offsetTimeArray],
+                ['trip_id', '=', Db::raw(0)]
             ];
             if (isset($userType)) {
                 $map[] = ['t.user_type', '=', Db::raw($userType)];
@@ -148,7 +149,8 @@ class Trip extends ApiBase
         if (isset($res[1]['lists'])) {
             foreach ($res[1]['lists'] as $key => $value) {
                 if ($isGetPassengers) {
-                    $resPassengers = $this->passengers($value['id'], ['uid', 'loginname', 'name', 'nativename','sex','phone','mobile'], 't.id, t.status', 0);
+                    $userFields = ['uid', 'loginname', 'name', 'nativename','sex','phone','mobile'];
+                    $resPassengers = $this->passengers($value['id'], $userFields, 't.id, t.status', 0);
                     $res[1]['lists'][$key]['passengers'] = $resPassengers ?: [];
                     $res[1]['lists'][$key]['took_count'] = count($resPassengers);
                     // $res[1]['lists'][$key]['took_count'] = $ShuttleTripModel->countPassengers($value['id']);
@@ -172,7 +174,6 @@ class Trip extends ApiBase
             $lists = $this->filterListFields($lists, ['seat_count'], true);
             $res[1]['lists'] = $lists;
         }
-
         return $this->jsonReturn($res[0], $res[1], $res[2]);
     }
 
@@ -372,7 +373,11 @@ class Trip extends ApiBase
         $uid = $itemData['uid'];
         $trip_id = $itemData['trip_id'];
         $line_id = $itemData['line_id'];
-        $trip_info = json_decode($itemData['info'], true);
+        try {
+            $trip_info = json_decode($itemData['extra_info'], true);
+        } catch (\Exception $e) {  //其他错误
+            $trip_info = null;
+        }
         $itemData = $ShuttleTripService->formatTimeFields($itemData, 'item', ['time','create_time']);
         $tripFields = $tripFields ?: ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom'];
         $itemData = $this->filterDataFields($itemData, $tripFields);
@@ -386,7 +391,7 @@ class Trip extends ApiBase
         
         if ($show_line) {
             $lineData = null;
-            $lineData = $trip_info['line_data'] ?? $ShuttleLineModel->getItem($line_id);
+            $lineData = $trip_info['line_data'] ?? $ShuttleTripService->getExtraInfoLineData($line_id, 0);
             $lineFields = 'start_name, start_longitude, start_latitude, end_name, end_longitude, end_latitude, map_type, type';
             $lineData = $this->filterDataFields($lineData, $lineFields);
             $itemData = array_merge($itemData, $lineData);
@@ -405,49 +410,28 @@ class Trip extends ApiBase
      * 发布一个需求或行程, 或搭车
      *
      */
-    public function save($create_type = null)
+    public function save($rqData = null)
     {
-        $rqData = [];
-        $rqData['create_type'] = $create_type ?: input('post.create_type');
-        $rqData['line_id'] = input('post.line_id/d', 0);
-        $rqData['trip_id'] = input('post.trip_id/d', 0);
-        // $rqData['my_trip_id'] = input('post.my_trip_id/d', 0);
-        $rqData['seat_count'] = input('post.seat_count/d', 0);
-        $rqData['time'] = input('post.time/d', 0);
+        $userData = $this->getUserData(1);
+        $ShuttleTripService = new ShuttleTripService();
+        $rqData = $ShuttleTripService->getRqData($rqData);
         $line_id = $rqData['line_id'];
         $comefrom = 0;
-
-        $userData = $this->getUserData(1);
-        $uid = $userData['uid'];
-
-        $ShuttleLineModel = new ShuttleLineModel();
-        $ShuttleTripService = new ShuttleTripService();
-        
 
         if (!$rqData['create_type']) {
             $this->jsonReturn(992, null, 'Empty create_type', input('post.'));
         }
-        if (!in_array($rqData['create_type'], ['cars', 'requests', 'hitchhiking', 'pickup'])) {
+        if (!in_array($rqData['create_type'], ['cars', 'requests'])) {
             $this->jsonReturn(992, 'Error create_type');
         }
-        // // 检查 line_id
-        // if (!$line_id && $rqData['trip_id']) {
-        //     $tripData = $ShuttleTrip->getItem($rqData['trip_id']);
-        //     $line_id = $tripData ? $tripData['line_id'] : 0;
-        // }
 
-        if ($line_id) {
-            $lineFields = 'id, start_name, start_longitude, start_latitude, end_name, end_longitude, end_latitude, map_type, type';
-            $lineData = $ShuttleLineModel->getItem($line_id, $lineFields);
-            if (!$lineData) {
-                $this->jsonReturn(20002, '该路线不存在');
-            }
+        $rqData['line_data'] = $ShuttleTripService->getExtraInfoLineData($line_id);
+        if (!$rqData['line_data']) {
+            $this->jsonReturn(20002, '该路线不存在');
         }
 
-        $rqData['lineData'] = $lineData;
         // 创建入库数据
         $addRes = $ShuttleTripService->addTrip($rqData, $userData);
-
         if (!$addRes) {
             $errorData = $ShuttleTripService->getError();
             $this->jsonReturn($errorData['code'], $errorData['data'], $errorData['msg']);
@@ -455,8 +439,110 @@ class Trip extends ApiBase
         $this->jsonReturn(0, ['id'=>$addRes], 'Successful');
     }
     
-    public function change()
+    /**
+     * 乘客搭车
+     */
+    public function hitchhiking($id)
     {
+        $userData = $this->getUserData(1);
+        $uid = $userData['uid'];
 
+        $ShuttleTripService = new ShuttleTripService();
+        $ShuttleTripModel = new ShuttleTrip();
+        $rqData = $ShuttleTripService->getRqData();
+        $rqData['trip_id'] = $id;
+        $rqData['create_type'] = 'hitchhiking';
+
+        $tripData = $ShuttleTripModel->getItem($id); //取得司机行程
+        if (!$tripData) {
+            return $this->jsonReturn(20002, '该行程不存在');
+        }
+        if ($tripData['user_type'] != 1) {
+            return $this->jsonReturn(20002, null, '该行程不存在', ['errorMsg'=>'该行程不是司机行程']);
+        }
+        //检查是否已取消或完成
+        if (in_array($tripData['status'], [-1, 3])) {
+            return $this->jsonReturn(-1, lang('The trip has been completed or cancelled. Operation is not allowed'));
+        }
+        // 断定是否自己上自己车
+        if ($uid == $tripData['uid']) {
+            return $this->jsonReturn(-1, lang('You can`t take your own'));
+        }
+        // 检查座位是否已满
+        $took_count = $ShuttleTripModel->countPassengers($id); //计算已坐车乘客数
+        if ($took_count >= $tripData['seat_count']) {
+            $returnData = [
+                'seat_count' => $tripData['seat_count'],
+                'took_count' => $took_count,
+            ];
+            return $this->jsonReturn(-1, $returnData, lang('Failed, seat is full'));
+        }
+
+        $rqData['line_id'] = $tripData['line_id'];
+        $rqData['line_data'] = $ShuttleTripService->getExtraInfoLineData($id, 2);
+        if (!$rqData['line_data']) {
+            return $this->jsonReturn(20002, '该路线不存在');
+        }
+
+        // 入库
+        $addRes = $ShuttleTripService->addTrip($rqData, $userData);
+        if (!$addRes) {
+            $errorData = $ShuttleTripService->getError();
+            $this->jsonReturn($errorData['code'], $errorData['data'], lang('Failed').'. '.$errorData['msg']);
+        }
+        return $this->jsonReturn(0, ['id'=>$addRes], 'Successful');
+    }
+
+    /**
+     * 司机接客
+     */
+    public function pickup($id)
+    {
+        $userData = $this->getUserData(1);
+        $uid = $userData['uid'];
+
+        $ShuttleTripService = new ShuttleTripService();
+        $ShuttleTripModel = new ShuttleTrip();
+        $rqData = $ShuttleTripService->getRqData();
+        $rqData['create_type'] = 'pickup';
+        
+        $tripData = $ShuttleTripModel->getItem($id); //取得乘客须求行程
+        if (!$tripData) {
+            $this->jsonReturn(20002, '该行程不存在');
+        }
+        if ($tripData['user_type'] == 1) {
+            return $this->jsonReturn(20002, null, '该行程不存在', ['errorMsg'=>'该行程不是乘客行程']);
+        }
+        //检查是否已取消或完成
+        if (in_array($tripData['status'], [-1, 3])) {
+            return $this->jsonReturn(-1, lang('The trip has been completed or cancelled. Operation is not allowed'));
+        }
+        // 断定是否自己上自己车
+        if ($uid == $tripData['uid']) {
+            return $this->jsonReturn(-1, lang('You can`t take your own'));
+        }
+        $rqData['line_id'] = $tripData['line_id'];
+        $rqData['line_data'] = $ShuttleTripService->getExtraInfoLineData($id, 2);
+        if (!$rqData['line_data']) {
+            return $this->jsonReturn(20002, '该路线不存在');
+        }
+        Db::connect('database_carpool')->startTrans();
+        try {
+            // 入库
+            $addRes = $ShuttleTripService->addTrip($rqData, $userData); // 添加一条司机行程
+            if (!$addRes) {
+                $errorData = $ShuttleTripService->getError();
+                return $this->jsonReturn($errorData['code'], $errorData['data'], lang('Failed').'. '.$errorData['msg']);
+            }
+            $ShuttleTripModel->where('id', $id)->update(['trips_id'=>$addRes]); // 乘客行程的trip_id设为司机行程id
+            // 提交事务
+            Db::connect('database_carpool')->commit();
+        } catch (\Exception $e) {
+            Db::connect('database_carpool')->rollback();
+            $errorMsg = $e->getMessage();
+            return $this->jsonReturn(-1, null, lang('Failed'), ['errorMsg'=>$errorMsg]);
+        }
+        $ShuttleTripModel->delItemCache($id);
+        return $this->jsonReturn(0, ['id'=>$addRes], 'Successful');
     }
 }

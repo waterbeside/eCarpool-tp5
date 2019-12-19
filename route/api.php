@@ -70,8 +70,8 @@ Route::group([], function () {
     Route::rule('api/:version/shuttle/trip/requests', 'api/:version.shuttle.trip/requests', 'GET'); // 班车需求列表
     Route::rule('api/:version/shuttle/trip/my', 'api/:version.shuttle.trip/my', 'GET'); // 历史行程
     Route::rule('api/:version/shuttle/trip/history', 'api/:version.shuttle.trip/history', 'GET'); // 我的行程
-    Route::rule('api/:version/shuttle/trip/pickup', 'api/:version.shuttle.trip/pickup', 'POST'); // 接乘客
-    Route::rule('api/:version/shuttle/trip/hitchhiking', 'api/:version.shuttle.trip/hitchhiking', 'POST'); // 乘客上车
+    Route::rule('api/:version/shuttle/trip/:id/pickup', 'api/:version.shuttle.trip/pickup', 'POST')->pattern(['id' => '\d+']); // 接乘客
+    Route::rule('api/:version/shuttle/trip/:id/hitchhiking', 'api/:version.shuttle.trip/hitchhiking', 'POST')->pattern(['id' => '\d+']); // 乘客上车
     Route::rule('api/:version/shuttle/trip', 'api/:version.shuttle.trip/save', 'POST'); // 发布班车行程
     Route::rule('api/:version/shuttle/trip/:id/passengers', 'api/:version.shuttle.trip/passengers', 'GET')->pattern(['id' => '\d+']); //行程的乘客列表
     Route::rule('api/:version/shuttle/trip/:id', 'api/:version.shuttle.trip/show', 'GET')->pattern(['id' => '\d+']); //行程明细
