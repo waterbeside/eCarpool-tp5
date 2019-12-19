@@ -327,7 +327,7 @@ class ApiBase extends Base
      */
     public function filterDataFields($data, $filterFields = [], $notSet = false, $keyFill = '', $keyDo = 0)
     {
-        $filterFields = is_string($filterFields) ? explode(',', $filterFields) : $filterFields ;
+        $filterFields = is_string($filterFields) ? array_map('trim', explode(',', $filterFields)) : $filterFields ;
         if (!empty($filterFields) && is_array($filterFields)) {
             $newData = [];
             foreach ($filterFields as $k => $field) {
