@@ -13,6 +13,25 @@ use think\Db;
 
 class ShuttleTrip extends Service
 {
+
+    /**
+     * 取得请求时间
+     *
+     * @param array $rqData 请求的数据
+     * @return array
+     */
+    public function getRqData($rqData = null)
+    {
+        $rqData = $rqData ?: [];
+        $rqData['create_type'] = $rqData['create_type'] ?: input('post.create_type');
+        $rqData['line_id'] = $rqData['line_id'] ?: input('post.line_id/d', 0);
+        $rqData['line_type'] = $rqData['line_type'] ?: input('post.line_type/d', 0);
+        $rqData['trip_id'] = $rqData['trip_id'] ?: input('post.trip_id/d', 0);
+        $rqData['seat_count'] = $rqData['seat_count'] ?: input('post.seat_count/d', 0);
+        $rqData['time'] = $rqData['time'] ?: input('post.time/d', 0);
+        return $rqData;
+    }
+
     /**
      * 发布行程
      *
@@ -42,6 +61,7 @@ class ShuttleTrip extends Service
         if ($rqData['create_type'] === 'cars') { // 发布空座位
             $comefrom = 1;
             $userType = 1;
+            $trip_id = 0;
             $plate = $userData['carnumber'];
             if (!isset($rqData['seat_count']) || $rqData['seat_count'] < 1) {
                 $this->error(992, '座位数不能少于一');
@@ -49,15 +69,17 @@ class ShuttleTrip extends Service
         } elseif ($rqData['create_type'] === 'requests') { // 发布约车需求
             $comefrom = 2;
             $userType = 0;
+            $trip_id = 0;
             $plate = '';
         } elseif ($rqData['create_type'] === 'hitchhiking') { // 乘客从空座位搭车
             $comefrom = 3;
             $userType = 0;
             $plate = '';
         } elseif ($rqData['create_type'] === 'pickup') { // 司机从约车需求拉客
-            $comefrom = 4;
+            $comefrom = 1; // 不再设为4，只要是接客都会自动发空座位;
             $userType = 1;
             $plate = $userData['carnumber'];
+            $rqData['seat_count'] = isset($rqData['seat_count']) && $rqData['seat_count'] > 1 ? $rqData['seat_count'] : 1;
         } else {
             return $this->error(992, 'Error create_type');
         }
@@ -82,8 +104,9 @@ class ShuttleTrip extends Service
             'status' => 0,
             'seat_count' => intval($rqData['seat_count']),
         ];
-        if (isset($rqData['lineData']) && is_array($rqData['lineData'])) {
-            $updata['info'] = json_encode(['line_data' => $rqData['lineData']]);
+        if (isset($rqData['line_data']) && is_array($rqData['line_data'])) {
+            $updata['line_type'] = intval($rqData['line_data']['type']);
+            $updata['extra_info'] = json_encode(['line_data' => $rqData['line_data']]);
         }
         $ShuttleTripModel = new ShuttleTripModel();
         $newid = $ShuttleTripModel->insertGetId($updata);
@@ -101,5 +124,37 @@ class ShuttleTrip extends Service
 
         $ShuttleTripModel->delCacheAfterAdd($cData);
         return $newid;
+    }
+
+    /**
+     * 取得用于冗余进行程表的路线信息；
+     *
+     * @param integer $id line_id  or trip_id ;
+     * @param integer $type type=0时 id为路线id（line_id）, type = 1时id为行程id (trip_id), type = 2 时，先以type=1查，再以type=0查;
+     * @return array
+     */
+    public function getExtraInfoLineData($id, $type = 0)
+    {
+        if ($type > 0) {
+            $ShuttleTripModel = new ShuttleTripModel();
+            $itemData = $ShuttleTripModel->getItem($id);
+            if (!$itemData) {
+                return null;
+            }
+            try {
+                $trip_info = json_decode($itemData['extra_info'], true);
+                $lineData = $trip_info['line_data'];
+            } catch (\Exception $e) {  //其他错误
+                $lineData = null;
+            }
+            if (!$lineData && $type == 2) {
+                $lineData = $this->getExtraInfoLineData($itemData['line_id'], 0);
+            }
+        } else {
+            $lineFields = 'id, start_name, start_longitude, start_latitude, end_name, end_longitude, end_latitude, map_type, type';
+            $ShuttleLineModel = new ShuttleLineModel();
+            $lineData = $ShuttleLineModel->getItem($id, $lineFields);
+        }
+        return $lineData;
     }
 }
