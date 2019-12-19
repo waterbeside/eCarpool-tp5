@@ -229,9 +229,9 @@ class ShuttleTrip extends BaseModel
     public function countPassengers($id)
     {
         $map = [
-            ['t.user_type', '=', Db::raw(0)],
-            ['t.trip_id', '=', $id],
-            ['t.status', 'between', [0,3]],
+            ['user_type', '=', Db::raw(0)],
+            ['trip_id', '=', $id],
+            ['status', 'between', [0,3]],
         ];
         return $this->where($map)->count();
     }
