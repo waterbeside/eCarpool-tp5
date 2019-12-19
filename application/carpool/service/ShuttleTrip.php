@@ -83,7 +83,7 @@ class ShuttleTrip extends Service
             'seat_count' => intval($rqData['seat_count']),
         ];
         if (isset($rqData['lineData']) && is_array($rqData['lineData'])) {
-            $updata['info'] = json_encode($rqData['lineData']);
+            $updata['info'] = json_encode(['line_data' => $rqData['lineData']]);
         }
         $ShuttleTripModel = new ShuttleTripModel();
         $newid = $ShuttleTripModel->insertGetId($updata);
