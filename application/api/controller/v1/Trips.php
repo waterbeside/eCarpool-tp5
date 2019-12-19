@@ -540,6 +540,10 @@ class Trips extends ApiBase
 
         /*********** riding 搭车  ***********/
         if ($type == "riding" || $type == "hitchhiking") {
+            //计算前后范围内有没有重复行程
+            if ($TripsService->getRepetition(strtotime($datas->time . '00'), $uid)) {
+                $this->jsonReturn(30007, [], $TripsService->errorMsg);
+            }
             $res = $TripsChangeService->riding($datas, $uid);
             if (!$res) {
                 return $this->jsonReturn(-1, [], lang('Fail'));
@@ -567,6 +571,10 @@ class Trips extends ApiBase
                 if ($step == 1) {
                     $datas->love_wall_ID  = $checkWallRes['love_wall_ID'];
                 } else {
+                    //计算前后范围内有没有重复行程
+                    if ($TripsService->getRepetition(strtotime($datas->time . '00'), $uid)) {
+                        $this->jsonReturn(30007, [], $TripsService->errorMsg);
+                    }
                     return $this->jsonReturn(50008, $checkWallRes, $WallModel->errorMsg);
                     // return $this->jsonReturn(50008, $checkWallRes, "你在该时间段内有一个已发布的空座位，是否将该乘客请求合并到你的空座位上");
                 }
