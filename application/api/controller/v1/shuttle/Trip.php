@@ -55,7 +55,7 @@ class Trip extends ApiBase
         $returnData = null;
         // 先查出路线数据
         $lineFields = [
-            'id','type','start_name','start_longitude','start_latitude','end_name','end_longitude','end_latitude','status','color','map_type'
+            'id','type','start_name','start_longitude','start_latitude','end_name','end_longitude','end_latitude','status','map_type'
         ];
         $lineData = $ShuttleLineModel->getItem($line_id, $lineFields);
         if (!$lineData) {
@@ -151,7 +151,7 @@ class Trip extends ApiBase
                     $resPassengers = $this->passengers($value['id'], ['uid', 'loginname', 'name', 'nativename','sex','phone','mobile'], 't.id, t.status', 0);
                     $res[1]['lists'][$key]['passengers'] = $resPassengers ?: [];
                     $res[1]['lists'][$key]['took_count'] = count($resPassengers);
-                    // $res[1]['lists'][$key]['took_count'] = $ShuttleTripModel->countPassengers($value['id']); 
+                    // $res[1]['lists'][$key]['took_count'] = $ShuttleTripModel->countPassengers($value['id']);
                 }
             }
         }
@@ -205,12 +205,12 @@ class Trip extends ApiBase
             $userAlias = 'u';
             $fields_user = $TripsService->buildUserFields($userAlias, $userFields);
             $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id';
-            $fields .= ', l.type as line_type, l.start_name, l.end_name, l.color, l.map_type, t.time, t.create_time';
+            $fields .= ', l.type as line_type, l.start_name, l.end_name, l.map_type, t.time, t.create_time';
             $fields .=  ',' .$fields_user;
             $map  = [
                 ['t.status', 'between', [0,1]],
                 ['t.uid', '=', $uid],
-                ["t.time", ">", date('Y-m-d H:i:s')],
+                ["t.time", ">", date('Y-m-d H:i:s', strtotime('-10 minute'))],
             ];
             $join = [
                 ["user {$userAlias}", "t.uid = {$userAlias}.uid", 'left'],
@@ -234,7 +234,7 @@ class Trip extends ApiBase
                     $lists[$key]['passengers'] = $resPassengers ?: [];
                 }
                 if ($value['user_type'] == 0 && $value['trip_id'] > 0) {
-                    $resDriver = $this->show($value['id'], $userFields, ['id','status'], 0, 0);
+                    $resDriver = $this->show($value['id'], $userFields, ['id','status','user_type','comefrom'], 0, 0, 0);
                     $lists[$key]['driver'] = $resDriver ?: [];
                 }
             }
@@ -267,11 +267,11 @@ class Trip extends ApiBase
         if (!$returnData) {
             $ex = 60 * 5;
             $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id, t.uid, t.status, t.time, t.create_time';
-            $fields .= ', l.type as line_type, l.start_name,  l.end_name,  l.color, l.map_type';
+            $fields .= ', l.type as line_type, l.start_name, l.end_name, l.map_type';
             $map  = [
                 // ['t.status', 'between', [0,1,3]],
                 ['t.uid', '=', $uid],
-                ["t.time", "<", date('Y-m-d H:i:s', strtotime('-30 minute'))],
+                ["t.time", "<", date('Y-m-d H:i:s', strtotime('-20 minute'))],
 
             ];
             $join = [
@@ -282,6 +282,9 @@ class Trip extends ApiBase
             if (empty($returnData['lists'])) {
                 $redis->hCache($cacheKey, $rowCacheKey, [], $ex);
                 return $this->jsonReturn(20002, 'No data');
+            }
+            foreach ($returnData['lists'] as $key => $value) {
+                $returnData['lists'][$key]['took_count'] = in_array($value['comefrom'], [1, 4]) ? $ShuttleTrip->countPassengers($value['id']) : null;
             }
             $redis->hCache($cacheKey, $rowCacheKey, $returnData, $ex);
         }
@@ -352,11 +355,12 @@ class Trip extends ApiBase
      * @param array $userFields 要读出的用户字段
      * @param integer $returnType 返回数据 1:支持抛出json，2:以数组形式返回数据
      */
-    public function show($id = 0, $userFields = [], $tripFields = [], $show_driver = 1, $returnType = 1)
+    public function show($id = 0, $userFields = [], $tripFields = [], $show_line = 1, $show_driver = 1, $returnType = 1)
     {
         if (!$id) {
             return $returnType ? $this->jsonReturn(992, 'Error param') : [20002, null, 'No data'];
         }
+        $ShuttleLineModel = new ShuttleLineModel();
         $ShuttleTrip = new ShuttleTrip();
         $ShuttleTripService = new ShuttleTripService();
         $User = new User();
@@ -367,8 +371,10 @@ class Trip extends ApiBase
         }
         $uid = $itemData['uid'];
         $trip_id = $itemData['trip_id'];
+        $line_id = $itemData['line_id'];
+        $trip_info = json_decode($itemData['info'], true);
         $itemData = $ShuttleTripService->formatTimeFields($itemData, 'item', ['time','create_time']);
-        $tripFields = $tripFields ?: ['id', 'time', 'create_time', 'status', 'trip_id'];
+        $tripFields = $tripFields ?: ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom'];
         $itemData = $this->filterDataFields($itemData, $tripFields);
 
         $userFields = $userFields ?: [
@@ -377,9 +383,17 @@ class Trip extends ApiBase
         ];
         $userData = $User->findByUid($uid);
         $userData = $this->filterDataFields($userData, $userFields, false, 'u_', -1);
+        
+        if ($show_line) {
+            $lineData = null;
+            $lineData = $trip_info['line_data'] ?? $ShuttleLineModel->getItem($line_id);
+            $lineFields = 'start_name, start_longitude, start_latitude, end_name, end_longitude, end_latitude, map_type, type';
+            $lineData = $this->filterDataFields($lineData, $lineFields);
+            $itemData = array_merge($itemData, $lineData);
+        }
         $data = array_merge($itemData ?? [], $userData ?? []);
         if ($trip_id > 0 && $show_driver) {
-            $data['driver'] = $this->show($trip_id, $userFields, $tripFields, 0, 0);
+            $data['driver'] = $this->show($trip_id, $userFields, $tripFields, 0, 0, 0);
         }
 
         return $returnType ? $this->jsonReturn(0, $data, 'Successful') : $data;
