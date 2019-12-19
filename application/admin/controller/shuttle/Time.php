@@ -90,8 +90,12 @@ class Time extends AdminBase
             $ShuttleTime = new ShuttleTimeModel();
             $res = $ShuttleTime->saveAll($updataList);
             if (count($res) > 0) {
+                $ShuttleTime->delListCache($data['type']);
+                $ShuttleTime->delListCache(-1);
+                $this->log('添加班车时刻成功', 0);
                 return $this->jsonReturn(0, '保存成功');
             } else {
+                $this->log('添加班车时刻失败', -1);
                 return $this->jsonReturn(-1, '保存失败');
             }
         } else {
@@ -115,7 +119,14 @@ class Time extends AdminBase
                 return $this->jsonReturn(-1, $validate_result);
             }
             $ShuttleTime = new ShuttleTimeModel();
-            $ShuttleTime->allowField(true)->save($data, ['id'=>$id]);
+            $res = $ShuttleTime->allowField(true)->save($data, ['id'=>$id]);
+            if ($res === false) {
+                $this->log('修改班车时刻失败，id=' . $id, -1);
+                return $this->jsonReturn(-1, '保存失败');
+            }
+            $ShuttleTime->delListCache($data['type']);
+            $ShuttleTime->delListCache(-1);
+            $this->log('修改班车时刻成功，id=' . $id, 0);
             return $this->jsonReturn(0, '保存成功');
         } else {
             $fields = "t.*";
@@ -134,7 +145,11 @@ class Time extends AdminBase
      */
     public function delete($id)
     {
-        if (ShuttleTimeModel::where('id', $id)->update(['is_delete' => 1]) !== false) {
+        $ShuttleTime = new ShuttleTimeModel();
+        $data = $ShuttleTime->alias('t')->find($id);
+        if ($ShuttleTime->where('id', $id)->update(['is_delete' => 1]) !== false) {
+            $ShuttleTime->delListCache($data['type']);
+            $ShuttleTime->delListCache(-1);
             $this->log('删除班车时刻成功，id=' . $id, 0);
             return $this->jsonReturn(0, '删除成功');
         } else {
