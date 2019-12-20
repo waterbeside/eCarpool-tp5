@@ -51,7 +51,7 @@ class DepartmentIm extends Service
         }
         if ($res['code'] == 200) {
             // dump($nim->getUinfos([$setData['accid']]));
-            dump($setData);
+            // dump($setData);
             return $setData;
         }
         return false;
