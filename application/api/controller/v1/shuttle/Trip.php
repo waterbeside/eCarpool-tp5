@@ -23,11 +23,6 @@ use think\Db;
 class Trip extends ApiBase
 {
 
-    protected $defaultUserFields = [
-        'uid', 'loginname', 'name','nativename', 'phone', 'mobile', 'Department', 'sex',
-        'company_id', 'department_id', 'companyname', 'imgpath', 'carcolor', 'im_id'
-    ];
-
     protected function initialize()
     {
         parent::initialize();
@@ -145,15 +140,16 @@ class Trip extends ApiBase
     {
         $isGetPassengers = $passengers;
         $res = $this->list('cars', $page, $pagesize, 0);
-        $ShuttleTripModel = new ShuttleTrip();
         if (isset($res[1]['lists'])) {
+            $ShuttleTripModel = new ShuttleTrip();
+            $ShuttleTripService = new ShuttleTripService();
             foreach ($res[1]['lists'] as $key => $value) {
                 if ($isGetPassengers) {
-                    $userFields = ['uid', 'loginname', 'name', 'nativename','sex','phone','mobile'];
-                    $resPassengers = $this->passengers($value['id'], $userFields, ['id','status'], 0);
-                    $res[1]['lists'][$key]['passengers'] = $resPassengers ?: [];
-                    $res[1]['lists'][$key]['took_count'] = count($resPassengers);
-                    // $res[1]['lists'][$key]['took_count'] = $ShuttleTripModel->countPassengers($value['id']);
+                    // $userFields = ['uid', 'loginname', 'name', 'nativename','sex','phone','mobile'];
+                    // $resPassengers = $ShuttleTripService->passengers($value['id'], $userFields, ['id','status'], 0);
+                    // $res[1]['lists'][$key]['passengers'] = $resPassengers ?: [];
+                    // $res[1]['lists'][$key]['took_count'] = count($resPassengers);
+                    $res[1]['lists'][$key]['took_count'] = $ShuttleTripModel->countPassengers($value['id']);
                 }
             }
         }
@@ -231,11 +227,11 @@ class Trip extends ApiBase
         if (is_array($lists) && $isGetPassengers) {
             foreach ($lists as $key => $value) {
                 if ($value['user_type'] == 1 && in_array($value['comefrom'], [1, 4])) {
-                    $resPassengers = $this->passengers($value['id'], $userFields, ['id','status'], 0);
+                    $resPassengers = $ShuttleTripService->passengers($value['id'], $userFields, ['id','status'], 0);
                     $lists[$key]['passengers'] = $resPassengers ?: [];
                 }
                 if ($value['user_type'] == 0 && $value['trip_id'] > 0) {
-                    $resDriver = $this->show($value['id'], $userFields, ['id','status','user_type','comefrom'], 0, 0, 0);
+                    $resDriver =  $ShuttleTripService->getUserTripDetail($value['id'], $userFields, ['id','status','user_type','comefrom'], 0);
                     $lists[$key]['driver'] = $resDriver ?: [];
                 }
             }
@@ -273,7 +269,6 @@ class Trip extends ApiBase
                 // ['t.status', 'between', [0,1,3]],
                 ['t.uid', '=', $uid],
                 ["t.time", "<", date('Y-m-d H:i:s', strtotime('-20 minute'))],
-
             ];
             $join = [
                 ["t_shuttle_line l", "l.id = t.line_id", 'left'],
@@ -302,51 +297,17 @@ class Trip extends ApiBase
      * @param array $userFields 要读出的用户字段
      * @param integer $returnType 返回数据 1:支持抛出json，2:以数组形式返回数据
      */
-    public function passengers($id = 0, $userFields = [], $tripFields = [], $returnType = 1)
+    public function passengers($id = 0)
     {
         if (!$id) {
-            return $returnType ? $this->jsonReturn(992, 'Error param') : false;
+            $this->jsonReturn(992, 'Error param');
         }
-        $ShuttleTrip = new ShuttleTrip();
-        $TripsService = new TripsService();
         $ShuttleTripService = new ShuttleTripService();
-        $cacheKey = $ShuttleTrip->getPassengersCacheKey($id);
-        $redis = new RedisData();
-        $userAlias = 'u';
-        $res = $redis->cache($cacheKey);
-        $userFields = $userFields ?: $this->defaultUserFields;
-        if ($res === false) {
-            $tripFieldsArray = ['id', 'time', 'create_time', 'status', 'comefrom'];
-            $fields = $this->arrayAddString($tripFieldsArray, 't.');
-            $fields = is_array($fields) ? implode(',', $fields) : $fields;
-            $fields_user = $TripsService->buildUserFields($userAlias, $this->defaultUserFields);
-            $fields .=  ',' .$fields_user;
-            $join = [
-                ["user {$userAlias}", "t.uid = {$userAlias}.uid", 'left'],
-            ];
-            $map = [
-                ['t.user_type', '=', Db::raw(0)],
-                ['t.trip_id', '=', $id],
-                ['t.status', 'between', [0,3]],
-            ];
-            $res = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map)->order('t.create_time ASC')->select()->toArray();
-            $redis->cache($cacheKey, $res, 60);
-        }
-        if (!$res) {
-            return $returnType ? $this->jsonReturn(20002, 'No data') : [];
-        }
-        $res = $ShuttleTripService->formatTimeFields($res, 'list', ['time','create_time']);
-        if (!empty($tripFields)) {
-            $tripFields = is_string($tripFields) ? array_map('trim', explode(',', $tripFields)) : $tripFields;
-            $userFields = is_string($userFields) ? array_map('trim', explode(',', $userFields)) : $userFields;
-            $userFields = $this->arrayAddString($userFields, 'u_') ?: [];
-            $filterFields = array_merge($tripFields, $userFields);
-            $res = $this->filterListFields($res, $filterFields);
-        }
+        $res = $ShuttleTripService->passengers($id);
         $returnData = [
             'lists' => $res,
         ];
-        return $returnType ? $this->jsonReturn(0, $returnData, 'Successful') : $returnData['lists'];
+        return $this->jsonReturn(0, $returnData, 'Successful');
     }
 
     /**
@@ -356,54 +317,28 @@ class Trip extends ApiBase
      * @param array $userFields 要读出的用户字段
      * @param integer $returnType 返回数据 1:支持抛出json，2:以数组形式返回数据
      */
-    public function show($id = 0, $userFields = [], $tripFields = [], $show_line = 1, $show_driver = 1, $returnType = 1)
+    public function show($id = 0, $show_line = 1, $show_driver = 1, $show_passengers = 1)
     {
         if (!$id) {
-            return $returnType ? $this->jsonReturn(992, 'Error param') : [20002, null, 'No data'];
+            return $this->jsonReturn(992, 'Error param');
         }
-        $ShuttleLineModel = new ShuttleLineModel();
-        $ShuttleTrip = new ShuttleTrip();
         $ShuttleTripService = new ShuttleTripService();
-        $User = new User();
+        $data  = $ShuttleTripService->getUserTripDetail($id, [], [], $show_line);
 
-        $itemData = $ShuttleTrip->getItem($id);
-        if (!$itemData) {
-            return $returnType ? $this->jsonReturn(20002, 'No data') : null;
+        if (!$data) {
+            return $this->jsonReturn(20002, 'No data');
         }
-        $uid = $itemData['uid'];
-        $trip_id = $itemData['trip_id'];
-        $line_id = $itemData['line_id'];
-        try {
-            $trip_info = json_decode($itemData['extra_info'], true);
-        } catch (\Exception $e) {  //其他错误
-            $trip_info = null;
-        }
-        $itemData = $ShuttleTripService->formatTimeFields($itemData, 'item', ['time','create_time']);
-        $tripFields = $tripFields ?: ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom'];
-        $itemData = $this->filterDataFields($itemData, $tripFields);
+        $trip_id = $data['trip_id'];
 
-        $userFields = $userFields ?: [
-            'uid','loginname','name','nativename','phone','mobile','Department',
-            'sex','company_id','department_id','imgpath','carcolor', 'im_id'
-        ];
-        $userData = $User->findByUid($uid);
-        $userData = $this->filterDataFields($userData, $userFields, false, 'u_', -1);
-        
-        if ($show_line) {
-            $lineData = null;
-            $lineData = $trip_info['line_data'] ?? $ShuttleTripService->getExtraInfoLineData($line_id, 0);
-            $lineFields = 'start_name, start_longitude, start_latitude, end_name, end_longitude, end_latitude, map_type, type';
-            $lineData = $this->filterDataFields($lineData, $lineFields);
-            $itemData = array_merge($itemData, $lineData);
-        }
-        $data = array_merge($itemData ?? [], $userData ?? []);
         if ($trip_id > 0 && $show_driver) {
-            $data['driver'] = $this->show($trip_id, $userFields, $tripFields, 0, 0, 0);
+            $data['driver'] = $ShuttleTripService->getUserTripDetail($trip_id, [], [], 0);
         }
-
-        return $returnType ? $this->jsonReturn(0, $data, 'Successful') : $data;
+        if ($trip_id === 0 && $show_passengers) {
+            $data['passengers'] = $ShuttleTripService->passengers($id) ?: [];
+        }
+        unset($data['trip_id']);
+        return $this->jsonReturn(0, $data, 'Successful');
     }
-    
 
 
     /**
@@ -478,7 +413,7 @@ class Trip extends ApiBase
                 'seat_count' => $tripData['seat_count'],
                 'took_count' => $took_count,
             ];
-            return $this->jsonReturn(-1, $returnData, lang('Failed, seat is full'));
+            return $this->jsonReturn(50007, $returnData, lang('Failed, seat is full'));
         }
 
         $rqData['time'] = strtotime($tripData['time']);
@@ -550,5 +485,37 @@ class Trip extends ApiBase
         }
         $ShuttleTripModel->delItemCache($id);
         return $this->jsonReturn(0, ['id'=>$addRes], 'Successful');
+    }
+
+    /**
+     * 修改内容 (取消，完结，)
+     *
+     * @return void
+     */
+    public function change($id = 0)
+    {
+        if (!$id) {
+            return $this->jsonReturn(992, 'Error param');
+        }
+        $do = 'finish';
+        $userData = $this->getUserData(1);
+        $uid = $userData['uid'];
+
+        $ShuttleTripModel = new ShuttleTrip();
+        $tripData = $ShuttleTripModel->getItem($id);
+        if (empty($tripData)) {
+            return $this->jsonReturn(20002, '该行程不存在');
+        }
+        //检查是否已取消或完成
+        if (in_array($tripData['status'], [-1, 3])) {
+            return $this->jsonReturn(-1, lang('The trip has been completed or cancelled. Operation is not allowed'));
+        }
+        $userType = $tripData['user_type'];
+        // 检查是否该行程的成员
+        if ($tripData['uid'] != $uid) {
+            if ($userType == 1) { // 如果从司机行程进行操作
+
+            }
+        }
     }
 }
