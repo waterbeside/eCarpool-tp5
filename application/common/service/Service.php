@@ -22,6 +22,12 @@ class Service
         return false;
     }
 
+    public function setError($code, $msg, $data = [])
+    {
+        $this->error($code, $msg, $data);
+        return false;
+    }
+
     /**
      * 取得错误信息
      *
