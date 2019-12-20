@@ -28,7 +28,7 @@ class ShuttleTrip extends BaseModel
      */
     public function getItemCacheKey($id)
     {
-        return "carpool:shuttle:line:$id";
+        return "carpool:shuttle:trip:$id";
     }
 
     /**
