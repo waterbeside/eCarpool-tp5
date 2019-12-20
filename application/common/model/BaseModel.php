@@ -12,22 +12,19 @@ class BaseModel extends Model
     public $errorCode = 0;
     public $errorData = null;
 
-    public function error($code, $msg, $data = [])
+    public function setError($code, $msg, $data = [])
     {
         $this->errorCode = $code;
         $this->errorMsg = $msg;
         $this->errorData = $data;
+        $this->error = [
+            'code' => $code,
+            'msg' => $msg,
+            'data' => $data,
+        ];
         return false;
     }
 
-    public function getError()
-    {
-        return [
-            'code' => $this->errorCode,
-            'msg' => $this->errorMsg,
-            'data' => $this->errorData,
-        ];
-    }
 
     /**
      * 创建redis对像
@@ -126,7 +123,8 @@ class BaseModel extends Model
             $res = $redis->cache($cacheKey);
         }
         if (!$res) {
-            $res = $this->find($id)->toArray();
+            $res = $this->find($id);
+            $res = $res ? $res->toArray() : [];
             if (is_numeric($ex)) {
                 $redis->cache($cacheKey, $res, $ex);
             }
