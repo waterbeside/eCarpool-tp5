@@ -12,6 +12,7 @@ use app\user\model\JwtToken;
 use Firebase\JWT\JWT;
 use think\facade\Env;
 use think\facade\Lang;
+use my\Utils;
 
 class ApiBase extends Base
 {
@@ -297,6 +298,11 @@ class ApiBase extends Base
             'currentPage' => intval($results['current_page']) ?? 1,
         ];
     }
+    
+    public function utils($isNew = false)
+    {
+        return  (new Utils())->create();
+    }
 
     /**
      * 为数组元素添加字符串
@@ -308,10 +314,7 @@ class ApiBase extends Base
      */
     public function arrayAddString($array, $preStr = '', $endStr = '')
     {
-        foreach ($array as $k => $v) {
-            $array[$k] = $preStr.$v.$endStr;
-        }
-        return $array;
+        return Utils::arrayAddString($array, $preStr, $endStr);
     }
 
 
@@ -327,26 +330,7 @@ class ApiBase extends Base
      */
     public function filterDataFields($data, $filterFields = [], $notSet = false, $keyFill = '', $keyDo = 0)
     {
-        $filterFields = is_string($filterFields) ? array_map('trim', explode(',', $filterFields)) : $filterFields ;
-        if (!empty($filterFields) && is_array($filterFields)) {
-            $newData = [];
-            foreach ($filterFields as $k => $field) {
-                if ($notSet) {
-                    unset($data[$field]);
-                } else {
-                    $newData[$field] = $data[$field] ?? null;
-                }
-            }
-            $data = $notSet ? $data : $newData;
-        }
-        if (is_string($keyFill) && (!empty($keyFill) || $keyDo !== 0)) {
-            foreach ($data as $k => $value) {
-                $newKey = $keyDo > 0 ? strtoupper($k) : ($keyDo < 0 ? strtolower($k) : $k);
-                $data[$keyFill.$newKey] = $value;
-                unset($data[$k]);
-            }
-        }
-        return $data;
+        return Utils::filterDataFields($data, $filterFields, $notSet, $keyFill, $keyDo);
     }
 
     /**
@@ -359,12 +343,8 @@ class ApiBase extends Base
      * @param integer $keyDo 负数为转小写，正数为转大写，0为不处理
      * @return array
      */
-    public function filterListFields($list, $filterFields = [], $notSet = false, $keyFix = '', $keyDo = 0)
+    public function filterListFields($list, $filterFields = [], $notSet = false, $keyFill = '', $keyDo = 0)
     {
-        foreach ($list as $key => $value) {
-            $itemData = $this->filterDataFields($value, $filterFields, $notSet, $keyFix, $keyDo);
-            $list[$key] = $itemData;
-        }
-        return $list;
+        return Utils::filterListFields($list, $filterFields, $notSet, $keyFill, $keyDo);
     }
 }
