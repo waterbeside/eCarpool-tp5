@@ -12,6 +12,14 @@ class BaseModel extends Model
     public $errorCode = 0;
     public $errorData = null;
 
+    /**
+     * 设置error
+     *
+     * @param integer $code errorCode
+     * @param string $msg 消息
+     * @param array $data 数据
+     * @return false
+     */
     public function setError($code, $msg, $data = [])
     {
         $this->errorCode = $code;
