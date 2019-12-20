@@ -25,7 +25,7 @@ class Trip extends ApiBase
 
     protected $defaultUserFields = [
         'uid', 'loginname', 'name','nativename', 'phone', 'mobile', 'Department', 'sex',
-        'company_id', 'department_id', 'companyname', 'imgpath', 'carnumber', 'carcolor', 'im_id'
+        'company_id', 'department_id', 'companyname', 'imgpath', 'carcolor', 'im_id'
     ];
 
     protected function initialize()
@@ -150,7 +150,7 @@ class Trip extends ApiBase
             foreach ($res[1]['lists'] as $key => $value) {
                 if ($isGetPassengers) {
                     $userFields = ['uid', 'loginname', 'name', 'nativename','sex','phone','mobile'];
-                    $resPassengers = $this->passengers($value['id'], $userFields, 't.id, t.status', 0);
+                    $resPassengers = $this->passengers($value['id'], $userFields, ['id','status'], 0);
                     $res[1]['lists'][$key]['passengers'] = $resPassengers ?: [];
                     $res[1]['lists'][$key]['took_count'] = count($resPassengers);
                     // $res[1]['lists'][$key]['took_count'] = $ShuttleTripModel->countPassengers($value['id']);
@@ -319,7 +319,7 @@ class Trip extends ApiBase
             $tripFieldsArray = ['id', 'time', 'create_time', 'status', 'comefrom'];
             $fields = $this->arrayAddString($tripFieldsArray, 't.');
             $fields = is_array($fields) ? implode(',', $fields) : $fields;
-            $fields_user = $TripsService->buildUserFields($userAlias, $userFields);
+            $fields_user = $TripsService->buildUserFields($userAlias, $this->defaultUserFields);
             $fields .=  ',' .$fields_user;
             $join = [
                 ["user {$userAlias}", "t.uid = {$userAlias}.uid", 'left'],
@@ -337,8 +337,8 @@ class Trip extends ApiBase
         }
         $res = $ShuttleTripService->formatTimeFields($res, 'list', ['time','create_time']);
         if (!empty($tripFields)) {
-            $tripFields = is_string($tripFields) ? explode(',', $tripFields) : $tripFields;
-            $userFields = is_string($userFields) ? explode(',', $userFields) : $userFields;
+            $tripFields = is_string($tripFields) ? array_map('trim', explode(',', $tripFields)) : $tripFields;
+            $userFields = is_string($userFields) ? array_map('trim', explode(',', $userFields)) : $userFields;
             $userFields = $this->arrayAddString($userFields, 'u_') ?: [];
             $filterFields = array_merge($tripFields, $userFields);
             $res = $this->filterListFields($res, $filterFields);
@@ -384,7 +384,7 @@ class Trip extends ApiBase
 
         $userFields = $userFields ?: [
             'uid','loginname','name','nativename','phone','mobile','Department',
-            'sex','company_id','department_id','imgpath','carnumber','carcolor', 'im_id'
+            'sex','company_id','department_id','imgpath','carcolor', 'im_id'
         ];
         $userData = $User->findByUid($uid);
         $userData = $this->filterDataFields($userData, $userFields, false, 'u_', -1);
@@ -442,7 +442,7 @@ class Trip extends ApiBase
     /**
      * 乘客搭车
      */
-    public function hitchhiking($id)
+    public function hitchhiking($id, $dev = 0)
     {
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
@@ -454,7 +454,10 @@ class Trip extends ApiBase
         $rqData['create_type'] = 'hitchhiking';
 
         $tripData = $ShuttleTripModel->getItem($id); //取得司机行程
-        if (!$tripData) {
+        if ($dev) {
+            return $this->jsonReturn(-1, null, 'test tripData', ['trip_data'=>$tripData, 'uid'=>$uid]);
+        }
+        if (empty($tripData)) {
             return $this->jsonReturn(20002, '该行程不存在');
         }
         if ($tripData['user_type'] != 1) {
@@ -478,6 +481,7 @@ class Trip extends ApiBase
             return $this->jsonReturn(-1, $returnData, lang('Failed, seat is full'));
         }
 
+        $rqData['time'] = strtotime($tripData['time']);
         $rqData['line_id'] = $tripData['line_id'];
         $rqData['line_data'] = $ShuttleTripService->getExtraInfoLineData($id, 2);
         if (!$rqData['line_data']) {
@@ -505,9 +509,9 @@ class Trip extends ApiBase
         $ShuttleTripModel = new ShuttleTrip();
         $rqData = $ShuttleTripService->getRqData();
         $rqData['create_type'] = 'pickup';
-        
+
         $tripData = $ShuttleTripModel->getItem($id); //取得乘客须求行程
-        if (!$tripData) {
+        if (empty($tripData)) {
             $this->jsonReturn(20002, '该行程不存在');
         }
         if ($tripData['user_type'] == 1) {
@@ -521,8 +525,10 @@ class Trip extends ApiBase
         if ($uid == $tripData['uid']) {
             return $this->jsonReturn(-1, lang('You can`t take your own'));
         }
+        $rqData['time'] = strtotime($tripData['time']);
         $rqData['line_id'] = $tripData['line_id'];
         $rqData['line_data'] = $ShuttleTripService->getExtraInfoLineData($id, 2);
+        
         if (!$rqData['line_data']) {
             return $this->jsonReturn(20002, '该路线不存在');
         }
