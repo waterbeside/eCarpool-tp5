@@ -165,6 +165,54 @@ class ShuttleTrip extends Service
     }
 
     /**
+     * 取得详情
+     *
+     * @param integer $id 行程id
+     * @param array $userFields 要读出的用户字段
+     * @param array $tripFields 要读出的行程字段
+     * @param integer $show_line 是否显示路线信息
+     */
+    public function getUserTripDetail($id = 0, $userFields = [], $tripFields = [], $show_line = 1)
+    {
+        if (!$id) {
+            return $this->error(992, 'Error param');
+        }
+        $ShuttleTripModel = new ShuttleTripModel();
+
+        $User = new UserModel();
+
+        $itemData = $ShuttleTripModel->getItem($id);
+        if (!$itemData) {
+            return $this->error(20002, 'No data');
+        }
+        $uid = $itemData['uid'];
+        $line_id = $itemData['line_id'];
+        try {
+            $trip_info = json_decode($itemData['extra_info'], true);
+        } catch (\Exception $e) {  //其他错误
+            $trip_info = null;
+        }
+        $itemData = $this->formatTimeFields($itemData, 'item', ['time','create_time']);
+        $tripFields = $tripFields ?: ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom', 'trip_id'];
+
+        $itemData = Utils::getInstance()->filterDataFields($itemData, $tripFields);
+        $userFields = $userFields ?: $this->defaultUserFields;
+        $userData = $User->findByUid($uid);
+        $userData = Utils::getInstance()->filterDataFields($userData, $userFields, false, 'u_', -1);
+        
+        if ($show_line) {
+            $lineData = null;
+            $lineData = $trip_info['line_data'] ?? $this->getExtraInfoLineData($line_id, 0);
+            $lineFields = 'start_name, start_longitude, start_latitude, end_name, end_longitude, end_latitude, map_type, type';
+            $lineData = Utils::getInstance()->filterDataFields($lineData, $lineFields);
+            $itemData = array_merge($itemData, $lineData);
+        }
+        $data = array_merge($itemData ?? [], $userData ?? []);
+        return $data;
+    }
+
+
+    /**
      * 取得乘客列表
      *
      * @param integer $id 行程id
