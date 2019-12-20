@@ -9,6 +9,7 @@ use app\carpool\service\Trips as TripsService;
 use app\carpool\model\ShuttleLineDepartment;
 use app\user\model\Department;
 use my\RedisData;
+use my\Utils;
 use think\Db;
 
 class ShuttleTrip extends Service
@@ -23,12 +24,12 @@ class ShuttleTrip extends Service
     public function getRqData($rqData = null)
     {
         $rqData = $rqData ?: [];
-        $rqData['create_type'] = $rqData['create_type'] ?: input('post.create_type');
-        $rqData['line_id'] = $rqData['line_id'] ?: input('post.line_id/d', 0);
-        $rqData['line_type'] = $rqData['line_type'] ?: input('post.line_type/d', 0);
-        $rqData['trip_id'] = $rqData['trip_id'] ?: input('post.trip_id/d', 0);
-        $rqData['seat_count'] = $rqData['seat_count'] ?: input('post.seat_count/d', 0);
-        $rqData['time'] = $rqData['time'] ?: input('post.time/d', 0);
+        $rqData['create_type'] = $rqData['create_type'] ?? input('post.create_type');
+        $rqData['line_id'] = $rqData['line_id'] ?? input('post.line_id/d', 0);
+        $rqData['line_type'] = $rqData['line_type'] ?? input('post.line_type/d', 0);
+        $rqData['trip_id'] = $rqData['trip_id'] ?? input('post.trip_id/d', 0);
+        $rqData['seat_count'] = $rqData['seat_count'] ?? input('post.seat_count/d', 0);
+        $rqData['time'] = $rqData['time'] ?? input('post.time/d', 0);
         return $rqData;
     }
 
@@ -64,7 +65,7 @@ class ShuttleTrip extends Service
             $trip_id = 0;
             $plate = $userData['carnumber'];
             if (!isset($rqData['seat_count']) || $rqData['seat_count'] < 1) {
-                $this->error(992, '座位数不能少于一');
+                $this->error(992, lang('The number of empty seats cannot be empty'));
             }
         } elseif ($rqData['create_type'] === 'requests') { // 发布约车需求
             $comefrom = 2;
@@ -156,5 +157,54 @@ class ShuttleTrip extends Service
             $lineData = $ShuttleLineModel->getItem($id, $lineFields);
         }
         return $lineData;
+    }
+
+    
+    public function getSimilarTrips($line_id, $time = 0, $userType = false, $uid = 0, $timeOffset = [60*15, 60*15])
+    {
+        $tripFields = ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom','line_id'];
+        $time = $time ?: time();
+        if (is_numeric($timeOffset)) {
+            $timeOffset = [$timeOffset, $timeOffset];
+        }
+        $start_time = $time - $timeOffset[0];
+        $end_time = $time + $timeOffset[1];
+        $map = [
+            ['t.line_id', '=', $line_id],
+            ['t.status', 'between', [0,1]],
+            ['t.time', 'between', [$start_time, $end_time]],
+        ];
+        if ($userType === 1) {
+            $map[] = ['t.user_type', '=', 1];
+            $map[] = ['t.comefrom', '=', 1];
+        } elseif ($userType === 2) {
+            $map[] = ['t.user_type', '=', 0];
+            $map[] = ['t.comefrom', '=', 2];
+            $map[] = ['t.trip_id', '=', 0];
+        } else {
+            $map[] = ['t.trip_id', '=', 0];
+            $map[] = ['t.comefrom', 'between', [1,2]];
+        }
+        if ($uid > 0) {
+            $map[] = ['t.uid', '=', $uid];
+            $join = [];
+            $userFields =[
+                'uid','loginname','name','nativename','phone','mobile','Department',
+                'sex','company_id','department_id','imgpath','carcolor', 'im_id'
+            ];
+            $User = new UserModel();
+            $userData = $User->findByUid($uid);
+            $userData = Utils::filterDataFields($userData, $userFields, false, 'u_', -1);
+            $defaultUserFields = [
+                'uid', 'loginname', 'name','nativename', 'phone', 'mobile', 'Department', 'sex',
+                'company_id', 'department_id', 'companyname', 'imgpath', 'carcolor', 'im_id'
+            ];
+        }
+        if ($uid < 0) {
+            $map[] = ['t.uid', '<>', -1 * $uid];
+            $join = [
+                ['user u', 'u.uid = t.uid', 'left'],
+            ];
+        }
     }
 }
