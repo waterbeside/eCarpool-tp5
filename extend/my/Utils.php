@@ -7,10 +7,12 @@ namespace my;
  */
 class Utils
 {
-    public function create()
+
+    public static function getInstance()
     {
         return new static();
     }
+
 
     /**
      * 为数组元素添加字符串
@@ -20,7 +22,7 @@ class Utils
      * @param string $endStr 要添加在尾部的字符串
      * @return void
      */
-    public static function arrayAddString($array, $preStr = '', $endStr = '')
+    public function arrayAddString($array, $preStr = '', $endStr = '')
     {
         foreach ($array as $k => $v) {
             $array[$k] = $preStr.$v.$endStr;
@@ -39,7 +41,7 @@ class Utils
      * @param integer $keyDo 负数为转小写，正数为转大写，0为不处理
      * @return array
      */
-    public static function filterDataFields($data, $filterFields = [], $notSet = false, $keyFill = '', $keyDo = 0)
+    public function filterDataFields($data, $filterFields = [], $notSet = false, $keyFill = '', $keyDo = 0)
     {
         $filterFields = is_string($filterFields) ? array_map('trim', explode(',', $filterFields)) : $filterFields ;
         if (!empty($filterFields) && is_array($filterFields)) {
@@ -73,7 +75,7 @@ class Utils
      * @param integer $keyDo 负数为转小写，正数为转大写，0为不处理
      * @return array
      */
-    public static function filterListFields($list, $filterFields = [], $notSet = false, $keyFill = '', $keyDo = 0)
+    public function filterListFields($list, $filterFields = [], $notSet = false, $keyFill = '', $keyDo = 0)
     {
         foreach ($list as $key => $value) {
             $itemData = self::filterDataFields($value, $filterFields, $notSet, $keyFill, $keyDo);

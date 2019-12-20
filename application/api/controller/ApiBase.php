@@ -299,9 +299,9 @@ class ApiBase extends Base
         ];
     }
     
-    public function utils($isNew = false)
+    public function utils()
     {
-        return  (new Utils())->create();
+        return  new Utils();
     }
 
     /**
@@ -314,7 +314,7 @@ class ApiBase extends Base
      */
     public function arrayAddString($array, $preStr = '', $endStr = '')
     {
-        return Utils::arrayAddString($array, $preStr, $endStr);
+        return $this->utils()->arrayAddString($array, $preStr, $endStr);
     }
 
 
@@ -330,7 +330,7 @@ class ApiBase extends Base
      */
     public function filterDataFields($data, $filterFields = [], $notSet = false, $keyFill = '', $keyDo = 0)
     {
-        return Utils::filterDataFields($data, $filterFields, $notSet, $keyFill, $keyDo);
+        return $this->utils()->filterDataFields($data, $filterFields, $notSet, $keyFill, $keyDo);
     }
 
     /**
@@ -345,6 +345,6 @@ class ApiBase extends Base
      */
     public function filterListFields($list, $filterFields = [], $notSet = false, $keyFill = '', $keyDo = 0)
     {
-        return Utils::filterListFields($list, $filterFields, $notSet, $keyFill, $keyDo);
+        return $this->utils()->filterListFields($list, $filterFields, $notSet, $keyFill, $keyDo);
     }
 }
