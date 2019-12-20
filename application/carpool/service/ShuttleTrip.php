@@ -15,6 +15,11 @@ use think\Db;
 class ShuttleTrip extends Service
 {
 
+    public $defaultUserFields = [
+        'uid', 'loginname', 'name','nativename', 'phone', 'mobile', 'Department', 'sex',
+        'company_id', 'department_id', 'companyname', 'imgpath', 'carcolor', 'im_id'
+    ];
+
     /**
      * 取得请求时间
      *
@@ -159,10 +164,78 @@ class ShuttleTrip extends Service
         return $lineData;
     }
 
-    
+    /**
+     * 取得乘客列表
+     *
+     * @param integer $id 行程id
+     * @param array $userFields 要读出的用户字段
+     * @param integer $returnType 返回数据 1:支持抛出json，2:以数组形式返回数据
+     */
+    public function passengers($id = 0, $userFields = [], $tripFields = [])
+    {
+        if (!$id) {
+            $this->error(992, 'Error param');
+        }
+        
+        $ShuttleTripModel = new ShuttleTripModel();
+        $TripsService = new TripsService();
+        $cacheKey = $ShuttleTripModel->getPassengersCacheKey($id);
+        $redis = new RedisData();
+        $userAlias = 'u';
+        $res = $redis->cache($cacheKey);
+        $userFields = $userFields ?: $this->defaultUserFields;
+        if ($res === false) {
+            $tripFieldsArray = ['id', 'time', 'create_time', 'status', 'comefrom'];
+            $fields = Utils::getInstance()->arrayAddString($tripFieldsArray, 't.');
+            $fields = is_array($fields) ? implode(',', $fields) : $fields;
+            if ($userFields !== false) {
+                $fields_user = $TripsService->buildUserFields($userAlias, $this->defaultUserFields);
+                $fields .=  ',' .$fields_user;
+                $join = [
+                    ["user {$userAlias}", "t.uid = {$userAlias}.uid", 'left'],
+                ];
+            } else {
+                $join = [];
+            }
+
+            $map = [
+                ['t.user_type', '=', Db::raw(0)],
+                ['t.trip_id', '=', $id],
+                ['t.status', 'between', [0,3]],
+            ];
+            $res = $ShuttleTripModel->alias('t')->field($fields)->join($join)->where($map)->order('t.create_time ASC')->select()->toArray();
+            $redis->cache($cacheKey, $res, 60);
+        }
+        if (!$res) {
+            $this->error(20002, 'No data');
+        }
+        $res = $this->formatTimeFields($res, 'list', ['time','create_time']);
+        if (!empty($tripFields)) {
+            $tripFields = is_string($tripFields) ? array_map('trim', explode(',', $tripFields)) : $tripFields;
+            if ($userFields !== false) {
+                $userFields = is_string($userFields) ? array_map('trim', explode(',', $userFields)) : $userFields;
+                $userFields = Utils::getInstance()->arrayAddString($userFields, 'u_') ?: [];
+                $filterFields = array_merge($tripFields, $userFields);
+            } else {
+                $filterFields = $tripFields;
+            }
+            $res = Utils::getInstance()->filterListFields($res, $filterFields);
+        }
+        return $res;
+    }
+
+
+    /**
+     * 取得相似行程
+     */
     public function getSimilarTrips($line_id, $time = 0, $userType = false, $uid = 0, $timeOffset = [60*15, 60*15])
     {
         $tripFields = ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom','line_id'];
+        $userFields =[
+            'uid','loginname','name','nativename','phone','mobile','Department',
+            'sex','company_id','department_id','imgpath','carcolor', 'im_id'
+        ];
+        $fieldsStr = implode(',', Utils::getInstance()->arrayAddString($tripFields, 't.') ?: []);
         $time = $time ?: time();
         if (is_numeric($timeOffset)) {
             $timeOffset = [$timeOffset, $timeOffset];
@@ -185,20 +258,13 @@ class ShuttleTrip extends Service
             $map[] = ['t.trip_id', '=', 0];
             $map[] = ['t.comefrom', 'between', [1,2]];
         }
+        
         if ($uid > 0) {
             $map[] = ['t.uid', '=', $uid];
             $join = [];
-            $userFields =[
-                'uid','loginname','name','nativename','phone','mobile','Department',
-                'sex','company_id','department_id','imgpath','carcolor', 'im_id'
-            ];
             $User = new UserModel();
             $userData = $User->findByUid($uid);
-            $userData = Utils::filterDataFields($userData, $userFields, false, 'u_', -1);
-            $defaultUserFields = [
-                'uid', 'loginname', 'name','nativename', 'phone', 'mobile', 'Department', 'sex',
-                'company_id', 'department_id', 'companyname', 'imgpath', 'carcolor', 'im_id'
-            ];
+            $userData = Utils::getInstance()->filterDataFields($userData, $userFields, false, 'u_', -1);
         }
         if ($uid < 0) {
             $map[] = ['t.uid', '<>', -1 * $uid];
@@ -206,5 +272,88 @@ class ShuttleTrip extends Service
                 ['user u', 'u.uid = t.uid', 'left'],
             ];
         }
+    }
+
+
+    /**
+     * 取消行程
+     *
+     * @param mixed $id 当为数字时，为行程id；当为array时，为该行程的data;
+     * @param integer $uid 用户id;
+     * @return void
+     */
+    public function cancel($id, $uid)
+    {
+        $ShuttleTripModel = new ShuttleTripModel();
+
+        if (is_numeric($id)) {
+            $tripData = $ShuttleTripModel->getItem($id);
+        } else {
+            $tripData = $id;
+            $id = $tripData['id'];
+        }
+        if (empty($tripData)) {
+            return $this->error(20002, '该行程不存在', $tripData);
+        }
+        //检查是否已取消或完成
+        if (in_array($tripData['status'], [-1, 3])) {
+            return $this->error(-1, lang('The trip has been completed or cancelled. Operation is not allowed'), $tripData);
+        }
+        $userType = $tripData['user_type'];
+        $myTripMap = [
+            ['trip_id', '=', $id],
+            ['uid', '=', $uid],
+            ['status', 'between', [0, 1]],
+        ];
+        if ($userType == 1) { // 如果从司机行程进行操作
+            // 检查是否该行程的成员
+            if ($tripData['uid'] == $uid) { //如果是司机自已操作
+
+            } else { // 如果是乘客从司机空座位上操作
+                $myTripData = $ShuttleTripModel->where($myTripMap)->find();
+                if ($myTripData) {
+                    
+                }
+            }
+        }
+    }
+
+    /**
+     * 取消司机行程并同时取消该司机下乘客的行程
+     *
+     * @param mixed $id 当为数字时，为行程id；当为array时，为该行程的data;
+     * @return void
+     */
+    public function cancelDriveTrip($id)
+    {
+        $ShuttleTripModel = new ShuttleTripModel();
+
+        if (is_numeric($id)) {
+            $tripData = $ShuttleTripModel->getItem($id);
+        } else {
+            $tripData = $id;
+            $id = $tripData['id'];
+        }
+        if (empty($tripData)) {
+            return $this->error(20002, '该行程不存在', $tripData);
+        }
+        // 查出所有乘客行程，以便作消息推送;
+        $passengers = $this->passengers($id);
+        Db::connect('database_carpool')->startTrans();
+        try {
+            // 先取消司机行程
+            $res = $ShuttleTripModel->where('id', $id)->update(['status' => -1]);
+            // 再取消所有自行上车的乘客行程
+            $ShuttleTripModel->where([['trip_id', '=', $id], ['comefrom', '=', 3]])->update(['status' => -1]);
+            // 再取消所有从约车需求上车乘客行程(还原成约车需求)
+            $ShuttleTripModel->where([['trip_id', '=', $id], ['comefrom', '=', 2]])->update(['status' => 0, 'trip_id'=>0]);
+
+            // 提交事务
+            Db::connect('database_carpool')->commit();
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::connect('database_carpool')->rollback();
+        }
+
     }
 }
