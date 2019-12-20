@@ -2,7 +2,7 @@
 namespace app\carpool\service;
 
 use app\common\service\Service;
-use app\carpool\model\user as UserModel;
+use app\carpool\model\User as UserModel;
 use app\carpool\model\ShuttleLine as ShuttleLineModel;
 use app\carpool\model\ShuttleTrip as ShuttleTripModel;
 use app\carpool\service\Trips as TripsService;

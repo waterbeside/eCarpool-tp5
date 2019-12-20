@@ -9,7 +9,7 @@ use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
 use app\carpool\model\Address;
 use app\carpool\model\Configs as ConfigsModel;
-use app\carpool\model\user as UserModel;
+use app\carpool\model\User as UserModel;
 use app\user\model\Department as DepartmentModel;
 
 use think\Db;

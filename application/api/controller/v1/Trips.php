@@ -8,7 +8,7 @@ use app\api\controller\ApiBase;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
 use app\carpool\model\Address;
-use app\carpool\model\user as UserModel;
+use app\carpool\model\User as UserModel;
 use app\carpool\model\UserPosition as UserPositionModel;
 use app\carpool\model\Grade as GradeModel;
 

@@ -5,7 +5,7 @@ namespace app\carpool\service;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
 use app\carpool\model\Address;
-use app\carpool\model\user as UserModel;
+use app\carpool\model\User as UserModel;
 use app\common\model\PushMessage;
 use app\user\model\Department as DepartmentModel;
 use app\carpool\service\Trips as TripsService;
