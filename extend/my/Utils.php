@@ -8,9 +8,15 @@ namespace my;
 class Utils
 {
 
+    protected static $instance;
+
     public static function getInstance()
     {
-        return new static();
+        if (is_null(static::$instance)) {
+            static::$instance = new static;
+        }
+
+        return static::$instance;
     }
 
 
