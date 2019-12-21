@@ -86,6 +86,18 @@ class ShuttleTrip extends BaseModel
         ];
     }
 
+    /**
+     * 取得行程数据
+     *
+     * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
+     * @return array
+     */
+    public function getDataByIdOrData($idOrData)
+    {
+        $tripData = is_numeric($idOrData) ? $this->getItem($idOrData) : $idOrData;
+        return $tripData;
+    }
+
 
     /**
      * 计算空座位数和约车需求数
@@ -255,5 +267,120 @@ class ShuttleTrip extends BaseModel
             ['status', 'between', [0,3]],
         ];
         return $this->where($map)->count();
+    }
+
+    /**
+     * 检查我是否这个行程的司机
+     *
+     * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
+     * @param integer $uid 司机的id
+     * @return boolean
+     */
+    public function checkIsDriver($idOrData, $uid)
+    {
+        $tripData = $this->getDataByIdOrData($idOrData);
+        if (empty($tripData)) {
+            return $this->setError(20002, '该行程不存在', $tripData);
+        }
+        if ($tripData['user_type'] == 1 && $tripData['uid'] == $uid) {
+            return true; // 我是该司机行程的主人
+        } elseif ($tripData['user_type'] == 0 && $tripData['trip_id'] > 0) { //如果是乘客行程
+            $driverTripData = $this->getItem($tripData['trip_id']); // 查出该乘客的司机行程
+            if ($driverTripData && $driverTripData['uid'] == $uid) { //如果我是司机
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    /**
+     * 取消乘客行程
+     *
+     * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
+     * @return void
+     */
+    public function cancelPassengerTrip($idOrData)
+    {
+        $tripData = $this->getDataByIdOrData($idOrData);
+        $id = $tripData['id'];
+        if (empty($tripData)) {
+            return $this->setError(20002, '该行程不存在', $tripData);
+        }
+        if ($tripData['status'] == -1) {
+            return true;
+        }
+        $map = [
+            ['id', '=', $id],
+        ];
+        $upData = [
+            'operate_time'=>date('Y-m-d H:i:s')
+        ];
+        if (time() <= strtotime($tripData['time']) && $tripData['comefrom'] == 3 && $tripData['trip_id'] > 0) { // 如果未过出发时间 并且是有人搭的约车需求,
+            $upData['status'] = 0;
+            $upData['trip_id'] = 0;
+        } else { // 如果过了出发时间
+            $upData['status'] = -1;
+        }
+        $res = $this->where($map)->update($upData);
+        if ($res === false) {
+            return $this->setError(-1, 'Failed', []);
+        }
+        return true;
+    }
+
+    /**
+     * 取消司机行程并同时取消该司机下乘客的行程
+     *
+     * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
+     * @return void
+     */
+    public function cancelDriveTrip($idOrData)
+    {
+        $tripData = $this->getDataByIdOrData($idOrData);
+        $id = $tripData['id'];
+        if (empty($tripData)) {
+            return $this->setError(20002, '该行程不存在', $tripData);
+        }
+        // 查出所有乘客行程，以便作消息推送;
+        Db::connect('database_carpool')->startTrans();
+        try {
+            // 先取消司机行程
+            $this->where('id', $id)->update(['status' => -1]);
+            $upData = [
+                'status' => -1,
+                'operate_time'=>date('Y-m-d H:i:s')
+            ];
+            if (time() > strtotime($tripData['time'])) { // 如果过了出发时间
+                $map = [
+                    ['trip_id', '=', $id],
+                    ['status', '>', 0],
+                    ['comefrom', 'between', [2, 3]],
+                ];
+                $this->where($map)->update($upData);
+            } else { // 如果未过出发时间
+                $map = [
+                    ['trip_id', '=', $id],
+                    ['status', '>', 0],
+                    ['comefrom', '=', 3],
+                ];
+                $this->where($map)->update($upData);
+                $map2 = [
+                    ['trip_id', '=', $id],
+                    ['status', '>', 0],
+                    ['comefrom', '=', 2],
+                ];
+                // 取消所有从约车需求上车乘客行程(还原成约车需求)
+                $this->where($map2)->update(['status' => 0, 'trip_id'=>0, 'operate_time'=>date('Y-m-d H:i:s')]);
+            }
+            // 提交事务
+            Db::connect('database_carpool')->commit();
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::connect('database_carpool')->rollback();
+            $errorMsg = $e->getMessage();
+            return $this->setError(-1, $errorMsg, []);
+        }
+        return true;
     }
 }

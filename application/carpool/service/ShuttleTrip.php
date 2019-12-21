@@ -6,6 +6,7 @@ use app\carpool\model\User as UserModel;
 use app\carpool\model\ShuttleLine as ShuttleLineModel;
 use app\carpool\model\ShuttleTrip as ShuttleTripModel;
 use app\carpool\service\Trips as TripsService;
+use app\carpool\service\TripsPushMsg;
 use app\carpool\model\ShuttleLineDepartment;
 use app\user\model\Department;
 use my\RedisData;
@@ -231,7 +232,7 @@ class ShuttleTrip extends Service
         $redis = new RedisData();
         $userAlias = 'u';
         $res = $redis->cache($cacheKey);
-        $userFields = $userFields ?: $this->defaultUserFields;
+        $userFields = $userFields === false ? $userFields : ($userFields ?: $this->defaultUserFields);
         if ($res === false) {
             $tripFieldsArray = ['id', 'time', 'create_time', 'status', 'comefrom'];
             $fields = Utils::getInstance()->arrayAddString($tripFieldsArray, 't.');
@@ -326,20 +327,19 @@ class ShuttleTrip extends Service
     /**
      * 取消行程
      *
-     * @param mixed $id 当为数字时，为行程id；当为array时，为该行程的data;
-     * @param integer $uid 用户id;
+     * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
+     * @param mixed $uidOrData 当为数字时，为用户id；当为array时，为该用户的data; ;
      * @return void
      */
-    public function cancel($id, $uid)
+    public function cancel($idOrData, $uidOrData)
     {
         $ShuttleTripModel = new ShuttleTripModel();
+        $userModel = new UserModel();
+        $tripData = $ShuttleTripModel->getDataByIdOrData($idOrData);
+        $id = $tripData['id'];
+        $userData = is_numeric($uidOrData) ? $userModel->findByUid($uidOrData) : $uidOrData;
+        $uid = $userData['uid'];
 
-        if (is_numeric($id)) {
-            $tripData = $ShuttleTripModel->getItem($id);
-        } else {
-            $tripData = $id;
-            $id = $tripData['id'];
-        }
         if (empty($tripData)) {
             return $this->error(20002, '该行程不存在', $tripData);
         }
@@ -348,60 +348,70 @@ class ShuttleTrip extends Service
             return $this->error(-1, lang('The trip has been completed or cancelled. Operation is not allowed'), $tripData);
         }
         $userType = $tripData['user_type'];
-        $myTripMap = [
-            ['trip_id', '=', $id],
-            ['uid', '=', $uid],
-            ['status', 'between', [0, 1]],
+
+        $TripsPushMsg = new TripsPushMsg();
+        $pushMsgData = [
+            'from' => 'shuttle_trip',
+            'runType' => 'cancel',
+            'userData'=> $userData,
+            'tripData'=> $tripData,
+            'id' => $id,
         ];
         if ($userType == 1) { // 如果从司机行程进行操作
             // 检查是否该行程的成员
             if ($tripData['uid'] == $uid) { //如果是司机自已操作
-
+                $passengers = $this->passengers($id, false);
+                $res = $ShuttleTripModel->cancelDriveTrip($tripData);
+                if ($res) {
+                    $targetUserid = [];
+                    foreach ($$passengers as $key => $value) {
+                        $targetUserid[] = $value['uid'];
+                    }
+                    $pushMsgData['isDriver'] = true;
+                    $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+                }
             } else { // 如果是乘客从司机空座位上操作
+                $myTripMap = [
+                    ['trip_id', '=', $id],
+                    ['uid', '=', $uid],
+                    ['status', 'between', [0, 1]],
+                ];
                 $myTripData = $ShuttleTripModel->where($myTripMap)->find();
                 if ($myTripData) {
-                    
+                    $res = $ShuttleTripModel->cancelPassengerTrip($myTripData);
+                    if ($res) { // 推送
+                        $targetUserid = $myTripData['uid'];
+                        $pushMsgData['isDriver'] = false;
+                        $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+                    }
+                } else {
+                    return $this->error(30001, lang('你不是司机或乘客，无法操作'));
                 }
             }
+        } else { // 从乘客行程操作
+            if ($tripData['uid'] == $uid) { //如果是乘客自已操作
+                if ($tripData['trip_id'] > 0) { //如果有司机，查出司机以便推送
+                    $driverTripData = $ShuttleTripModel->getItem($tripData['trip_id']);
+                    $targetUserid = $driverTripData['uid'];
+                }
+                $res = $ShuttleTripModel->cancelPassengerTrip($tripData);
+                if ($res && isset($targetUserid) && $targetUserid > 0) { // 推送
+                    $pushMsgData['isDriver'] = false;
+                    $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+                }
+            } elseif ($ShuttleTripModel->checkIsDriver($tripData, $uid)) {
+                $res = $ShuttleTripModel->cancelPassengerTrip($tripData);
+                if ($res) { // 推送
+                    $pushMsgData['isDriver'] = false;
+                    $targetUserid = $tripData['uid'];
+                    $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+                }
+            } else {
+                return $this->error(30001, lang('你不是司机或乘客，无法操作'));
+            }
         }
+        return true;
     }
 
-    /**
-     * 取消司机行程并同时取消该司机下乘客的行程
-     *
-     * @param mixed $id 当为数字时，为行程id；当为array时，为该行程的data;
-     * @return void
-     */
-    public function cancelDriveTrip($id)
-    {
-        $ShuttleTripModel = new ShuttleTripModel();
-
-        if (is_numeric($id)) {
-            $tripData = $ShuttleTripModel->getItem($id);
-        } else {
-            $tripData = $id;
-            $id = $tripData['id'];
-        }
-        if (empty($tripData)) {
-            return $this->error(20002, '该行程不存在', $tripData);
-        }
-        // 查出所有乘客行程，以便作消息推送;
-        $passengers = $this->passengers($id);
-        Db::connect('database_carpool')->startTrans();
-        try {
-            // 先取消司机行程
-            $res = $ShuttleTripModel->where('id', $id)->update(['status' => -1]);
-            // 再取消所有自行上车的乘客行程
-            $ShuttleTripModel->where([['trip_id', '=', $id], ['comefrom', '=', 3]])->update(['status' => -1]);
-            // 再取消所有从约车需求上车乘客行程(还原成约车需求)
-            $ShuttleTripModel->where([['trip_id', '=', $id], ['comefrom', '=', 2]])->update(['status' => 0, 'trip_id'=>0]);
-
-            // 提交事务
-            Db::connect('database_carpool')->commit();
-        } catch (\Exception $e) {
-            // 回滚事务
-            Db::connect('database_carpool')->rollback();
-        }
-
-    }
+    
 }
