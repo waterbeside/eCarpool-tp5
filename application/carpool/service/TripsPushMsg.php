@@ -66,5 +66,4 @@ class TripsPushMsg extends Service
         $this->data = ['sendTarget' => $sendTarget];
         return true;
     }
-
 }
