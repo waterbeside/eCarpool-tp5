@@ -194,7 +194,7 @@ class ShuttleTrip extends Service
             $trip_info = null;
         }
         $itemData = $this->formatTimeFields($itemData, 'item', ['time','create_time']);
-        $tripFields = $tripFields ?: ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom', 'trip_id'];
+        $tripFields = $tripFields ?: ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom', 'trip_id', 'seat_count'];
 
         $itemData = Utils::getInstance()->filterDataFields($itemData, $tripFields);
         $userFields = $userFields ?: $this->defaultUserFields;
@@ -224,6 +224,7 @@ class ShuttleTrip extends Service
     {
         if (!$id) {
             $this->error(992, 'Error param');
+            return [];
         }
         
         $ShuttleTripModel = new ShuttleTripModel();
@@ -363,12 +364,17 @@ class ShuttleTrip extends Service
                 $passengers = $this->passengers($id, false);
                 $res = $ShuttleTripModel->cancelDriveTrip($tripData);
                 if ($res) {
+                    // 清缓存
+                    $ShuttleTripModel->delItemCache($id); // 清单项行程缓存
+                    $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
+                    // 推消息
                     $targetUserid = [];
-                    foreach ($$passengers as $key => $value) {
+                    foreach ($passengers as $key => $value) {
                         $targetUserid[] = $value['uid'];
+                        $ShuttleTripModel->delItemCache($value['id']); // 清乘客单项行程缓存
                     }
                     $pushMsgData['isDriver'] = true;
-                    $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+                    $TripsPushMsg->pushMsg($targetUserid, $pushMsgData); // 推消息
                 }
             } else { // 如果是乘客从司机空座位上操作
                 $myTripMap = [
@@ -379,7 +385,11 @@ class ShuttleTrip extends Service
                 $myTripData = $ShuttleTripModel->where($myTripMap)->find();
                 if ($myTripData) {
                     $res = $ShuttleTripModel->cancelPassengerTrip($myTripData);
-                    if ($res) { // 推送
+                    if ($res) {
+                        // 清缓存
+                        $ShuttleTripModel->delItemCache($myTripData['id']); // 清乘客单项行程缓存
+                        $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
+                        // 推送
                         $targetUserid = $myTripData['uid'];
                         $pushMsgData['isDriver'] = false;
                         $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
@@ -390,28 +400,113 @@ class ShuttleTrip extends Service
             }
         } else { // 从乘客行程操作
             if ($tripData['uid'] == $uid) { //如果是乘客自已操作
-                if ($tripData['trip_id'] > 0) { //如果有司机，查出司机以便推送
-                    $driverTripData = $ShuttleTripModel->getItem($tripData['trip_id']);
-                    $targetUserid = $driverTripData['uid'];
-                }
                 $res = $ShuttleTripModel->cancelPassengerTrip($tripData);
-                if ($res && isset($targetUserid) && $targetUserid > 0) { // 推送
-                    $pushMsgData['isDriver'] = false;
-                    $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+                if ($res) {
+                    // 清缓存
+                    $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
+                    if ($tripData['trip_id'] > 0) { //如果有司机，查出司机以便推送
+                        $driverTripData = $ShuttleTripModel->getItem($tripData['trip_id']);
+                        $targetUserid = $driverTripData ? $driverTripData['uid'] : 0;
+                        $ShuttleTripModel->delPassengersCache($tripData['trip_id']);
+                    }
+                    if (isset($targetUserid) && $targetUserid > 0) {
+                        // 推送
+                        $pushMsgData['isDriver'] = false;
+                        $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+                    }
                 }
             } elseif ($ShuttleTripModel->checkIsDriver($tripData, $uid)) {
                 $res = $ShuttleTripModel->cancelPassengerTrip($tripData);
-                if ($res) { // 推送
+                if ($res) {
+                    // 清缓存
+                    $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
+                    $ShuttleTripModel->delPassengersCache($tripData['trip_id']); // 清除司机的乘客列表缓存
+                    // 推送
                     $pushMsgData['isDriver'] = false;
                     $targetUserid = $tripData['uid'];
                     $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
                 }
             } else {
-                return $this->error(30001, lang('你不是司机或乘客，无法操作'));
+                return $this->error(30001, lang('你不能操作别人的行程'));
             }
         }
-        return true;
+        if (isset($res) && $res) {
+            return true;
+        }
+        $errorData = $ShuttleTripModel->getError();
+        return $this->error($errorData['code'] ?? -1, $errorData['msg'] ?? 'Failed', $errorData['data'] ?? []);
     }
 
-    
+    /**
+     * 完结行程
+     *
+     * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
+     * @param mixed $uidOrData 当为数字时，为用户id；当为array时，为该用户的data; ;
+     * @return void
+     */
+    public function finish($idOrData, $uidOrData)
+    {
+        $ShuttleTripModel = new ShuttleTripModel();
+        $userModel = new UserModel();
+        $tripData = $ShuttleTripModel->getDataByIdOrData($idOrData);
+        $id = $tripData['id'];
+        $userData = is_numeric($uidOrData) ? $userModel->findByUid($uidOrData) : $uidOrData;
+        $uid = $userData['uid'];
+        if (empty($tripData)) {
+            return $this->error(20002, '该行程不存在', $tripData);
+        }
+        //检查是否已取消或完成
+        if (in_array($tripData['status'], [-1, 3])) {
+            return $this->error(-1, lang('The trip has been completed or cancelled. Operation is not allowed'), $tripData);
+        }
+        $userType = $tripData['user_type'];
+        if ($userType == 1) { // 如果从司机行程进行操作
+            // 检查是否该行程的成员
+            if ($tripData['uid'] == $uid) { //如果是司机自已操作
+                $passengers = $this->passengers($id, false);
+                $res = $ShuttleTripModel->finishDriveTrip($tripData);
+                // 清缓存
+                $ShuttleTripModel->delItemCache($id); // 清单项行程缓存
+                $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
+                foreach ($passengers as $key => $value) {
+                    $ShuttleTripModel->delItemCache($value['id']); // 清乘客单项行程缓存
+                }
+            } else { // 如果是乘客从司机空座位上操作
+                $myTripMap = [
+                    ['trip_id', '=', $id],
+                    ['uid', '=', $uid],
+                    ['status', 'in', [0, 1, 3]],
+                ];
+                $myTripData = $ShuttleTripModel->where($myTripMap)->find();
+                if ($myTripData) {
+                    $res = $ShuttleTripModel->finishPassengerTrip($myTripData);
+                    if ($res) {
+                        // 清缓存
+                        $ShuttleTripModel->delItemCache($myTripData['id']); // 清乘客单项行程缓存
+                        $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
+                    }
+                } else {
+                    return $this->error(30001, lang('你不是司机或乘客，无法操作'));
+                }
+            }
+        } else { // 从乘客行程操作
+            if ($tripData['uid'] == $uid) { //如果是乘客自已操作
+                $res = $ShuttleTripModel->finishPassengerTrip($tripData);
+                if ($res) {
+                    // 清缓存
+                    $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
+                    if ($tripData['trip_id'] > 0) { //如果有司机，查出司机以便推送
+                        $ShuttleTripModel->delPassengersCache($tripData['trip_id']);
+                    }
+                }
+            } else {
+                return $this->error(30001, lang('你不能操作别人的行程'));
+            }
+        }
+        if (isset($res) && $res) {
+            return true;
+        }
+        $errorData = $ShuttleTripModel->getError();
+        return $this->error($errorData['code'] ?? -1, $errorData['msg'] ?? 'Failed', $errorData['data'] ?? []);
+    }
 }

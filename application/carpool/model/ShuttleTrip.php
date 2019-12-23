@@ -254,6 +254,29 @@ class ShuttleTrip extends BaseModel
     }
 
     /**
+     * 清除空座位和约车需求列表缓存
+     *
+     * @param integer $line_id 路线id
+     * @param string $type 'cars' or 'requests'
+     * @return void
+     */
+    public function delListCache($line_id, $type = null)
+    {
+        if (in_array($type, ['my', 'history'])) {
+            return $this->delMyListCache($line_id, $type);
+        }
+        $redis = new RedisData();
+        if (!$type) {
+            $cacheKey_1 = $this->getListCacheKeyByLineId($line_id, 'cars');
+            $cacheKey_2 = $this->getListCacheKeyByLineId($line_id, 'requests');
+            $redis->del($cacheKey_1, $cacheKey_2);
+        } else {
+            $cacheKey = $this->getListCacheKeyByLineId($line_id, $type);
+            $redis->del($cacheKey);
+        }
+    }
+
+    /**
      * 计算乘客个数
      *
      * @param [type] $id
@@ -291,7 +314,6 @@ class ShuttleTrip extends BaseModel
             }
         }
         return false;
-
     }
 
     /**
@@ -326,6 +348,9 @@ class ShuttleTrip extends BaseModel
         if ($res === false) {
             return $this->setError(-1, 'Failed', []);
         }
+        if ($upData['status'] === 0) { // 如果是取消到约车需求 则刷新约车需求缓存
+            $this->delListCache($tripData['line_id'], 'requests');
+        }
         return true;
     }
 
@@ -342,6 +367,7 @@ class ShuttleTrip extends BaseModel
         if (empty($tripData)) {
             return $this->setError(20002, '该行程不存在', $tripData);
         }
+        $redis = new RedisData();
         // 查出所有乘客行程，以便作消息推送;
         Db::connect('database_carpool')->startTrans();
         try {
@@ -372,6 +398,7 @@ class ShuttleTrip extends BaseModel
                 ];
                 // 取消所有从约车需求上车乘客行程(还原成约车需求)
                 $this->where($map2)->update(['status' => 0, 'trip_id'=>0, 'operate_time'=>date('Y-m-d H:i:s')]);
+                $this->delListCache($tripData['line_id'], 'requests');
             }
             // 提交事务
             Db::connect('database_carpool')->commit();
@@ -381,6 +408,79 @@ class ShuttleTrip extends BaseModel
             $errorMsg = $e->getMessage();
             return $this->setError(-1, $errorMsg, []);
         }
+        $this->delListCache($tripData['line_id'], 'cars');
+        return true;
+    }
+
+
+    /**
+     * 完结乘客行程
+     *
+     * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
+     * @return void
+     */
+    public function finishPassengerTrip($idOrData)
+    {
+        $tripData = $this->getDataByIdOrData($idOrData);
+        $id = $tripData['id'];
+        if (empty($tripData)) {
+            return $this->setError(20002, '该行程不存在', $tripData);
+        }
+        if ($tripData['status'] == 3) {
+            return true;
+        }
+        $map = [
+            ['id', '=', $id],
+        ];
+        $upData = [
+            'status' => 3,
+            'operate_time' => date('Y-m-d H:i:s')
+        ];
+        $res = $this->where($map)->update($upData);
+        if ($res === false) {
+            return $this->setError(-1, 'Failed', []);
+        }
+        return true;
+    }
+
+    /**
+     * 完结司机行程并同时完结该司机下乘客的行程
+     *
+     * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
+     * @return void
+     */
+    public function finishDriverTrip($idOrData)
+    {
+        $tripData = $this->getDataByIdOrData($idOrData);
+        $id = $tripData['id'];
+        if (empty($tripData)) {
+            return $this->setError(20002, '该行程不存在', $tripData);
+        }
+        $redis = new RedisData();
+        // 查出所有乘客行程，以便作消息推送;
+        Db::connect('database_carpool')->startTrans();
+        try {
+            // 先取消司机行程
+            $this->where('id', $id)->update(['status' => 3]);
+            $upData = [
+                'status' => 3,
+                'operate_time'=>date('Y-m-d H:i:s')
+            ];
+            $map = [
+                ['trip_id', '=', $id],
+                ['status', 'between', [0, 1]],
+                ['comefrom', 'between', [2, 3]],
+            ];
+            $this->where($map)->update($upData);
+            // 提交事务
+            Db::connect('database_carpool')->commit();
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::connect('database_carpool')->rollback();
+            $errorMsg = $e->getMessage();
+            return $this->setError(-1, $errorMsg, []);
+        }
+        $this->delListCache($tripData['line_id'], 'cars');
         return true;
     }
 }
