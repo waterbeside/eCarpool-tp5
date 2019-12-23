@@ -338,7 +338,7 @@ class ShuttleTrip extends BaseModel
         $upData = [
             'operate_time'=>date('Y-m-d H:i:s')
         ];
-        if (time() <= strtotime($tripData['time']) && $tripData['comefrom'] == 3 && $tripData['trip_id'] > 0) { // 如果未过出发时间 并且是有人搭的约车需求,
+        if (time() <= strtotime($tripData['time']) && $tripData['comefrom'] == 2 && $tripData['trip_id'] > 0) { // 如果未过出发时间 并且是有人搭的约车需求,
             $upData['status'] = 0;
             $upData['trip_id'] = 0;
         } else { // 如果过了出发时间
