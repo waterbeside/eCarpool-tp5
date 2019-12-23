@@ -494,7 +494,7 @@ class Trip extends ApiBase
                 $errorData = $ShuttleTripService->getError();
                 return $this->jsonReturn($errorData['code'], $errorData['data'], lang('Failed').'. '.$errorData['msg']);
             }
-            $ShuttleTripModel->where('id', $id)->update(['trips_id'=>$addRes]); // 乘客行程的trip_id设为司机行程id
+            $ShuttleTripModel->where('id', $id)->update(['trip_id'=>$addRes]); // 乘客行程的trip_id设为司机行程id
             // 提交事务
             Db::connect('database_carpool')->commit();
         } catch (\Exception $e) {
