@@ -16,9 +16,9 @@ class TripsPushMsg extends Service
         $runType = mb_strtolower($data['runType']);
         $from = mb_strtolower($data['from']);
         $id = $data['id'];
-        $isDriver = $data['isDriver'];
-        $userData = $data['userData'];
-        $tripData = $data['tripData'];
+        $isDriver = $data['isDriver'] ?? 0;
+        $userData = $data['userData'] ?? null;
+        $tripData = $data['tripData'] ?? null;
         $id = $id ?: ($tripData && $tripData['id'] ? $tripData['id'] : 0);
         if (empty($id)) {
             return false;
