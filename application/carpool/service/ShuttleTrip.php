@@ -349,33 +349,15 @@ class ShuttleTrip extends Service
             return $this->error(-1, lang('The trip has been completed or cancelled. Operation is not allowed'), $tripData);
         }
         $userType = $tripData['user_type'];
+        $extData = [];
 
-        $TripsPushMsg = new TripsPushMsg();
-        $pushMsgData = [
-            'from' => 'shuttle_trip',
-            'runType' => 'cancel',
-            'userData'=> $userData,
-            'tripData'=> $tripData,
-            'id' => $id,
-        ];
         if ($userType == 1) { // 如果从司机行程进行操作
             // 检查是否该行程的成员
             if ($tripData['uid'] == $uid) { //如果是司机自已操作
+                $extData['i_am_driver'] = true;
                 $passengers = $this->passengers($id, false);
+                $extData['passengers'] = $passengers;
                 $res = $ShuttleTripModel->cancelDriveTrip($tripData);
-                if ($res) {
-                    // 清缓存
-                    $ShuttleTripModel->delItemCache($id); // 清单项行程缓存
-                    $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
-                    // 推消息
-                    $targetUserid = [];
-                    foreach ($passengers as $key => $value) {
-                        $targetUserid[] = $value['uid'];
-                        $ShuttleTripModel->delItemCache($value['id']); // 清乘客单项行程缓存
-                    }
-                    $pushMsgData['isDriver'] = true;
-                    $TripsPushMsg->pushMsg($targetUserid, $pushMsgData); // 推消息
-                }
             } else { // 如果是乘客从司机空座位上操作
                 $myTripMap = [
                     ['trip_id', '=', $id],
@@ -384,16 +366,8 @@ class ShuttleTrip extends Service
                 ];
                 $myTripData = $ShuttleTripModel->where($myTripMap)->find();
                 if ($myTripData) {
+                    $extData['myTripData'] = $myTripData;
                     $res = $ShuttleTripModel->cancelPassengerTrip($myTripData);
-                    if ($res) {
-                        // 清缓存
-                        $ShuttleTripModel->delItemCache($myTripData['id']); // 清乘客单项行程缓存
-                        $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
-                        // 推送
-                        $targetUserid = $myTripData['uid'];
-                        $pushMsgData['isDriver'] = false;
-                        $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
-                    }
                 } else {
                     return $this->error(30001, lang('你不是司机或乘客，无法操作'));
                 }
@@ -401,36 +375,15 @@ class ShuttleTrip extends Service
         } else { // 从乘客行程操作
             if ($tripData['uid'] == $uid) { //如果是乘客自已操作
                 $res = $ShuttleTripModel->cancelPassengerTrip($tripData);
-                if ($res) {
-                    // 清缓存
-                    $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
-                    if ($tripData['trip_id'] > 0) { //如果有司机，查出司机以便推送
-                        $driverTripData = $ShuttleTripModel->getItem($tripData['trip_id']);
-                        $targetUserid = $driverTripData ? $driverTripData['uid'] : 0;
-                        $ShuttleTripModel->delPassengersCache($tripData['trip_id']);
-                    }
-                    if (isset($targetUserid) && $targetUserid > 0) {
-                        // 推送
-                        $pushMsgData['isDriver'] = false;
-                        $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
-                    }
-                }
-            } elseif ($ShuttleTripModel->checkIsDriver($tripData, $uid)) {
+            } elseif ($ShuttleTripModel->checkIsDriver($tripData, $uid)) { // 如果是司机操作乘客
+                $extData['i_am_driver'] = true;
                 $res = $ShuttleTripModel->cancelPassengerTrip($tripData);
-                if ($res) {
-                    // 清缓存
-                    $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
-                    $ShuttleTripModel->delPassengersCache($tripData['trip_id']); // 清除司机的乘客列表缓存
-                    // 推送
-                    $pushMsgData['isDriver'] = false;
-                    $targetUserid = $tripData['uid'];
-                    $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
-                }
             } else {
                 return $this->error(30001, lang('你不能操作别人的行程'));
             }
         }
         if (isset($res) && $res) {
+            $this->doAfterStatusChange($tripData, $userData, 'cancel', $extData);
             return true;
         }
         $errorData = $ShuttleTripModel->getError();
@@ -460,17 +413,14 @@ class ShuttleTrip extends Service
             return $this->error(-1, lang('The trip has been completed or cancelled. Operation is not allowed'), $tripData);
         }
         $userType = $tripData['user_type'];
+        $extData = [];
+
         if ($userType == 1) { // 如果从司机行程进行操作
             // 检查是否该行程的成员
             if ($tripData['uid'] == $uid) { //如果是司机自已操作
                 $passengers = $this->passengers($id, false);
+                $extData['passengers'] = $passengers;
                 $res = $ShuttleTripModel->finishDriveTrip($tripData);
-                // 清缓存
-                $ShuttleTripModel->delItemCache($id); // 清单项行程缓存
-                $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
-                foreach ($passengers as $key => $value) {
-                    $ShuttleTripModel->delItemCache($value['id']); // 清乘客单项行程缓存
-                }
             } else { // 如果是乘客从司机空座位上操作
                 $myTripMap = [
                     ['trip_id', '=', $id],
@@ -479,12 +429,8 @@ class ShuttleTrip extends Service
                 ];
                 $myTripData = $ShuttleTripModel->where($myTripMap)->find();
                 if ($myTripData) {
+                    $extData['myTripData'] = $myTripData;
                     $res = $ShuttleTripModel->finishPassengerTrip($myTripData);
-                    if ($res) {
-                        // 清缓存
-                        $ShuttleTripModel->delItemCache($myTripData['id']); // 清乘客单项行程缓存
-                        $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
-                    }
                 } else {
                     return $this->error(30001, lang('你不是司机或乘客，无法操作'));
                 }
@@ -492,21 +438,90 @@ class ShuttleTrip extends Service
         } else { // 从乘客行程操作
             if ($tripData['uid'] == $uid) { //如果是乘客自已操作
                 $res = $ShuttleTripModel->finishPassengerTrip($tripData);
-                if ($res) {
-                    // 清缓存
-                    $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
-                    if ($tripData['trip_id'] > 0) { //如果有司机，查出司机以便推送
-                        $ShuttleTripModel->delPassengersCache($tripData['trip_id']);
-                    }
-                }
             } else {
                 return $this->error(30001, lang('你不能操作别人的行程'));
             }
         }
         if (isset($res) && $res) {
+            $this->doAfterStatusChange($tripData, $userData, 'finish', $extData);
             return true;
         }
         $errorData = $ShuttleTripModel->getError();
         return $this->error($errorData['code'] ?? -1, $errorData['msg'] ?? 'Failed', $errorData['data'] ?? []);
+    }
+
+
+    /**
+     * 执行完完结或取消行程后，进行推送或清除缓存
+     *
+     * @param array $tripData 该行程的data;
+     * @param array $userData 操作用户的data;
+     * @param string $runType 'cancel' or 'finish'
+     * @return void
+     */
+    public function doAfterStatusChange($tripData, $userData, $runType, $extData = [])
+    {
+        $ShuttleTripModel = new ShuttleTripModel();
+        $id = $tripData['id'];
+        $uid = $userData['uid'];
+        $userType = $tripData['user_type'];
+
+        $TripsPushMsg = new TripsPushMsg();
+        $pushMsgData = [
+            'from' => 'shuttle_trip',
+            'runType' => $runType,
+            'userData'=> $userData,
+            'tripData'=> $tripData,
+            'id' => $id,
+        ];
+        $iAmDriver = $extData['i_am_driver'] ?? 0;
+        if ($userType == 1) { // 如果从司机行程进行操作
+            if ($tripData['uid'] == $uid) { //如果是司机自已操作
+                // 清缓存
+                $ShuttleTripModel->delItemCache($id); // 清单项行程缓存
+                $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
+                // 推消息
+                $targetUserid = [];
+                $passengers = $extData['passengers'] ?? [];
+                foreach ($passengers as $key => $value) {
+                    $targetUserid[] = $value['uid'];
+                    $ShuttleTripModel->delItemCache($value['id']); // 清乘客单项行程缓存
+                }
+                if ($runType == 'cancel') {
+                    $pushMsgData['isDriver'] = true;
+                    $TripsPushMsg->pushMsg($targetUserid, $pushMsgData); // 推消息
+                }
+            } else { // 如果是乘客从司机空座位上操作
+                // 清缓存
+                $myTripData = $extData['myTripData'] ?? [];
+                if (!empty($myTripData) && $myTripData['id']) {
+                    $ShuttleTripModel->delItemCache($myTripData['id']); // 清乘客单项行程缓存
+                }
+                $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
+            }
+        } else { // 从乘客行程操作
+            if ($tripData['uid'] == $uid) { //如果是乘客自已操作
+                // 清缓存
+                $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
+                if ($tripData['trip_id'] > 0) { //如果有司机，查出司机以便推送
+                    $ShuttleTripModel->delPassengersCache($tripData['trip_id']); // 清司机行程的乘客列表缓存
+                    $driverTripData = $ShuttleTripModel->getItem($tripData['trip_id']);
+                    $targetUserid = $driverTripData ? $driverTripData['uid'] : 0;
+                }
+                if ($runType === 'cancel' && isset($targetUserid) && $targetUserid > 0) {
+                    // 推送
+                    $pushMsgData['isDriver'] = false;
+                    $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+                }
+            } elseif ($runType === 'cancel' && $iAmDriver) { // 如果是司机操作乘客
+                // 清缓存
+                $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
+                $ShuttleTripModel->delPassengersCache($tripData['trip_id']); // 清除司机的乘客列表缓存
+                // 推送
+                $pushMsgData['isDriver'] = false;
+                $targetUserid = $tripData['uid'];
+                $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+            }
+        }
     }
 }
