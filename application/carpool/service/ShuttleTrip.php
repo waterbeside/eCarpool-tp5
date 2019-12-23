@@ -472,7 +472,7 @@ class ShuttleTrip extends Service
             'runType' => $runType,
             'userData'=> $userData,
             'tripData'=> $tripData,
-            'id' => $id,
+            'id' => $extData['id'] ?? $id,
         ];
         $iAmDriver = $extData['i_am_driver'] ?? 0;
         $ShuttleTripModel->delMyListCache($uid); //清除自己的“我的行程”列表缓存
@@ -516,6 +516,7 @@ class ShuttleTrip extends Service
                 if ($runType === 'cancel' && isset($targetUserid) && $targetUserid > 0) {
                     // 推送
                     $pushMsgData['isDriver'] = false;
+                    $pushMsgData['id'] = $tripData['trip_id'];
                     $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
                 }
             } elseif ($runType === 'cancel' && $iAmDriver) { // 如果是司机操作乘客
@@ -526,6 +527,7 @@ class ShuttleTrip extends Service
                 // 推送
                 $pushMsgData['isDriver'] = false;
                 $targetUserid = $tripData['uid'];
+                $pushMsgData['id'] = $tripData['trip_id'] > 0 ? $tripData['trip_id'] : $pushMsgData['id'];
                 $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
             }
         }
