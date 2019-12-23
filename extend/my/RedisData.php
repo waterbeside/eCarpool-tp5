@@ -66,10 +66,10 @@ class RedisData extends Redis
         if ($value !== false) {
             $value = $this->formatValue($value);
             $this->hSet($cacheKey, $field, $value);
-            return true;
             if ($ex > 0) {
                 $this->expire($cacheKey, $ex);
             }
+            return true;
         } else {
             $str =  $this->hGet($cacheKey, $field);
             $redData = $this->formatRes($str);
