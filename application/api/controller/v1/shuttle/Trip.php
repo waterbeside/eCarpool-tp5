@@ -103,7 +103,7 @@ class Trip extends ApiBase
             if ($keyword) {
                 $map[] = ["{$userAlias}.name|{$userAlias}.nativename", 'line', "%$keyword%"];
             }
-            $ctor = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map)->order('time');
+            $ctor = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map)->order('t.time ASC');
             $returnData = $this->getListDataByCtor($ctor, $pagesize);
             if (empty($returnData['lists'])) {
                 if (!$keyword) {
@@ -214,7 +214,7 @@ class Trip extends ApiBase
                 ["user {$userAlias}", "t.uid = {$userAlias}.uid", 'left'],
                 ["t_shuttle_line l", "l.id = t.line_id", 'left'],
             ];
-            $ctor = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map);
+            $ctor = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map)->order('t.time ASC');
             $returnData = $this->getListDataByCtor($ctor, $pagesize);
 
             if (empty($returnData['lists'])) {
@@ -274,7 +274,7 @@ class Trip extends ApiBase
             $join = [
                 ["t_shuttle_line l", "l.id = t.line_id", 'left'],
             ];
-            $ctor = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map);
+            $ctor = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map)->order('t.time ASC');
             $returnData = $this->getListDataByCtor($ctor, $pagesize);
             if (empty($returnData['lists'])) {
                 $redis->hCache($cacheKey, $rowCacheKey, [], $ex);
