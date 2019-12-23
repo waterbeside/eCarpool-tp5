@@ -8,6 +8,7 @@ use app\carpool\model\ShuttleTrip;
 use app\carpool\model\User;
 use app\carpool\service\ShuttleTrip as ShuttleTripService;
 use app\carpool\service\Trips as TripsService;
+use app\carpool\service\TripsPushMsg;
 use app\carpool\model\ShuttleLineDepartment;
 use app\user\model\Department;
 use my\RedisData;
@@ -196,8 +197,8 @@ class Trip extends ApiBase
         if (is_array($returnData) && empty($returnData)) {
             return $this->jsonReturn(20002, $returnData, 'No data');
         }
-        $userFields = ['uid', 'loginname', 'name', 'nativename','sex','phone','mobile'];
-        if (!$returnData || 1) {
+        $userFields = ['uid', 'loginname', 'name', 'nativename', 'sex', 'phone', 'mobile', 'imgpath', 'im_id'];
+        if (!$returnData) {
             $ex = 60 * 5;
             $userAlias = 'u';
             $fields_user = $TripsService->buildUserFields($userAlias, $userFields);
@@ -317,7 +318,7 @@ class Trip extends ApiBase
      * @param array $userFields 要读出的用户字段
      * @param integer $returnType 返回数据 1:支持抛出json，2:以数组形式返回数据
      */
-    public function show($id = 0, $show_line = 1, $show_driver = 1, $show_passengers = 1)
+    public function show($id = 0, $show_line = 1, $show_driver = 1, $show_passengers = 2)
     {
         if (!$id) {
             return $this->jsonReturn(992, 'Error param');
@@ -334,7 +335,13 @@ class Trip extends ApiBase
             $data['driver'] = $ShuttleTripService->getUserTripDetail($trip_id, [], [], 0);
         }
         if ($trip_id === 0 && $show_passengers) {
-            $data['passengers'] = $ShuttleTripService->passengers($id) ?: [];
+            if ($show_passengers == 2) {
+                $data['passengers'] = $ShuttleTripService->passengers($id) ?: [];
+                $data['took_count'] = count($data['passengers']);
+            } else {
+                $ShuttleTrip = new ShuttleTrip();
+                $data['took_count'] = $ShuttleTrip->countPassengers($id);
+            }
         }
         unset($data['trip_id']);
         return $this->jsonReturn(0, $data, 'Successful');
@@ -429,6 +436,18 @@ class Trip extends ApiBase
             $errorData = $ShuttleTripService->getError();
             $this->jsonReturn($errorData['code'], $errorData['data'], lang('Failed').'. '.$errorData['msg']);
         }
+        // 推消息
+        $TripsPushMsg = new TripsPushMsg();
+        $pushMsgData = [
+            'from' => 'shuttle_trip',
+            'runType' => 'hitchhiking',
+            'userData'=> $userData,
+            'tripData'=> $tripData,
+            'id' => $id,
+        ];
+        $targetUserid = $tripData['uid'];
+        $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+        // ok
         return $this->jsonReturn(0, ['id'=>$addRes], 'Successful');
     }
 
@@ -483,12 +502,24 @@ class Trip extends ApiBase
             $errorMsg = $e->getMessage();
             return $this->jsonReturn(-1, null, lang('Failed'), ['errorMsg'=>$errorMsg]);
         }
-        $ShuttleTripModel->delItemCache($id);
+        // 消缓存
+        $ShuttleTripModel->delItemCache($id); // 消单项行程缓存
+        // 推消息
+        $TripsPushMsg = new TripsPushMsg();
+        $pushMsgData = [
+            'from' => 'shuttle_trip',
+            'runType' => 'pickup',
+            'userData'=> $userData,
+            'tripData'=> $tripData,
+            'id' => $id,
+        ];
+        $targetUserid = $tripData['uid'];
+        $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
         return $this->jsonReturn(0, ['id'=>$addRes], 'Successful');
     }
 
     /**
-     * 修改内容 (取消，完结，)
+     * 修改内容 (取消，完结，改变座位数)
      *
      * @return void
      */
@@ -497,10 +528,13 @@ class Trip extends ApiBase
         if (!$id) {
             return $this->jsonReturn(992, 'Error param');
         }
-        $do = 'finish';
+
+        $run = input('post.run') ?: input('param.run') ;
+        if (!in_array($run, ['cancel', 'finish', 'change_seat'])) {
+            return $this->jsonReturn(992, 'Error param');
+        }
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
-
         $ShuttleTripModel = new ShuttleTrip();
         $tripData = $ShuttleTripModel->getItem($id);
         if (empty($tripData)) {
@@ -511,11 +545,33 @@ class Trip extends ApiBase
             return $this->jsonReturn(-1, lang('The trip has been completed or cancelled. Operation is not allowed'));
         }
         $userType = $tripData['user_type'];
-        // 检查是否该行程的成员
-        if ($tripData['uid'] != $uid) {
-            if ($userType == 1) { // 如果从司机行程进行操作
+        
+        $ShuttleTripService = new ShuttleTripService();
+        if ($run === 'cancel') {
+            $res = $ShuttleTripService->cancel($tripData, $userData);
+        } elseif ($run === 'finish') {
+            $res = $ShuttleTripService->finish($tripData, $userData);
+        } elseif ($run === 'change_seat') {
+            $seat_count = input('post.seat_count/d', 0);
+            if ($seat_count < 1) {
+                return $this->jsonReturn(992, lang('The number of empty seats cannot be empty'));
+            }
+            $took_count = $ShuttleTripModel->countPassengers($id); //计算已坐车乘客数
+            if ($seat_count < $took_count) {
+                return $this->jsonReturn(992, lang('您设置的座位数不能比已搭乘客数少'));
+            }
+            $res = $ShuttleTripModel->where('id', $id)->update(['seat_count'=>$seat_count]);
+        }
 
+        if ($res === false) {
+            if (in_array($run, ['cacnel', 'finish'])) {
+                $errorData = $ShuttleTripService->getError();
+                return $this->jsonReturn($errorData['code'] ?: -1, $errorData['msg'] ?: 'Failed');
+            } else {
+                return $this->jsonReturn(-1, 'Failed');
             }
         }
+        $ShuttleTripModel->delItemCache($id); // 消单项行程缓存
+        return $this->jsonReturn(0, 'Successful');
     }
 }
