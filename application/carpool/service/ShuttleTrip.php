@@ -475,6 +475,8 @@ class ShuttleTrip extends Service
             'id' => $id,
         ];
         $iAmDriver = $extData['i_am_driver'] ?? 0;
+        $ShuttleTripModel->delMyListCache($uid); //清除自己的“我的行程”列表缓存
+
         if ($userType == 1) { // 如果从司机行程进行操作
             if ($tripData['uid'] == $uid) { //如果是司机自已操作
                 // 清缓存
@@ -486,6 +488,7 @@ class ShuttleTrip extends Service
                 foreach ($passengers as $key => $value) {
                     $targetUserid[] = $value['uid'];
                     $ShuttleTripModel->delItemCache($value['id']); // 清乘客单项行程缓存
+                    $ShuttleTripModel->delMyListCache($value['uid'], 'my'); //清除所有乘客的“我的行程”列表缓存
                 }
                 if ($runType == 'cancel') {
                     $pushMsgData['isDriver'] = true;
@@ -496,6 +499,7 @@ class ShuttleTrip extends Service
                 $myTripData = $extData['myTripData'] ?? [];
                 if (!empty($myTripData) && $myTripData['id']) {
                     $ShuttleTripModel->delItemCache($myTripData['id']); // 清乘客单项行程缓存
+                    $ShuttleTripModel->delMyListCache($tripData['uid']); //清除司机的“我的行程”列表缓存
                 }
                 $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
             }
@@ -507,6 +511,7 @@ class ShuttleTrip extends Service
                     $ShuttleTripModel->delPassengersCache($tripData['trip_id']); // 清司机行程的乘客列表缓存
                     $driverTripData = $ShuttleTripModel->getItem($tripData['trip_id']);
                     $targetUserid = $driverTripData ? $driverTripData['uid'] : 0;
+                    $ShuttleTripModel->delMyListCache($targetUserid); //清除司机的“我的行程”列表缓存
                 }
                 if ($runType === 'cancel' && isset($targetUserid) && $targetUserid > 0) {
                     // 推送
@@ -517,6 +522,7 @@ class ShuttleTrip extends Service
                 // 清缓存
                 $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
                 $ShuttleTripModel->delPassengersCache($tripData['trip_id']); // 清除司机的乘客列表缓存
+                $ShuttleTripModel->delMyListCache($tripData['uid']); //清除乘客的“我的行程”列表缓存
                 // 推送
                 $pushMsgData['isDriver'] = false;
                 $targetUserid = $tripData['uid'];
