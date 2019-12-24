@@ -202,7 +202,7 @@ class Trip extends ApiBase
             $ex = 60 * 5;
             $userAlias = 'u';
             $fields_user = $TripsService->buildUserFields($userAlias, $userFields);
-            $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id';
+            $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id, t.plate, t.seat_count';
             $fields .= ', l.type as line_type, l.start_name, l.end_name, l.map_type, t.time, t.create_time';
             $fields .=  ',' .$fields_user;
             $map  = [
@@ -230,9 +230,11 @@ class Trip extends ApiBase
                 if ($value['user_type'] == 1 && in_array($value['comefrom'], [1, 4])) {
                     $resPassengers = $ShuttleTripService->passengers($value['id'], $userFields, ['id','status'], 0);
                     $lists[$key]['passengers'] = $resPassengers ?: [];
+                    $lists[$key]['took_count'] = count($lists[$key]['passengers']);
+                    // $lists[$key]['took_count'] = $ShuttleTrip->countPassengers($value['id']);
                 }
                 if ($value['user_type'] == 0 && $value['trip_id'] > 0) {
-                    $resDriver =  $ShuttleTripService->getUserTripDetail($value['trip_id'], $userFields, ['id','status','user_type','comefrom'], 0);
+                    $resDriver =  $ShuttleTripService->getUserTripDetail($value['trip_id'], $userFields, ['id','status','user_type','comefrom', 'plate', 'seat_count'], 0);
                     $lists[$key]['driver'] = $resDriver ?: [];
                 }
             }
@@ -579,4 +581,5 @@ class Trip extends ApiBase
         $ShuttleTripModel->delItemCache($id); // 消单项行程缓存
         return $this->jsonReturn(0, 'Successful');
     }
+
 }
