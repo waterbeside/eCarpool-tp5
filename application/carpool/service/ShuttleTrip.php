@@ -6,6 +6,7 @@ use app\carpool\model\User as UserModel;
 use app\carpool\model\ShuttleLine as ShuttleLineModel;
 use app\carpool\model\ShuttleTrip as ShuttleTripModel;
 use app\carpool\service\Trips as TripsService;
+use app\carpool\service\TripsList as TripsListService;
 use app\carpool\service\TripsPushMsg;
 use app\carpool\model\ShuttleLineDepartment;
 use app\user\model\Department;
@@ -94,6 +95,8 @@ class ShuttleTrip extends Service
         $TripsService = new TripsService();
         $repetitionList = $TripsService->getRepetition($rqData['time'], $uid);
         if ($repetitionList) {
+            $TripsListService = new TripsListService();
+            $repetitionList = $TripsListService->getMixedDetailListByRpList($repetitionList);
             $errorData = $TripsService->getError();
             $this->error($errorData['code'], $errorData['msg'], ['lists'=>$repetitionList]);
             return false;
@@ -144,7 +147,7 @@ class ShuttleTrip extends Service
     {
         if ($type > 0) {
             $ShuttleTripModel = new ShuttleTripModel();
-            $itemData = $ShuttleTripModel->getItem($id);
+            $itemData = $ShuttleTripModel->getDataByIdOrData($id);
             if (!$itemData) {
                 return null;
             }
@@ -274,9 +277,14 @@ class ShuttleTrip extends Service
         return $res;
     }
 
-
     /**
      * 取得相似行程
+     *
+     * @param integer $line_id 路线id
+     * @param integer $time 时间
+     * @param integer $userType  0=匹配乘客行程，1=匹配司机行程
+     * @param integer $uid  大于0时=要查找的用户id的行程，小于0时=要排除的用户id的行程
+     * @param mixed $timeOffset  时间前后偏移，格式为[10,10]数组。 当为单个数字时，自动变成[数字,数字]
      */
     public function getSimilarTrips($line_id, $time = 0, $userType = false, $uid = 0, $timeOffset = [60*15, 60*15])
     {
@@ -308,20 +316,36 @@ class ShuttleTrip extends Service
             $map[] = ['t.trip_id', '=', 0];
             $map[] = ['t.comefrom', 'between', [1,2]];
         }
-        
+        $TripsService = new TripsService();
         if ($uid > 0) {
             $map[] = ['t.uid', '=', $uid];
             $join = [];
-            $User = new UserModel();
-            $userData = $User->findByUid($uid);
-            $userData = Utils::getInstance()->filterDataFields($userData, $userFields, false, 'u_', -1);
         }
-        if ($uid < 0) {
-            $map[] = ['t.uid', '<>', -1 * $uid];
+        if ($uid <= 0) {
+            if ($uid < 0) {
+                $map[] = ['t.uid', '<>', -1 * $uid];
+            }
+            $fields_user = $TripsService->buildUserFields('u', $userFields);
+            $fieldsStr .=  ',' .$fields_user;
             $join = [
                 ['user u', 'u.uid = t.uid', 'left'],
             ];
         }
+        $ShuttleTripModel = new ShuttleTripModel();
+        $list = $ShuttleTripModel->alias('t')->field($fieldsStr)->where($map)->join($join)->order('t.time ASC')->select();
+        if (!$list) {
+            return [];
+        }
+        if ($uid > 0) {
+            $User = new UserModel();
+            $userData = $User->findByUid($uid);
+            $userData = Utils::getInstance()->filterDataFields($userData, $userFields, false, 'u_', -1);
+            foreach ($list as $key => $value) {
+                $value = array_merge($value, $userData);
+                $list[$key] = $value;
+            }
+        }
+        return $list;
     }
 
 
@@ -420,7 +444,7 @@ class ShuttleTrip extends Service
             if ($tripData['uid'] == $uid) { //如果是司机自已操作
                 $passengers = $this->passengers($id, false);
                 $extData['passengers'] = $passengers;
-                $res = $ShuttleTripModel->finishDriveTrip($tripData);
+                $res = $ShuttleTripModel->finishDriverTrip($tripData);
             } else { // 如果是乘客从司机空座位上操作
                 $myTripMap = [
                     ['trip_id', '=', $id],
