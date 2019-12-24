@@ -116,9 +116,10 @@ class BaseModel extends Model
      * @param integer $id ID
      * @param * $field 选择返回的字段，当为数字时，为缓存时效
      * @param integer $ex 缓存时效
+     * @param array $randomExOffset 有效期随机偏移
      * @return void
      */
-    public function getItem($id, $field = '*', $ex = 60 * 5)
+    public function getItem($id, $field = '*', $ex = 60 * 5, $randomExOffset = [1,2,3])
     {
         if (is_numeric($field)) {
             $ex = $field;
@@ -133,7 +134,11 @@ class BaseModel extends Model
         if (!$res) {
             $res = $this->find($id);
             $res = $res ? $res->toArray() : [];
+            
             if (is_numeric($ex)) {
+                $randomExOffset = is_array($randomExOffset) ? $randomExOffset : [1,2];
+                $exp_offset = getRandValFromArray($randomExOffset);
+                $ex +=  $exp_offset * ($ex > 60 ? 60 : ($ex > 10 ? 10 : 1));
                 $redis->cache($cacheKey, $res, $ex);
             }
         }
