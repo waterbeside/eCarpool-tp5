@@ -366,10 +366,10 @@ class Trips extends ApiBase
 
         //计算前后范围内有没有重复行程
         if ($TripsService->getRepetition($time_x, $uid)) {
-            $this->jsonReturn(30007, [], $TripsService->errorMsg);
+            $this->jsonReturn(50007, [], $TripsService->errorMsg);
         }
         // if ($WallModel->checkRepetition($time_x, $uid, 60 * 10)) {
-        //     $this->jsonReturn(30007, [], $WallModel->errorMsg);
+        //     $this->jsonReturn(50007, [], $WallModel->errorMsg);
         // }
 
         $createAddress = array();
@@ -542,7 +542,7 @@ class Trips extends ApiBase
         if ($type == "riding" || $type == "hitchhiking") {
             //计算前后范围内有没有重复行程
             if ($TripsService->getRepetition(strtotime($datas->time . '00'), $uid)) {
-                $this->jsonReturn(30007, [], $TripsService->errorMsg);
+                $this->jsonReturn(50007, [], $TripsService->errorMsg);
             }
             $res = $TripsChangeService->riding($datas, $uid);
             if (!$res) {
@@ -563,7 +563,7 @@ class Trips extends ApiBase
         if ($type == "pickup") {
             //计算前后范围内有没有重复行程
             // if ($InfoModel->checkRepetition(strtotime($datas->time.'00'), $uid, 120)) {
-            //     return $this->jsonReturn(30007, [], $InfoModel->errorMsg);
+            //     return $this->jsonReturn(50007, [], $InfoModel->errorMsg);
             // }
             // 如果你有一趟空座位
             $checkWallRes = $WallModel->checkRepetition(strtotime($datas->time . '00'), $uid, 60 * 8);
@@ -573,7 +573,7 @@ class Trips extends ApiBase
                 } else {
                     //计算前后范围内有没有重复行程
                     if ($TripsService->getRepetition(strtotime($datas->time . '00'), $uid)) {
-                        $this->jsonReturn(30007, [], $TripsService->errorMsg);
+                        $this->jsonReturn(50007, [], $TripsService->errorMsg);
                     }
                     return $this->jsonReturn(50008, $checkWallRes, $WallModel->errorMsg);
                     // return $this->jsonReturn(50008, $checkWallRes, "你在该时间段内有一个已发布的空座位，是否将该乘客请求合并到你的空座位上");
