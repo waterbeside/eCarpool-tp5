@@ -134,16 +134,16 @@ class TripsChange
             }
             $TripsService = new TripsService();
             if ($TripsService->checkRepetition(strtotime($tripData->time . '00'), $uid)) {
-                return $this->error(30007, $TripsService->errorMsg);
+                return $this->error(50007, $TripsService->errorMsg);
             }
 
             // //计算前后范围内有没有重复行程
             // if ($InfoModel->checkRepetition(strtotime($tripData->time . '00'), $uid, 60 * 5)) {
-            //     return $this->error(30007, $InfoModel->errorMsg);
+            //     return $this->error(50007, $InfoModel->errorMsg);
             // }
             // //计算前后范围内有没有重复行程
             // if ($WallModel->checkRepetition(strtotime($tripData->time . '00'), $uid, 60 * 5)) {
-            //     return $this->error(30007, $WallModel->errorMsg);
+            //     return $this->error(50007, $WallModel->errorMsg);
             // }
 
 
