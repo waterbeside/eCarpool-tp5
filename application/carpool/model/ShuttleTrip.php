@@ -175,17 +175,27 @@ class ShuttleTrip extends BaseModel
         $res = [];
         if ($res_trip) {
             foreach ($res_trip as $key => $value) {
+                try {
+                    $trip_info = json_decode($value['extra_info'], true);
+                    $lineData = $trip_info['line_data'];
+                } catch (\Exception $e) {  //其他错误
+                    $lineData = [];
+                }
                 $data = [
                     'from'=>'shuttle_trip',
-                    'id'  => $value['id'],
-                    'line_id'  => $value['line_id'],
+                    'id' => $value['id'],
+                    'love_wall_ID' => 0,
+                    'info_id' => 0,
+                    'd_uid' => $value['user_type'] == 1 ? $value['uid'] : 0,
+                    'p_uid' => $value['user_type'] == 0 ? $value['uid'] : 0,
                     'time'=>strtotime($value['time']),
                     'user_type' => $value['user_type'],
                     'comefrom' => $value['comefrom'],
-                    'love_wall_ID' => null,
-                    'info_id' => null,
-                    'd_uid' => $value['user_type'] == 1 ? $value['uid'] : 0,
-                    'p_uid' => $value['user_type'] == 0 ? $value['uid'] : 0,
+                    'trip_id' => $value['trip_id'],
+                    'line_id'  => $value['line_id'],
+                    'start_name' => $lineData['start_name'] ?: '',
+                    'end_name' => $lineData['end_name'] ?: '',
+                    'status' => $value['status'],
                 ];
                 $res[] = $data;
             }
@@ -279,8 +289,8 @@ class ShuttleTrip extends BaseModel
     /**
      * 计算乘客个数
      *
-     * @param [type] $id
-     * @return void
+     * @param integer $id 司机行程id
+     * @return integer
      */
     public function countPassengers($id)
     {
@@ -348,7 +358,7 @@ class ShuttleTrip extends BaseModel
         if ($res === false) {
             return $this->setError(-1, 'Failed', []);
         }
-        if ($upData['status'] === 0) { // 如果是取消到约车需求 则刷新约车需求缓存
+        if ($upData['status'] == 0 || $tripData['trip_id']  == 0) { // 如果是取消到约车需求 则刷新约车需求缓存
             $this->delListCache($tripData['line_id'], 'requests');
         }
         return true;
@@ -367,7 +377,6 @@ class ShuttleTrip extends BaseModel
         if (empty($tripData)) {
             return $this->setError(20002, '该行程不存在', $tripData);
         }
-        $redis = new RedisData();
         // 查出所有乘客行程，以便作消息推送;
         Db::connect('database_carpool')->startTrans();
         try {
@@ -456,16 +465,15 @@ class ShuttleTrip extends BaseModel
         if (empty($tripData)) {
             return $this->setError(20002, '该行程不存在', $tripData);
         }
-        $redis = new RedisData();
         // 查出所有乘客行程，以便作消息推送;
         Db::connect('database_carpool')->startTrans();
         try {
-            // 先取消司机行程
-            $this->where('id', $id)->update(['status' => 3]);
             $upData = [
                 'status' => 3,
                 'operate_time'=>date('Y-m-d H:i:s')
             ];
+            // 先取消司机行程
+            $this->where('id', $id)->update($upData);
             $map = [
                 ['trip_id', '=', $id],
                 ['status', 'between', [0, 1]],
@@ -482,5 +490,28 @@ class ShuttleTrip extends BaseModel
         }
         $this->delListCache($tripData['line_id'], 'cars');
         return true;
+    }
+
+    /**
+     * 检查是否在行程 （是否参与乘客）
+     *
+     * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
+     * @param integer $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
+     * @return void
+     */
+    public function checkInTrip($idOrData, $uid)
+    {
+        $tripData = $this->getDataByIdOrData($idOrData);
+        $id = $tripData['id'];
+        if (empty($tripData)) {
+            return $this->setError(20002, '该行程不存在', $tripData);
+        }
+        $map = [
+            ['status', '>', 0],
+            ['uid', '=', $uid],
+            ['trip_id', '=', $id],
+        ];
+        $res = $this->where($map)->find();
+        return $res;
     }
 }
