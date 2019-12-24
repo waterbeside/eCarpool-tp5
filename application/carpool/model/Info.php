@@ -24,6 +24,32 @@ class Info extends Model
     public $errorData = "";
 
     /**
+     * 取得乘客列表cacheKey;
+     *
+     * @param integer $wall_id 行程id
+     * @return string
+     */
+    public function getPassengersCacheKey($wall_id)
+    {
+        return "carpool:trips:passengers:wall_{$wall_id}";
+    }
+
+    /**
+     * 计算乘客个数
+     *
+     * @param integer $id 空座位id
+     * @return integer
+     */
+    public function countPassengers($id)
+    {
+        $map = [
+            ['love_wall_ID', '=', $id],
+            ['status', 'in', [0,1,3,4]],
+        ];
+        return $this->where($map)->count();
+    }
+
+    /**
      * 发布行程时检查行程是否有重复
      * @param  Timestamp   $time       出发时间的时间戳
      * @param  Integer     $uid        发布者ID
@@ -116,4 +142,5 @@ class Info extends Model
         $viewSql  =  "($viewSql_u1 ) union all ($viewSql_u2 )";
         return $viewSql;
     }
+
 }
