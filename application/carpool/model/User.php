@@ -27,6 +27,17 @@ class User extends BaseModel
     protected $pk = 'uid';
 
 
+    /**
+     * 取得单项数据缓存Key设置
+     *
+     * @param integer $id 主键
+     * @return string
+     */
+    public function getItemCacheKey($uid)
+    {
+        return "carpool:user:detail:uid_{$uid}";
+    }
+
 
     /**
      * 取得账号详情
@@ -39,21 +50,7 @@ class User extends BaseModel
         if (!$uid) {
             return false;
         }
-        $cacheKey = "carpool:user:detail:uid_" . $uid;
-        $redis = new RedisData();
-        $cacheData = $redis->cache($cacheKey);
-        if ($cacheData) {
-            return $cacheData;
-        }
-        $res = $this->find($uid);
-
-        if ($res) {
-            $res = $res->toArray();
-            $exp_offset = getRandValFromArray([1,2,3]);
-            $exp +=  $exp_offset * 60;
-            $cacheData = $redis->cache($cacheKey, $res, $exp);
-        }
-        return $res;
+        return $this->getItem($uid, '*', $exp);
     }
 
     /**
