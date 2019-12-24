@@ -4,8 +4,11 @@ namespace app\carpool\service;
 
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
+use app\carpool\model\ShuttleTrip as ShuttleTripModel;
 use app\carpool\model\Grade as GradeModel;
+use app\carpool\model\User as UserModel;
 use app\carpool\service\Trips as TripsService;
+use my\Utils;
 use think\Db;
 
 class TripsList
@@ -241,5 +244,51 @@ class TripsList
             'lastPage' => $results['last_page'],
             'currentPage' => intval($results['current_page']),
         ];
+    }
+
+    /**
+     * 为重复行程列表添加明细;
+     */
+    public function getMixedDetailListByRpList($rpList)
+    {
+        if (!is_array($rpList)) {
+            return [];
+        }
+        $list = [];
+        $userFields = ['uid', 'name', 'nativename', 'imgpath', 'Department', 'sex'];
+
+        foreach ($rpList as $key => $value) {
+            $from = $value['from'];
+            $UserModel = new UserModel();
+            $userType = $value['user_type'];
+            if ($from == 'wall') { // 来自普通行程空座位
+                $InfoModel = new InfoModel();
+                $value['took_count'] =  $InfoModel->countPassengers($value['love_wall_ID']);
+            }
+            if ($from == 'info') { // 来自普通行程
+                $InfoModel = new InfoModel();
+                $wall_id = $value['love_wall_ID'];
+                if ($userType) { //如果是司机
+                    $value['took_count'] = $wall_id > 0 ? $InfoModel->countPassengers($wall_id) : ($value['p_uid'] > 0 ? 1 : 0);
+                } else { // 如果是乘客
+                    $userData = $UserModel->findByUid($value['d_uid']);
+                    $userData = Utils::getInstance()->filterDataFields($userData, $userFields, false, 'u_', -1);
+                    $value['driver'] = $userData;
+                }
+            }
+            if ($from == "shuttle_trip") { // 来自上下班行程
+                $ShuttleTripModel = new ShuttleTripModel();
+                $trip_id = $value['trip_id'];
+                if ($userType) { //如果是司机
+                    $value['took_count'] =  $ShuttleTripModel->countPassengers($value['id']);
+                } else { // 如果是乘客
+                    $userData = $UserModel->findByUid($value['d_uid']);
+                    $userData = Utils::getInstance()->filterDataFields($userData, $userFields, false, 'u_', -1);
+                    $value['driver'] = $userData;
+                }
+            }
+            $list[$key] = $value;
+        }
+        return $list;
     }
 }
