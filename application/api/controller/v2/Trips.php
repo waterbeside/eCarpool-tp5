@@ -15,6 +15,7 @@ use app\carpool\service\Trips as TripsService;
 use app\carpool\service\TripsChange as TripsChangeService;
 use app\carpool\service\TripsList as TripsListService;
 use app\carpool\service\TripsDetail as TripsDetailService;
+use Info;
 use InfoController;
 use my\RedisData;
 use think\Db;
@@ -247,10 +248,10 @@ class Trips extends ApiBase
             $status = "neq|2";
         }
         $TripsService = new TripsService();
-
+        $InfoModel = new InfoModel();
         $res = false;
         if ($status == 'neq|2') {
-            $cacheKey = $this->cacheKey_passengers."wall_$id";
+            $cacheKey = $InfoModel->getPassengersCacheKey($id);
             $randExp = getRandValFromArray([2, 4, 6]);
             $exp = $exp < 60 ? $exp + $randExp * 3 : $exp + $randExp * 5;
             $redis = new RedisData();
