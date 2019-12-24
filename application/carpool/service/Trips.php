@@ -12,13 +12,20 @@ use app\carpool\model\User as UserModel;
 use app\common\model\PushMessage;
 use app\user\model\Department as DepartmentModel;
 use think\Db;
+use my\Utils;
 use my\RedisData;
+
 
 class Trips extends Service
 {
 
     protected $cacheKey_myTrip = "carpool:trips:my:";
     protected $cacheKey_myInfo = "carpool:trips:my_info:";
+
+    public $defaultUserFields = [
+        'uid', 'loginname', 'name','nativename', 'phone', 'mobile', 'Department', 'sex',
+        'company_id', 'department_id', 'companyname', 'imgpath', 'carcolor', 'im_id'
+    ];
 
     /**
      * 创件状态筛选map
@@ -552,39 +559,58 @@ class Trips extends Service
         ];
         $map1 = $map;
         $map1[] = ["carownid", "=", $uid];
-        $map2 = $map;
-        $map2[] = ["carownid|passengerid", "=", $uid];
+        
 
         $res_wall = WallModel::where($map1)->select();
-        $res_info = InfoModel::where($map2)->select();
         $res = [];
+        $wall_ids = [];
         if ($res_wall) {
             foreach ($res_wall as $key => $value) {
                 $data = [
                     'from'=>'wall',
                     'id'  => $value['love_wall_ID'],
-                    'time'=>strtotime($value['time'] . '00'),
-                    'user_type' => 1,
                     'love_wall_ID' => $value['love_wall_ID'],
                     'info_id' => 0,
                     'd_uid' => $value['carownid'],
                     'p_uid' => 0,
+                    'time'=>strtotime($value['time'] . '00'),
+                    'user_type' => 1,
+                    'comefrom' => 1,
+                    'trip_id' => 0,
+                    'line_id' => 0,
+                    'start_name' => $value['startname'],
+                    'end_name' => $value['endname'],
+                    'status' => $value['status'] == 2 ? -1 : $value['status'],
                 ];
                 $res[] = $data;
+                $wall_ids[] = $value['love_wall_ID'];
             }
         }
-        
+
+        $map2 = $map;
+        $map2[] = ["carownid|passengerid", "=", $uid];
+        if (!empty($wall_ids)) {
+            $map2[] = ["love_wall_ID", "not in", $wall_ids];
+        }
+        $res_info = InfoModel::where($map2)->select();
         if ($res_info) {
             foreach ($res_info as $key => $value) {
+                $userType = $value['carownid'] > 0 && $value['carownid'] == $uid ? 1 : 0;
                 $data = [
                     'from'=>'info',
                     'id' => $value['infoid'],
-                    'time'=>strtotime($value['time'] . '00'),
-                    'user_type' => $value['carownid'] > 0 && $value['carownid'] == $uid ? 1 : 0,
-                    'love_wall_ID' => $value['love_wall_ID'],
+                    'love_wall_ID' => $value['love_wall_ID'] ?: 0,
                     'info_id' => $value['infoid'],
                     'd_uid' => $value['carownid'],
                     'p_uid' => $value['passengerid'],
+                    'time'=>strtotime($value['time'] . '00'),
+                    'user_type' => $userType,
+                    'comefrom' => $value['love_wall_ID'] > 0 ? ( $userType ? 1 : 2) : 3,
+                    'trip_id' => 0,
+                    'line_id' => 0,
+                    'start_name' => $value['startname'],
+                    'end_name' => $value['endname'],
+                    'status' => $value['status'] == 2 ? -1 : $value['status'],
                 ];
                 $res[] = $data;
             }
@@ -592,13 +618,13 @@ class Trips extends Service
         return $res;
     }
 
-    public function checkRepetitionByList($list, $time, $itemOffset, $level = [[60*10,10],[60*30,20]])
+    public function checkRepetitionByList($list, $time, $listType = 0, $itemOffset = 60 * 30, $level = [[60*10,10],[60*30,20]])
     {
         $level_checked = [];
         $level_timeList = [];
         $level_dataList = [];
         $errorMsg = '';
-
+        $newList = [];
         foreach ($level as $k => $levelItem) {
             $itemOffset = is_array($levelItem) ? $levelItem[0] : $levelItem;
             $existCount = 0;
@@ -609,8 +635,13 @@ class Trips extends Service
                 $time_e = $time + $itemOffset;
                 if ($value['time'] > $time_s && $value['time'] < $time_e) {
                     $existCount += 1;
+                    $value['check_level'] = [
+                        'k' => $k,
+                        'item' => $levelItem,
+                    ];
                     $timeList[] = $value['time'];
                     $dataList[] = $value;
+                    $newList[] = $value;
                 }
             }
             rsort($timeList);
@@ -631,8 +662,8 @@ class Trips extends Service
         if (empty($errorMsg)) {
             return false;
         }
-        $this->error(30007, $errorMsg);
-        return $level_dataList;
+        $this->error(50007, $errorMsg);
+        return $listType ? $level_dataList : $newList;
     }
 
     /**
@@ -647,21 +678,24 @@ class Trips extends Service
         if (empty($res)) {
             return false;
         }
-        return $this->checkRepetitionByList($res, $time, $offsetTime, $level);
+        return $this->checkRepetitionByList($res, $time, 0, $offsetTime, $level);
     }
 
     /**
      * 发布行程时检查行程是否有重复 (包含ShuttleTrip, love_wall , info)
      * @param  integer     $time       timestamp 出发时间的时间戳
      * @param  integer     $uid        发布者ID
+     * @param  boolean     $listDetail    是否返回列表详情
      * @param  string      $offsetTime 时间偏差范围
      */
-    public function getRepetition($time, $uid, $offsetTime = 60 * 30, $level = [[60*10,10],[60*30,20]])
+    public function getRepetition($time, $uid, $offsetTime = 60 * 30, $level = null)
     {
+        $level = $level ?: [[60*10,10],[60*30,20]];
         $ShuttleTripModel = new ShuttleTripModel();
         $list_trip = $ShuttleTripModel->getListByTimeOffset($time, $uid, $offsetTime);
         $list_wallinfo = $this->getUnionListByTimeOffset($time, $uid, $offsetTime);
         $list = array_merge($list_trip, $list_wallinfo);
-        return $this->checkRepetitionByList($list, $time, $offsetTime, $level);
+        $res = $this->checkRepetitionByList($list, $time, 0, $offsetTime, $level);
+        return $res;
     }
 }
