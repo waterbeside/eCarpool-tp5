@@ -232,7 +232,7 @@ class Trip extends ApiBase
                     $lists[$key]['passengers'] = $resPassengers ?: [];
                 }
                 if ($value['user_type'] == 0 && $value['trip_id'] > 0) {
-                    $resDriver =  $ShuttleTripService->getUserTripDetail($value['id'], $userFields, ['id','status','user_type','comefrom'], 0);
+                    $resDriver =  $ShuttleTripService->getUserTripDetail($value['trip_id'], $userFields, ['id','status','user_type','comefrom'], 0);
                     $lists[$key]['driver'] = $resDriver ?: [];
                 }
             }
@@ -412,6 +412,11 @@ class Trip extends ApiBase
         // 断定是否自己上自己车
         if ($uid == $tripData['uid']) {
             return $this->jsonReturn(-1, lang('You can`t take your own'));
+        }
+        // 检查是否已经是乘客成员之一
+        $checkInTripRes = $ShuttleTripModel->checkInTrip($tripData, $uid);
+        if ($checkInTripRes) {
+            return $this->jsonReturn(50006, $checkInTripRes, lang('您已经搭上该趟车'));
         }
         // 检查座位是否已满
         $took_count = $ShuttleTripModel->countPassengers($id); //计算已坐车乘客数
