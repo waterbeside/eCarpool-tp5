@@ -354,6 +354,7 @@ class ShuttleTrip extends Service
      * @param integer $userType  0=匹配乘客行程，1=匹配司机行程
      * @param integer $uid  大于0时=要查找的用户id的行程，小于0时=要排除的用户id的行程
      * @param mixed $timeOffset  时间前后偏移，格式为[10,10]数组。 当为单个数字时，自动变成[数字,数字]
+     * @return array
      */
     public function getSimilarTrips($line_id, $time = 0, $userType = false, $uid = 0, $timeOffset = [60*15, 60*15])
     {
@@ -372,12 +373,12 @@ class ShuttleTrip extends Service
         $map = [
             ['t.line_id', '=', $line_id],
             ['t.status', 'between', [0,1]],
-            ['t.time', 'between', [$start_time, $end_time]],
+            ['t.time', 'between', [date('Y-m-d H:i:s', $start_time), date('Y-m-d H:i:s', $end_time)]],
         ];
         if ($userType === 1) {
             $map[] = ['t.user_type', '=', 1];
             $map[] = ['t.comefrom', '=', 1];
-        } elseif ($userType === 2) {
+        } elseif ($userType === 0) {
             $map[] = ['t.user_type', '=', 0];
             $map[] = ['t.comefrom', '=', 2];
             $map[] = ['t.trip_id', '=', 0];
@@ -405,6 +406,7 @@ class ShuttleTrip extends Service
         if (!$list) {
             return [];
         }
+        $list = $list->toArray();
         if ($uid > 0) {
             $User = new UserModel();
             $userData = $User->findByUid($uid);
@@ -437,14 +439,15 @@ class ShuttleTrip extends Service
         if (empty($tripData)) {
             return $this->error(20002, '该行程不存在', $tripData);
         }
-        //检查是否已取消或完成
-        if (in_array($tripData['status'], [-1, 3])) {
-            return $this->error(-1, lang('The trip has been completed or cancelled. Operation is not allowed'), $tripData);
-        }
+        
         $userType = $tripData['user_type'];
         $extData = [];
 
         if ($userType == 1) { // 如果从司机行程进行操作
+            //检查是否已取消或完成
+            if (in_array($tripData['status'], [-1, 3])) {
+                return $this->error(-1, lang('The trip has been completed or cancelled. Operation is not allowed'), $tripData);
+            }
             // 检查是否该行程的成员
             if ($tripData['uid'] == $uid) { //如果是司机自已操作
                 $extData['i_am_driver'] = true;
@@ -452,12 +455,7 @@ class ShuttleTrip extends Service
                 $extData['passengers'] = $passengers;
                 $res = $ShuttleTripModel->cancelDriveTrip($tripData);
             } else { // 如果是乘客从司机空座位上操作
-                $myTripMap = [
-                    ['trip_id', '=', $id],
-                    ['uid', '=', $uid],
-                    ['status', 'between', [0, 1]],
-                ];
-                $myTripData = $ShuttleTripModel->where($myTripMap)->find();
+                $myTripData = $ShuttleTripModel->findPtByDt($id, $uid, ['status','between',[0,3]]);
                 if ($myTripData) {
                     $extData['myTripData'] = $myTripData;
                     $res = $ShuttleTripModel->cancelPassengerTrip($myTripData);
@@ -466,6 +464,19 @@ class ShuttleTrip extends Service
                 }
             }
         } else { // 从乘客行程操作
+            if ($tripData['status'] == -1) { // 如果本身已取消，直接返回成功
+                return true;
+            }
+            if ($tripData['trip_id'] > 0) { // 如果行程
+                $driverTripData = $ShuttleTripModel->getItem($tripData['trip_id']);
+                $extData['driverTripData'] = $driverTripData;
+                if ($driverTripData['status'] == 3) {
+                    // 如果司机行程为结束，则此无法操作, （如果司结行程未结束，即使自己行程点了结束，也可进行取消）
+                    return $this->error(-1, lang('行程已结束，无法操作'), $tripData);
+                }
+            } elseif ($tripData['status'] == 3) { // 如果trip_id不大于0且状态为结束，则无法操作
+                return $this->error(-1, lang('行程已结束，无法操作'), $tripData);
+            }
             if ($tripData['uid'] == $uid) { //如果是乘客自已操作
                 $res = $ShuttleTripModel->cancelPassengerTrip($tripData);
             } elseif ($ShuttleTripModel->checkIsDriver($tripData, $uid)) { // 如果是司机操作乘客
@@ -515,16 +526,15 @@ class ShuttleTrip extends Service
                 $extData['passengers'] = $passengers;
                 $res = $ShuttleTripModel->finishDriverTrip($tripData);
             } else { // 如果是乘客从司机空座位上操作
-                $myTripMap = [
-                    ['trip_id', '=', $id],
-                    ['uid', '=', $uid],
-                    ['status', 'in', [0, 1, 3]],
-                ];
-                $myTripData = $ShuttleTripModel->where($myTripMap)->find();
+                $myTripData = $ShuttleTripModel->findPtByDt($id, $uid);
                 if ($myTripData) {
                     $extData['myTripData'] = $myTripData;
                     $res = $ShuttleTripModel->finishPassengerTrip($myTripData);
                 } else {
+                    $myTripData = $ShuttleTripModel->findPtByDt($id, $uid, 3);
+                    if ($myTripData) {
+                        return true;
+                    }
                     return $this->error(30001, lang('你不是司机或乘客，无法操作'));
                 }
             }
@@ -602,7 +612,7 @@ class ShuttleTrip extends Service
                 $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
                 if ($tripData['trip_id'] > 0) { //如果有司机，查出司机以便推送
                     $ShuttleTripModel->delPassengersCache($tripData['trip_id']); // 清司机行程的乘客列表缓存
-                    $driverTripData = $ShuttleTripModel->getItem($tripData['trip_id']);
+                    $driverTripData = $extData['driverTripData'] ?: $ShuttleTripModel->getItem($tripData['trip_id']);
                     $targetUserid = $driverTripData ? $driverTripData['uid'] : 0;
                     $ShuttleTripModel->delMyListCache($targetUserid); //清除司机的“我的行程”列表缓存
                 }
