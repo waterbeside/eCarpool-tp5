@@ -360,7 +360,6 @@ class Trip extends ApiBase
         $ShuttleTripService = new ShuttleTripService();
         $rqData = $ShuttleTripService->getRqData($rqData);
         $line_id = $rqData['line_id'];
-        $comefrom = 0;
 
         if (!$rqData['create_type']) {
             $this->jsonReturn(992, null, 'Empty create_type', input('post.'));
@@ -427,7 +426,7 @@ class Trip extends ApiBase
                 'seat_count' => $tripData['seat_count'],
                 'took_count' => $took_count,
             ];
-            return $this->jsonReturn(50007, $returnData, lang('Failed, seat is full'));
+            return $this->jsonReturn(50003, $returnData, lang('Failed, seat is full'));
         }
 
         $rqData['time'] = strtotime($tripData['time']);
@@ -580,6 +579,11 @@ class Trip extends ApiBase
         }
         $ShuttleTripModel->delItemCache($id); // 消单项行程缓存
         return $this->jsonReturn(0, 'Successful');
+    }
+
+    public function matching($id)
+    {
+
     }
 
 }
