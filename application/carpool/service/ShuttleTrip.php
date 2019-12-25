@@ -41,74 +41,143 @@ class ShuttleTrip extends Service
     }
 
     /**
-     * 发布行程
-     *
-     * @param array $rqData 请求参数
-     * @param mixed $uid uid or userData
-     * @return void
+     * 验证添加行程时的时间
      */
-    public function addTrip($rqData, $uid)
+    public function checkAddData($rqData, $uid)
     {
-        if (empty($rqData['time'])) {
-            $this->error(992, '请选择时间');
+        $time = $rqData['time'] ?: null;
+        if (empty($rqData['line_id'])) {
+            return $this->error(992, '请选择路线');
         }
-        //检查出发时间是否已经过了
-        if (time() > $rqData['time']) {
-            return $this->error(992, lang("The departure time has passed. Please select the time again"));
-        }
-        // 取得用户信息
-        if (is_numeric($uid)) {
-            $userModel = new UserModel();
-            $userData = $userModel->findByUid($uid);
-        } else {
-            $userData = $uid;
-            $uid = $userData['uid'];
-        }
-        $trip_id = isset($rqData['trip_id']) && is_numeric($rqData['trip_id']) ? $rqData['trip_id'] : 0;
-        // 添加设置数据
-        if ($rqData['create_type'] === 'cars') { // 发布空座位
-            $comefrom = 1;
-            $userType = 1;
-            $trip_id = 0;
-            $plate = $userData['carnumber'];
-            if (!isset($rqData['seat_count']) || $rqData['seat_count'] < 1) {
-                $this->error(992, lang('The number of empty seats cannot be empty'));
-            }
-        } elseif ($rqData['create_type'] === 'requests') { // 发布约车需求
-            $comefrom = 2;
-            $userType = 0;
-            $trip_id = 0;
-            $plate = '';
-        } elseif ($rqData['create_type'] === 'hitchhiking') { // 乘客从空座位搭车
-            $comefrom = 3;
-            $userType = 0;
-            $plate = '';
-        } elseif ($rqData['create_type'] === 'pickup') { // 司机从约车需求拉客
-            $comefrom = 1; // 不再设为4，只要是接客都会自动发空座位;
-            $userType = 1;
-            $plate = $userData['carnumber'];
-            $rqData['seat_count'] = isset($rqData['seat_count']) && $rqData['seat_count'] > 1 ? $rqData['seat_count'] : 1;
-        } else {
-            return $this->error(992, 'Error create_type');
+        if (empty($time)) {
+            return $this->error(992, '请选择时间');
         }
 
+        // 取得与 create_type 相关数据
+        $createTypeData = $this->getCreateTypeInfo($rqData['create_type']);
+        $rqData = array_merge($rqData, $createTypeData);
+
+        $create_type = $rqData['create_type'];
+        // 司机至少发一个空座位。
+        if ($create_type === 'cars' && (!isset($rqData['seat_count']) || $rqData['seat_count'] < 1)) {
+            return $this->error(992, lang('The number of empty seats cannot be empty'));
+        }
+        if ($create_type == 'pickup') {
+            $rqData['seat_count'] = isset($rqData['seat_count']) && $rqData['seat_count'] > 1 ? $rqData['seat_count'] : 1;
+        }
+        //检查出发时间是否已经过了
+        if (time() > $time) {
+            return $this->error(992, lang("The departure time has passed. Please select the time again"));
+        }
+        // 验证重复行程
         $TripsService = new TripsService();
-        $repetitionList = $TripsService->getRepetition($rqData['time'], $uid);
+        $repetitionList = $TripsService->getRepetition($time, $uid);
         if ($repetitionList) {
             $TripsListService = new TripsListService();
+            // 为重复行程列表添加明细
             $repetitionList = $TripsListService->getMixedDetailListByRpList($repetitionList);
             $errorData = $TripsService->getError();
+            // 检查有没有可以合并的行程
+            $matchingList =  in_array($create_type, ['pickup', 'hitchhiking']) ? $this->getMatchingsByRplist($repetitionList, $rqData) : [];
+            if (!empty($matchingList)) {
+                return $this->error(50008, lang('查到你有相似的行程可以合并'), ['lists'=>$repetitionList]);
+            }
             $this->error($errorData['code'], $errorData['msg'], ['lists'=>$repetitionList]);
             return false;
         }
+        return $rqData;
+    }
+
+    /**
+     * 通过重复行程列表查出可合并行程的
+     *
+     * @param array $repetitionList 重复行程列表
+     * @param array $rqData 添加行程时的请求数据
+     * @return array
+     */
+    public function getMatchingsByRplist($repetitionList, $rqData)
+    {
+        if (empty($repetitionList) || !is_array($repetitionList)) {
+            return [];
+        }
+        $matchingList = [];
+        $matchUserType = $rqData['user_type'];
+        foreach ($repetitionList as $key => $value) {
+            $userType = $value['user_type'] ?: false;
+            $line_id = $value['line_id'];
+            $tripMatching = $value['from'] === 'shuttle_trip' && $userType === $matchUserType && $line_id == $rqData['line_id'] ? true : false;
+            $userTypeMatching = $value['user_type'] > 0 || ($value['trip_id'] == 0 && $value['comefrom'] == 2 ) ? true : false;
+            $timeMatch = $value['check_level']['k'] == 0 ? true : false;
+            if ($tripMatching && $userTypeMatching && $timeMatch) {
+                $matchingList[] = $value;
+            }
+        }
+        return $matchingList;
+    }
+
+    /**
+     * 取得由 create_type 得到的延申数据，如comefrom,userType等
+     */
+    public function getCreateTypeInfo($create_type)
+    {
+        // 添加设置数据
+        if ($create_type === 'cars') { // 发布空座位
+            return [
+                'comefrom' => 1,
+                'user_type' => 1,
+                'trip_id' => 0,
+            ];
+        } elseif ($create_type === 'requests') { // 发布约车需求
+            return [
+                'comefrom' => 2,
+                'user_type' => 0,
+                'trip_id' => 0,
+            ];
+        } elseif ($create_type === 'hitchhiking') { // 乘客从空座位搭车
+            return [
+                'comefrom' => 3,
+                'user_type' => 0,
+            ];
+        } elseif ($create_type === 'pickup') { // 司机从约车需求拉客
+            return [
+                'comefrom' => 1, // 不再设为4，只要是接客都会自动发空座位;
+                'user_type' => 1,
+            ];
+        } else {
+            return $this->error(992, 'Error create_type');
+        }
+    }
+
+    /**
+     * 发布行程
+     *
+     * @param array $rqData 请求参数
+     * @param mixed $uidOrData uid or userData
+     * @return void
+     */
+    public function addTrip($rqData, $uidOrData)
+    {
+
+        // 取得用户信息
+        $userModel = new UserModel();
+        $userData = is_numeric($uidOrData) ? $userModel->findByUid($uidOrData) : $uidOrData;
+        $uid = $userData['uid'];
+
+        // 验证字段合法性
+        $rqData = $this->checkAddData($rqData, $uid);
+        if (!$rqData) {
+            return false;
+        }
+        $plate = $rqData['user_type'] == 1 ? $userData['carnumber'] : '';
+        $trip_id = isset($rqData['trip_id']) && is_numeric($rqData['trip_id']) ? $rqData['trip_id'] : 0;
 
         // 创建入库数据
         $updata = [
             'line_id' => $rqData['line_id'],
             'time' => date('Y-m-d H:i:s', $rqData['time']),
             'uid' => $uid,
-            'user_type' => $userType,
-            'comefrom' => $comefrom,
+            'user_type' => $rqData['user_type'],
+            'comefrom' => $rqData['comefrom'],
             'trip_id' => $trip_id,
             'plate' => $plate,
             'status' => 0,
@@ -510,9 +579,9 @@ class ShuttleTrip extends Service
                 $targetUserid = [];
                 $passengers = $extData['passengers'] ?? [];
                 foreach ($passengers as $key => $value) {
-                    $targetUserid[] = $value['uid'];
+                    $targetUserid[] = $value['u_uid'];
                     $ShuttleTripModel->delItemCache($value['id']); // 清乘客单项行程缓存
-                    $ShuttleTripModel->delMyListCache($value['uid'], 'my'); //清除所有乘客的“我的行程”列表缓存
+                    $ShuttleTripModel->delMyListCache($value['u_uid'], 'my'); //清除所有乘客的“我的行程”列表缓存
                 }
                 if ($runType == 'cancel') {
                     $pushMsgData['isDriver'] = true;
