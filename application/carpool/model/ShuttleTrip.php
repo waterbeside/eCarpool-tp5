@@ -515,4 +515,27 @@ class ShuttleTrip extends BaseModel
         $res = $this->where($map)->find();
         return $res;
     }
+
+    /**
+     * 通过司机行程查找某用户是否该行程乘客，并返回乘客行程数据
+     *
+     * @param integer $trip_id 司机行程id
+     * @param integer $uid 用户id
+     * @param array $statusMap
+     * @return array
+     */
+    public function findPtByDt($trip_id, $uid, $statusMap = ['status', 'between', [0,1]])
+    {
+        $myTripMap = [
+            ['trip_id', '=', $trip_id],
+            ['uid', '=', $uid],
+        ];
+        if (is_numeric($statusMap)) {
+            $myTripMap[] = ['status', '=', $statusMap];
+        } else {
+            $myTripMap[] = $statusMap;
+        }
+        $res = $this->where($myTripMap)->find();
+        return $res;
+    }
 }
