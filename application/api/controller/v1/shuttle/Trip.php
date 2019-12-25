@@ -10,7 +10,6 @@ use app\carpool\service\ShuttleTrip as ShuttleTripService;
 use app\carpool\service\Trips as TripsService;
 use app\carpool\service\TripsPushMsg;
 use app\carpool\model\ShuttleLineDepartment;
-use app\user\model\Department;
 use my\RedisData;
 
 
@@ -199,7 +198,7 @@ class Trip extends ApiBase
         }
         $userFields = ['uid', 'loginname', 'name', 'nativename', 'sex', 'phone', 'mobile', 'imgpath', 'im_id'];
         if (!$returnData) {
-            $ex = 60 * 5;
+            $ex = 60 * 3;
             $userAlias = 'u';
             $fields_user = $TripsService->buildUserFields($userAlias, $userFields);
             $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id, t.plate, t.seat_count';
@@ -527,7 +526,6 @@ class Trip extends ApiBase
     /**
      * 修改内容 (取消，完结，改变座位数)
      *
-     * @return void
      */
     public function change($id = 0)
     {
@@ -546,11 +544,6 @@ class Trip extends ApiBase
         if (empty($tripData)) {
             return $this->jsonReturn(20002, '该行程不存在');
         }
-        //检查是否已取消或完成
-        if (in_array($tripData['status'], [-1, 3])) {
-            return $this->jsonReturn(-1, lang('The trip has been completed or cancelled. Operation is not allowed'));
-        }
-        $userType = $tripData['user_type'];
         
         $ShuttleTripService = new ShuttleTripService();
         if ($run === 'cancel') {
@@ -558,6 +551,11 @@ class Trip extends ApiBase
         } elseif ($run === 'finish') {
             $res = $ShuttleTripService->finish($tripData, $userData);
         } elseif ($run === 'change_seat') {
+            //检查是否已取消或完成
+            if (in_array($tripData['status'], [-1, 3])) {
+                return $this->jsonReturn(-1, lang('The trip has been completed or cancelled. Operation is not allowed'));
+            }
+            
             $seat_count = input('post.seat_count/d', 0);
             if ($seat_count < 1) {
                 return $this->jsonReturn(992, lang('The number of empty seats cannot be empty'));
@@ -570,8 +568,9 @@ class Trip extends ApiBase
         }
 
         if ($res === false) {
-            if (in_array($run, ['cacnel', 'finish'])) {
+            if (in_array($run, ['cancel', 'finish'])) {
                 $errorData = $ShuttleTripService->getError();
+                dump($errorData);
                 return $this->jsonReturn($errorData['code'] ?: -1, $errorData['msg'] ?: 'Failed');
             } else {
                 return $this->jsonReturn(-1, 'Failed');
@@ -581,9 +580,40 @@ class Trip extends ApiBase
         return $this->jsonReturn(0, 'Successful');
     }
 
-    public function matching($id)
+
+    /**
+     * 通过行程id匹配行程列表
+     */
+    public function matching($id, $timeoffset = 60 * 15)
     {
+        $ShuttleTripService = new ShuttleTripService();
+        $ShuttleTripModel = new ShuttleTrip();
+        $userData = $this->getUserData(1);
+        $uid = intval($userData['uid']);
 
+        $tripData = $ShuttleTripModel->getItem($id);
+        if (!$tripData) {
+            return $this->jsonReturn(20002, '路线不存在');
+        }
+        $line_id = $tripData['line_id'];
+        $time = strtotime($tripData['time']);
+        $timeoffset = is_numeric($timeoffset) ? [$timeoffset, $timeoffset] :
+            (
+                is_string($timeoffset) ? array_map('intval', explode(',', $timeoffset)) : $timeoffset
+            );
+        if (!is_array($timeoffset) || empty($timeoffset)) {
+            return $this->jsonReturn(992, 'Error timeoffset');
+        }
+        $timeoffset = count($timeoffset) > 1 ? $timeoffset : [$timeoffset[0], $timeoffset[0]];
+
+        $matchingUserType = $tripData['user_type'] == 1 ? 0 : 1;
+        $list = $ShuttleTripService->getSimilarTrips($line_id, $time, $matchingUserType, -1*$uid, $timeoffset);
+        if (!$list) {
+            return $this->jsonReturn(20002, 'No data');
+        }
+        $returnData = [
+            'lists' => $list
+        ];
+        return $this->jsonReturn(0, $returnData, 'Successful');
     }
-
 }

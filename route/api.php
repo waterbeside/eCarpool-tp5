@@ -70,6 +70,8 @@ Route::group([], function () {
     Route::rule('api/:version/shuttle/trip/requests', 'api/:version.shuttle.trip/requests', 'GET'); // 班车需求列表
     Route::rule('api/:version/shuttle/trip/my', 'api/:version.shuttle.trip/my', 'GET'); // 历史行程
     Route::rule('api/:version/shuttle/trip/history', 'api/:version.shuttle.trip/history', 'GET'); // 我的行程
+    Route::rule('api/:version/shuttle/trip/:id/matching', 'api/:version.shuttle.trip/matching', 'GET')->pattern(['id' => '\d+']); // 匹配行程
+    Route::rule('api/:version/shuttle/trip/:id/merge', 'api/:version.shuttle.trip/merge', 'PATCH')->pattern(['id' => '\d+']); // 合并行程
     Route::rule('api/:version/shuttle/trip/:id/pickup', 'api/:version.shuttle.trip/pickup', 'POST')->pattern(['id' => '\d+']); // 接乘客
     Route::rule('api/:version/shuttle/trip/:id/hitchhiking', 'api/:version.shuttle.trip/hitchhiking', 'POST')->pattern(['id' => '\d+']); // 乘客上车
     Route::rule('api/:version/shuttle/trip', 'api/:version.shuttle.trip/save', 'POST'); // 发布班车行程
