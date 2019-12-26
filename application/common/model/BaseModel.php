@@ -121,17 +121,18 @@ class BaseModel extends Model
      */
     public function getItem($id, $field = '*', $ex = 60 * 5, $randomExOffset = [1,2,3])
     {
-        if (is_numeric($field)) {
+        if (is_numeric($field) || $field === false) {
             $ex = $field;
             $field = "*";
         }
         $res = false;
         if (is_numeric($ex)) {
             $cacheKey =  $this->getItemCacheKey($id);
+            $cacheFeild = 'item';
             $redis = new RedisData();
-            $res = $redis->cache($cacheKey);
+            $res = $redis->hCache($cacheKey, $cacheFeild);
         }
-        if (!$res) {
+        if (!$res || $ex === false) {
             $res = $this->find($id);
             $res = $res ? $res->toArray() : [];
             
@@ -139,7 +140,7 @@ class BaseModel extends Model
                 $randomExOffset = is_array($randomExOffset) ? $randomExOffset : [1,2];
                 $exp_offset = getRandValFromArray($randomExOffset);
                 $ex +=  $exp_offset * ($ex > 60 ? 60 : ($ex > 10 ? 10 : 1));
-                $redis->cache($cacheKey, $res, $ex);
+                $redis->hCache($cacheKey, $cacheFeild, $res, $ex);
             }
         }
         $returnData = [];
