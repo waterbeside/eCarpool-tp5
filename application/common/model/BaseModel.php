@@ -135,7 +135,6 @@ class BaseModel extends Model
         if (!$res || $ex === false) {
             $res = $this->find($id);
             $res = $res ? $res->toArray() : [];
-            
             if (is_numeric($ex)) {
                 $randomExOffset = is_array($randomExOffset) ? $randomExOffset : [1,2];
                 $exp_offset = getRandValFromArray($randomExOffset);
