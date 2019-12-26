@@ -55,6 +55,17 @@ class ShuttleTrip extends BaseModel
     }
 
     /**
+     * 取得乘客数cacheKey;
+     *
+     * @param integer $trip_id 行程id
+     * @return string
+     */
+    public function getTookCountCacheKey($trip_id)
+    {
+        return "carpool:shuttle:trip:passengersCount:tripId_{$trip_id}";
+    }
+
+    /**
      * 取得我的行程 或 历史行程 列表cacheKey;
      *
      * @param integer $uid 用户uid
@@ -290,16 +301,26 @@ class ShuttleTrip extends BaseModel
      * 计算乘客个数
      *
      * @param integer $id 司机行程id
+     * @param integer $ex 缓存有效期，当为false时，不取缓存数据
      * @return integer
      */
-    public function countPassengers($id)
+    public function countPassengers($id, $ex = 10)
     {
-        $map = [
-            ['user_type', '=', Db::raw(0)],
-            ['trip_id', '=', $id],
-            ['status', 'between', [0,3]],
-        ];
-        return $this->where($map)->count();
+        $cacheKey = $this->getTookCountCacheKey($id);
+        $redis = new RedisData();
+        $res = $redis->cache($cacheKey);
+        if ($res === false || $ex === false) {
+            $map = [
+                ['user_type', '=', Db::raw(0)],
+                ['trip_id', '=', $id],
+                ['status', 'between', [0,3]],
+            ];
+            $res = $this->where($map)->count();
+            if (is_numeric($ex)) {
+                $res = $redis->cache($cacheKey, $res, $ex);
+            }
+        }
+        return $res;
     }
 
     /**
