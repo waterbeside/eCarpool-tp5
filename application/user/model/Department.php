@@ -219,7 +219,7 @@ class Department extends Model
     /**
      * 取单条数据
      */
-    public function getItem($id, $fields = 3600 * 24, $cache_time = 3600 * 24)
+    public function getItem($id, $fields = 3600 * 24, $cache_time = 3600 * 24, $randomExOffset = [1,2,3])
     {
         if (is_numeric($fields)) {
             $cache_time = $fields;

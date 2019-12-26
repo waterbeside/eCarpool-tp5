@@ -31,7 +31,7 @@ class Goods extends BaseModel
      * 通过id取出商品详情
      * @param  Int  $id 商品id
      */
-    public function getItem($id, $fields = 60 * 60, $ex = 60 * 60)
+    public function getItem($id, $fields = 60 * 60, $ex = 60 * 60, $randomExOffset = [1,2,3])
     {
         if (is_numeric($fields)) {
             $ex = $fields;
