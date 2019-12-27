@@ -11,6 +11,7 @@ use \Redis;
 class RedisData extends Redis
 {
     protected $redisConfig = null;
+    protected static $instance;
 
     public function __construct()
     {
@@ -24,6 +25,14 @@ class RedisData extends Redis
         $this->redisConfig = $configs;
     }
 
+
+    public static function getInstance()
+    {
+        if (is_null(static::$instance)) {
+            static::$instance = new static;
+        }
+        return static::$instance;
+    }
 
     /**
      * 通用的缓存方法
@@ -77,16 +86,82 @@ class RedisData extends Redis
         }
     }
 
-
+    /**
+     * set前数据处理
+     *
+     * @param mixed $value
+     * @return string
+     */
     public function formatValue($value)
     {
         $value = is_string($value) ? $value : json_encode($value);
         return $value;
     }
 
+    /**
+     * get后数据处理
+     *
+     * @param mixed $value
+     * @return mixed
+     */
     public function formatRes($res)
     {
-        $redData = $res !== false ? json_decode($res, true) : false;
+        if ($res === false) {
+            return false;
+        }
+        try {
+            $redData = json_decode($res, true);
+        } catch (\Exception $e) {
+            $redData = $res;
+        }
         return $redData;
+    }
+    
+
+    /**
+     * 加锁
+     *
+     * @param string $lockKey cache key
+     * @param integer $ex key超时时间
+     * @param integer $runCount 取锁失败后的取锁循环次数，每次间隔2ms时间
+     * @return boolean
+     */
+    public function lock($lockKey, $ex = 10, $runCount = 50)
+    {
+        if ($runCount < 1) {
+            return false;
+        }
+        $lock = false;
+        $cacheKey = "lock:{$lockKey}";
+        // 获取锁
+        $now = time();
+        $expires = $now + $ex + 1;
+        $lock = $this->set($cacheKey, $expires, ['nx', 'ex' => $ex]);
+        if (!$lock) {
+            // 如果取不到锁
+            $lockData = $this->get($cacheKey);
+            if ($now > $lockData) { // 检查锁过期没
+                $this->unlock($lockKey);
+                $lock = $this->lock($lockKey, $ex, $runCount);
+            }
+        }
+        if (!$lock) {
+            //休眠2毫秒
+            usleep(2000);
+            $runCount = $runCount - 1 ?? 0;
+            $lock = $this->lock($lockKey, $ex, $runCount);
+        }
+        //返回锁
+        return $lock;
+
+    }
+
+    /**
+     * 释放锁。
+     */
+    public function unlock($lockKey)
+    {
+        $cacheKey = "lock:{$lockKey}";
+        return $this->del($cacheKey);
     }
 }
