@@ -94,7 +94,7 @@ class Line extends AdminBase
     {
         if ($this->request->isPost()) {
             $data = $data ? $data : $this->request->param();
-            if ($data['batch']) {
+            if (isset($data['batch']) && $data['batch']) {
                 return $this->batch_add();
             }
             $validate_result = $this->validate($data, 'app\carpool\validate\ShuttleLine');
