@@ -57,6 +57,7 @@ class Time extends ApiBase
             $redis->cache($cacheKey, $resData, $ex);
         }
         $returnData = [
+            'all' => 1,
             'lists' => $resData,
         ];
         return $this->jsonReturn(0, $returnData, 'Successful');
