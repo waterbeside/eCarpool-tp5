@@ -260,7 +260,7 @@ class SyncHr extends ApiBase
         $this->check_localhost(1);
         $DepartmentModel = new Department();
         if ($uncache) {
-            $department = $DepartmentModel->getItem($id, 0);
+            $department = $DepartmentModel->getItem($id, false);
         } else {
             $department = $DepartmentModel->getItem($id);
         }
