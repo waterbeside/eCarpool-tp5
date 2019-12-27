@@ -2,12 +2,12 @@
 
 namespace app\user\model;
 
-use think\Model;
+use app\common\model\BaseModel;
 use app\carpool\model\Company;
 use my\RedisData;
 use think\Db;
 
-class Department extends Model
+class Department extends BaseModel
 {
 
     // 设置当前模型对应的完整数据表名称
@@ -18,10 +18,17 @@ class Department extends Model
     protected $connection = 'database_carpool';
     protected $pk = 'id';
 
-
-    protected $redisObj;
-
-
+    /**
+     * 取得单项数据缓存key的默认值
+     *
+     * @param integer $id 表主键
+     * @return string
+     */
+    public function getItemCacheKey($id)
+    {
+        return "carpool:department:{$id}";
+    }
+    
     /**
      * create_department_by_str 根据部门路径字符串添加部门到数据库，并返回最后部门id]
      * @param  string  $department_str 部门全称
@@ -170,72 +177,22 @@ class Department extends Model
         return $returnData;
     }
 
-
-    /**
-     * 创建redis对像
-     * @return redis
-     */
-    public function redis()
-    {
-        if (!$this->redisObj) {
-            $this->redisObj = new RedisData();
-        }
-        return $this->redisObj;
-    }
-
-    /**
-     * 处理cache
-     */
-    public function itemCache($id, $value = false, $ex = 3600 * 24, $key = 'department')
-    {
-        $cacheKey = "carpool:" . $key . ":" . $id;
-        // if($keyFix){
-        //   $cacheKey = $cacheKey.":".$keyFix;
-        // }
-        $redis = $this->redis();
-        if ($value === null) {
-            return $redis->delete($cacheKey);
-        } elseif ($value) {
-            if (is_array($value)) {
-                $value = json_encode($value);
-            }
-            if ($ex > 0) {
-                return $redis->setex($cacheKey, $ex, $value);
-            } else {
-                return $redis->set($cacheKey, $value);
-            }
-        } else {
-            $str =  $redis->get($cacheKey);
-            $redData = $str ? json_decode($str, true) : false;
-            return $redData;
-        }
-    }
-
     public function itemChildrenCache($id, $value = false, $ex = 3600 * 24)
     {
-        return $this->itemCache($id, $value, $ex, 'departmentChildrens');
+        $cacheKey = "carpool:departmentChildrens:" . $id;
+        return $this->redis()->cache($cacheKey, $value, $ex);
     }
 
     /**
      * 取单条数据
      */
-    public function getItem($id, $fields = 3600 * 24, $cache_time = 3600 * 24, $randomExOffset = [1,2,3])
+    public function getItem($id, $fields = '*', $cache_time = 3600 * 24, $randomExOffset = [1,2,3], $hCache = false)
     {
-        if (is_numeric($fields)) {
-            $cache_time = $fields;
+        $res = parent::getItem($id, $fields, $cache_time, $randomExOffset, false);
+        if ($res) {
+            $res['department_format'] = $this->formatFullName($res['fullname']);
         }
-        // $data =  $this->itemCache($id);
-        $department = $this->itemCache($id);
-        if (!$department || !$cache_time) {
-            $department =  $this->find($id);
-            if (!$department) {
-                return false;
-            }
-            $department = $department->toArray();
-            $this->itemCache($id, $department, $cache_time);
-        }
-        $department['department_format'] = $this->formatFullName($department['fullname']);
-        return $department;
+        return $res;
     }
 
     /**
@@ -246,7 +203,6 @@ class Department extends Model
      */
     public function getChildrenIds($pid, $cache_time = 3600 * 12)
     {
-        $data =  $this->itemChildrenCache($pid);
         $ids = $this->itemChildrenCache($pid);
         if (!$ids || !$cache_time) {
             $map = [
