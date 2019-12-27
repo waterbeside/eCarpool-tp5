@@ -1,5 +1,5 @@
 <?php
-namespace app\carpool\service;
+namespace app\carpool\service\shuttle;
 
 use app\common\service\Service;
 use app\carpool\model\User as UserModel;
@@ -88,32 +88,7 @@ class ShuttleTrip extends Service
         return $rqData;
     }
 
-    /**
-     * 通过重复行程列表查出可合并行程的
-     *
-     * @param array $repetitionList 重复行程列表
-     * @param array $rqData 添加行程时的请求数据
-     * @return array
-     */
-    public function getMatchingsByRplist($repetitionList, $rqData)
-    {
-        if (empty($repetitionList) || !is_array($repetitionList)) {
-            return [];
-        }
-        $matchingList = [];
-        $matchUserType = $rqData['user_type'];
-        foreach ($repetitionList as $key => $value) {
-            $userType = $value['user_type'] ?: false;
-            $line_id = $value['line_id'];
-            $tripMatching = $value['from'] === 'shuttle_trip' && $userType === $matchUserType && $line_id == $rqData['line_id'] ? true : false;
-            $userTypeMatching = $value['user_type'] > 0 || ($value['trip_id'] == 0 && $value['comefrom'] == 2 ) ? true : false;
-            $timeMatch = $value['check_level']['k'] == 0 ? true : false;
-            if ($tripMatching && $userTypeMatching && $timeMatch) {
-                $matchingList[] = $value;
-            }
-        }
-        return $matchingList;
-    }
+    
 
     /**
      * 取得由 create_type 得到的延申数据，如comefrom,userType等
@@ -137,11 +112,18 @@ class ShuttleTrip extends Service
             return [
                 'comefrom' => 3,
                 'user_type' => 0,
+                'seat_count' => 1,
             ];
         } elseif ($create_type === 'pickup') { // 司机从约车需求拉客
             return [
-                'comefrom' => 1, // 不再设为4，只要是接客都会自动发空座位;
+                'comefrom' => 1,
                 'user_type' => 1,
+            ];
+        } elseif ($create_type === 'partner') { // 同行者上车
+            return [
+                'comefrom' => 4,
+                'user_type' => 0,
+                'seat_count' => 1,
             ];
         } else {
             return $this->error(992, 'Error create_type');
@@ -203,6 +185,33 @@ class ShuttleTrip extends Service
 
         $ShuttleTripModel->delCacheAfterAdd($cData);
         return $newid;
+    }
+
+    /**
+     * 通过重复行程列表查出可合并行程的
+     *
+     * @param array $repetitionList 重复行程列表
+     * @param array $rqData 添加行程时的请求数据
+     * @return array
+     */
+    public function getMatchingsByRplist($repetitionList, $rqData)
+    {
+        if (empty($repetitionList) || !is_array($repetitionList)) {
+            return [];
+        }
+        $matchingList = [];
+        $matchUserType = $rqData['user_type'];
+        foreach ($repetitionList as $key => $value) {
+            $userType = $value['user_type'] ?: false;
+            $line_id = $value['line_id'];
+            $tripMatching = $value['from'] === 'shuttle_trip' && $userType === $matchUserType && $line_id == $rqData['line_id'] ? true : false;
+            $userTypeMatching = $value['user_type'] > 0 || ($value['trip_id'] == 0 && $value['comefrom'] == 2 ) ? true : false;
+            $timeMatch = $value['check_level']['k'] == 0 ? true : false;
+            if ($tripMatching && $userTypeMatching && $timeMatch) {
+                $matchingList[] = $value;
+            }
+        }
+        return $matchingList;
     }
 
     /**
@@ -358,7 +367,7 @@ class ShuttleTrip extends Service
      */
     public function getSimilarTrips($line_id, $time = 0, $userType = false, $uid = 0, $timeOffset = [60*15, 60*15])
     {
-        $tripFields = ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom','line_id'];
+        $tripFields = ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom','line_id', 'seat_count'];
         $userFields =[
             'uid','loginname','name','nativename','phone','mobile','Department',
             'sex','company_id','department_id','imgpath','carcolor', 'im_id'
