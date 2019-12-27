@@ -14,7 +14,7 @@ use my\RedisData;
 use my\Utils;
 use think\Db;
 
-class ShuttleTrip extends Service
+class Trip extends Service
 {
 
     public $defaultUserFields = [
