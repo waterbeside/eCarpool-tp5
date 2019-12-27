@@ -46,7 +46,7 @@ class Apps extends AdminBase
             } else {
                 $AppsModel = new AppsModel();
                 if ($AppsModel->allowField(true)->save($data, $id) !== false) {
-                    $AppsModel->itemCache($id, null);
+                    $AppsModel->delItemCache($id);
                     $this->jsonReturn(0, '更新成功');
                 } else {
                     $this->jsonReturn(-1, '更新失败');
