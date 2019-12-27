@@ -2,10 +2,10 @@
 
 namespace app\common\model;
 
-use think\Model;
+use app\common\model\BaseModel;
 use my\RedisData;
 
-class Apps extends Model
+class Apps extends BaseModel
 {
     protected $redisObj = null;
 
@@ -22,21 +22,14 @@ class Apps extends Model
     }
 
     /**
-     * 处理cache
+     * 取得单项数据缓存key的默认值
+     *
+     * @param integer $id 表主键
+     * @return string
      */
-    public function itemCache($id, $value = false)
+    public function getItemCacheKey($id)
     {
-        $cacheKey = "carpool_management:apps:" . $id;
-        $redis = $this->redis();
-        if ($value === null) {
-            return $redis->delete($cacheKey);
-        } else if ($value) {
-            return $redis->set($cacheKey, $value);
-        } else {
-            $str =  $redis->get($cacheKey);
-            $redData = $str ? json_decode($str, true) : false;
-            return $redData;
-        }
+        return "carpool_management:apps:{$id}";
     }
 
     /**
