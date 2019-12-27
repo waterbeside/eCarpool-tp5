@@ -89,4 +89,25 @@ class Utils
         }
         return $list;
     }
+
+
+    /**
+     * 把 "1,2,3" 处理为 [1,2,3], 把1
+     *
+     * @param mixed $data string,integer,array
+     * @return array
+     */
+    public function stringSetToArray($data, $mapFun = null)
+    {
+        $data = is_string($data) ? array_map('trim', explode(',', $data)) :
+        (
+            is_numeric($data) ? [$data] :
+            (is_array($data) ? array_map('trim', $data) : [])
+        );
+        $data = array_unique($data);
+        if ($mapFun) {
+            $data = array_map($mapFun, $data);
+        }
+        return $data;
+    }
 }
