@@ -26,27 +26,10 @@ class Goods extends BaseModel
 
     protected $pk = 'id';
 
-
-    /**
-     * 通过id取出商品详情
-     * @param  Int  $id 商品id
-     */
-    public function getItem($id, $fields = 60 * 60, $ex = 60 * 60, $randomExOffset = [1,2,3])
+    public function getItemCacheKey($id)
     {
-        if (is_numeric($fields)) {
-            $ex = $fields;
-        }
-        $good = $this->getFromRedis($id, 1);
         $cacheKey = "carpool_management:score:goods:" . $id;
-        $good =  $good ? $good : $this->itemCache($cacheKey);
-        if (!$good) {
-            $good = $this->find($id);
-            if ($good) {
-                $good = $good->toArray();
-                $this->itemCache($cacheKey, $good, $ex);
-            }
-        }
-        return $good;
+        return $cacheKey;
     }
 
     /**
