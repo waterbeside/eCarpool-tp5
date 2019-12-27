@@ -90,11 +90,14 @@ class CheckDeptAuth
         switch ($action) {
             case 'index':
                 // $region_map_sql = $this->buildRegionMapSql($region_id);
-
                 break;
             case 'add':
-                if ($request->isPost()) { } else { }
-
+                if ($request->isPost()) {
+                    // TODO::处理提交添加
+                } else {
+                    // TODO::处理添加
+                }
+                break;
             default:
                 // code...
                 break;
