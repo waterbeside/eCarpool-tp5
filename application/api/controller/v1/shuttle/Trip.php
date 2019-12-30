@@ -5,8 +5,10 @@ namespace app\api\controller\v1\shuttle;
 use app\api\controller\ApiBase;
 use app\carpool\model\ShuttleLine as ShuttleLineModel;
 use app\carpool\model\ShuttleTrip;
+use app\carpool\model\ShuttleTripPartner;
 use app\carpool\model\User;
-use app\carpool\service\ShuttleTrip as ShuttleTripService;
+use app\carpool\service\shuttle\Trip as ShuttleTripService;
+use app\carpool\service\shuttle\Partner as ShuttlePartnerService;
 use app\carpool\service\Trips as TripsService;
 use app\carpool\service\TripsPushMsg;
 use app\carpool\model\ShuttleLineDepartment;
@@ -316,34 +318,38 @@ class Trip extends ApiBase
      * 取得详情
      *
      * @param integer $id 行程id
-     * @param array $userFields 要读出的用户字段
-     * @param integer $returnType 返回数据 1:支持抛出json，2:以数组形式返回数据
+     * @param integer $show_line 是否返回路线数据
+     * @param integer $show_member 是否返回对方参与者的用户数据
      */
-    public function show($id = 0, $show_line = 1, $show_driver = 1, $show_passengers = 2)
+    public function show($id = 0, $show_line = 1, $show_member = 2)
     {
         if (!$id) {
             return $this->jsonReturn(992, 'Error param');
         }
-        $ShuttleTripService = new ShuttleTripService();
-        $data  = $ShuttleTripService->getUserTripDetail($id, [], [], $show_line);
+        $ShuttleTripServ = new ShuttleTripService();
+        $data  = $ShuttleTripServ->getUserTripDetail($id, [], [], $show_line);
 
         if (!$data) {
             return $this->jsonReturn(20002, 'No data');
         }
         $trip_id = $data['trip_id'];
 
-        if ($trip_id > 0 && $show_driver) {
-            $data['driver'] = $ShuttleTripService->getUserTripDetail($trip_id, [], [], 0);
-        }
-        if ($trip_id === 0 && $show_passengers) {
-            if ($show_passengers == 2) {
-                $data['passengers'] = $ShuttleTripService->passengers($id) ?: [];
-                $data['took_count'] = count($data['passengers']);
+        if ($show_member) {
+            if ($data['user_type'] == 1) {
+                if ($show_member == 2) {
+                    $data['passengers'] = $ShuttleTripServ->passengers($id) ?? [];
+                    $data['took_count'] = count($data['passengers']);
+                } else {
+                    $ShuttleTrip = new ShuttleTrip();
+                    $data['took_count'] = $ShuttleTrip->countPassengers($id);
+                }
             } else {
-                $ShuttleTrip = new ShuttleTrip();
-                $data['took_count'] = $ShuttleTrip->countPassengers($id);
+                $ShuttleTripPartner = new ShuttleTripPartner();
+                $data['partners'] = $ShuttleTripPartner->getPartners($id, 1) ?? [];
+                $data['driver'] = $ShuttleTripServ->getUserTripDetail($trip_id, [], [], 0);
             }
         }
+        
         unset($data['trip_id']);
         return $this->jsonReturn(0, $data, 'Successful');
     }
@@ -366,19 +372,60 @@ class Trip extends ApiBase
         if (!in_array($rqData['create_type'], ['cars', 'requests'])) {
             $this->jsonReturn(992, 'Error create_type');
         }
-
         $rqData['line_data'] = $ShuttleTripService->getExtraInfoLineData($line_id);
         if (!$rqData['line_data']) {
             $this->jsonReturn(20002, '该路线不存在');
         }
+        // 如果是约车需求，要处理同行者
+        if ($rqData['create_type'] == 'requests') {
+            // TODO: 处理同行者
+            $rqData['partners'] = input('post.partners');
+            $PartnerServ = new ShuttlePartnerService();
+            $partners = $PartnerServ->getPartnersUserData($rqData['partners'], $userData['uid']);
+            $TripsService = new TripsService();
+            $hasError = 0;
+            $errorPartners = [];
+            foreach ($partners as $key => $value) {
+                 // 验证重复行程
+                $repetitionList = $TripsService->getRepetition($rqData['time'], $value['uid']);
+                $partners[$key]['repetitionList'] = $repetitionList ?? [];
+                if ($repetitionList) {
+                    $hasError = 50009;
+                    $errorPartners[] = $partners[$key];
+                }
+            }
+            if ($hasError === 50009) {
+                $this->jsonReturn(50009, ['lists'=>$errorPartners], '你添的加同行伙伴中，有人在相似的时间内已有一到多趟的行程');
+            }
+            $rqData['seat_count'] = count($partners) + 1;
+        }
 
-        // 创建入库数据
-        $addRes = $ShuttleTripService->addTrip($rqData, $userData);
+        Db::connect('database_carpool')->startTrans();
+        try {
+            // 入库
+            $addRes = $ShuttleTripService->addTrip($rqData, $userData);
+            // 如果是约车需求，并有同行者，处理同行者
+            if ($rqData['create_type'] == 'requests' && isset($partners) && count($partners) > 0) {
+                $tripData = [
+                    'id' => $addRes,
+                    'uid' => $userData['uid'],
+                    'line_type' => $rqData['line_data']['type'],
+                    'time' => date('Y-m-d H:i:s', $rqData['time'])
+                ];
+                $PartnerServ->insertPartners($partners, $tripData);
+            }
+            // 提交事务
+            Db::connect('database_carpool')->commit();
+        } catch (\Exception $e) {
+            Db::connect('database_carpool')->rollback();
+            $errorMsg = $e->getMessage();
+            return $this->jsonReturn(-1, null, lang('Failed'), ['errorMsg'=>$errorMsg]);
+        }
         if (!$addRes) {
             $errorData = $ShuttleTripService->getError();
-            $this->jsonReturn($errorData['code'], $errorData['data'], $errorData['msg']);
+            return $this->jsonReturn($errorData['code'], $errorData['data'], $errorData['msg']);
         }
-        $this->jsonReturn(0, ['id'=>$addRes], 'Successful');
+        return $this->jsonReturn(0, ['id'=>$addRes], 'Successful');
     }
     
     /**
@@ -419,7 +466,7 @@ class Trip extends ApiBase
             return $this->jsonReturn(50006, $checkInTripRes, lang('您已经搭上该趟车'));
         }
         // 检查座位是否已满
-        $took_count = $ShuttleTripModel->countPassengers($id); //计算已坐车乘客数
+        $took_count = $ShuttleTripModel->countPassengers($id, false); //计算已坐车乘客数
         if ($took_count >= $tripData['seat_count']) {
             $returnData = [
                 'seat_count' => $tripData['seat_count'],
@@ -534,7 +581,7 @@ class Trip extends ApiBase
         }
 
         $run = input('post.run') ?: input('param.run') ;
-        if (!in_array($run, ['cancel', 'finish', 'change_seat'])) {
+        if (!in_array($run, ['cancel', 'change_seat'])) { // 不再支持完结
             return $this->jsonReturn(992, 'Error param');
         }
         $userData = $this->getUserData(1);
@@ -560,7 +607,7 @@ class Trip extends ApiBase
             if ($seat_count < 1) {
                 return $this->jsonReturn(992, lang('The number of empty seats cannot be empty'));
             }
-            $took_count = $ShuttleTripModel->countPassengers($id); //计算已坐车乘客数
+            $took_count = $ShuttleTripModel->countPassengers($id, false); //计算已坐车乘客数
             if ($seat_count < $took_count) {
                 return $this->jsonReturn(992, lang('您设置的座位数不能比已搭乘客数少'));
             }
@@ -615,5 +662,54 @@ class Trip extends ApiBase
             'lists' => $list
         ];
         return $this->jsonReturn(0, $returnData, 'Successful');
+    }
+
+    /**
+     * 合并行程
+     */
+    public function merge($id = null)
+    {
+        $id = $id ?? input('post.id/d', 0); // 自己的行程id
+        $tid = input('post.tid/d', 0); // 对方的行程id
+        if (!$tid || !$id) {
+            return $this->jsonReturn(992, 'Empty param');
+        }
+        $userData = $this->getUserData(1);
+        $uid = intval($userData['uid']);
+
+        $ShuttleTripModel = new ShuttleTrip();
+        $tripData = $ShuttleTripModel->getItem($id);
+        if (!$tripData) {
+            return $this->jsonReturn(20002, 'No data');
+        }
+        if ($tripData['uid'] != $uid) {
+            return $this->jsonReturn(30001, lang('你不能操作把别人的行程合并到别人的行程'));
+        }
+        if (in_array($tripData['status'], [-1, 3])) {
+            return $this->jsonReturn(30001, lang('你的行程已取消或完结，无法操作'));
+        }
+        $targetTripData = $ShuttleTripModel->getItem($tid);
+        if (!$targetTripData) {
+            return $this->jsonReturn(20002, '目标行程不存在');
+        }
+        if (in_array($targetTripData['status'], [-1, 3])) {
+            return $this->jsonReturn(30001, lang('对方的行程已取消或完结，无法操作'));
+        }
+        if ($tripData['user_type'] == 1) { // 如果自己是司机
+            // 检查座位是否已满
+            $took_count = $ShuttleTripModel->countPassengers($id, false); //计算已坐车乘客数
+            if ($took_count >= $tripData['seat_count']) {
+                $returnData = [
+                    'seat_count' => $tripData['seat_count'],
+                    'took_count' => $took_count,
+                ];
+                return $this->jsonReturn(50003, $returnData, lang('Failed, seat is full'));
+            }
+            if ($targetTripData['user_type'] != 0 || $targetTripData['comefrom'] != 2) { // 检查对方是否一个约车需求
+                // TODO: 处理司机合并
+            }
+        } else { // 如果是乘客
+            // TODO: 处理乘客合并
+        }
     }
 }
