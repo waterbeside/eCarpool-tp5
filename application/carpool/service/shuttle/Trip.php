@@ -45,6 +45,11 @@ class Trip extends Service
      */
     public function checkAddData($rqData, $uid)
     {
+        // 取得与 create_type 相关数据
+        $createTypeData = $this->getCreateTypeInfo($rqData['create_type']);
+        $rqData = array_merge($rqData, $createTypeData);
+
+
         $time = $rqData['time'] ?: null;
         if (empty($rqData['line_id'])) {
             return $this->error(992, '请选择路线');
@@ -53,10 +58,6 @@ class Trip extends Service
             return $this->error(992, '请选择时间');
         }
 
-        // 取得与 create_type 相关数据
-        $createTypeData = $this->getCreateTypeInfo($rqData['create_type']);
-        $rqData = array_merge($rqData, $createTypeData);
-
         $create_type = $rqData['create_type'];
         // 司机至少发一个空座位。
         if ($create_type === 'cars' && (!isset($rqData['seat_count']) || $rqData['seat_count'] < 1)) {
@@ -64,6 +65,10 @@ class Trip extends Service
         }
         if (in_array($create_type, ['pickup', 'requests'])) { // 发需接客，至少插一个空座位
             $rqData['seat_count'] = isset($rqData['seat_count']) && $rqData['seat_count'] > 1 ? $rqData['seat_count'] : 1;
+        }
+
+        if ($create_type == 'partner') { // 如果是同行者，直接跳过之后验证，因为只验证发布需求的人；
+            return $rqData;
         }
 
         //检查出发时间是否已经过了
@@ -160,10 +165,12 @@ class Trip extends Service
             'user_type' => $rqData['user_type'],
             'comefrom' => $rqData['comefrom'],
             'trip_id' => $trip_id,
-            'plate' => $plate,
             'status' => 0,
             'seat_count' => intval($rqData['seat_count']),
         ];
+        if ($plate) {
+            $updata['plate'] = $plate;
+        }
         if (isset($rqData['line_data']) && is_array($rqData['line_data'])) {
             $updata['line_type'] = intval($rqData['line_data']['type']);
             $updata['extra_info'] = json_encode(['line_data' => $rqData['line_data']]);
