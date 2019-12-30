@@ -117,7 +117,9 @@ class Contacts extends AdminBase
     {
         $redis = new RedisData();
         $res = $redis->cache($this->block_list_cackeKey);
-        $userlist = json_decode($res, true);
+        $userlist = $res;
+        // dump($res);
+        // $userlist = json_decode($res, true);
         // dump(json_encode(json_encode($userlist)));
         $field = "uid,name,nativename,loginname,Department,sex,phone";
         $lists = is_array($userlist) ?  UserModel::field($field)->where([['loginname', 'in', $userlist]])->select() : [];
@@ -145,16 +147,17 @@ class Contacts extends AdminBase
             return $this->jsonReturn(-1, '删除失败');
         }
         $redis = new RedisData();
-        $res = $redis->cache($this->block_list_cackeKey);
-        $userlist = json_decode($res, true);
+        $userlist = $redis->cache($this->block_list_cackeKey);
+        // $userlist = json_decode($res, true);
         $userList_new = [];
         foreach ($userlist as $key => $value) {
             if (strtolower($value) != strtolower($loginname)) {
                 $userList_new[] = $value;
             }
         }
-        $userList_new_str = json_encode(json_encode($userList_new));
-        $redis->set($this->block_list_cackeKey, $userList_new_str);
+        // $userList_new_str = json_encode(json_encode($userList_new));
+        // $redis->set($this->block_list_cackeKey, $userList_new_str);
+        $redis->cache($this->block_list_cackeKey, $userList_new);
         $this->log("移除通讯录黑名单受限用户成功。loginname = $loginname", 0);
         return $this->jsonReturn(0, '删除成功');
     }
