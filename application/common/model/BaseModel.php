@@ -7,10 +7,11 @@ use my\RedisData;
 
 class BaseModel extends Model
 {
-    protected $redisObj = null;
+    protected static $redisObj = null;
     public $errorMsg = null;
     public $errorCode = 0;
     public $errorData = null;
+    public $itemCacheExpire = 5 * 60;
 
     /**
      * 设置error
@@ -33,42 +34,16 @@ class BaseModel extends Model
         return false;
     }
 
-
     /**
      * 创建redis对像
      * @return redis
      */
     public function redis()
     {
-        if (!$this->redisObj) {
-            $this->redisObj = new RedisData();
+        if (is_null(static::$redisObj)) {
+            static::$redisObj = new RedisData();
         }
-        return $this->redisObj;
-    }
-
-
-    /**
-     * 处理cache
-     */
-    public function itemCache($cacheKey, $value = false, $ex = 3600 * 24)
-    {
-        $redis = $this->redis();
-        if ($value === null) {
-            return $redis->delete($cacheKey);
-        } elseif ($value) {
-            if (is_array($value)) {
-                $value = json_encode($value);
-            }
-            if ($ex > 0) {
-                return $redis->setex($cacheKey, $ex, $value);
-            } else {
-                return $redis->set($cacheKey, $value);
-            }
-        } else {
-            $str =  $redis->get($cacheKey);
-            $redData = $str ? json_decode($str, true) : false;
-            return $redData;
-        }
+        return static::$redisObj;
     }
 
     /**
@@ -81,7 +56,6 @@ class BaseModel extends Model
     {
         try {
             $client = new \GuzzleHttp\Client(['verify' => false]);
-
             $params = $data;
             $response = $client->request($type, $url, $params);
 
@@ -114,36 +88,45 @@ class BaseModel extends Model
      * 取得单行数据
      *
      * @param integer $id ID
-     * @param * $field 选择返回的字段，当为数字时，为缓存时效
+     * @param mixed $field 选择返回的字段，默认为'*', 为* null时，返回全部字段。 当为数字时或false时，为缓存时效，即提前参数$ex
      * @param integer $ex 缓存时效
      * @param array $randomExOffset 有效期随机偏移
-     * @return void
+     * @param boolean $hSet 是否使用hSet,默认是
+     * @return mixed
      */
-    public function getItem($id, $field = '*', $ex = 60 * 5, $randomExOffset = [1,2,3])
+    public function getItem($id, $field = '*', $ex = 'default', $randomExOffset = [1,2,3], $hSet = true)
     {
         if (is_numeric($field) || $field === false) {
             $ex = $field;
             $field = "*";
         }
+        if ($ex == 'default' || $ex === null) {
+            $ex = $this->itemCacheExpire;
+        }
+        $redis = self::redis();
         $res = false;
         if (is_numeric($ex)) {
-            $cacheKey =  $this->getItemCacheKey($id);
+            $cacheKey =  static::getItemCacheKey($id);
             $cacheFeild = 'item';
-            $redis = new RedisData();
-            $res = $redis->hCache($cacheKey, $cacheFeild);
+            $res = $hSet ? $redis->hCache($cacheKey, $cacheFeild) : $redis->cache($cacheKey);
         }
+
         if (!$res || $ex === false) {
-            $res = $this->find($id);
+            $res = self::find($id);
             $res = $res ? $res->toArray() : [];
             if (is_numeric($ex)) {
                 $randomExOffset = is_array($randomExOffset) ? $randomExOffset : [1,2];
                 $exp_offset = getRandValFromArray($randomExOffset);
                 $ex +=  $exp_offset * ($ex > 60 ? 60 : ($ex > 10 ? 10 : 1));
-                $redis->hCache($cacheKey, $cacheFeild, $res, $ex);
+                if ($hSet) {
+                    $redis->hCache($cacheKey, $cacheFeild, $res, $ex);
+                } else {
+                    $redis->cache($cacheKey, $res, $ex);
+                }
             }
         }
         $returnData = [];
-        if ($field != '*') {
+        if ($field != '*' && $field != null) {
             $fields = is_array($field) ? $field : array_map('trim', explode(',', $field));
             foreach ($fields as $key => $value) {
                 $returnData[$value] = isset($res[$value]) ? $res[$value] : null;
@@ -162,8 +145,8 @@ class BaseModel extends Model
      */
     public function delItemCache($id)
     {
-        $cacheKey =  $this->getItemCacheKey($id);
-        $redis = new RedisData();
-        $redis->del($cacheKey);
+        $cacheKey =  static::getItemCacheKey($id);
+        $redis = self::redis();
+        return $redis->del($cacheKey);
     }
 }
