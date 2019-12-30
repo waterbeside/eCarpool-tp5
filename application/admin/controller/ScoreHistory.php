@@ -125,7 +125,9 @@ class ScoreHistory extends AdminBase
             if ($accountInfo['carpool_account']) {
                 $userInfo = CarpoolUserModel::where(['loginname' => $account])->find();
             }
-            $map[] = ['account_id', '=', $accountInfo['id']];
+            $carpoolAccount = $accountInfo['carpool_account'];
+            $carpoolAccountSql = $carpoolAccount ? "OR carpool_account = '{$carpoolAccount}'" : '';
+            $map[] = ['', 'EXP', Db::raw("account_id = {$accountInfo['id']}  {$carpoolAccountSql}")];
         } elseif ($type == '2' || $type == "carpool") { //从拼车帐号取
             if (!$account) { //当account为空时，读取全部
                 $this->error("Lost account");
@@ -133,7 +135,7 @@ class ScoreHistory extends AdminBase
             $accountInfo = ScoreAccountModel::where(['carpool_account' => $account])->find();
             $userInfo = CarpoolUserModel::where(['loginname' => $account])->find();
             if ($accountInfo) {
-                $map[] = ['account_id', '=', $accountInfo['id']];
+                $map[] = ['', 'EXP', "account_id = {$accountInfo['id']} OR carpool_account = '{$account}'"];
             } else {
                 $map[] = ['carpool_account', '=', $account];
             }
