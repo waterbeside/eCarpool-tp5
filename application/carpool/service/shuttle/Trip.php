@@ -62,9 +62,10 @@ class Trip extends Service
         if ($create_type === 'cars' && (!isset($rqData['seat_count']) || $rqData['seat_count'] < 1)) {
             return $this->error(992, lang('The number of empty seats cannot be empty'));
         }
-        if ($create_type == 'pickup') {
+        if (in_array($create_type, ['pickup', 'requests'])) { // 发需接客，至少插一个空座位
             $rqData['seat_count'] = isset($rqData['seat_count']) && $rqData['seat_count'] > 1 ? $rqData['seat_count'] : 1;
         }
+
         //检查出发时间是否已经过了
         if (time() > $time) {
             return $this->error(992, lang("The departure time has passed. Please select the time again"));
@@ -87,8 +88,6 @@ class Trip extends Service
         }
         return $rqData;
     }
-
-    
 
     /**
      * 取得由 create_type 得到的延申数据，如comefrom,userType等
