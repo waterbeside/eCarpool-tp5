@@ -2,8 +2,10 @@
 namespace app\carpool\service\shuttle;
 
 use app\common\service\Service;
+use app\carpool\service\shuttle\Trip as ShuttleTripService;
 use app\carpool\model\User as UserModel;
 use app\carpool\model\ShuttleTripPartner;
+use app\carpool\model\ShuttleTrip;
 
 use my\RedisData;
 use my\Utils;
@@ -96,5 +98,39 @@ class Partner extends Service
     {
         $batchData = $this->buildInsertBatchData($partners, $tripData);
         return ShuttleTripPartner::insertAll($batchData);
+    }
+
+    /**
+     * 同行者上车
+     *
+     * @param array $rqTripData 同行者信息
+     * @param mixed $driverTripData 司机行程 ID or TripData
+     */
+    public function getOnCar($rqTripData, $driverTripData)
+    {
+        $ShuttleTripServ = new ShuttleTripService();
+        $ShuttleTripPartner = new ShuttleTripPartner();
+        // 创建入库数据
+        $lineId = $rqTripData['line_id'];
+        $lineData = $rqTripData['line_id'] ?: ($ShuttleTripServ->getExtraInfoLineData($lineId) ?? []);
+        $tripId = is_numeric($driverTripData) ? $driverTripData : $driverTripData['id'];
+        $lineType = intval($lineData['type']);
+        $defaultData = [
+            'user_type' => 0,
+            'trip_id' => $tripId,
+            'line_id' => $lineId,
+            'line_type' => $lineType,
+            'time' => is_numeric($rqTripData['time']) ?  date('Y-m-d H:i:s', $rqTripData['time']) : $rqTripData['time'],
+            'status' => 0,
+            'comefrom' => 4,
+            'seat_count' => 1,
+            'extra_info' => json_encode(['line_data' => $lineData]),
+        ];
+        $partners = $ShuttleTripPartner->getPartners($rqTripData['id'], ($lineType > 0 ? 1 : 0));
+        $batchData = [];
+        foreach ($partners as $key => $value) {
+            $batchData[] = array_merge($defaultData, ['uid'=>$value['uid']]);
+        }
+        return ShuttleTrip::insertAll($batchData);
     }
 }

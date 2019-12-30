@@ -531,6 +531,7 @@ class Trip extends ApiBase
         if ($uid == $tripData['uid']) {
             return $this->jsonReturn(-1, lang('You can`t take your own'));
         }
+        $rqData['seat_count'] = $tripData['seat_count'] > $rqData['seat_count'] ? $tripData['seat_count'] : $rqData['seat_count'];
         $rqData['time'] = strtotime($tripData['time']);
         $rqData['line_id'] = $tripData['line_id'];
         $rqData['line_data'] = $ShuttleTripService->getExtraInfoLineData($id, 2);
@@ -538,15 +539,28 @@ class Trip extends ApiBase
         if (!$rqData['line_data']) {
             return $this->jsonReturn(20002, '该路线不存在');
         }
+
         Db::connect('database_carpool')->startTrans();
         try {
             // 入库
-            $addRes = $ShuttleTripService->addTrip($rqData, $userData); // 添加一条司机行程
-            if (!$addRes) {
+            $driverTripId = $ShuttleTripService->addTrip($rqData, $userData); // 添加一条司机行程
+            if (!$driverTripId) {
                 $errorData = $ShuttleTripService->getError();
                 return $this->jsonReturn($errorData['code'], $errorData['data'], lang('Failed').'. '.$errorData['msg']);
             }
-            $ShuttleTripModel->where('id', $id)->update(['trip_id'=>$addRes]); // 乘客行程的trip_id设为司机行程id
+            $ShuttleTripModel->where('id', $id)->update(['trip_id'=>$driverTripId]); // 乘客行程的trip_id设为司机行程id
+
+            // 查询有没有同行者, 有的话把同行者也带上
+            if ($tripData['seat_count'] > 1) {
+                $ShuttleTripPartner = new ShuttleTripPartner();
+                $partners = $ShuttleTripPartner->getPartners($id, 1) ?? [];
+                if (count($partners) > 0) {
+                    $rqTripData = $tripData;
+                    $rqTripData['line_data'] = $rqData['line_data'];
+                    $ShuttleTripPartner->getOnCar($tripData, $driverTripId);
+                }
+            }
+            
             // 提交事务
             Db::connect('database_carpool')->commit();
         } catch (\Exception $e) {
@@ -567,7 +581,7 @@ class Trip extends ApiBase
         ];
         $targetUserid = $tripData['uid'];
         $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
-        return $this->jsonReturn(0, ['id'=>$addRes], 'Successful');
+        return $this->jsonReturn(0, ['id'=>$driverTripId], 'Successful');
     }
 
     /**
