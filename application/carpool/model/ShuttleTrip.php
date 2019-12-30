@@ -120,7 +120,7 @@ class ShuttleTrip extends BaseModel
     public function countByLine($line_id, $create_type)
     {
         $cacheKey = "carpool:shuttle:trip:countByLine:{$create_type}_lineId_{$line_id}";
-        $redis = new RedisData();
+        $redis = $this->redis();
         $res = $redis->cache($cacheKey);
         if ($res === false) {
             $mapBase = [
@@ -222,7 +222,7 @@ class ShuttleTrip extends BaseModel
      */
     public function delCacheAfterAdd($data)
     {
-        $redis = new RedisData();
+        $redis = $this->redis();
 
         if (isset($data['create_type'])) {
             // 清除指定line_id列表缓存
@@ -256,7 +256,7 @@ class ShuttleTrip extends BaseModel
     public function delPassengersCache($id)
     {
         $cacheKey = $this->getPassengersCacheKey($id);
-        $redis = new RedisData();
+        $redis = $this->redis();
         $redis->del($cacheKey);
     }
 
@@ -270,7 +270,7 @@ class ShuttleTrip extends BaseModel
     public function delMyListCache($uid, $type = 'my')
     {
         $cacheKey = $this->getMyListCacheKey($uid, $type);
-        $redis = new RedisData();
+        $redis = $this->redis();
         $redis->del($cacheKey);
     }
 
@@ -286,7 +286,7 @@ class ShuttleTrip extends BaseModel
         if (in_array($type, ['my', 'history'])) {
             return $this->delMyListCache($line_id, $type);
         }
-        $redis = new RedisData();
+        $redis = $this->redis();
         if (!$type) {
             $cacheKey_1 = $this->getListCacheKeyByLineId($line_id, 'cars');
             $cacheKey_2 = $this->getListCacheKeyByLineId($line_id, 'requests');
@@ -307,7 +307,7 @@ class ShuttleTrip extends BaseModel
     public function countPassengers($id, $ex = 10)
     {
         $cacheKey = $this->getTookCountCacheKey($id);
-        $redis = new RedisData();
+        $redis = $this->redis();
         $res = $redis->cache($cacheKey);
         if ($res === false || $ex === false) {
             $map = [
@@ -317,7 +317,7 @@ class ShuttleTrip extends BaseModel
             ];
             $res = $this->where($map)->count();
             if (is_numeric($ex)) {
-                $res = $redis->cache($cacheKey, $res, $ex);
+                $redis->cache($cacheKey, $res, $ex);
             }
         }
         return $res;
@@ -370,10 +370,11 @@ class ShuttleTrip extends BaseModel
         $upData = [
             'operate_time'=>date('Y-m-d H:i:s')
         ];
-        if ($type === 0 && time() <= strtotime($tripData['time']) && $tripData['comefrom'] == 2 && $tripData['trip_id'] > 0) { // 如果未过出发时间 并且是有人搭的约车需求,
+        if ($type === 0 && time() <= strtotime($tripData['time']) && $tripData['comefrom'] == 2 && $tripData['trip_id'] > 0 && $tripData['seat_count'] < 2) { // 如果未过出发时间 并且是有人搭的约车需求,
             $upData['status'] = 0;
             $upData['trip_id'] = 0;
-        } else { // 如果过了出发时间
+            $upData['seat_count'] = 1;
+        } else { // 如果过了出发时间, 或者是带同伴的行程
             $upData['status'] = -1;
         }
         $res = $this->where($map)->update($upData);
@@ -402,12 +403,13 @@ class ShuttleTrip extends BaseModel
         // 查出所有乘客行程，以便作消息推送;
         Db::connect('database_carpool')->startTrans();
         try {
-            // 先取消司机行程
-            $this->where('id', $id)->update(['status' => -1]);
             $upData = [
                 'status' => -1,
                 'operate_time'=>date('Y-m-d H:i:s')
             ];
+            // 先取消司机行程
+            $this->where('id', $id)->update($upData);
+            // 再取消乘客行程
             if (time() > strtotime($tripData['time'])) { // 如果过了出发时间
                 $map = [
                     ['trip_id', '=', $id],
@@ -487,7 +489,6 @@ class ShuttleTrip extends BaseModel
         if (empty($tripData)) {
             return $this->setError(20002, '该行程不存在', $tripData);
         }
-        // 查出所有乘客行程，以便作消息推送;
         Db::connect('database_carpool')->startTrans();
         try {
             $upData = [
@@ -496,12 +497,13 @@ class ShuttleTrip extends BaseModel
             ];
             // 先取消司机行程
             $this->where('id', $id)->update($upData);
-            $map = [
-                ['trip_id', '=', $id],
-                ['status', 'between', [0, 1]],
-                ['comefrom', 'between', [2, 3]],
-            ];
-            $this->where($map)->update($upData);
+            // 不再完结乘客行程
+            // $map = [
+            //     ['trip_id', '=', $id],
+            //     ['status', 'between', [0, 1]],
+            //     ['comefrom', 'between', [2, 3]],
+            // ];
+            // $this->where($map)->update($upData);
             // 提交事务
             Db::connect('database_carpool')->commit();
         } catch (\Exception $e) {
