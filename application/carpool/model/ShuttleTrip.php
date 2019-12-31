@@ -232,9 +232,12 @@ class ShuttleTrip extends BaseModel
                 $redis->del($list_cacheKey, $count_cacheKey);
             }
 
-            // 清除指定trip_id的乘客列表缓存
-            if (isset($data['trip_id']) && $data['trip_id'] > 0  && in_array($data['create_type'], ['hitchhiking', 'pickup'])) {
+            // 清除乘客列表缓存
+            if (isset($data['trip_id']) && $data['trip_id'] > 0  && in_array($data['create_type'], ['hitchhiking'])) {
                 $this->delPassengersCache($data['trip_id']);
+            }
+            if (in_array($data['create_type'], ['cars', 'pickup'])) {
+                $this->delPassengersCache($data['id']);
             }
         }
 
