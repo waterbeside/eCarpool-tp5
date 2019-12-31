@@ -184,11 +184,11 @@ class Trip extends Service
         $cData = [
             'create_type' => $rqData['create_type'],
             'line_id' => $rqData['line_id'],
+            'id' => $newid,
             'trip_id' => $trip_id,
             'uid' => $uid,
             'myType' => 'my',
         ];
-
         $ShuttleTripModel->delCacheAfterAdd($cData);
         return $newid;
     }
