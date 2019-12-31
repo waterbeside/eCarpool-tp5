@@ -91,7 +91,7 @@ class BaseModel extends Model
      * @param mixed $field 选择返回的字段，默认为'*', 为* null时，返回全部字段。 当为数字时或false时，为缓存时效，即提前参数$ex
      * @param integer $ex 缓存时效
      * @param array $randomExOffset 有效期随机偏移
-     * @param boolean $hSet 是否使用hSet,默认是
+     * @param boolean $hSet 是否使用hSet,默认是hSet
      * @return mixed
      */
     public function getItem($id, $field = '*', $ex = 'default', $randomExOffset = [1,2,3], $hSet = true)
@@ -118,6 +118,7 @@ class BaseModel extends Model
                 $randomExOffset = is_array($randomExOffset) ? $randomExOffset : [1,2];
                 $exp_offset = getRandValFromArray($randomExOffset);
                 $ex +=  $exp_offset * ($ex > 60 ? 60 : ($ex > 10 ? 10 : 1));
+                $ex = empty($res) ? ($ex > 60 * 5 ? round($ex/60) : 5) : $ex;
                 if ($hSet) {
                     $redis->hCache($cacheKey, $cacheFeild, $res, $ex);
                 } else {
@@ -148,5 +149,39 @@ class BaseModel extends Model
         $cacheKey =  static::getItemCacheKey($id);
         $redis = self::redis();
         return $redis->del($cacheKey);
+    }
+
+    /**
+     * 给item加并发锁
+     *
+     * @param integer $id 数据主键
+     * @param string $keyFill key补充字符串 (一般填写要对该item做什么操作)
+     * @return boolean
+     */
+    public function lockItem($id, $keyFill = '', $ex = 10, $runCount = 50)
+    {
+        $redis = self::redis();
+        $lockKey =  static::getItemCacheKey($id);
+        if (!empty($keyFill)) {
+            $lockKey = $lockKey.":".$keyFill;
+        }
+        return $redis->lock($lockKey, $ex, $runCount);
+    }
+
+    /**
+     * 给item解锁
+     *
+     * @param integer $id 数据主键
+     * @param string $keyFill key补充字符串
+     * @return boolean
+     */
+    public function unlockItem($id, $keyFill = '')
+    {
+        $redis = self::redis();
+        $lockKey =  static::getItemCacheKey($id);
+        if (!empty($keyFill)) {
+            $lockKey = $lockKey.":".$keyFill;
+        }
+        return $redis->unlock($lockKey);
     }
 }
