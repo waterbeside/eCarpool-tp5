@@ -127,7 +127,7 @@ class BaseModel extends Model
             }
         }
         $returnData = [];
-        if ($field != '*' && $field != null) {
+        if ($field != '*' && $field != null && !empty($res)) {
             $fields = is_array($field) ? $field : array_map('trim', explode(',', $field));
             foreach ($fields as $key => $value) {
                 $returnData[$value] = isset($res[$value]) ? $res[$value] : null;
