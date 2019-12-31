@@ -52,7 +52,9 @@ class Partner extends Service
                 continue;
             }
             $userData = $UserModel->getItem($value, $this->defaultUserFields);
-            $returnData[] = $userData;
+            if ($userData) {
+                $returnData[] = $userData;
+            }
         }
         return $returnData;
     }
@@ -147,16 +149,27 @@ class Partner extends Service
     {
         $TripsPushMsg = new TripsPushMsg();
         $ShuttleTripModel = new ShuttleTrip();
+        $UserModel = new UserModel();
         $pushMsgData = [
             'from' => 'shuttle_trip',
             'runType' => 'pickup_partner',
-            'userData'=> $driverUserData ?? (new UserModel())->getItem($driverTripData['uid']),
+            'userData'=> $driverUserData ?? $UserModel->getItem($driverTripData['uid']),
             'tripData'=> $driverTripData,
             'id' => $driverTripData['id'],
         ];
         foreach ($partners as $key => $value) {
             $ShuttleTripModel->delMyListCache($value['uid'], 'my');
             $TripsPushMsg->pushMsg($value['uid'], $pushMsgData);
+            if ($runType = 'hitchhiking') { // 把消息也推给司机
+                $pushMsgData = [
+                    'from' => 'shuttle_trip',
+                    'runType' => 'hitchhiking',
+                    'userData'=> $UserModel->getItem($value['uid']),
+                    'tripData'=> $driverTripData,
+                    'id' => $driverTripData['id'],
+                ];
+                $TripsPushMsg->pushMsg($value['uid'], $pushMsgData);
+            }
         }
         return true;
     }
