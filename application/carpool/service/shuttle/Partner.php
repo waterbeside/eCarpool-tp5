@@ -6,6 +6,7 @@ use app\carpool\service\shuttle\Trip as ShuttleTripService;
 use app\carpool\model\User as UserModel;
 use app\carpool\model\ShuttleTripPartner;
 use app\carpool\model\ShuttleTrip;
+use app\carpool\service\TripsPushMsg;
 
 use my\RedisData;
 use my\Utils;
@@ -132,5 +133,31 @@ class Partner extends Service
             $batchData[] = array_merge($defaultData, ['uid'=>$value['uid']]);
         }
         return ShuttleTrip::insertAll($batchData);
+    }
+
+    /**
+     * 同行者上车后执行动作
+     *
+     * @param array $partners 同行者列表
+     * @param array $driverTripData 司机行程数据
+     * @param array $driverUserData 司机用户信息
+     * @return void
+     */
+    public function doAfterGetOnCar($partners, $driverTripData, $driverUserData = null)
+    {
+        $TripsPushMsg = new TripsPushMsg();
+        $ShuttleTripModel = new ShuttleTrip();
+        $pushMsgData = [
+            'from' => 'shuttle_trip',
+            'runType' => 'pickup_partner',
+            'userData'=> $driverUserData ?? (new UserModel())->getItem($driverTripData['uid']),
+            'tripData'=> $driverTripData,
+            'id' => $driverTripData['id'],
+        ];
+        foreach ($partners as $key => $value) {
+            $ShuttleTripModel->delMyListCache($value['uid'], 'my');
+            $TripsPushMsg->pushMsg($value['uid'], $pushMsgData);
+        }
+        return true;
     }
 }
