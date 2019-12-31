@@ -367,7 +367,7 @@ class Trip extends ApiBase
         $ShuttleTripService = new ShuttleTripService();
         $rqData = $ShuttleTripService->getRqData($rqData);
         $line_id = $rqData['line_id'];
-
+        $dev = input('post.dev/d', 0);
         // 加锁
         $ShuttleTripModel = new ShuttleTrip();
         $lockKeyFill = "u_{$uid}:save";
@@ -395,6 +395,9 @@ class Trip extends ApiBase
             $TripsService = new TripsService();
             $hasError = 0;
             $errorPartners = [];
+            if ($dev) {
+                dump($partners);
+            }
             foreach ($partners as $key => $value) {
                  // 验证重复行程
                 $repetitionList = $TripsService->getRepetition($rqData['time'], $value['uid']);
@@ -546,12 +549,13 @@ class Trip extends ApiBase
 
             // 查询有没有同行者, 有的话把同行者也带上
             if ($tripData['seat_count'] > 1) {
+                $ShuttlePartnerServ = new ShuttlePartnerService();
                 $ShuttleTripPartner = new ShuttleTripPartner();
                 $partners = $ShuttleTripPartner->getPartners($id, 1) ?? [];
                 if (count($partners) > 0) {
                     $rqTripData = $tripData;
                     $rqTripData['line_data'] = $rqData['line_data'];
-                    $ShuttleTripPartner->getOnCar($tripData, $driverTripId);
+                    $ShuttlePartnerServ->getOnCar($rqTripData, $driverTripId);
                 }
             }
             
@@ -581,7 +585,6 @@ class Trip extends ApiBase
         $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
         // 入库成功后清理这些同行者的相关缓存，及推送消息
         if (isset($partners) && count($partners) > 0) {
-            $ShuttlePartnerServ = new ShuttlePartnerService();
             $driverTripData = [
                 'id' => $driverTripId
             ];
@@ -601,11 +604,11 @@ class Trip extends ApiBase
         }
 
         $run = input('post.run') ?: input('param.run') ;
-        if (!in_array($run, ['cancel', 'change_seat'])) { // 不再支持完结
+        if (!in_array($run, ['cancel', 'change_seat', 'change_plate'])) { // 不再支持完结
             return $this->jsonReturn(992, 'Error param');
         }
         $userData = $this->getUserData(1);
-
+        $uid = $userData['uid'];
         $ShuttleTripModel = new ShuttleTrip();
         $tripData = $ShuttleTripModel->getItem($id);
         if (empty($tripData)) {
@@ -617,18 +620,28 @@ class Trip extends ApiBase
             $res = $ShuttleTripService->cancel($tripData, $userData);
         } elseif ($run === 'finish') {
             $res = $ShuttleTripService->finish($tripData, $userData);
-        } elseif ($run === 'change_seat') {
-            $seat_count = input('post.seat_count/d', 0);
-             // 验证
+        } else {
             $ShuttleTripVali = new ShuttleTripVali();
-            $rqData = [
-                'seat_count' => $seat_count,
-            ];
-            if (!$ShuttleTripVali->checkChangeSeat($rqData, $tripData, $userData['uid'])) {
+            if ($run === 'change_seat') { // 改变空座位数
+                $seat_count = input('post.seat_count/d', 0);
+                $upData = [
+                    'seat_count' => $seat_count,
+                ];
+                $checkRes = $ShuttleTripVali->checkChangeSeat($upData, $tripData, $userData['uid']);
+            } elseif ($run === 'change_plate') { // 改变空座位数
+                $plate = input('post.plate');
+                $upData = [
+                    'plate' => $plate,
+                ];
+                $checkRes = $ShuttleTripVali->checkChangePlate($upData, $tripData, $userData['uid']);
+            } else {
+                return $this->jsonReturn(992, 'Error param');
+            }
+            if (!$checkRes) {
                 $errorData = $ShuttleTripVali->getError();
                 return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error check');
             }
-            $res = $ShuttleTripModel->where('id', $id)->update(['seat_count'=>$seat_count]);
+            $res = $ShuttleTripModel->where('id', $id)->update($upData);
         }
 
         if ($res === false) {
@@ -639,7 +652,11 @@ class Trip extends ApiBase
                 return $this->jsonReturn(-1, 'Failed');
             }
         }
-        $ShuttleTripModel->delItemCache($id); // 消单项行程缓存
+        if (in_array($run, ['change_seat', 'change_plate'])) {
+            $ShuttleTripModel->delItemCache($id); // 消单项行程缓存
+            $ShuttleTripModel->delMyListCache($uid, 'my');
+            $ShuttleTripModel->delListCache($tripData['line_id']);
+        }
         return $this->jsonReturn(0, 'Successful');
     }
 
@@ -695,41 +712,54 @@ class Trip extends ApiBase
 
         $ShuttleTripModel = new ShuttleTrip();
         $tripData = $ShuttleTripModel->getItem($id);
-        if (!$tripData) {
-            return $this->jsonReturn(20002, 'No data');
-        }
-        if ($tripData['uid'] != $uid) {
-            return $this->jsonReturn(30001, lang('你不能操作把别人的行程合并到别人的行程'));
-        }
-        if (in_array($tripData['status'], [-1, 3])) {
-            return $this->jsonReturn(30001, lang('你的行程已取消或完结，无法操作'));
+
+        // 锁定对方资源
+        $lockKeyFill = $tripData['user_type'] == 1 ? 'pickup' : 'hitchhiking'; // 如果自己是司机，就锁pickup, 否则锁hitchhiking
+        if (!$ShuttleTripModel->lockItem($tid, $lockKeyFill)) {
+            return $this->jsonReturn(20009, '网络烦忙，请稍候再试');
         }
         $targetTripData = $ShuttleTripModel->getItem($tid);
-        if (!$targetTripData) {
-            return $this->jsonReturn(20002, '目标行程不存在');
+        
+        // 验证
+        $ShuttleTripVali = new ShuttleTripVali();
+        if (!$ShuttleTripVali->checkMerge($tripData, $targetTripData, $userData)) {
+            $errorData = $ShuttleTripVali->getError();
+            $ShuttleTripModel->unlockItem($tid, $lockKeyFill); // 解锁
+            return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error check');
         }
-        if (in_array($targetTripData['status'], [-1, 3])) {
-            return $this->jsonReturn(30001, lang('对方的行程已取消或完结，无法操作'));
+
+        $driverTripId = $tripData['user_type'] == 1 ? $id : $tid;
+        $passengerTripId = $tripData['user_type'] == 1 ? $tid : $id;
+        $driverTripData = $tripData['user_type'] == 1 ? $tripData : $targetTripData;
+        $passengerTripData = $tripData['user_type'] == 1 ?  $targetTripData : $tripData;
+        $driverUserData = $tripData['user_type'] == 1 ? $userData : (new User())->getItem($targetTripData['uid']);
+
+        Db::connect('database_carpool')->startTrans();
+        try {
+            // 乘客行程的trip_id设为司机行程id
+            $ShuttleTripModel->where('id', $passengerTripId)->update(['trip_id'=>$driverTripId]);
+            // 处理同行者
+            if ($passengerTripData['seat_count'] > 1) {
+                $ShuttleTripPartner = new ShuttleTripPartner();
+                $ShuttlePartnerServ = new ShuttlePartnerService();
+                $partners = $ShuttleTripPartner->getPartners($passengerTripId, 1) ?? [];
+                if (count($partners) > 0) {
+                    $ShuttlePartnerServ->getOnCar($passengerTripData, $driverTripData);
+                }
+            }
+            Db::connect('database_carpool')->commit();
+        } catch (\Exception $e) {
+                Db::connect('database_carpool')->rollback();
+                $errorMsg = $e->getMessage();
+                $ShuttleTripModel->unlockItem($tid, $lockKeyFill); // 解锁
+                return $this->jsonReturn(-1, null, lang('Failed'), ['errorMsg'=>$errorMsg]);
         }
-        if ($tripData['user_type'] == 1) { // 如果自己是司机
-            // 检查座位是否已满
-            $took_count = $ShuttleTripModel->countPassengers($id, false); //计算已坐车乘客数
-            if ($took_count >= $tripData['seat_count']) {
-                $returnData = [
-                    'seat_count' => $tripData['seat_count'],
-                    'took_count' => $took_count,
-                ];
-                return $this->jsonReturn(50003, $returnData, lang('Failed, seat is full'));
-            }
-            if ($targetTripData['user_type'] != 0 || $targetTripData['comefrom'] != 2) { // 检查对方是否一个约车需求
-                return $this->jsonReturn(992, '对方行程不约车需求行程，无法合并');
-            }
-            if ($targetTripData['trip_id'] > 0) { // 检查对方是否一个约车需求
-                return $this->jsonReturn(-1, '你慢了一步，该乘客被其他司机抢去!');
-            }
-             // TODO: 处理司机合并
-        } else { // 如果是乘客
-            // TODO: 处理乘客合并
+        $ShuttleTripModel->unlockItem($tid, $lockKeyFill); // 解锁
+        // 入库成功后清理这些同行者的相关缓存，及推送消息
+        if (isset($partners) && count($partners) > 0) {
+            $runType = $tripData['user_type'] == 1 ? 'pickup' : 'hitchhiking';
+            $ShuttlePartnerServ->doAfterGetOnCar($partners, $driverTripData, $driverUserData, $runType);
         }
+        return $this->jsonReturn(0, 'Successful');
     }
 }
