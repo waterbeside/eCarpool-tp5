@@ -173,8 +173,6 @@ class ApiBase extends Base
         Lang::load($path . $lang . '.php');
     }
 
-
-
     /**
      * 取得登录用户的信息
      */
