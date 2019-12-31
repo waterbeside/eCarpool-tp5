@@ -113,7 +113,7 @@ class Partner extends Service
         $ShuttleTripPartner = new ShuttleTripPartner();
         // 创建入库数据
         $lineId = $rqTripData['line_id'];
-        $lineData = $rqTripData['line_id'] ?: ($ShuttleTripServ->getExtraInfoLineData($lineId) ?? []);
+        $lineData = $rqTripData['line_data'] ?: ($ShuttleTripServ->getExtraInfoLineData($lineId) ?? []);
         $tripId = is_numeric($driverTripData) ? $driverTripData : $driverTripData['id'];
         $lineType = intval($lineData['type']);
         $defaultData = [
@@ -143,7 +143,7 @@ class Partner extends Service
      * @param array $driverUserData 司机用户信息
      * @return void
      */
-    public function doAfterGetOnCar($partners, $driverTripData, $driverUserData = null)
+    public function doAfterGetOnCar($partners, $driverTripData, $driverUserData = null, $runType = 'pickup')
     {
         $TripsPushMsg = new TripsPushMsg();
         $ShuttleTripModel = new ShuttleTrip();
