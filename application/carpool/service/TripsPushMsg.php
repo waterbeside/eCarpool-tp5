@@ -48,6 +48,8 @@ class TripsPushMsg extends Service
         } elseif ($runType == "pickup") {
             // $push_msg = lang('{:name} accepted your ride requst', ["name"=>$userData['name']]);
             $push_msg = $userData['name'] . '接受了你的约车需求';
+        } elseif ($runType == "pickup_partner") {
+            $push_msg = "你搭上了{$userData['name']}的车";
         } else {
             return true;
         }
