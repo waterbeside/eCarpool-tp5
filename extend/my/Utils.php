@@ -49,6 +49,9 @@ class Utils
      */
     public function filterDataFields($data, $filterFields = [], $notSet = false, $keyFill = '', $keyDo = 0)
     {
+        if (empty($data)) {
+            return $data;
+        }
         $filterFields = is_string($filterFields) ? array_map('trim', explode(',', $filterFields)) : $filterFields ;
         if (!empty($filterFields) && is_array($filterFields)) {
             $newData = [];
