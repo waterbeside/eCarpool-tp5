@@ -224,7 +224,7 @@ class Trip extends Base
             $ShuttleTripPartner = new ShuttleTripPartner();
             $partners = $ShuttleTripPartner->getPartners($passengerTripData['id'], 1) ?? [];
             // 如果有同行者，检查司机是否在同行者中
-            if (!$this->checkDriverInPartners($partners, $driverTripData['id'], $userData['id'])) {
+            if (!$this->checkDriverInPartners($partners, $driverTripData['id'], $userData['uid'])) {
                 return false;
             }
         }
