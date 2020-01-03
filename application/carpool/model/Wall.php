@@ -2,9 +2,10 @@
 
 namespace app\carpool\model;
 
-use think\Model;
+use app\common\model\BaseModel;
+use app\carpool\service\Trips as TripsServ;
 
-class Wall extends Model
+class Wall extends BaseModel
 {
 
     // 设置当前模型对应的完整数据表名称
@@ -54,5 +55,57 @@ class Wall extends Model
         } else {
             return false;
         }
+    }
+
+    /**
+     * 取得接口的空座位列表缓存Key
+     *
+     * @param string $company_id 公司id
+     * @return string
+     */
+    public function getListCacheKey($company_id)
+    {
+        $TripsServ = new TripsServ();
+        $company_ids = $TripsServ->getCompanyIds($company_id);
+        $company_ids = is_array($company_ids) ? implode(',', $company_ids) : $company_ids;
+        return "carpool:nm_trip:wall_list:companyId_{$company_ids}";
+    }
+
+    /**
+     * 清除空座位列表接口缓存
+     *
+     * @param string $company_id 公司id
+     */
+    public function delListCache($company_id)
+    {
+        $redis = $this->redis();
+        $cacheKey = $this->getListCacheKey($company_id);
+        return $redis->del($cacheKey);
+    }
+
+    /**
+     * 取得接口的地图版空座位列表缓存Key
+     *
+     * @param string $company_id 公司id
+     * @return string
+     */
+    public function getMapCarsCacheKey($company_id)
+    {
+        $TripsServ = new TripsServ();
+        $company_ids = $TripsServ->getCompanyIds($company_id);
+        $company_ids = is_array($company_ids) ? implode(',', $company_ids) : $company_ids;
+        return "carpool:nm_trip:mapCars_list:companyId_{$company_ids}";
+    }
+
+    /**
+     * 清除接口的地图版空座位列表缓存
+     *
+     * @param string $company_id 公司id
+     */
+    public function delMapCarsCache($company_id)
+    {
+        $redis = $this->redis();
+        $cacheKey = $this->getMapCarsCacheKey($company_id);
+        return $redis->del($cacheKey);
     }
 }

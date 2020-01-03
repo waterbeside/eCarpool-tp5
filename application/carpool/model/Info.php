@@ -2,9 +2,9 @@
 
 namespace app\carpool\model;
 
-use think\Model;
+use app\common\model\BaseModel;
 
-class Info extends Model
+class Info extends BaseModel
 {
 
     // 设置当前模型对应的完整数据表名称
@@ -31,7 +31,20 @@ class Info extends Model
      */
     public function getPassengersCacheKey($wall_id)
     {
-        return "carpool:trips:passengers:wall_{$wall_id}";
+        return "carpool:nm_trip:passengers:wall_{$wall_id}";
+    }
+
+    /**
+     * 删除乘客列表缓存;
+     *
+     * @param integer $wall_id 行程id
+     * @return string
+     */
+    public function delPassengersCache($wall_id)
+    {
+        $cacheKey = $this->getPassengersCacheKey($wall_id);
+        $redis = $this->redis();
+        return $redis->del($cacheKey);
     }
 
     /**
