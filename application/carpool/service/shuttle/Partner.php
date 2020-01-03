@@ -115,7 +115,8 @@ class Partner extends Service
         $ShuttleTripPartner = new ShuttleTripPartner();
         // 创建入库数据
         $lineId = $rqTripData['line_id'];
-        $lineData = $rqTripData['line_data'] ?: ($ShuttleTripServ->getExtraInfoLineData($lineId) ?? []);
+        $lineData = $rqTripData['line_data'] ?? null;
+        $lineData = $lineData ?: ($ShuttleTripServ->getExtraInfoLineData($lineId) ?? []);
         $tripId = is_numeric($driverTripData) ? $driverTripData : $driverTripData['id'];
         $lineType = intval($lineData['type']);
         $defaultData = [
