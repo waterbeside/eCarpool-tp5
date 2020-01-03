@@ -260,7 +260,16 @@ class ShuttleTrip extends BaseModel
     {
         $cacheKey = $this->getPassengersCacheKey($id);
         $redis = $this->redis();
-        $redis->del($cacheKey);
+        return $redis->del($cacheKey);
+    }
+
+    /**
+     * 删除乘客数缓存
+     */
+    public function delTookCountCache($id)
+    {
+        $cacheKey = $this->getTookCountCacheKey($id);
+        return $this->redis()->del($cacheKey);
     }
 
     /**
@@ -273,8 +282,7 @@ class ShuttleTrip extends BaseModel
     public function delMyListCache($uid, $type = 'my')
     {
         $cacheKey = $this->getMyListCacheKey($uid, $type);
-        $redis = $this->redis();
-        $redis->del($cacheKey);
+        return $this->redis()->del($cacheKey);
     }
 
     /**
