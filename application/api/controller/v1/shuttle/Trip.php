@@ -508,7 +508,7 @@ class Trip extends ApiBase
     public function pickup($id)
     {
         $userData = $this->getUserData(1);
-
+        $uid = $userData['uid'];
         $ShuttleTripService = new ShuttleTripService();
         $ShuttleTripModel = new ShuttleTrip();
         $rqData = $ShuttleTripService->getRqData();
@@ -527,7 +527,7 @@ class Trip extends ApiBase
             $ShuttleTripModel->unlockItem($id, 'pickup'); // 解锁
             return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error check');
         }
-        
+
         $rqData['seat_count'] = $tripData['seat_count'] > $rqData['seat_count'] ? $tripData['seat_count'] : $rqData['seat_count'];
         $rqData['time'] = strtotime($tripData['time']);
         $rqData['line_id'] = $tripData['line_id'];
@@ -549,16 +549,13 @@ class Trip extends ApiBase
 
             // 查询有没有同行者, 有的话把同行者也带上
             if ($tripData['seat_count'] > 1) {
-                $ShuttlePartnerServ = new ShuttlePartnerService();
                 $ShuttleTripPartner = new ShuttleTripPartner();
-                $partners = $ShuttleTripPartner->getPartners($id, 1) ?? [];
-                if (count($partners) > 0) {
-                    $rqTripData = $tripData;
-                    $rqTripData['line_data'] = $rqData['line_data'];
-                    $ShuttlePartnerServ->getOnCar($rqTripData, $driverTripId);
-                }
+                $partners = $ShuttleTripPartner->getPartners($tripData['id'], 1) ?? [];
+                $ShuttlePartnerServ = new ShuttlePartnerService();
+                $rqTripData = $tripData;
+                $rqTripData['line_data'] = $rqData['line_data'];
+                $ShuttlePartnerServ->getOnCar($rqTripData, $driverTripId);
             }
-            
             // 提交事务
             Db::connect('database_carpool')->commit();
         } catch (\Exception $e) {
@@ -719,26 +716,30 @@ class Trip extends ApiBase
 
         $ShuttleTripModel = new ShuttleTrip();
         $tripData = $ShuttleTripModel->getItem($id);
-
-        // 锁定对方资源
-        $lockKeyFill = $tripData['user_type'] == 1 ? 'pickup' : 'hitchhiking'; // 如果自己是司机，就锁pickup, 否则锁hitchhiking
-        if (!$ShuttleTripModel->lockItem($tid, $lockKeyFill)) {
-            return $this->jsonReturn(20009, '网络烦忙，请稍候再试');
-        }
         $targetTripData = $ShuttleTripModel->getItem($tid);
-        
-        // 验证
-        $ShuttleTripVali = new ShuttleTripVali();
-        if (!$ShuttleTripVali->checkMerge($tripData, $targetTripData, $userData)) {
-            $errorData = $ShuttleTripVali->getError();
-            $ShuttleTripModel->unlockItem($tid, $lockKeyFill); // 解锁
-            return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error check');
-        }
 
         $driverTripId = $tripData['user_type'] == 1 ? $id : $tid;
         $passengerTripId = $tripData['user_type'] == 1 ? $tid : $id;
         $driverTripData = $tripData['user_type'] == 1 ? $tripData : $targetTripData;
         $passengerTripData = $tripData['user_type'] == 1 ?  $targetTripData : $tripData;
+
+        // 锁定对方资源
+        $lockKeyFill_d = 'hitchhiking'; //锁自已 如果自己是司机，就锁hitchhiking, 否则锁pickup
+        $lockKeyFill_p = 'pickup'; //锁对方 如果自己是司机，就锁pickup, 否则锁hitchhiking
+        if (!$ShuttleTripModel->lockItem($driverTripId, $lockKeyFill_d) || !$ShuttleTripModel->lockItem($passengerTripId, $lockKeyFill_p)) {
+            return $this->jsonReturn(20009, '网络烦忙，请稍候再试');
+        }
+        
+        // 验证
+        $ShuttleTripVali = new ShuttleTripVali();
+        if (!$ShuttleTripVali->checkMerge($tripData, $targetTripData, $userData)) {
+            $errorData = $ShuttleTripVali->getError();
+            $ShuttleTripModel->unlockItem($driverTripId, $lockKeyFill_d); // 解锁司机行程
+            $ShuttleTripModel->unlockItem($passengerTripId, $lockKeyFill_p); // 解锁乘客行程
+            return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error check');
+        }
+
+        
         $driverUserData = $tripData['user_type'] == 1 ? $userData : (new User())->getItem($targetTripData['uid']);
 
         Db::connect('database_carpool')->startTrans();
@@ -748,20 +749,20 @@ class Trip extends ApiBase
             // 处理同行者
             if ($passengerTripData['seat_count'] > 1) {
                 $ShuttleTripPartner = new ShuttleTripPartner();
+                $partners = $ShuttleTripPartner->getPartners($tripData['id'], 1) ?? [];
                 $ShuttlePartnerServ = new ShuttlePartnerService();
-                $partners = $ShuttleTripPartner->getPartners($passengerTripId, 1) ?? [];
-                if (count($partners) > 0) {
-                    $ShuttlePartnerServ->getOnCar($passengerTripData, $driverTripData);
-                }
+                $ShuttlePartnerServ->getOnCar($passengerTripData, $driverTripData);
             }
             Db::connect('database_carpool')->commit();
         } catch (\Exception $e) {
-                Db::connect('database_carpool')->rollback();
-                $errorMsg = $e->getMessage();
-                $ShuttleTripModel->unlockItem($tid, $lockKeyFill); // 解锁
-                return $this->jsonReturn(-1, null, lang('Failed'), ['errorMsg'=>$errorMsg]);
+            Db::connect('database_carpool')->rollback();
+            $errorMsg = $e->getMessage();
+            $ShuttleTripModel->unlockItem($driverTripId, $lockKeyFill_d); // 解锁司机行程
+            $ShuttleTripModel->unlockItem($passengerTripId, $lockKeyFill_p); // 解锁乘客行程
+            return $this->jsonReturn(-1, null, lang('Failed'), ['errorMsg'=>$errorMsg]);
         }
-        $ShuttleTripModel->unlockItem($tid, $lockKeyFill); // 解锁
+        $ShuttleTripModel->unlockItem($driverTripId, $lockKeyFill_d); // 解锁司机行程
+        $ShuttleTripModel->unlockItem($passengerTripId, $lockKeyFill_p); // 解锁乘客行程
         // 合并后清理自己和对方的缓存及推消息给对方
         $ShuttleTripServ = new ShuttleTripService();
         $ShuttleTripServ->doAfterMerge($driverTripData, $passengerTripData, $userData);
