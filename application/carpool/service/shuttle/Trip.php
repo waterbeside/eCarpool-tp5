@@ -647,4 +647,40 @@ class Trip extends Service
             }
         }
     }
+
+    /**
+     * 执行完完结或取消行程后，进行推送或清除缓存
+     *
+     * @param array $dvTripData 司机行程的data;
+     * @param array $psTripData 乘客行程的data;
+     * @param array $userData 操作用户的data;
+     * @return void
+     */
+    public function doAfterMerge($dvTripData, $psTripData, $userData)
+    {
+        $ShuttleTripModel = new ShuttleTripModel();
+        // 清除“我的行程”列表缓存
+        $ShuttleTripModel->delMyListCache($dvTripData['uid'], 'my');
+        $ShuttleTripModel->delMyListCache($psTripData['uid'], 'my');
+        // 清除行情明细缓存
+        $ShuttleTripModel->delItemCache($dvTripData['id']);
+        $ShuttleTripModel->delItemCache($psTripData['id']);
+        // 清除乘客数缓存
+        $ShuttleTripModel->delPassengersCache($dvTripData['id']);
+        $ShuttleTripModel->delTookCountCache($dvTripData['id']);
+        // 推送
+        $iAmDriver = $userData['uid'] == $dvTripData['uid'] ? 1 : 0;
+        $runType = $iAmDriver ? 'pickup' : 'hitchhiking';
+        $targetUserid = $iAmDriver ? $psTripData['uid'] : $dvTripData['uid'];
+        $pushMsgData = [
+            'from' => 'shuttle_trip',
+            'runType' => $runType,
+            'userData'=> $userData,
+            'tripData'=> $iAmDriver ? $dvTripData : $psTripData,
+            'id' =>  $iAmDriver ? $dvTripData['id'] : $psTripData['id'],
+            'isDriver' => $iAmDriver,
+        ];
+        $TripsPushMsg = new TripsPushMsg();
+        $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+    }
 }

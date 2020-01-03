@@ -762,6 +762,9 @@ class Trip extends ApiBase
                 return $this->jsonReturn(-1, null, lang('Failed'), ['errorMsg'=>$errorMsg]);
         }
         $ShuttleTripModel->unlockItem($tid, $lockKeyFill); // 解锁
+        // 合并后清理自己和对方的缓存及推消息给对方
+        $ShuttleTripServ = new ShuttleTripService();
+        $ShuttleTripServ->doAfterMerge($driverTripData, $passengerTripData, $userData);
         // 入库成功后清理这些同行者的相关缓存，及推送消息
         if (isset($partners) && count($partners) > 0) {
             $runType = $tripData['user_type'] == 1 ? 'pickup' : 'hitchhiking';
