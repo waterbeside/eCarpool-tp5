@@ -347,7 +347,7 @@ class Trip extends ApiBase
             } else {
                 $ShuttleTripPartner = new ShuttleTripPartner();
                 $data['partners'] = $ShuttleTripPartner->getPartners($id, 1) ?? [];
-                $data['driver'] = $ShuttleTripServ->getUserTripDetail($trip_id, [], [], 0);
+                $data['driver'] = $ShuttleTripServ->getUserTripDetail($trip_id, [], [], 0) ?: null;
             }
         }
         
@@ -691,8 +691,15 @@ class Trip extends ApiBase
         if (!$list) {
             return $this->jsonReturn(20002, 'No data');
         }
+
+        foreach ($list as $key => $value) {
+            if ($matchingUserType == 1) {
+                $list[$key]['took_count'] = $ShuttleTripModel->countPassengers($value['id']);
+            }
+        }
         $returnData = [
-            'lists' => $list
+            'lists' => $list,
+            'lineData' => $ShuttleTripService->getExtraInfoLineData($line_id) ?: null,
         ];
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
