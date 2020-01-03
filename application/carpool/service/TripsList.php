@@ -272,8 +272,7 @@ class TripsList
                     $value['took_count'] = $wall_id > 0 ? $InfoModel->countPassengers($wall_id) : ($value['p_uid'] > 0 ? 1 : 0);
                 } else { // 如果是乘客
                     $userData = $UserModel->findByUid($value['d_uid']);
-                    $userData = Utils::getInstance()->filterDataFields($userData, $userFields, false, 'u_', -1);
-                    $value['driver'] = $userData;
+                    $value['driver'] = $userData ? Utils::getInstance()->filterDataFields($userData, $userFields, false, 'u_', -1) : null;
                 }
             }
             if ($from == "shuttle_trip") { // 来自上下班行程
@@ -283,8 +282,7 @@ class TripsList
                     $value['took_count'] =  $ShuttleTripModel->countPassengers($value['id']);
                 } else { // 如果是乘客
                     $userData = $UserModel->findByUid($value['d_uid']);
-                    $userData = Utils::getInstance()->filterDataFields($userData, $userFields, false, 'u_', -1);
-                    $value['driver'] = $userData;
+                    $value['driver'] = $userData ? Utils::getInstance()->filterDataFields($userData, $userFields, false, 'u_', -1) : null;
                 }
             }
             $list[$key] = $value;
