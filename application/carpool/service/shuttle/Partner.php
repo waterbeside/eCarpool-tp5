@@ -133,7 +133,9 @@ class Partner extends Service
         $partners = $ShuttleTripPartner->getPartners($rqTripData['id'], ($lineType > 0 ? 1 : 0));
         $batchData = [];
         foreach ($partners as $key => $value) {
-            $batchData[] = array_merge($defaultData, ['uid'=>$value['uid']]);
+            if ($value['uid'] != $driverTripData['uid']) {
+                $batchData[] = array_merge($defaultData, ['uid'=>$value['uid']]);
+            }
         }
         return ShuttleTrip::insertAll($batchData);
     }
@@ -144,7 +146,7 @@ class Partner extends Service
      * @param array $partners 同行者列表
      * @param array $driverTripData 司机行程数据
      * @param array $driverUserData 司机用户信息
-     * @return void
+     * @return boolean
      */
     public function doAfterGetOnCar($partners, $driverTripData, $driverUserData = null, $runType = 'pickup')
     {
@@ -160,6 +162,9 @@ class Partner extends Service
         ];
         foreach ($partners as $key => $value) {
             $ShuttleTripModel->delMyListCache($value['uid'], 'my');
+            if ($value['uid'] == $driverTripData['uid']) {
+                continue;
+            }
             $TripsPushMsg->pushMsg($value['uid'], $pushMsgData);
             if ($runType = 'hitchhiking') { // 把消息也推给司机
                 $pushMsgData = [

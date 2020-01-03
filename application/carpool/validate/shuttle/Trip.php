@@ -3,6 +3,8 @@ namespace app\carpool\validate\shuttle;
 
 use app\common\validate\Base;
 use app\carpool\model\ShuttleTrip;
+use app\carpool\model\ShuttleTripPartner;
+use my\Utils;
 
 class Trip extends Base
 {
@@ -37,6 +39,14 @@ class Trip extends Base
         }
         if ($tripData['trip_id'] > 0) { // 检查对方是否已被其它司机搭了
             return $this->setError(50010, '你慢了一步，该乘客被其他司机抢去!');
+        }
+        if ($tripData['seat_count'] > 1) {
+            $ShuttleTripPartner = new ShuttleTripPartner();
+            $partners = $ShuttleTripPartner->getPartners($tripData['id'], 1) ?? [];
+            // 如果有同行者，检查司机是否在同行者中
+            if (!$this->checkDriverInPartners($partners, $userData['uid'], $userData['uid'])) {
+                return false;
+            }
         }
         return $tripData;
     }
@@ -210,6 +220,15 @@ class Trip extends Base
             return $this->setError(50003, $returnData, lang('空座位数不够'));
         }
 
+        if ($passengerTripData['seat_count'] > 1) {
+            $ShuttleTripPartner = new ShuttleTripPartner();
+            $partners = $ShuttleTripPartner->getPartners($passengerTripData['id'], 1) ?? [];
+            // 如果有同行者，检查司机是否在同行者中
+            if (!$this->checkDriverInPartners($partners, $driverTripData['id'], $userData['id'])) {
+                return false;
+            }
+        }
+
         if ($tripData['user_type'] == 1) { // 如果自己是司机
             if ($targetTripData['user_type'] != 0 || $targetTripData['comefrom'] != 2) { // 检查对方是否一个约车需求
                 return $this->setError(992, '对方行程不约车需求行程，无法合并');
@@ -223,5 +242,27 @@ class Trip extends Base
             }
         }
         return true;
+    }
+
+
+    /**
+     * 检查司机是否该约车需求的同行者
+     *
+     * @param mixed $partners 同行者列表
+     * @param integer $driver_uid 司机uid
+     * @param integer $uid 操作者uid
+     * @return void
+     */
+    public function checkDriverInPartners($partners, $driver_uid, $uid)
+    {
+        $partnerIds = [];
+        foreach ($partners as $key => $value) {
+            $partnerIds[] = $value['uid'];
+        }
+        if (in_array($driver_uid, $partnerIds)) {
+            $msg = $uid == $driver_uid ? "对方把你作为同行乘客，你无法添加自己作为乘客" : "该司机是你发布需求时添加的一名乘客，司机无法自己搭自已";
+            return $this->setError(-1, $msg);
+        }
+        return $partnerIds;
     }
 }
