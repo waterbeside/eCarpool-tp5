@@ -208,7 +208,7 @@ class Trip extends Service
         $matchingList = [];
         $matchUserType = $rqData['user_type'];
         foreach ($repetitionList as $key => $value) {
-            $userType = $value['user_type'] ?: false;
+            $userType = $value['user_type'] ?? false;
             $line_id = $value['line_id'];
             $tripMatching = $value['from'] === 'shuttle_trip' && $userType === $matchUserType && $line_id == $rqData['line_id'] ? true : false;
             $userTypeMatching = $value['user_type'] > 0 || ($value['trip_id'] == 0 && $value['comefrom'] == 2 ) ? true : false;
@@ -266,7 +266,6 @@ class Trip extends Service
             return $this->error(992, 'Error param');
         }
         $ShuttleTripModel = new ShuttleTripModel();
-
         $User = new UserModel();
 
         $itemData = $ShuttleTripModel->getItem($id);
@@ -281,12 +280,12 @@ class Trip extends Service
             $trip_info = null;
         }
         $itemData = $this->formatTimeFields($itemData, 'item', ['time','create_time']);
-        $tripFields = $tripFields ?: ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom', 'trip_id', 'seat_count'];
+        $tripFields = $tripFields ?: ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom', 'trip_id', 'seat_count', 'line_id'];
 
         $itemData = Utils::getInstance()->filterDataFields($itemData, $tripFields);
         $userFields = $userFields ?: $this->defaultUserFields;
         $userData = $User->findByUid($uid);
-        $userData = Utils::getInstance()->filterDataFields($userData, $userFields, false, 'u_', -1);
+        $userData = $userData ? Utils::getInstance()->filterDataFields($userData, $userFields, false, 'u_', -1) : null;
         
         if ($show_line) {
             $lineData = null;
@@ -295,8 +294,8 @@ class Trip extends Service
             $lineData = Utils::getInstance()->filterDataFields($lineData, $lineFields);
             $itemData = array_merge($itemData, $lineData);
         }
-        $data = array_merge($itemData ?? [], $userData ?? []);
-        return $data;
+        $data = array_merge($itemData ?? [], $userData ?: []);
+        return $data ?: null;
     }
 
 
@@ -594,11 +593,11 @@ class Trip extends Service
         ];
         $iAmDriver = $extData['i_am_driver'] ?? 0;
         $ShuttleTripModel->delMyListCache($uid); //清除自己的“我的行程”列表缓存
+        $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
 
         if ($userType == 1) { // 如果从司机行程进行操作
             if ($tripData['uid'] == $uid) { //如果是司机自已操作
                 // 清缓存
-                $ShuttleTripModel->delItemCache($id); // 清单项行程缓存
                 $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
                 // 推消息
                 $targetUserid = [];
@@ -624,7 +623,6 @@ class Trip extends Service
         } else { // 从乘客行程操作
             if ($tripData['uid'] == $uid) { //如果是乘客自已操作
                 // 清缓存
-                $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
                 if ($tripData['trip_id'] > 0) { //如果有司机，查出司机以便推送
                     $ShuttleTripModel->delPassengersCache($tripData['trip_id']); // 清司机行程的乘客列表缓存
                     $driverTripData = $extData['driverTripData'] ?: $ShuttleTripModel->getItem($tripData['trip_id']);
@@ -639,7 +637,6 @@ class Trip extends Service
                 }
             } elseif ($runType === 'cancel' && $iAmDriver) { // 如果是司机操作乘客
                 // 清缓存
-                $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
                 $ShuttleTripModel->delPassengersCache($tripData['trip_id']); // 清除司机的乘客列表缓存
                 $ShuttleTripModel->delMyListCache($tripData['uid']); //清除乘客的“我的行程”列表缓存
                 // 推送
