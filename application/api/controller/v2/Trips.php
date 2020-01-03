@@ -30,7 +30,6 @@ class Trips extends ApiBase
 
     protected $cacheKey_myTrip = "carpool:trips:my:";
     protected $cacheKey_myInfo = "carpool:trips:my_info:";
-    protected $cacheKey_passengers = "carpool:trips:passengers:";
 
     /**
      * 我的行程
@@ -128,6 +127,7 @@ class Trips extends ApiBase
     {
         $TripsService = new TripsService();
         $TripsListService = new TripsListService();
+        $WallModel = new WallModel();
         $userData = $this->getUserData(1);
         $company_id = $userData['company_id'];
         $time_e = strtotime("+20 day");
@@ -157,24 +157,17 @@ class Trips extends ApiBase
         }
 
         $redis = new RedisData();
-        $cacheKeyData = [
-            'from' => 'wall',
-            'page' => $page,
-            'pagesize' => $pagesize,
-            'company_id' => $company_id,
-            'map_type' => $map_type,
-            'city' => $city ? $city : 'all',
-        ];
-        $cacheKey = $TripsService->buildListCacheKey($cacheKeyData);
+        $cacheKey = $WallModel->getListCacheKey($company_id);
+        $rowCacheKey = "pz{$pagesize}_p{$page}_mapType_{$map_type}_city_{$city}";
         $returnData = false;
         if ($cacheKey && !$keyword) {
-            $returnData = $redis->cache($cacheKey);
+            $returnData = $redis->hCache($cacheKey, $rowCacheKey);
         }
         if (!$returnData) {
             $returnData = $TripsListService->wall_list($map, $pagesize);
             if ($cacheKey && !$keyword && $returnData) {
                 $ex = $page > 1 ? 3 : 60 * 2;
-                $redis->cache($cacheKey, $returnData, $ex);
+                $redis->hCache($cacheKey, $rowCacheKey, $returnData, $ex);
             }
         }
         if ($returnData === false) {
@@ -293,18 +286,16 @@ class Trips extends ApiBase
     {
         $TripsService = new TripsService();
         $TripsListService = new TripsListService();
+        $WallModel = new WallModel();
         $userData = $this->getUserData(1);
         $company_id = $userData['company_id'];
         $time_e = strtotime("+20 day");
         $time_s = strtotime("-1 hour");
 
         $redis = new RedisData();
-        $company_ids = $TripsService->getCompanyIds($company_id);
-        if (is_array($company_ids)) {
-            $company_ids = implode(',', $company_ids);
-        }
-        $cacheKey = "carpool:trips:mapCars:mapType_{$map_type}:company_{$company_ids}";
-        $returnData = $redis->cache($cacheKey);
+        $cacheKey = $WallModel->getMapCarsCacheKey($company_id);
+        $rowCacheKey = "mapType_{$map_type}";
+        $returnData = $redis->hCache($cacheKey, $rowCacheKey);
         if (!$returnData) {
             $map = [
                 ['t.status', '<', 2],
@@ -317,7 +308,7 @@ class Trips extends ApiBase
             }
             $returnData = $TripsListService->wall_list($map, 0);
             if ($returnData) {
-                $redis->cache($cacheKey, $returnData, 60 * 5);
+                $redis->hCache($cacheKey, $returnData, $returnData, 60 * 5);
             }
         }
         if ($returnData === false) {

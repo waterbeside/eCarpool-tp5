@@ -15,7 +15,6 @@ use think\Db;
 use my\Utils;
 use my\RedisData;
 
-
 class Trips extends Service
 {
 
@@ -480,7 +479,7 @@ class Trips extends Service
      * @param integer|array $uid 用户uid
      * @return void
      */
-    public function removeCache($uid, $userData = null, $dataStart = null)
+    public function removeCache($uid)
     {
         if (is_array($uid)) {
             $uid = array_unique($uid);
@@ -488,11 +487,13 @@ class Trips extends Service
                 $this->removeCache($v);
             }
         } elseif (is_numeric($uid)) {
+            $WallModel = new WallModel();
             $redis = new RedisData();
             // $userData = $this->getUserData(1);
             $userModel = new UserModel();
-            $userData = $userModel->findByUid($uid);
+            $userData = $userModel->getItem($uid);
             $company_id = $userData['company_id'];
+
             $company_ids = $this->getCompanyIds($company_id);
             $company_ids = is_array($company_ids) ? implode(',', $company_ids) : $company_ids;
 
@@ -504,37 +505,8 @@ class Trips extends Service
             $redis->del($cacheKey_01, $cacheKey_02, $cacheKey_03, $cacheKey_04);
 
             /** 删除空座位列表缓存 */
-            $cacheKeyData_n = [
-                'from' => 'wall',
-                'page' => 1,
-                'pagesize' => 20,
-                'company_id' => $company_id,
-                'map_type' => -1,
-                'city' => $dataStart['city'] ?? 'all',
-            ];
-            
-            $cacheKeyData_0 = $cacheKeyData_n;
-            $cacheKeyData_0['map_type'] = 0;
-            $cacheKeyData_1 = $cacheKeyData_n;
-            $cacheKeyData_1['map_type'] = 1;
-            $cacheKeyData_n_1 = $cacheKeyData_n;
-            $cacheKeyData_n_1['city'] = 'all';
-            $cacheKeyData_0_1 = $cacheKeyData_0;
-            $cacheKeyData_0_1['city'] = 'all';
-            $cacheKeyData_1_1 = $cacheKeyData_1;
-            $cacheKeyData_1_1['city'] = 'all';
-            $listCacheKey_n = $this->buildListCacheKey($cacheKeyData_n);
-            $listCacheKey_0 = $this->buildListCacheKey($cacheKeyData_0);
-            $listCacheKey_1 = $this->buildListCacheKey($cacheKeyData_1);
-            $listCacheKey_n_1 = $this->buildListCacheKey($cacheKeyData_n_1);
-            $listCacheKey_0_1 = $this->buildListCacheKey($cacheKeyData_0_1);
-            $listCacheKey_1_1 = $this->buildListCacheKey($cacheKeyData_1_1);
-            $redis->del($listCacheKey_n, $listCacheKey_0, $listCacheKey_1, $listCacheKey_0_1, $listCacheKey_1_1, $listCacheKey_n_1);
-
-            $cacheKey_mapcars_n = "carpool:trips:mapCars:mapType_-1:company_{$company_ids}";
-            $cacheKey_mapcars_0 = "carpool:trips:mapCars:mapType_0:company_{$company_ids}";
-            $cacheKey_mapcars_1 = "carpool:trips:mapCars:mapType_1:company_{$company_ids}";
-            $redis->del($cacheKey_mapcars_n, $cacheKey_mapcars_0, $cacheKey_mapcars_1);
+            $WallModel->delListCache($company_id);
+            $WallModel->delMapCarsCache($company_id);
         }
     }
 

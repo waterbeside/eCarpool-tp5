@@ -412,7 +412,7 @@ class Trips extends ApiBase
 
         // var_dump($model->attributes['infoid']);
         if ($result) {
-            $TripsService->removeCache($uid, $datas['start']);
+            $TripsService->removeCache($uid);
             $this->jsonReturn(0, ['createAddress' => $createAddress, 'id' => $result], 'success');
         } else {
             $this->jsonReturn(-1, lang('Fail'));
@@ -434,6 +434,7 @@ class Trips extends ApiBase
         $TripsService = new TripsService();
         $TripsChangeService = new TripsChangeService();
         $WallModel    = new WallModel();
+        $TripsDetailServ = new TripsDetailService();
 
         //检查参数
         $checkData = [
@@ -535,6 +536,7 @@ class Trips extends ApiBase
             if ($wall_id > 0) {
                 $this->removeWallCache($wall_id);
             }
+            $TripsDetailServ->delDetailCache($from, $id);
             return $this->jsonReturn(0, [], "success", $extra);
         }
 
@@ -556,6 +558,7 @@ class Trips extends ApiBase
             if ($wall_id > 0) {
                 $this->removeWallCache($wall_id);
             }
+            $TripsDetailServ->delDetailCache($from, $id);
             return $this->jsonReturn(0, ['infoid' => $res], 'success', $extra);
         }
 
@@ -586,6 +589,7 @@ class Trips extends ApiBase
                 $TripsChangeService->pushMsg($checkData);
                 $extra = $TripsChangeService->errorMsg ? ['pushMsg' => $TripsChangeService->errorMsg] : [];
                 $TripsService->removeCache($actor);
+                $TripsDetailServ->delDetailCache($from, $id);
                 return $this->jsonReturn(0, [], 'success', $extra);
             }
         }
@@ -617,6 +621,7 @@ class Trips extends ApiBase
             $res = $datas->save($inputData);
             if ($res) {
                 $TripsService->removeCache($actor);
+                $TripsDetailServ->delDetailCache($from, $id);
                 return $this->jsonReturn(0, [], 'success');
             }
         }
@@ -866,9 +871,8 @@ class Trips extends ApiBase
                 $this->removeWallCache($v);
             }
         } elseif (is_numeric($wid)) {
-            $redis = new RedisData();
-            $cacheKey = $this->cacheKey_passengers."wall_$wid";
-            $redis->del($cacheKey);
+            $InfoModel = new InfoModel();
+            $InfoModel->delPassengersCache($wid);
         }
     }
 }

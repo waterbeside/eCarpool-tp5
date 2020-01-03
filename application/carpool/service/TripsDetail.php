@@ -10,7 +10,46 @@ use my\RedisData;
 class TripsDetail
 {
     /**
+     * 取得详情缓存
+     *
+     * @param string $from wall or info
+     * @param integer $id id
+     */
+    public function getDetailCacheKey($from, $id)
+    {
+        if ($from == 'wall') {
+            $cacheKey = "carpool:nm_trip:wall_detail:{$id}";
+        } else {
+            $cacheKey = "carpool:nm_trip:info_detail:{$id}";
+        }
+        return $cacheKey;
+    }
+
+    /**
+     * 消除详情缓存
+     *
+     * @param string $from wall or info
+     * @param integer $id id
+     */
+    public function delDetailCache($from, $id)
+    {
+        $redis = RedisData::getInstance();
+        $cacheKey = $this->getDetailCacheKey($from, $id);
+        $redis->del($cacheKey);
+        if ($from == 'wall') {
+            $Model = new WallModel();
+        } else {
+            $Model = new InfoModel();
+        }
+        $Model->delItemCache($id);
+        return true;
+    }
+
+    /**
      * 取得行情明细
+     *
+     * @param string $from wall or info
+     * @param integer $id id
      */
     public function detail($from, $id, $pb)
     {
@@ -20,14 +59,9 @@ class TripsDetail
 
         // 查缓存
         $redis = new RedisData();
-        if ($from == 'wall') {
-            $cacheKey = "carpool:trips:wall_detail:{$id}";
-        } else {
-            $cacheKey = "carpool:trips:info_detail:{$id}";
-        }
-
+        $cacheKey = $this->getDetailCacheKey($from, $id);
         $cacheExp = 30;
-        $cacheData = $redis->get($cacheKey);
+        $cacheData = $redis->cache($cacheKey);
         if ($cacheData) {
             if ($cacheData == "-1") {
                 return false;
@@ -47,20 +81,18 @@ class TripsDetail
                 $data = InfoModel::alias('t')->field($fields)->join($join)->where("t.infoid", $id)->find();
             }
             if (!$data) {
-                $redis->setex($cacheKey, $cacheExp, -1);
+                $redis->cache($cacheKey, -1, $cacheExp);
                 return false;
             }
-
+            $data = $data->toArray();
             if ($from == 'wall') {
                 $countBaseMap = ['love_wall_ID', '=', $data['love_wall_ID']];
                 $data['took_count']       = InfoModel::where([$countBaseMap, ["status", "in", [0, 1, 3, 4]]])->count(); //取已坐数
                 $data['took_count_all']   = InfoModel::where([$countBaseMap, ['status', '<>', 2]])->count(); //取已坐数
             }
-            $redis->setex($cacheKey, $cacheExp, json_encode($data));
+            $redis->cache($cacheKey, $data, $cacheExp);
         }
-
         $data = $TripsService->unsetResultValue($TripsService->formatResultValue($data), ($pb ? "detail_pb" : "detail"));
-
         return $data;
     }
 }
