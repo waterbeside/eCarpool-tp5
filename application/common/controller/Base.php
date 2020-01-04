@@ -258,6 +258,9 @@ class Base extends Controller
         foreach ($data as $key => $value) {
             $target[$key] = $value;
         }
+        if (empty($target)) {
+            return null;
+        }
         return $target;
     }
     
