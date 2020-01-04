@@ -1,0 +1,102 @@
+<div class="layui-tab-content P-npd-gallery-form">
+        <div class="layui-tab-item layui-show">
+            <form class="layui-form form-container" action="{:url('admin/npd.productRcm/add')}" method="post">
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">标题</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="title" value=""   placeholder="中文标题" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Title</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="title_en" value=""   placeholder="英文标题" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">图片</label>
+                    <div class="layui-input-block j-upload-image">  </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">图片 EN</label>
+                    <div class="layui-input-block j-upload-image_en">  </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">跳转类型</label>
+                    <div class="layui-input-block">
+                        <select name="link_type">
+                        <option value="0">不跳转</option>
+                        <option value="1">路由</option>
+                        <option value="2">连接</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">跳转连接</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="link" value="" placeholder="跳转连接或路由名" class="layui-input">
+                        <div class="layui-form-mid layui-word-aux">当跳转类型为“连接”时，请填写包含http://的完整连接内容</div>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">{:lang("Is visible?")}</label>
+                    <div class="layui-input-block">
+                        <input type="checkbox" name="status" value="1" lay-skin="switch" lay-text="{:lang('Visible')}|{:lang('Not visible')}"  checked>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">排序</label>
+                    <div class="layui-input-block">
+                        <input type="number" name="sort" value="0" placeholder="排序" class="layui-input">
+                        <div class="layui-form-mid layui-word-aux"> 越大越前</div>
+                    </div>
+                </div>
+    
+    
+    
+                <div class="blank20"></div>
+    
+                <div class="layui-btn-container layui-row">
+                    
+                    <button class="layui-btn layui-btn-lg layui-col-xs12" lay-submit lay-filter="*">{:lang("SUBMIT")}</button>
+                </div>
+    
+            </form>
+        </div>
+    </div>
+    <script>
+    
+    FORM_PAGE_EXEC = {
+        
+    
+        init: function(){
+            /** thumb upload **/
+            var $thumbInput =  cRenderUploadBtn({
+                wrapper:'.j-upload-image',
+                inputName:'image',
+                url: "{:url('admin/Uploader/images')}",
+                data: {"module":"admin/NPD/product/recommennd"},
+            })
+            /** thumb upload **/
+                var $thumbInput_en =  cRenderUploadBtn({
+                wrapper:'.j-upload-image_en',
+                inputName:'image_en',
+                url: "{:url('admin/Uploader/images')}",
+                data: {"module":"admin/NPD/product/recommennd"},
+            })
+            form.render();
+        },
+    }
+    
+    
+    FORM_PAGE_EXEC.init();
+    
+    </script>
+    

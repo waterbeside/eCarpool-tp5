@@ -1,0 +1,118 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body article-item-eidt">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <div class="layui-tab-content">
+
+            <form class="layui-form  " action="{:url('admin/npd.article/edit')}" method="post" style="margin-right:15px;"
+                id="editForm" data-jump-target="parent">
+
+                <div class="layui-row">
+                <div class="layui-col-md8">
+                    <div class="col-wrapper">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">标题</label>
+                            <div class="layui-input-block">
+                            <input type="text" name="title" value="{$data.title}" required lay-verify="required"
+                                placeholder="请输入标题" class="layui-input">
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">简介</label>
+                            <div class="layui-input-block">
+                            <textarea name="description" placeholder="（选填）请输入简介"
+                                class="layui-textarea">{$data.description}</textarea>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">内容</label>
+                            <div class="layui-input-block">
+                            <textarea name="content" lay-verify="content" placeholder="" id="content">{$data.content}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /layui-col-md9  -->
+
+                <div class="layui-col-md4">
+                    <div class="col-wrapper">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">所属分组</label>
+                        <div class="layui-input-block">
+                            <select name="cid">
+                                <option value="0">选译类型-未选分类</option>
+                                {foreach name="category_level_list" item="vo"}
+                                <option value="{$vo.id}" {if condition="$data.cid==$vo.id"} selected="selected"{/if}>{neq name="vo.level" value="1"}|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----';}{/php}{/neq} {$vo.name}</option>
+                                {/foreach}
+                            </select> 
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">
+                            封面图
+                        </label>
+                        <div class="layui-input-block">
+                            <a class="layui-btn layui-btn-xs" onclick="PAGE_EXEC.getPic()" style="position: absolute; right:10px; top: 10px;">取正文第一张图</a>
+                            <div class="j-upload-thumb" data-default="{$data.thumb}"></div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label ">选择语言</label>
+                        <div class="layui-input-block">
+                            <select name="lang" lay-verify="required" lay-search>
+                                <option value="0">请选择语言</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="status" value="1" title="显示" {if condition="$data.status==1" } checked="checked" {/if}> 
+                            <input type="radio" name="status" value="0" title="隐藏" {if condition="$data.status==0" } checked="checked" {/if}> 
+                        </div> 
+                    </div> 
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">发布时间</label>
+                        <div class="layui-input-block">
+                            <input type="text" class="layui-input" id="j-publish_time" name="publish_time" value="{$data.publish_time}">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">排序</label>
+                        <div class="layui-input-block">
+                        <input type="text" name="sort" value="{$data.sort}" required lay-verify="required"
+                            class="layui-input">
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                <!-- /layui-col-md3  -->
+                </div>
+
+
+                <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <input type="hidden" name="id" value="{$data.id}">
+                    <button class="layui-btn" lay-submit lay-filter="*">更新</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{/block}
+{block name="js"}
+<script src="__JS__/ueditor/ueditor.config.js"></script>
+<script src="__JS__/ueditor/ueditor.all.min.js"></script>
+{/block}
+{block name="script"}
+  {include file="/npd/article/_form_js" /}
+{/block}
