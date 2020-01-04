@@ -28,6 +28,9 @@ class Product extends Model
         $data['data_en']  = ProductData::where([['pid', '=', $id], ['lang', '=', 'en']])->find();
         $data['merchandizing']   = ProductMerchandizing::where([['pid', '=', $id]])->select();
         $data['patent']          = ProductPatent::where([['pid', '=', $id]])->select();
+        
+        $data['data_zh']['extra_info'] = $data['data_zh']['extra_info'] ? json_decode($data['data_zh']['extra_info'], true) : null;
+        $data['data_en']['extra_info'] = $data['data_en']['extra_info'] ? json_decode($data['data_en']['extra_info'], true) : null;
         return $data;
     }
 }

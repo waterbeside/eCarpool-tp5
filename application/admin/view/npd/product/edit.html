@@ -35,90 +35,109 @@
             
             <div class="layui-tab layui-tab-inform">
                 <ul class="layui-tab-title" style="padding-left:12px">
-                <li class="layui-this">中文</li>
-                <li>EN</li>
+                    <li class="layui-this">中文</li>
+                    <li>EN</li>
                 </ul>
                 <div class="layui-tab-content">
-                <!-- 中文 -->
-                <div class="layui-tab-item layui-show">
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">介绍 
-                            <div><small>Introduction</small></div>
-                        </label>
-                        <div class="layui-input-block">
-                            <textarea name="data[zh][intro]" placeholder=""   id="intro">{$data.data_zh.intro}</textarea>
+                    <!-- 中文 -->
+                    <div class="layui-tab-item layui-show">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">介绍 
+                                <div><small>Introduction</small></div>
+                            </label>
+                            <div class="layui-input-block">
+                                <textarea name="data[zh][intro]" placeholder=""   id="intro">{$data.data_zh.intro}</textarea>
+                            </div>
                         </div>
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">特点 
+                                <div><small>Feature</small></div>
+                            </label>
+                            <div class="layui-input-block">
+                                <textarea name="data[zh][feature]" placeholder=""   id="feature">{$data.data_zh.feature}</textarea>
+                            </div>
+                        </div>   
+            
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">测试方法与标准 
+                                <div><small>Testing method and standards</small></div>
+                            </label>
+                            <div class="layui-input-block">
+                                <textarea name="data[zh][testing]" placeholder=""   id="testing">{$data.data_zh.testing}</textarea>
+                            </div>
+                        </div>
+            
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">大货备注 
+                                <div><small>Notes to bulk</small></div>
+                            </label>
+                            <div class="layui-input-block">
+                                <textarea name="data[zh][bulk_note]" placeholder=""   id="bulk_note">{$data.data_zh.bulk_note}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">交期与报价 
+                                <div><small>Upcharge & Leadtime</small></div>
+                            </label>
+                            <div class="layui-input-block">
+                                <textarea name="data[zh][upcharge_leadtime]" placeholder=""   id="upcharge_leadtime">{$data.data_zh.extra_info.upcharge_leadtime ?? ''}</textarea>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">特点 
-                            <div><small>Feature</small></div>
-                        </label>
-                        <div class="layui-input-block">
-                            <textarea name="data[zh][feature]" placeholder=""   id="feature">{$data.data_zh.feature}</textarea>
-                        </div>
-                    </div>   
-        
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">测试方法与标准 
-                            <div><small>Testing method and standards</small></div>
-                        </label>
-                        <div class="layui-input-block">
-                            <textarea name="data[zh][testing]" placeholder=""   id="testing">{$data.data_zh.testing}</textarea>
-                        </div>
-                    </div>
-        
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">大货备注 
-                            <div><small>Notes to bulk</small></div>
-                        </label>
-                        <div class="layui-input-block">
-                            <textarea name="data[zh][bulk_note]" placeholder=""   id="bulk_note">{$data.data_zh.bulk_note}</textarea>
-                        </div>
-                    </div>
 
-                </div>
-
-
-                <!-- 英文 -->
-                <div class="layui-tab-item">
-                    <div class="layui-form-item">
-                    <label class="layui-form-label">Introduction 
-                        <div><small>介绍</small></div>
-                    </label>
-                    <div class="layui-input-block">
-                        <textarea name="data[en][intro]" placeholder=""   id="intro_en">{$data.data_en.intro}</textarea>
-                    </div>
-                    </div>
-
-                    <div class="layui-form-item">
-                        <label class="layui-form-label">Feature 
-                            <div><small>特点</small></div>
-                        </label>
-                        <div class="layui-input-block">
-                            <textarea name="data[en][feature]" placeholder=""   id="feature_en">{$data.data_en.feature}</textarea>
+                    <!-- 英文 -->
+                    <div class="layui-tab-item">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">Introduction 
+                                <div><small>介绍</small></div>
+                            </label>
+                            <div class="layui-input-block">
+                                <textarea name="data[en][intro]" placeholder=""   id="intro_en">{$data.data_en.intro}</textarea>
+                            </div>
                         </div>
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">Feature 
+                                <div><small>特点</small></div>
+                            </label>
+                            <div class="layui-input-block">
+                                <textarea name="data[en][feature]" placeholder=""   id="feature_en">{$data.data_en.feature}</textarea>
+                            </div>
+                        </div>
+            
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">Testing method and standards
+                                <div><small>测试方法与标准 </small></div>
+                            </label>
+                            <div class="layui-input-block">
+                                <textarea name="data[en][testing]" placeholder=""   id="testing_en">{$data.data_en.testing}</textarea>
+                            </div>
+                        </div>
+            
+                        <div class="layui-form-item">
+                            <label class="layui-form-label"> Notes to bulk
+                                <div><small>大货备注</small></div>
+                            </label>
+                            <div class="layui-input-block">
+                                <textarea name="data[en][bulk_note]" placeholder=""   id="bulk_note_en">{$data.data_en.bulk_note}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label"> Upcharge & Leadtime
+                                <div><small>交期与报价</small></div>
+                            </label>
+                            <div class="layui-input-block">
+                                <textarea name="data[en][upcharge_leadtime]" placeholder=""   id="upcharge_leadtime_en">{$data.data_en.extra_info.upcharge_leadtime ?? ''}</textarea>
+                            </div>
+                        </div>
+                        
+                        
                     </div>
-        
-                    <div class="layui-form-item">
-                    <label class="layui-form-label">Testing method and standards
-                        <div><small>测试方法与标准 </small></div>
-                    </label>
-                    <div class="layui-input-block">
-                        <textarea name="data[en][testing]" placeholder=""   id="testing_en">{$data.data_en.testing}</textarea>
-                    </div>
-                    </div>
-        
-                    <div class="layui-form-item">
-                    <label class="layui-form-label"> Notes to bulk
-                        <div><small>大货备注</small></div>
-                    </label>
-                    <div class="layui-input-block">
-                        <textarea name="data[en][bulk_note]" placeholder=""   id="bulk_note_en">{$data.data_en.bulk_note}</textarea>
-                    </div>
-                    </div>
-                    
-                </div>
                 </div>
 
             </div>
@@ -146,6 +165,7 @@
                         </div>
                             <input name="merch.ppo_no" placeholder="单号(PPO_NO)" class="layui-input" value="{$value.ppo_no}">
                             <textarea name="merch.desc" placeholder="描述" class="layui-textarea" >{$value.desc}</textarea>
+                            <textarea name="merch.remark" placeholder="备注" class="layui-textarea" >{$value.remark}</textarea>
                         </div>
                     <?php }}else{  ?>
                         <div class="merch-item item">
@@ -159,6 +179,7 @@
                         </div>
                             <input name="merch.ppo_no" placeholder="单号(PPO_NO)" class="layui-input" >
                             <textarea name="merch.desc" placeholder="描述" class="layui-textarea" ></textarea>
+                            <textarea name="merch.remark" placeholder="备注" class="layui-textarea" ></textarea>
                         </div>
                     <?php } ?>
                 </div>

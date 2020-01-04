@@ -122,9 +122,11 @@ class Product extends AdminBase
      */
     public function edit($id)
     {
+        $ProductModel = new ProductModel();
+        $dataDetail     = $ProductModel->getDetail($id);
         if ($this->request->isPost()) {
             $data            = $this->request->param();
-            $upData = $this->formatFormData($data, $id);
+            $upData = $this->formatFormData($data, $id, $dataDetail);
             $validate_result = $this->validate($data, 'app\npd\validate\Product');
             if ($validate_result !== true) {
                 $this->jsonReturn(-1, $validate_result);
@@ -137,7 +139,6 @@ class Product extends AdminBase
                 if ($res === 'false') {
                     throw new \Exception("创建数据失败");
                 }
-                $upData = $this->formatFormData($data, $id);
                 /******** 处理副表 ********/
                 $this->upSubTableData($upData, $id);
 
@@ -160,9 +161,8 @@ class Product extends AdminBase
             }
             $category_level_list = array2level($category_level_list);
             $this->assign('category_level_list', $category_level_list);
-            $ProductModel = new ProductModel();
-            $data     = $ProductModel->getDetail($id);
-            return $this->fetch('edit', ['data' => $data]);
+            
+            return $this->fetch('edit', ['data' => $dataDetail]);
         }
     }
 
@@ -191,7 +191,7 @@ class Product extends AdminBase
     /**
      * 格式化表单数据
      */
-    protected function formatFormData($data, $pid = 0)
+    protected function formatFormData($data, $pid = 0, $dataDetail = null)
     {
         $returnData = [];
         //创建主表数据
@@ -216,20 +216,30 @@ class Product extends AdminBase
             return $returnData;
         }
         //创建data副表数据
+        if ($dataDetail) {
+            $oldDataExtraInfo_zh = $dataDetail['data_zh']['extra_info'] ?: null;
+            $oldDataExtraInfo_en = $dataDetail['data_en']['extra_info'] ?: null;
+        }
+        $upcharge_leadtime_zh = $data['data']['zh']['upcharge_leadtime'] ? ['upcharge_leadtime' => $data['data']['zh']['upcharge_leadtime']] : [];
+        $upcharge_leadtime_en = $data['data']['en']['upcharge_leadtime'] ? ['upcharge_leadtime' => $data['data']['en']['upcharge_leadtime']] : [];
+        $extraInfo_data_zh = $this->addDataToData($upcharge_leadtime_zh, $oldDataExtraInfo_zh ?? []);
+        $extraInfo_data_en = $this->addDataToData($upcharge_leadtime_en, $oldDataExtraInfo_en ?? []);
         $returnData['data_zh'] = [
             'pid'       => $pid,
-            'intro'   => $data['data']['zh']['intro'],
-            'feature'   => $data['data']['zh']['feature'],
-            'testing'   => $data['data']['zh']['testing'],
-            'bulk_note' => $data['data']['zh']['bulk_note'],
+            'intro'   => $data['data']['zh']['intro'] ?: null ,
+            'feature'   => $data['data']['zh']['feature'] ?: null,
+            'testing'   => $data['data']['zh']['testing'] ?: null,
+            'bulk_note' => $data['data']['zh']['bulk_note'] ?: null,
+            'extra_info' => $extraInfo_data_zh ? json_encode($extraInfo_data_zh) : null,
             'lang'      => 'zh-cn',
         ];
         $returnData['data_en'] = [
             'pid'       => $pid,
-            'intro'   => $data['data']['en']['intro'],
-            'feature'   => $data['data']['en']['feature'],
-            'testing'   => $data['data']['en']['testing'],
-            'bulk_note' => $data['data']['en']['bulk_note'],
+            'intro'   => $data['data']['en']['intro'] ?: null,
+            'feature'   => $data['data']['en']['feature'] ?: null,
+            'testing'   => $data['data']['en']['testing'] ?: null,
+            'bulk_note' => $data['data']['en']['bulk_note'] ?: null,
+            'extra_info' => $extraInfo_data_en ? json_encode($extraInfo_data_en) : null,
             'lang'      => 'en',
         ];
         //创建 merchandizing 副表数据
