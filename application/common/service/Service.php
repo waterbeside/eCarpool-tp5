@@ -9,10 +9,10 @@ use think\Db;
 class Service
 {
 
+    protected static $redisObj = null;
     public $errorCode = 0;
     public $errorMsg = '';
     public $data = [];
-    public $redisObj = null;
 
     protected static $instance;
 
@@ -53,13 +53,16 @@ class Service
         ];
     }
 
+    /**
+     * 创建redis对像
+     * @return redis
+     */
     public function redis()
     {
-        if ($this->redisObj) {
-            return $this->redisObj;
+        if (is_null(static::$redisObj)) {
+            static::$redisObj = new RedisData();
         }
-        $this->redisObj = new RedisData();
-        return $this->redisObj;
+        return static::$redisObj;
     }
 
 
