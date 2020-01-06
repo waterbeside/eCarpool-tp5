@@ -5,6 +5,7 @@ namespace app\api\controller\v1\shuttle;
 use app\api\controller\ApiBase;
 use app\carpool\model\ShuttleLine as ShuttleLineModel;
 use app\carpool\model\ShuttleTrip;
+use app\carpool\service\shuttle\Trip as ShuttleTripService;
 use app\carpool\model\ShuttleLineDepartment;
 use app\user\model\Department;
 use my\RedisData;
@@ -74,38 +75,14 @@ class Line extends ApiBase
             if ($keyword) {
                 $map[] = ['start_name|end_name','line',"%$keyword%"];
             }
-            $modelObj = ShuttleLineModel::field('is_delete, status, create_time, update_time, admin_department_id', true)->where($map)->order('sort Desc');
-            if ($pagesize > 0) {
-                $results =    $modelObj->paginate($pagesize, false, ['query' => request()->param()])->toArray();
-                if (!$results['data']) {
-                    if (!$keyword) {
-                        $redis->hCache($cacheKey, $rowCacheKey, [], $ex);
-                    }
-                    return $this->jsonReturn(20002, [], lang('No data'));
+            $ctor = ShuttleLineModel::field('is_delete, status, create_time, update_time, admin_department_id', true)->where($map)->order('sort Desc');
+            $returnData = $this->getListDataByCtor($ctor, $pagesize);
+            if (empty($returnData['lists'])) {
+                if (!$keyword) {
+                    $redis->hCache($cacheKey, $rowCacheKey, [], $ex);
                 }
-                $resData = $results['data'];
-                $pageData = $this->getPageData($results);
-            } else {
-                $resData =    $modelObj->select()->toArray();
-                // ->fetchSql()->select();
-                if (empty($resData)) {
-                    if (!$keyword) {
-                        $redis->hCache($cacheKey, $rowCacheKey, [], $ex);
-                    }
-                    return $this->jsonReturn(20002, [], lang('No data'));
-                }
-                $total = count($resData);
-                $pageData = [
-                    'total' => $total,
-                    'pageSize' => 0,
-                    'lastPage' => 1,
-                    'currentPage' => 1,
-                ];
+                return $this->jsonReturn(20002, 'No data');
             }
-            $returnData = [
-                'lists' => $resData,
-                'page' => $pageData,
-            ];
             if (!$keyword) {
                 $redis->hCache($cacheKey, $rowCacheKey, $returnData, $ex);
             }
@@ -120,6 +97,58 @@ class Line extends ApiBase
             }
         }
         
+        return $this->jsonReturn(0, $returnData, 'Successful');
+    }
+
+
+    /**
+     * 常用路线
+     *
+     */
+    public function common($type = 0)
+    {
+        if (!is_numeric($type)) {
+            $this->jsonReturn(992, 'Error param');
+        }
+
+        $userData = $this->getUserData(1);
+        $uid = $userData['uid'];
+
+        $shuttleLineModel = new ShuttleLineModel();
+        $redis = new RedisData();
+        $ex = 60 * 60;
+        $cacheKey  = $shuttleLineModel->getCommonListCacheKey($uid, $type);
+        $listData = $redis->cache($cacheKey);
+
+        if (is_array($listData) && empty($listData)) {
+            return $this->jsonReturn(20002, lang('No data'));
+        }
+        if (!$listData) {
+            $field = 'l.id, l.start_name, l.end_name, l.type, l.map_type,
+            count(t.line_id) as use_count, max(t.time) as time';
+            $map = [
+                ['t.status', '>', '-1'],
+                ['t.uid', '=', $uid],
+                ['l.is_delete', '=', Db::raw(0)],
+                ['l.status', "=", Db::raw(1)],
+                ['l.type', "=", $type]
+            ];
+            $join = [
+                ['t_shuttle_line l','l.id = t.line_id', 'left'],
+            ];
+            $listData = ShuttleTrip::alias('t')->field($field)->join($join)->where($map)->group('line_id')->limit(10)->order('time DESC')->select();
+            if (!$listData) {
+                $redis->cache($cacheKey, [], 10);
+                $this->jsonReturn(20002, 'No data');
+            }
+            $listData = $listData->toArray();
+            $redis->cache($cacheKey, $listData, $ex);
+        }
+        
+        $list = ShuttleTripService::getInstance()->formatTimeFields($listData, 'list', ['time']);
+        $returnData = [
+            'lists' => $list
+        ];
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
 }

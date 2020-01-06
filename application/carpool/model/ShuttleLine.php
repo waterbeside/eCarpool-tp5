@@ -43,6 +43,18 @@ class ShuttleLine extends BaseModel
     }
 
     /**
+     * 取得接口的用户的常用列表缓存的Key
+     *
+     * @param integer $uid uid
+     * @param integer $type 上下班类型
+     * @return string
+     */
+    public function getCommonListCacheKey($uid, $type)
+    {
+        return "carpool:shuttle:common_lineList:{$uid},type_{$type}";
+    }
+
+    /**
      * 清除接口列表的缓存
      *
      * @param integer $type 上下班类型
@@ -51,8 +63,18 @@ class ShuttleLine extends BaseModel
     public function delListCache($type)
     {
         $cacheKey = $this->getListCacheKey($type);
-        $redis = new RedisData();
-        return $redis->del($cacheKey);
+        return $this->redis()->del($cacheKey);
     }
 
+    /**
+     * 清除接口列表的缓存
+     *
+     * @param integer $type 上下班类型
+     * @return void
+     */
+    public function delCommonListCache($uid, $type)
+    {
+        $cacheKey = $this->getCommonListCacheKey($uid, $type);
+        return $this->redis()->del($cacheKey);
+    }
 }

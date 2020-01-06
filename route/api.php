@@ -64,6 +64,7 @@ Route::group([], function () {
     Route::rule('api/:version/trip_active/gps', 'api/:version.trip_active/gps', 'GET');
 
     //班车行程相关
+    Route::rule('api/:version/shuttle/line/common', 'api/:version.shuttle.line/common', 'GET'); // 常用路线列表
     Route::rule('api/:version/shuttle/line', 'api/:version.shuttle.line/index', 'GET'); // 路线列表
     Route::rule('api/:version/shuttle/time', 'api/:version.shuttle.time/index', 'GET'); // 时刻列表
     Route::rule('api/:version/shuttle/trip/cars', 'api/:version.shuttle.trip/cars', 'GET'); // 班车空座位列表
