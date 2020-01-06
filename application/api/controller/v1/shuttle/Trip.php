@@ -278,7 +278,7 @@ class Trip extends ApiBase
             $join = [
                 ["t_shuttle_line l", "l.id = t.line_id", 'left'],
             ];
-            $ctor = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map)->order('t.time ASC');
+            $ctor = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map)->order('t.time DESC');
             $returnData = $this->getListDataByCtor($ctor, $pagesize);
             if (empty($returnData['lists'])) {
                 $redis->hCache($cacheKey, $rowCacheKey, [], $ex);
