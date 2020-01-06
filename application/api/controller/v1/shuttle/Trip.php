@@ -204,7 +204,7 @@ class Trip extends ApiBase
             $ex = 60 * 3;
             $userAlias = 'u';
             $fields_user = $TripsService->buildUserFields($userAlias, $userFields);
-            $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id, t.plate, t.seat_count';
+            $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id, t.plate, t.seat_count, t.status';
             $fields .= ', l.type as line_type, l.start_name, l.end_name, l.map_type, t.time, t.create_time';
             $fields .=  ',' .$fields_user;
             $map  = [
