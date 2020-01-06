@@ -74,7 +74,7 @@ class ShuttleTrip extends BaseModel
      */
     public function getMyListCacheKey($uid, $type = 'my')
     {
-        return "carpool:shuttle:trip:{$type}:uid_{$uid}";
+        return "carpool:shuttle:trip:{$type}:{$uid}";
     }
 
 
@@ -424,20 +424,20 @@ class ShuttleTrip extends BaseModel
             if (time() > strtotime($tripData['time'])) { // 如果过了出发时间
                 $map = [
                     ['trip_id', '=', $id],
-                    ['status', '>', 0],
+                    ['status', '>', -1],
                     ['comefrom', 'between', [2, 3]],
                 ];
                 $this->where($map)->update($upData);
             } else { // 如果未过出发时间
                 $map = [
                     ['trip_id', '=', $id],
-                    ['status', '>', 0],
+                    ['status', '>', -1],
                     ['comefrom', '=', 3],
                 ];
                 $this->where($map)->update($upData);
                 $map2 = [
                     ['trip_id', '=', $id],
-                    ['status', '>', 0],
+                    ['status', '>', -1],
                     ['comefrom', '=', 2],
                 ];
                 // 取消所有从约车需求上车乘客行程(还原成约车需求)
