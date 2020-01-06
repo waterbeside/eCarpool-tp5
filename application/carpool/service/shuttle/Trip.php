@@ -189,7 +189,8 @@ class Trip extends Service
             'uid' => $uid,
             'myType' => 'my',
         ];
-        $ShuttleTripModel->delCacheAfterAdd($cData);
+        $ShuttleTripModel->delCacheAfterAdd($cData); // 清除行程相关缓存
+        (new ShuttleLineModel())->delCommonListCache($uid, $rqData['line_id']); // 清除数线相关的缓存
         return $newid;
     }
 
@@ -453,7 +454,9 @@ class Trip extends Service
         if (empty($tripData)) {
             return $this->error(20002, '该行程不存在', $tripData);
         }
-        
+        if (time() - strtotime($tripData['time']) > 20 * 60) {
+            return $this->setError(30007, lang('行程已经开始一段时间了，无法操作'));
+        }
         $userType = $tripData['user_type'];
         $extData = [];
 
@@ -592,6 +595,7 @@ class Trip extends Service
             'id' => $extData['id'] ?? $id,
         ];
         $iAmDriver = $extData['i_am_driver'] ?? 0;
+        $doPush = false;
         $ShuttleTripModel->delMyListCache($uid); //清除自己的“我的行程”列表缓存
         $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
 
@@ -607,10 +611,9 @@ class Trip extends Service
                     $ShuttleTripModel->delItemCache($value['id']); // 清乘客单项行程缓存
                     $ShuttleTripModel->delMyListCache($value['u_uid'], 'my'); //清除所有乘客的“我的行程”列表缓存
                 }
-                if ($runType == 'cancel') {
-                    $pushMsgData['isDriver'] = true;
-                    $TripsPushMsg->pushMsg($targetUserid, $pushMsgData); // 推消息
-                }
+                // 推送设置
+                $pushMsgData['isDriver'] = true;
+                $doPush = true;
             } else { // 如果是乘客从司机空座位上操作
                 // 清缓存
                 $myTripData = $extData['myTripData'] ?? [];
@@ -619,6 +622,10 @@ class Trip extends Service
                     $ShuttleTripModel->delMyListCache($tripData['uid']); //清除司机的“我的行程”列表缓存
                 }
                 $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
+                // 推送设置
+                $targetUserid = $tripData['uid'];
+                $pushMsgData['isDriver'] = false;
+                $doPush = true;
             }
         } else { // 从乘客行程操作
             if ($tripData['uid'] == $uid) { //如果是乘客自已操作
@@ -626,25 +633,27 @@ class Trip extends Service
                 if ($tripData['trip_id'] > 0) { //如果有司机，查出司机以便推送
                     $ShuttleTripModel->delPassengersCache($tripData['trip_id']); // 清司机行程的乘客列表缓存
                     $driverTripData = $extData['driverTripData'] ?: $ShuttleTripModel->getItem($tripData['trip_id']);
+                    $ShuttleTripModel->delMyListCache($driverTripData['uid']); //清除司机的“我的行程”列表缓存
+                    // 推送设置
                     $targetUserid = $driverTripData ? $driverTripData['uid'] : 0;
-                    $ShuttleTripModel->delMyListCache($targetUserid); //清除司机的“我的行程”列表缓存
-                }
-                if ($runType === 'cancel' && isset($targetUserid) && $targetUserid > 0) {
-                    // 推送
                     $pushMsgData['isDriver'] = false;
                     $pushMsgData['id'] = $tripData['trip_id'];
-                    $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+                    $doPush = $targetUserid > 0 ? true : false;
                 }
-            } elseif ($runType === 'cancel' && $iAmDriver) { // 如果是司机操作乘客
+            } elseif ($iAmDriver) { // 如果是司机操作乘客
                 // 清缓存
                 $ShuttleTripModel->delPassengersCache($tripData['trip_id']); // 清除司机的乘客列表缓存
                 $ShuttleTripModel->delMyListCache($tripData['uid']); //清除乘客的“我的行程”列表缓存
-                // 推送
-                $pushMsgData['isDriver'] = false;
+                // 推送设置
                 $targetUserid = $tripData['uid'];
+                $pushMsgData['isDriver'] = true;
                 $pushMsgData['id'] = $tripData['trip_id'] > 0 ? $tripData['trip_id'] : $pushMsgData['id'];
-                $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+                $doPush = true;
             }
+        }
+        // 推送
+        if ($runType == 'cancel' && $doPush) {
+            $TripsPushMsg->pushMsg($targetUserid, $pushMsgData); // 推消息
         }
     }
 
