@@ -268,7 +268,7 @@ class ApiBase extends Base
             $resData = $results['data'] ?? [];
             $pageData = $this->getPageData($results);
         } else {
-            $resData =    $ctor->select()->toArray();
+            $resData =    $ctor->select();
             $resData = $resData ? $resData->toArray() : [];
             $total = count($resData);
             $pageData = [

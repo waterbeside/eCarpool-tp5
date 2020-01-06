@@ -61,7 +61,7 @@ class Line extends ApiBase
         }
 
         if (!$returnData) {
-            // 先查出该部门可访问的line_i
+            // 先查出该部门可访问的line_id
             $map_lineDept = [
                 ['department_id','in', $departmentPath],
             ];
