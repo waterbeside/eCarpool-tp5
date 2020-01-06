@@ -246,7 +246,7 @@ class Trip extends Service
                 $lineData = $this->getExtraInfoLineData($itemData['line_id'], 0);
             }
         } else {
-            $lineFields = 'id, start_name, start_longitude, start_latitude, end_name, end_longitude, end_latitude, map_type, type';
+            $lineFields = 'id, start_name, start_longitude, start_latitude, end_name, end_longitude, start_id, end_id, end_latitude, map_type, type';
             $ShuttleLineModel = new ShuttleLineModel();
             $lineData = $ShuttleLineModel->getItem($id, $lineFields);
         }
