@@ -13,7 +13,6 @@ use app\common\model\PushMessage;
 use app\user\model\Department as DepartmentModel;
 use think\Db;
 use my\Utils;
-use my\RedisData;
 
 class Trips extends Service
 {
@@ -66,7 +65,7 @@ class Trips extends Service
     public function buildUserFields($a = "u", $fields = [], $returnType = 0)
     {
         $format_array = [];
-        $fields = !empty($fields) ? $fields : ['uid', 'loginname', 'name','nativename', 'phone', 'mobile', 'Department', 'sex', 'company_id', 'department_id', 'companyname', 'imgpath', 'carnumber', 'carcolor', 'im_id'];
+        $fields = $fields ?: ['uid', 'loginname', 'name','nativename', 'phone', 'mobile', 'Department', 'sex', 'company_id', 'department_id', 'companyname', 'imgpath', 'carnumber', 'carcolor', 'im_id'];
         if (is_array($a)) {
             $aa = $a;
             $a = $aa[0];
@@ -488,7 +487,6 @@ class Trips extends Service
             }
         } elseif (is_numeric($uid)) {
             $WallModel = new WallModel();
-            $redis = new RedisData();
             // $userData = $this->getUserData(1);
             $userModel = new UserModel();
             $userData = $userModel->getItem($uid);
@@ -502,7 +500,7 @@ class Trips extends Service
             $cacheKey_03 = "carpool:citys:company_id_$company_id:type_1";
             $cacheKey_04 = "carpool:citys:company_id_$company_id:type_2";
 
-            $redis->del($cacheKey_01, $cacheKey_02, $cacheKey_03, $cacheKey_04);
+            $this->redis()->del($cacheKey_01, $cacheKey_02, $cacheKey_03, $cacheKey_04);
 
             /** 删除空座位列表缓存 */
             $WallModel->delListCache($company_id);
