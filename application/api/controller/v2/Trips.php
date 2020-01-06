@@ -308,7 +308,7 @@ class Trips extends ApiBase
             }
             $returnData = $TripsListService->wall_list($map, 0);
             if ($returnData) {
-                $redis->hCache($cacheKey, $returnData, $returnData, 60 * 5);
+                $redis->hCache($cacheKey, $rowCacheKey, $returnData, 60 * 5);
             }
         }
         if ($returnData === false) {
