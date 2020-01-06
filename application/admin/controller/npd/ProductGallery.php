@@ -84,7 +84,7 @@ class ProductGallery extends AdminBase
             $this->assign('model', 'product');
             $this->assign('aid', $pid);
             $this->assign('form_action', url('admin/npd.productGallery/add', ['pid'=>$pid]));
-            return $this->fetch('npd_gallery/add');
+            return $this->fetch('npd/gallery/add');
         }
     }
 
@@ -115,7 +115,7 @@ class ProductGallery extends AdminBase
             $data     = GalleryModel::find($id);
             $this->assign('form_action', url('admin/npd.productGallery/edit'));
             $this->assign('id', $id);
-            return $this->fetch('npd_gallery/edit', ['data' => $data]);
+            return $this->fetch('npd/gallery/edit', ['data' => $data]);
         }
     }
 
