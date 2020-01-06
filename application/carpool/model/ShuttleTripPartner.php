@@ -42,6 +42,42 @@ class ShuttleTripPartner extends BaseModel
     }
 
     /**
+     * 取得我的常用同行者列表cacheKey
+     *
+     * @param integer $uid 用户uid
+     * @return string
+     */
+    public function getCommonListCacheKey($uid)
+    {
+        return "carpool:shuttle:commonPartners:uid_{$uid}";
+    }
+
+    /**
+     * 删除行程同行者列表缓存
+     *
+     * @param integer $trip_id 路线id
+     * @param string $from_type 类型，0普通行程，1上下班行程
+     * @return boolean
+     */
+    public function delPartnersCache($trip_id, $from_type = 0)
+    {
+        $cacheKey =  $this->getPartnersCacheKey($trip_id, $from_type);
+        return $this->redis()->del($cacheKey);
+    }
+
+    /**
+     * 删除常用同行者列表缓存
+     *
+     * @param integer $uid 用户uid
+     * @return boolean
+     */
+    public function delCommonListCache($uid)
+    {
+        $cacheKey =  $this->getCommonListCacheKey($uid);
+        return $this->redis()->del($cacheKey);
+    }
+
+    /**
      * 取得同行者列表
      *
      * @param integer $trip_id 路线id

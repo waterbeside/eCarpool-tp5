@@ -79,7 +79,7 @@ Route::group([], function () {
     Route::rule('api/:version/shuttle/trip/:id/passengers', 'api/:version.shuttle.trip/passengers', 'GET')->pattern(['id' => '\d+']); //行程的乘客列表
     Route::rule('api/:version/shuttle/trip/:id', 'api/:version.shuttle.trip/show', 'GET')->pattern(['id' => '\d+']); //行程明细
     Route::rule('api/:version/shuttle/trip/:id', 'api/:version.shuttle.trip/change', 'PATCH')->pattern(['id' => '\d+']); // 变更行程（修改座位数，取消，完结）
-
+    Route::rule('api/:version/shuttle/partner/my', 'api/:version.shuttle.partner/my', 'GET'); // 我的常选同行者
 
     //地址相关
     Route::rule('api/:version/address/:id', 'api/:version.address/read', 'GET')->pattern(['id' => '\d+']);
