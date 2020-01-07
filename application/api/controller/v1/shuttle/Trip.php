@@ -308,7 +308,7 @@ class Trip extends ApiBase
             $this->jsonReturn(992, 'Error param');
         }
         $ShuttleTripService = new ShuttleTripService();
-        $res = $ShuttleTripService->passengers($id);
+        $res = $ShuttleTripService->passengers($id, [], ['id', 'time', 'create_time', 'status', 'comefrom']);
         $returnData = [
             'lists' => $res,
         ];
@@ -583,7 +583,8 @@ class Trip extends ApiBase
         // 入库成功后清理这些同行者的相关缓存，及推送消息
         if (isset($partners) && count($partners) > 0) {
             $driverTripData = [
-                'id' => $driverTripId
+                'id' => $driverTripId,
+                'uid' => $userData['uid']
             ];
             $ShuttlePartnerServ->doAfterGetOnCar($partners, $driverTripData, $userData);
         }
@@ -708,11 +709,11 @@ class Trip extends ApiBase
     {
         $id = $id ?? input('post.id/d', 0); // 自己的行程id
         $tid = input('post.tid/d', 0); // 对方的行程id
+
         if (!$tid || !$id) {
             return $this->jsonReturn(992, 'Empty param');
         }
         $userData = $this->getUserData(1);
-        $uid = intval($userData['uid']);
 
         $ShuttleTripModel = new ShuttleTrip();
         $tripData = $ShuttleTripModel->getItem($id);
