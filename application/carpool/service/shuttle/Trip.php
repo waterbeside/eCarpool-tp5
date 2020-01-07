@@ -444,8 +444,8 @@ class Trip extends Service
 
         if ($userType == 1) { // 如果从司机行程进行操作
             //检查是否已取消或完成
-            if (in_array($tripData['status'], [-1, 3])) {
-                return $this->error(-1, lang('The trip has been completed or cancelled. Operation is not allowed'), $tripData);
+            if (in_array($tripData['status'], [-1, 3, 4, 5])) {
+                return $this->error(30001, lang('The trip has been completed or cancelled. Operation is not allowed'), $tripData);
             }
             // 检查是否该行程的成员
             if ($tripData['uid'] == $uid) { //如果是司机自已操作
@@ -456,6 +456,9 @@ class Trip extends Service
             } else { // 如果是乘客从司机空座位上操作
                 $myTripData = $ShuttleTripModel->findPtByDt($id, $uid, ['status','between',[0,5]]);
                 if ($myTripData) {
+                    if ($myTripData['status'] > 2) {
+                        return $this->error(30001, lang('该行程已经过期或结束，无法操作'));
+                    }
                     $extData['myTripData'] = $myTripData;
                     $res = $ShuttleTripModel->cancelPassengerTrip($myTripData);
                 } else {
@@ -512,8 +515,8 @@ class Trip extends Service
             return $this->error(20002, '该行程不存在', $tripData);
         }
         //检查是否已取消或完成
-        if (in_array($tripData['status'], [-1, 3])) {
-            return $this->error(-1, lang('The trip has been completed or cancelled. Operation is not allowed'), $tripData);
+        if (in_array($tripData['status'], [-1, 3, 4, 5])) {
+            return $this->error(30001, lang('The trip has been completed or cancelled. Operation is not allowed'), $tripData);
         }
         $userType = $tripData['user_type'];
         $extData = [];
@@ -525,15 +528,17 @@ class Trip extends Service
                 $extData['passengers'] = $passengers;
                 $res = $ShuttleTripModel->finishDriverTrip($tripData);
             } else { // 如果是乘客从司机空座位上操作
-                $myTripData = $ShuttleTripModel->findPtByDt($id, $uid);
+                $myTripData = $ShuttleTripModel->findPtByDt($id, $uid, ['status', 'between', [0,5]]);
                 if ($myTripData) {
+                    if ($myTripData['status'] == 3) {
+                        return true;
+                    }
+                    if ($myTripData['status'] > 2) {
+                        return $this->error(30001, lang('行程已经过期或结束，无法操作'));
+                    }
                     $extData['myTripData'] = $myTripData;
                     $res = $ShuttleTripModel->finishPassengerTrip($myTripData);
                 } else {
-                    $myTripData = $ShuttleTripModel->findPtByDt($id, $uid, 3);
-                    if ($myTripData) {
-                        return true;
-                    }
                     return $this->error(30001, lang('你不是司机或乘客，无法操作'));
                 }
             }
