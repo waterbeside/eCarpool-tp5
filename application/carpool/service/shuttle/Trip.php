@@ -210,6 +210,7 @@ class Trip extends Service
         }
         $matchingList = [];
         $matchUserType = $rqData['user_type'];
+        $ShuttleTripModel = new ShuttleTripModel();
         foreach ($repetitionList as $key => $value) {
             $userType = $value['user_type'] ?? false;
             $line_id = $value['line_id'];
@@ -217,6 +218,7 @@ class Trip extends Service
             $userTypeMatching = $value['user_type'] > 0 || ($value['trip_id'] == 0 && $value['comefrom'] == 2 ) ? true : false;
             $timeMatch = $value['check_level']['k'] == 0 ? true : false;
             if ($tripMatching && $userTypeMatching && $timeMatch) {
+                $value['took_count'] = $ShuttleTripModel->countPassengers($value['id']);
                 $matchingList[] = $value;
             }
         }
