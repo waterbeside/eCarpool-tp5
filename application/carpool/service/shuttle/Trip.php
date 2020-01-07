@@ -404,6 +404,7 @@ class Trip extends Service
             return [];
         }
         $list = $list->toArray();
+        $list = $this->formatTimeFields($list, 'list', ['time','create_time']);
         if ($uid > 0) {
             $User = new UserModel();
             $userData = $User->findByUid($uid);
