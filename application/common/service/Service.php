@@ -87,7 +87,7 @@ class Service
         } else {
             foreach ($fields as $key => $value) {
                 if (isset($data[$value])) {
-                    $data[$value] = strtotime($data[$value]);
+                    $data[$value] = is_numeric($data[$value]) ? $data[$value] : strtotime($data[$value]);
                 }
             }
         }
