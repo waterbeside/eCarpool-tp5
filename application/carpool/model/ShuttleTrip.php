@@ -325,7 +325,7 @@ class ShuttleTrip extends BaseModel
             $map = [
                 ['user_type', '=', Db::raw(0)],
                 ['trip_id', '=', $id],
-                ['status', 'between', [0,3]],
+                ['status', 'between', [0,5]],
             ];
             $res = $this->where($map)->count();
             if (is_numeric($ex)) {
@@ -571,6 +571,33 @@ class ShuttleTrip extends BaseModel
             $myTripMap[] = $statusMap;
         }
         $res = $this->where($myTripMap)->find();
+        return $res;
+    }
+    
+    /**
+     * 取得乘客的行程列表
+     *
+     * @param integer $id 行程id
+     * @return mixed
+     */
+    public function passengers($id)
+    {
+        $cacheKey = $this->getPassengersCacheKey($id);
+        $redis = $this->redis();
+        $res = $redis->cache($cacheKey);
+        if ($res === false) {
+            $map = [
+                ['t.user_type', '=', Db::raw(0)],
+                ['t.trip_id', '=', $id],
+                ['t.status', 'between', [0,5]],
+            ];
+            $res = $this->alias('t')->where($map)->order('t.create_time ASC')->select();
+            if (!$res) {
+                $redis->cache($cacheKey, [], 5);
+            }
+            $res =  $res->toArray();
+            $redis->cache($cacheKey, $res, 60);
+        }
         return $res;
     }
 }

@@ -317,51 +317,29 @@ class Trip extends Service
             $this->error(992, 'Error param');
             return [];
         }
-        
         $ShuttleTripModel = new ShuttleTripModel();
-        $TripsService = new TripsService();
-        $cacheKey = $ShuttleTripModel->getPassengersCacheKey($id);
-        $redis = new RedisData();
-        $userAlias = 'u';
-        $res = $redis->cache($cacheKey);
-        $userFields = $userFields === false ? $userFields : ($userFields ?: $this->defaultUserFields);
-        if ($res === false) {
-            $tripFieldsArray = ['id', 'time', 'create_time', 'status', 'comefrom'];
-            $fields = Utils::getInstance()->arrayAddString($tripFieldsArray, 't.');
-            $fields = is_array($fields) ? implode(',', $fields) : $fields;
-            if ($userFields !== false) {
-                $fields_user = $TripsService->buildUserFields($userAlias, $this->defaultUserFields);
-                $fields .=  ',' .$fields_user;
-                $join = [
-                    ["user {$userAlias}", "t.uid = {$userAlias}.uid", 'left'],
-                ];
-            } else {
-                $join = [];
-            }
-
-            $map = [
-                ['t.user_type', '=', Db::raw(0)],
-                ['t.trip_id', '=', $id],
-                ['t.status', 'between', [0,3]],
-            ];
-            $res = $ShuttleTripModel->alias('t')->field($fields)->join($join)->where($map)->order('t.create_time ASC')->select()->toArray();
-            $redis->cache($cacheKey, $res, 60);
-        }
-        if (!$res) {
-            $this->error(20002, 'No data');
+        $Utils = new Utils();
+        $res = $ShuttleTripModel->passengers($id);
+        if (empty($res)) {
+            return $this->error(20002, 'No data');
         }
         $res = $this->formatTimeFields($res, 'list', ['time','create_time']);
-        if (!empty($tripFields)) {
-            $tripFields = is_string($tripFields) ? array_map('trim', explode(',', $tripFields)) : $tripFields;
-            if ($userFields !== false) {
-                $userFields = is_string($userFields) ? array_map('trim', explode(',', $userFields)) : $userFields;
-                $userFields = Utils::getInstance()->arrayAddString($userFields, 'u_') ?: [];
-                $filterFields = array_merge($tripFields, $userFields);
-            } else {
-                $filterFields = $tripFields;
+        $tripFields = !empty($tripFields) && is_string($tripFields) ? array_map('trim', explode(',', $tripFields)) : $tripFields;
+        if ($userFields !== false) {
+            $userFields = $userFields ?: $this->defaultUserFields;
+            $userFields = is_string($userFields) ? array_map('trim', explode(',', $userFields)) : $userFields;
+            $UserModel = new UserModel();
+            foreach ($res as $key => $value) {
+                $userData = $UserModel->getItem($value['uid'], $userFields);
+                $userData = $Utils->filterDataFields($userData, [], true, 'u_', -1);
+                $res[$key] = array_merge($value, $userData);
             }
-            $res = Utils::getInstance()->filterListFields($res, $filterFields);
+            $userFields_fill = $Utils->arrayAddString($userFields, 'u_', '', -1);
+            $filterFields = array_merge($tripFields, $userFields_fill ?: []);
+        } else {
+            $filterFields = $tripFields;
         }
+        $res = Utils::getInstance()->filterListFields($res, $filterFields);
         return $res;
     }
 
@@ -472,11 +450,11 @@ class Trip extends Service
             // 检查是否该行程的成员
             if ($tripData['uid'] == $uid) { //如果是司机自已操作
                 $extData['i_am_driver'] = true;
-                $passengers = $this->passengers($id, false);
+                $passengers = $ShuttleTripModel->passengers($id);
                 $extData['passengers'] = $passengers;
                 $res = $ShuttleTripModel->cancelDriveTrip($tripData);
             } else { // 如果是乘客从司机空座位上操作
-                $myTripData = $ShuttleTripModel->findPtByDt($id, $uid, ['status','between',[0,3]]);
+                $myTripData = $ShuttleTripModel->findPtByDt($id, $uid, ['status','between',[0,5]]);
                 if ($myTripData) {
                     $extData['myTripData'] = $myTripData;
                     $res = $ShuttleTripModel->cancelPassengerTrip($myTripData);
@@ -543,7 +521,7 @@ class Trip extends Service
         if ($userType == 1) { // 如果从司机行程进行操作
             // 检查是否该行程的成员
             if ($tripData['uid'] == $uid) { //如果是司机自已操作
-                $passengers = $this->passengers($id, false);
+                $passengers = $ShuttleTripModel->passengers($id);
                 $extData['passengers'] = $passengers;
                 $res = $ShuttleTripModel->finishDriverTrip($tripData);
             } else { // 如果是乘客从司机空座位上操作
@@ -613,10 +591,11 @@ class Trip extends Service
                 $targetUserid = [];
                 $passengers = $extData['passengers'] ?? [];
                 foreach ($passengers as $key => $value) {
-                    $targetUserid[] = $value['u_uid'];
+                    $p_uid = $value['uid'] ?? $value['u_uid'];
+                    $targetUserid[] = $p_uid;
                     $ShuttleTripModel->delItemCache($value['id']); // 清乘客单项行程缓存
-                    $ShuttleTripModel->delMyListCache($value['u_uid'], 'my'); //清除所有乘客的“我的行程”列表缓存
-                    $TripsMixedService->delComingListCache($value['u_uid']); // 清除乘客将要发生的行程缓存
+                    $ShuttleTripModel->delMyListCache($p_uid, 'my'); //清除所有乘客的“我的行程”列表缓存
+                    $TripsMixedService->delComingListCache($p_uid); // 清除乘客将要发生的行程缓存
                 }
                 // 推送设置
                 $pushMsgData['isDriver'] = true;
