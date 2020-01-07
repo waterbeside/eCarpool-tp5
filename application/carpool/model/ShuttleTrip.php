@@ -200,6 +200,7 @@ class ShuttleTrip extends BaseModel
                     'd_uid' => $value['user_type'] == 1 ? $value['uid'] : 0,
                     'p_uid' => $value['user_type'] == 0 ? $value['uid'] : 0,
                     'time'=>strtotime($value['time']),
+                    'seat_count' => $value['seat_count'],
                     'user_type' => $value['user_type'],
                     'comefrom' => $value['comefrom'],
                     'trip_id' => $value['trip_id'],
