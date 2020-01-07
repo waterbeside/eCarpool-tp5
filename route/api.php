@@ -63,6 +63,7 @@ Route::group([], function () {
     Route::rule('api/:version/trips/:from/:id', 'api/:version.trips/cancel', 'DELETE')->pattern(['id' => '\d+']); //取消行程
     Route::rule('api/:version/trip_active/gps', 'api/:version.trip_active/gps', 'GET');
 
+
     //班车行程相关
     Route::rule('api/:version/shuttle/line/common', 'api/:version.shuttle.line/common', 'GET'); // 常用路线列表
     Route::rule('api/:version/shuttle/line', 'api/:version.shuttle.line/index', 'GET'); // 路线列表
@@ -80,6 +81,10 @@ Route::group([], function () {
     Route::rule('api/:version/shuttle/trip/:id', 'api/:version.shuttle.trip/show', 'GET')->pattern(['id' => '\d+']); //行程明细
     Route::rule('api/:version/shuttle/trip/:id', 'api/:version.shuttle.trip/change', 'PATCH')->pattern(['id' => '\d+']); // 变更行程（修改座位数，取消，完结）
     Route::rule('api/:version/shuttle/partner/my', 'api/:version.shuttle.partner/my', 'GET'); // 我的常选同行者
+
+    // 混合行程
+    Route::rule('api/:version/mixtrip/my_coming', 'api/:version.trip.mix_trip/my_coming', 'GET'); // 取得我将要发生的行程列表，包括普通行程和班车行程
+
 
     //地址相关
     Route::rule('api/:version/address/:id', 'api/:version.address/read', 'GET')->pattern(['id' => '\d+']);
