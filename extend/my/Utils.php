@@ -26,12 +26,14 @@ class Utils
      * @param array $array 要处理的数组
      * @param string $preStr 要添加在开头的字符串
      * @param string $endStr 要添加在尾部的字符串
+     * @param integer $keyDo 负数为转小写，正数为转大写，0为不处理
      * @return void
      */
-    public function arrayAddString($array, $preStr = '', $endStr = '')
+    public function arrayAddString($array, $preStr = '', $endStr = '', $keyDo = 0)
     {
         foreach ($array as $k => $v) {
-            $array[$k] = $preStr.$v.$endStr;
+            $newKey = $keyDo > 0 ? strtoupper($k) : ($keyDo < 0 ? strtolower($k) : $k);
+            $array[$newKey] = $preStr.$v.$endStr;
         }
         return $array;
     }
