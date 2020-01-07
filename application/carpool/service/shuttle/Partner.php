@@ -113,11 +113,13 @@ class Partner extends Service
     {
         $ShuttleTripServ = new ShuttleTripService();
         $ShuttleTripPartner = new ShuttleTripPartner();
+        $ShuttleTripModel = new ShuttleTrip();
         // 创建入库数据
         $lineId = $rqTripData['line_id'];
         $lineData = $rqTripData['line_data'] ?? null;
         $lineData = $lineData ?: ($ShuttleTripServ->getExtraInfoLineData($lineId) ?? []);
-        $tripId = is_numeric($driverTripData) ? $driverTripData : $driverTripData['id'];
+        $driverTripData = is_numeric($driverTripData) ? $ShuttleTripModel->getItem($driverTripData) : $driverTripData;
+        $tripId = $driverTripData['id']; // 司机行程id
         $lineType = intval($lineData['type']);
         $defaultData = [
             'user_type' => 0,
@@ -130,12 +132,21 @@ class Partner extends Service
             'seat_count' => 1,
             'extra_info' => json_encode(['line_data' => $lineData]),
         ];
-        $partners = $ShuttleTripPartner->getPartners($rqTripData['id'], ($lineType > 0 ? 1 : 0));
+        $partners = $ShuttleTripPartner->getPartners($rqTripData['id'], ($lineType > 0 ? 1 : 0)); //取得所有同行者
+        $passengers = $ShuttleTripModel->passengers($tripId); // 取得司机空座位上的乘客 (用于检查是否早已在车上)
+        $passengersUids = [];
+        foreach ($passengers as $key => $value) {
+            $passengersUids[] = $value['uid'];
+        }
         $batchData = [];
         foreach ($partners as $key => $value) {
-            if ($value['uid'] != $driverTripData['uid']) {
-                $batchData[] = array_merge($defaultData, ['uid'=>$value['uid']]);
+            if ($value['uid'] == $driverTripData['uid']) { // 如果同行者是司机，排除司机
+                continue;
             }
+            if (in_array($value['uid'], $passengersUids)) { // 如果本身是乘客之一
+                continue;
+            }
+            $batchData[] = array_merge($defaultData, ['uid'=>$value['uid']]);
         }
         return ShuttleTrip::insertAll($batchData);
     }
@@ -160,9 +171,10 @@ class Partner extends Service
             'tripData'=> $driverTripData,
             'id' => $driverTripData['id'],
         ];
+        $driverUid = $driverTripData['uid'] ?? ($driverUserData['uid'] ?? 0);
         foreach ($partners as $key => $value) {
             $ShuttleTripModel->delMyListCache($value['uid'], 'my');
-            if ($value['uid'] == $driverTripData['uid']) {
+            if ($value['uid'] == $driverUid) { // 排除司机
                 continue;
             }
             $TripsPushMsg->pushMsg($value['uid'], $pushMsgData);
