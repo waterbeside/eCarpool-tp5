@@ -559,7 +559,7 @@ class ShuttleTrip extends BaseModel
      * @param array $statusMap
      * @return array
      */
-    public function findPtByDt($trip_id, $uid, $statusMap = ['status', 'between', [0,1]])
+    public function findPtByDt($trip_id, $uid, $statusMap = ['status', '>', -1])
     {
         $myTripMap = [
             ['trip_id', '=', $trip_id],
