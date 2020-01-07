@@ -25,7 +25,7 @@ class Time extends ApiBase
 
         $ex = 60 * 30;
         $keyword = input('get.keyword');
-        $userData = $this->getUserData(1);
+        $this->checkPassport(1);
 
 
         $returnData = null;
@@ -57,7 +57,7 @@ class Time extends ApiBase
             $redis->cache($cacheKey, $resData, $ex);
         }
         $returnData = [
-            'all' => 1,
+            'all' => 0,
             'lists' => $resData,
         ];
         return $this->jsonReturn(0, $returnData, 'Successful');
