@@ -285,7 +285,7 @@ class Trip extends Service
             $trip_info = null;
         }
         $itemData = $this->formatTimeFields($itemData, 'item', ['time','create_time']);
-        $tripFields = $tripFields ?: ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom', 'trip_id', 'seat_count', 'line_id'];
+        $tripFields = $tripFields ?: ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom', 'trip_id', 'seat_count', 'line_id', 'plate'];
 
         $itemData = Utils::getInstance()->filterDataFields($itemData, $tripFields);
         $userFields = $userFields ?: $this->defaultUserFields;
