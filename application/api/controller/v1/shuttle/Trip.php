@@ -210,7 +210,7 @@ class Trip extends ApiBase
             $map  = [
                 ['t.status', 'between', [0,1]],
                 ['t.uid', '=', $uid],
-                ["t.time", ">", date('Y-m-d H:i:s', strtotime('-10 minute'))],
+                ["t.time", ">", date('Y-m-d H:i:s', strtotime('-30 minute'))],
             ];
             $join = [
                 ["user {$userAlias}", "t.uid = {$userAlias}.uid", 'left'],
@@ -253,7 +253,7 @@ class Trip extends ApiBase
      * @param integer $pagesize 每页多少条;
      * @return void
      */
-    public function history($page = 1, $pagesize = 50)
+    public function history($page = 1, $pagesize = 20)
     {
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
@@ -308,7 +308,7 @@ class Trip extends ApiBase
             $this->jsonReturn(992, 'Error param');
         }
         $ShuttleTripService = new ShuttleTripService();
-        $res = $ShuttleTripService->passengers($id, [], ['id', 'time', 'create_time', 'status', 'comefrom']);
+        $res = $ShuttleTripService->passengers($id, [], ['id', 'time', 'create_time', 'status', 'comefrom']) ?: [];
         $returnData = [
             'lists' => $res,
         ];
@@ -338,7 +338,7 @@ class Trip extends ApiBase
         if ($show_member) {
             if ($data['user_type'] == 1) {
                 if ($show_member == 2) {
-                    $data['passengers'] = $ShuttleTripServ->passengers($id) ?? [];
+                    $data['passengers'] = $ShuttleTripServ->passengers($id) ?: [];
                     $data['took_count'] = count($data['passengers']);
                 } else {
                     $ShuttleTrip = new ShuttleTrip();
@@ -350,7 +350,8 @@ class Trip extends ApiBase
                 $data['driver'] = $ShuttleTripServ->getUserTripDetail($trip_id, [], [], 0) ?: null;
             }
         }
-        
+        $timePass = time() - $data['time'];
+        $data['have_started'] = $timePass >= 0 ? ( $timePass > 20 ? 2 : 1) : 0;
         unset($data['trip_id']);
         return $this->jsonReturn(0, $data, 'Successful');
     }
