@@ -47,7 +47,9 @@ class Partner extends ApiBase
                 ['creater_id', '=', $uid],
                 ['is_delete', '=', Db::raw(0)],
             ];
-            $listData = $PartnerModel::alias('t')->field($field)->where($map)->group('uid')->limit(12)->order('create_time DESC, use_count DESC')->select();
+            $listData = $PartnerModel::alias('t')->field($field)->where($map)
+                ->group('uid')->limit(12)
+                ->order('create_time DESC, use_count DESC')->select();
             if (!$listData) {
                 $redis->cache($cacheKey, [], 10);
                 $this->jsonReturn(20002, 'No data');

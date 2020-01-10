@@ -236,7 +236,8 @@ class Trip extends ApiBase
                     // $lists[$key]['took_count'] = $ShuttleTrip->countPassengers($value['id']);
                 }
                 if ($value['user_type'] == 0 && $value['trip_id'] > 0) {
-                    $resDriver =  $ShuttleTripService->getUserTripDetail($value['trip_id'], $userFields, ['id','status','user_type','comefrom', 'plate', 'seat_count'], 0);
+                    $tripFields = ['id','status','user_type','comefrom', 'plate', 'seat_count'];
+                    $resDriver =  $ShuttleTripService->getUserTripDetail($value['trip_id'], $userFields, $tripFields, 0);
                     $lists[$key]['driver'] = $resDriver ?: [];
                 }
             }
