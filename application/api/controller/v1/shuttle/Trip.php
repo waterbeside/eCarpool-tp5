@@ -13,6 +13,7 @@ use app\carpool\service\shuttle\Partner as ShuttlePartnerService;
 use app\carpool\service\Trips as TripsService;
 use app\carpool\service\TripsPushMsg;
 use app\carpool\validate\shuttle\Trip as ShuttleTripVali;
+use app\carpool\validate\shuttle\Partner as ShuttlePartnerVali;
 use my\RedisData;
 
 
@@ -79,11 +80,10 @@ class Trip extends ApiBase
                 $comefrom = 1;
             } elseif ($rqType === 'requests') {
                 // $userAlias = 'p';
-                $offsetTimeArray[0] = date('Y-m-d H:i:s');
+                $offsetTimeArray[0] = date('Y-m-d H:i:s', time() + 30);
                 $userType = 0;
                 $comefrom = 2;
             }
-            $offsetTimeArray = $ShuttleTrip->getDefatultOffsetTime(time(), 0, 'Y-m-d H:i:s');
             $join = [
                 ["user {$userAlias}", "t.uid = {$userAlias}.uid", 'left'],
             ];
@@ -338,7 +338,7 @@ class Trip extends ApiBase
         if ($show_member) {
             if ($data['user_type'] == 1) {
                 if ($show_member == 2) {
-                    $data['passengers'] = $ShuttleTripServ->passengers($id) ?: [];
+                    $data['passengers'] = $ShuttleTripServ->passengers($id, [], ['id', 'time', 'create_time', 'status', 'comefrom']) ?: [];
                     $data['took_count'] = count($data['passengers']);
                 } else {
                     $ShuttleTrip = new ShuttleTrip();
@@ -393,24 +393,14 @@ class Trip extends ApiBase
             $rqData['partners'] = input('post.partners');
             $PartnerServ = new ShuttlePartnerService();
             $partners = $PartnerServ->getPartnersUserData($rqData['partners'], $userData['uid']);
-            $TripsService = new TripsService();
-            $hasError = 0;
-            $errorPartners = [];
             if ($dev) {
                 dump($partners);
             }
-            foreach ($partners as $key => $value) {
-                 // 验证重复行程
-                $repetitionList = $TripsService->getRepetition($rqData['time'], $value['uid']);
-                $partners[$key]['repetitionList'] = $repetitionList ?? [];
-                if ($repetitionList) {
-                    $hasError = 50009;
-                    $errorPartners[] = $partners[$key];
-                }
-            }
-            if ($hasError === 50009) {
+            $ShuttlePartnerVali = new ShuttlePartnerVali();
+            if (!$ShuttlePartnerVali->checkRepetition($partners, $rqData['time'])) {
+                $errorData = $ShuttlePartnerVali->getError();
                 $ShuttleTripModel->unlockItem(0, $lockKeyFill); // 解锁
-                $this->jsonReturn(50009, ['lists'=>$errorPartners], '你添的加同行伙伴中，有人在相似的时间内已有一到多趟的行程');
+                return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error check');
             }
             $rqData['seat_count'] = count($partners) + 1;
         }
