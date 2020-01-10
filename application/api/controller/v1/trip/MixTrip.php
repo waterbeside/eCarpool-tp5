@@ -44,7 +44,7 @@ class MixTrip extends ApiBase
                 ['carownid', '>', 0],
                 ['carownid|passengerid', '=', $uid],
             ];
-            $res1 = InfoModel::field("infoid as id, time")->where($map1)->order('time ASC')->select();
+            $res1 = InfoModel::field("infoid as id, time, love_wall_ID as trip_id")->where($map1)->order('time ASC')->select();
             $res1 = $res1 ? $res1->toArray() : [];
             foreach ($res1 as $key => $value) {
                 $res1[$key]['time'] = intval(strtotime($value['time'] . '00'));
@@ -76,7 +76,7 @@ class MixTrip extends ApiBase
                 $value['from'] = 'shuttle_trip';
                 $res2_list[] = $value;
             }
-            $res2_list = Utils::getInstance()->filterListFields($res2_list, ['user_type', 'uid', 'trip_id'], true);
+            $res2_list = Utils::getInstance()->filterListFields($res2_list, ['user_type', 'uid'], true);
             // 合并列表
             $listData = array_merge($res1, $res2_list);
             if (count($listData) === 0) {
