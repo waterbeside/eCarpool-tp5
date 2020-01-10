@@ -128,7 +128,7 @@ class Base extends Controller
     {
         if (is_null($url)) {
             if ($isSuccess === 1) {
-                $url =  isset($_SERVER["HTTP_REFERER"]) ? $_SERVER["HTTP_REFERER"] : ((strpos($url, '://') || 0 === strpos($url, '/')) ? url($url) : '');
+                $url =  $_SERVER["HTTP_REFERER"] ?? ((strpos($url, '://') || 0 === strpos($url, '/')) ? url($url) : '');
             } else {
                 $url = $this->request->header('X-Requested-With') == "modal-html"  ? 'javascript:void(0);' : 'javascript:history.back(-1);';
                 // $url = $this->request->header('X-Requested-With')=="modal-html"  ? (isset($_SERVER["HTTP_REFERER"])?$_SERVER["HTTP_REFERER"]:'') : 'javascript:history.back(-1);';
@@ -173,7 +173,7 @@ class Base extends Controller
     {
         if ($this->request->isAjax()) {
             $extra = is_array($wait) ? $wait : [];
-            if (!isset($extra['url']) &&   is_string($url) && !is_numeric($url)) {
+            if (!isset($extra['url']) && is_string($url) && !is_numeric($url)) {
                 $extra['url'] = $url;
             }
             $code = is_numeric($url) ? intval($url) : (is_numeric($data) ? $data : 0);
@@ -198,7 +198,7 @@ class Base extends Controller
     {
         if ($this->request->isAjax()) {
             $extra = is_array($wait) ? $wait : [];
-            if (!isset($extra['url']) &&   is_string($url) && !is_numeric($url)) {
+            if (!isset($extra['url']) && is_string($url) && !is_numeric($url)) {
                 $extra['url'] = $url;
             }
             $code = is_numeric($url) ? intval($url) : (is_numeric($data) ? $data : -1);
@@ -237,7 +237,7 @@ class Base extends Controller
             if ($exception->hasResponse()) {
                 $responseBody = $exception->getResponse()->getBody()->getContents();
             }
-            $this->errorMsg = $exception->getMessage() ? $exception->getMessage()  : (isset($responseBody) ? $responseBody : '');
+            $this->errorMsg = $exception->getMessage() ?: ($responseBody ?? '');
             return false;
         }
     }
@@ -277,6 +277,6 @@ class Base extends Controller
             $target = json_decode($target, true);
         }
         $target = $target && is_array($target) ? $target : [];
-        return isset($target[$key]) ? $target[$key] : $default;
+        return $target[$key] ?? $default;
     }
 }
