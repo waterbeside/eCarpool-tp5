@@ -510,8 +510,9 @@ class AdminBase extends Base
         $path = $formCommon ?
             Env::get('root_path') . 'application/common/lang/' : Env::get('root_path') . 'application/admin/lang/';
 
-        $lang_s =  input('request._language');
-        $lang_s = $lang_s ? $lang_s : input('request.lang');
+        $lang_s = input('request._language') ?: (input('post._language') ?: input('get._language'));
+        $lang_s = $lang_s ?: (input('request.lang') ?: (input('post.lang') ?: input('get.lang')));
+
         if ($lang_s) {
             $d_lang = $this->getLang();
             Cookie::set('lang', $d_lang, 60 * 60 * 24 * 30);
@@ -522,7 +523,7 @@ class AdminBase extends Base
             }
             $d_lang = $this->formatLangCode($d_lang);
         }
-        $lang = $language ? $language  : $d_lang;
+        $lang = $language ?: $d_lang;
         $langs_list =  config('others.langs_select_list');
         $lang = isset($langs_list[$lang]) ? $lang : config('default_lang');
         $this->activeLang = $lang;
