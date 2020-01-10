@@ -114,7 +114,7 @@ class BaseModel extends Model
         if (!$res || $ex === false) {
             $res = self::find($id);
             $res = $res ? $res->toArray() : [];
-            if (is_numeric($ex)) {
+            if (is_numeric($ex) && $ex > 0) {
                 $randomExOffset = is_array($randomExOffset) ? $randomExOffset : [1,2];
                 $exp_offset = getRandValFromArray($randomExOffset);
                 $ex +=  $exp_offset * ($ex > 60 ? 60 : ($ex > 10 ? 10 : 1));
