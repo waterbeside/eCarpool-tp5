@@ -30,7 +30,7 @@ class Trip extends Base
             return $this->setError(-1, lang('该行程不存在'));
         }
         //检查是否已取消或完成
-        if (in_array($tripData['status'], [-1, 3])) {
+        if (in_array($tripData['status'], [-1, 3, 4, 5])) {
             return $this->setError(-1, lang('The trip has been completed or cancelled. Operation is not allowed'));
         }
         // 断定是否自己上自己车
@@ -120,7 +120,7 @@ class Trip extends Base
     public function checkChangeSeat($rqData, $tripData, $uid)
     {
         //检查是否已取消或完成
-        if (in_array($tripData['status'], [-1, 3])) {
+        if (in_array($tripData['status'], [-1, 3, 4, 5])) {
             return $this->setError(-1, lang('The trip has been completed or cancelled. Operation is not allowed'));
         }
         if ($tripData['user_type'] != 1) {
@@ -154,7 +154,7 @@ class Trip extends Base
     public function checkChangePlate($rqData, $tripData, $uid)
     {
         //检查是否已取消或完成
-        if (in_array($tripData['status'], [-1, 3])) {
+        if (in_array($tripData['status'], [-1, 3, 4, 5])) {
             return $this->setError(-1, lang('The trip has been completed or cancelled. Operation is not allowed'));
         }
         if ($tripData['user_type'] != 1) {
@@ -194,7 +194,7 @@ class Trip extends Base
         if ($tripData['uid'] != $userData['uid']) {
             return $this->setError(30001, lang('你不能操作把别人的行程合并到别人的行程'));
         }
-        if (in_array($tripData['status'], [-1, 3])) {
+        if (in_array($tripData['status'], [-1, 3, 4, 5])) {
             return $this->setError(30001, lang('你的行程已取消或完结，无法操作'));
         }
         if (time() - strtotime($tripData['time']) > 20 * 60) {

@@ -592,6 +592,7 @@ class Trips extends Service
 
     public function checkRepetitionByList($list, $time, $listType = 0, $itemOffset = 60 * 30, $level = [[60*10,10],[60*30,20]])
     {
+        $time = is_numeric($time) ? $time : strtotime($time);
         $level_checked = [];
         $level_timeList = [];
         $level_dataList = [];
