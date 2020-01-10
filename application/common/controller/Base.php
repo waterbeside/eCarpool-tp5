@@ -72,7 +72,8 @@ class Base extends Controller
             'code' => $code,
             'desc' => $message,
             'data' => $data,
-            'date' => date("Y-m-d H:i:s", time()),
+            // 'date' => date("Y-m-d H:i:s", time()),
+            'date' => time(),
             'extra' => $extra
         );
         // return json($data);
