@@ -3,8 +3,13 @@
 namespace app\api\controller\v1\shuttle;
 
 use app\api\controller\ApiBase;
+use app\carpool\model\ShuttleTrip;
 use app\carpool\model\ShuttleTripPartner;
+use app\carpool\service\shuttle\Partner as ShuttlePartnerServ;
+use app\carpool\model\User as UserModel;
 use app\carpool\service\shuttle\Trip as ShuttleTripService;
+use app\carpool\service\Trips as TripsService;
+use app\carpool\validate\shuttle\Partner as ShuttlePartnerVali;
 use my\RedisData;
 use my\Utils;
 
@@ -56,5 +61,183 @@ class Partner extends ApiBase
             'lists' => $list
         ];
         return $this->jsonReturn(0, $returnData, 'Successful');
+    }
+
+    /**
+     * 取得约车需求行程同行者
+     *
+     * @param integer $id 行程id;
+     * @param integer $from_type 0普通行程，1上下班行程;
+     */
+    public function list($id)
+    {
+        if (!is_numeric($id)) {
+            $this->jsonReturn(992, 'Error Param');
+        }
+
+        $from = input('param.from');
+        if (in_array($from, ['info'])) {
+            $from_type = 0;
+        } elseif ($from == 'shuttle_trip') {
+            $from_type = 1;
+        } else {
+            return $this->jsonReturn('992', 'Error Param');
+        }
+
+        $ShuttleTripPartner = new ShuttleTripPartner();
+        $list = $ShuttleTripPartner->getPartners($id, $from_type) ?: [];
+        if (empty($list)) {
+            $this->jsonReturn(20002, 'No Data');
+        }
+        $UserModel = new UserModel();
+        $Utils = new Utils();
+        $userFields = ['uid', 'name', 'phone', 'mobile', 'Department', 'imgpath', 'im_id'];
+        foreach ($list as $key => $value) {
+            $userData = $UserModel->getItem($value['uid'], $userFields);
+            $userData = $Utils->filterDataFields($userData, [], true, 'u_', -1);
+            $list[$key] = array_merge($value, $userData);
+        }
+        $list = $Utils->filterListFields($list, ['uid', 'name', 'sex', 'is_delete', 'status', 'time', 'update_time'], true);
+        $list = $Utils->formatTimeFields($list, 'list', ['time', 'create_time']);
+
+        $returnData = [
+            'lists' => $list
+        ];
+        return $this->jsonReturn(0, $returnData, 'Successful');
+    }
+
+    /**
+     * 添加同行者
+     *
+     */
+    public function save()
+    {
+        $userData = $this->getUserData(1);
+        $uid = $userData['uid'];
+        $trip_id = input('post.trip_id');
+        $from = input('post.from');
+        if (in_array($from, ['info'])) {
+            $from_type = 0;
+        } elseif ($from == 'shuttle_trip') {
+            $from_type = 1;
+        } else {
+            return $this->jsonReturn('992', 'Error Param');
+        }
+
+        $rqData['partners'] = input('post.partners');
+        $rqData['partners'] = Utils::getInstance()->stringSetToArray($rqData['partners'], 'intval');
+
+        $ShuttleTripModel = new ShuttleTrip();
+        $PartnerServ = new ShuttlePartnerServ();
+        $ShuttleTripPartner = new ShuttleTripPartner();
+
+        // 加锁
+        $lockKeyFill = "savePartners,uid_{$uid}";
+        $lockKeyFill2 = "savePartners";
+        if (!$ShuttleTripModel->lockItem($trip_id, $lockKeyFill, 5, 1)) { // 操作锁
+            return $this->jsonReturn(30006, lang('请不要重复操作'));
+        }
+        if (!$ShuttleTripModel->lockItem($trip_id, $lockKeyFill2)) { // 行锁
+            return $this->jsonReturn(20009, lang('网络烦忙，请稍候再试'));
+        }
+
+        $tripData = $ShuttleTripModel->getItem($trip_id);
+
+        // 验证
+        $ShuttlePartnerVali = new ShuttlePartnerVali();
+        if (!$ShuttlePartnerVali->checkSave($rqData, $tripData, $userData)) {
+            $errorData = $ShuttlePartnerVali->getError();
+            $ShuttleTripModel->unlockItem($trip_id, $lockKeyFill); // 解锁操作锁
+            $ShuttleTripModel->unlockItem($trip_id, $lockKeyFill2); // 解锁行锁
+            return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error check');
+        }
+
+        // 取得入库的partner用户数据
+        $partners_uData = $PartnerServ->getPartnersUserData($rqData['partners'], $userData['uid']);
+        if (empty($partners_uData) && in_array($uid, $rqData['partners'])) {
+            $ShuttleTripModel->unlockItem($trip_id, $lockKeyFill); // 解锁操作锁
+            $ShuttleTripModel->unlockItem($trip_id, $lockKeyFill2); // 解锁行锁
+            return $this->jsonReturn(-1, lang('你不能添加你自己作为同行伙伴'));
+        }
+
+        $time = strtotime($tripData['time']);
+
+        // 查查重复
+        if (!$ShuttlePartnerVali->checkRepetition($partners_uData, $time)) {
+            $errorData = $ShuttlePartnerVali->getError();
+            $ShuttleTripModel->unlockItem($trip_id, $lockKeyFill); // 解锁操作锁
+            $ShuttleTripModel->unlockItem($trip_id, $lockKeyFill2); // 解锁行锁
+            return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error check');
+        }
+        $from_type = $tripData['line_type'] > 0 ? 1 : 0;
+        Db::connect('database_carpool')->startTrans();
+        try {
+            // 处理同行者
+            if ($partners_uData && count($partners_uData) > 0) {
+                $partnerUids = $ShuttleTripPartner->getPartnerUids($trip_id, $tripData['line_type']) ?: [];
+
+                $tripData = [
+                    'id' => $trip_id,
+                    'uid' => $userData['uid'],
+                    'line_type' => $tripData['line_type'],
+                    'time' => date('Y-m-d H:i:s', $time)
+                ];
+                $PartnerServ->insertPartners($partners_uData, $tripData, $partnerUids);
+                // 处理原行程seat_count数
+                $ShuttleTripServ = new ShuttleTripService();
+                $ShuttleTripServ->resetRequestSeatCount($trip_id, $from_type);
+            }
+            // 提交事务
+            Db::connect('database_carpool')->commit();
+        } catch (\Exception $e) {
+            Db::connect('database_carpool')->rollback();
+            $errorMsg = $e->getMessage();
+            $ShuttleTripModel->unlockItem($trip_id, $lockKeyFill); // 解锁操作锁
+            $ShuttleTripModel->unlockItem($trip_id, $lockKeyFill2); // 解锁行锁
+            return $this->jsonReturn(-1, null, lang('Failed'), ['errorMsg'=>$errorMsg]);
+        }
+        $ShuttleTripModel->unlockItem($trip_id, $lockKeyFill); // 解锁操作锁
+        $ShuttleTripModel->unlockItem($trip_id, $lockKeyFill2); // 解锁行锁
+        return $this->jsonReturn(0, 'Successful');
+    }
+
+    /**
+     * 移除同行者
+     */
+    public function del($id)
+    {
+        $userData = $this->getUserData(1);
+        $uid = $userData['uid'];
+        $ShuttleTripPartner = new ShuttleTripPartner();
+        // 加锁
+        $lockKeyFill = "del,uid_{$uid}";
+        if (!$ShuttleTripPartner->lockItem($id, $lockKeyFill, 5, 1)) { // 操作锁
+            return $this->jsonReturn(30006, lang('请不要重复操作'));
+        }
+        $itemData = $ShuttleTripPartner->find($id);
+        // 验证
+        $ShuttlePartnerVali = new ShuttlePartnerVali();
+        if (!$ShuttlePartnerVali->checkDel($itemData, $userData)) {
+            $errorData = $ShuttlePartnerVali->getError();
+            $ShuttleTripPartner->unlockItem($id, $lockKeyFill); // 解锁操作锁
+            return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error check');
+        }
+        $from_type = $itemData['line_type'] > 0 ? 1 : 0;
+        $ShuttleTripModel = new ShuttleTrip();
+        Db::connect('database_carpool')->startTrans();
+        try {
+            // 执行删除
+            $ShuttleTripPartner->where('id', $id)->update(['is_delete'=>1]);
+            // 处理原行程seat_count数
+            $ShuttleTripServ = new ShuttleTripService();
+            $ShuttleTripServ->resetRequestSeatCount($itemData['trip_id'], $from_type);
+        } catch (\Exception $e) {
+            Db::connect('database_carpool')->rollback();
+            $errorMsg = $e->getMessage();
+            $ShuttleTripPartner->unlockItem($id, $lockKeyFill); // 解锁操作锁
+            return $this->jsonReturn(-1, null, lang('Failed'), ['errorMsg'=>$errorMsg]);
+        }
+        $ShuttleTripPartner->unlockItem($id, $lockKeyFill); // 解锁操作锁
+        return $this->jsonReturn(0, 'Successful');
     }
 }

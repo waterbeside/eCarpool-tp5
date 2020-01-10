@@ -78,9 +78,15 @@ Route::group([], function () {
     Route::rule('api/:version/shuttle/trip/:id/hitchhiking', 'api/:version.shuttle.trip/hitchhiking', 'POST')->pattern(['id' => '\d+']); // 乘客上车
     Route::rule('api/:version/shuttle/trip', 'api/:version.shuttle.trip/save', 'POST'); // 发布班车行程
     Route::rule('api/:version/shuttle/trip/:id/passengers', 'api/:version.shuttle.trip/passengers', 'GET')->pattern(['id' => '\d+']); //行程的乘客列表
+    Route::rule('api/:version/shuttle/trip/:id/partners', 'api/:version.shuttle.partner/list?from=shuttle_trip', 'GET')->pattern(['id' => '\d+']); // 我行程的同行者
     Route::rule('api/:version/shuttle/trip/:id', 'api/:version.shuttle.trip/show', 'GET')->pattern(['id' => '\d+']); //行程明细
     Route::rule('api/:version/shuttle/trip/:id', 'api/:version.shuttle.trip/change', 'PATCH')->pattern(['id' => '\d+']); // 变更行程（修改座位数，取消，完结）
+    
+    // 同行者相关
     Route::rule('api/:version/shuttle/partner/my', 'api/:version.shuttle.partner/my', 'GET'); // 我的常选同行者
+    Route::rule('api/:version/shuttle/partner', 'api/:version.shuttle.partner/list', 'GET'); // 行程的同行者列表
+    Route::rule('api/:version/shuttle/partner', 'api/:version.shuttle.partner/save', 'POST'); // 添加同行者
+    Route::rule('api/:version/shuttle/partner/:id', 'api/:version.shuttle.partner/del', 'DELETE'); // 删除同行者
 
     // 混合行程
     Route::rule('api/:version/mixtrip/my_coming', 'api/:version.trip.mix_trip/my_coming', 'GET'); // 取得我将要发生的行程列表，包括普通行程和班车行程
