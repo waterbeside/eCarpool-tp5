@@ -28,6 +28,17 @@ class TripsMixed extends Service
     }
 
     /**
+     * 取得我的混合行程Cache Key
+     *
+     * @param integer $uid 用户id
+     * @return string
+     */
+    public function getMyListCacheKey($uid)
+    {
+        return "carpool:mixTrip:my:{$uid}";
+    }
+
+    /**
      * 删除我的未来所有混合行程缓存
      *
      * @param integer $uid 用户id
