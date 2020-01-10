@@ -175,8 +175,15 @@ class ShuttleTrip extends BaseModel
      */
     public function getListByTimeOffset($time, $uid, $offsetTime = 60 * 30)
     {
-        $startTime = $time - $offsetTime;
-        $endTime =   $time + $offsetTime;
+        // TODO: 改为可把$offsetTime设为数组
+        if (is_numeric($offsetTime)) {
+            $offsetTime = [$offsetTime, $offsetTime];
+        }
+        if (count($offsetTime) < 2) {
+            $offsetTime = [$offsetTime[0], $offsetTime[0]];
+        }
+        $startTime = $time - $offsetTime[0];
+        $endTime =   $time + $offsetTime[1];
         $map = [
             ["status", "between", [0,1]],
             ["time", "between", [date('Y-m-d H:i:s', $startTime), date('Y-m-d H:i:s', $endTime)]],
