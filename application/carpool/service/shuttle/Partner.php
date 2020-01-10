@@ -3,6 +3,7 @@ namespace app\carpool\service\shuttle;
 
 use app\common\service\Service;
 use app\carpool\service\shuttle\Trip as ShuttleTripService;
+use app\carpool\service\Trips as TripsService;
 use app\carpool\model\User as UserModel;
 use app\carpool\model\ShuttleTripPartner;
 use app\carpool\model\ShuttleTrip;
@@ -65,9 +66,10 @@ class Partner extends Service
      *
      * @param array $partners 同伴的用户信息列表
      * @param array $tripData 行程基本信息, $rqData['line_data']
+     * @param array $oldPartnerUids 本身已在行程的同行者Uid数组
      * @return array
      */
-    public function buildInsertBatchData($partners, $tripData)
+    public function buildInsertBatchData($partners, $tripData, $oldPartnerUids = [])
     {
         $defaultData = [
             'status' => 0,
@@ -79,6 +81,9 @@ class Partner extends Service
         ];
         $batchDatas = [];
         foreach ($partners as $key => $value) {
+            if (!empty($oldPartnerUids) && is_array($oldPartnerUids) && in_array($value['uid'], $oldPartnerUids)) {
+                continue; // 如果已在旧的同行者内，则跳过
+            }
             $upUserData = [
                 'uid' => $value['uid'],
                 'name' => $value['name'],
@@ -95,18 +100,27 @@ class Partner extends Service
      *
      * @param array $partners 同伴的用户信息列表
      * @param array $tripData 行程基本信息, $rqData['line_data']
+     * @param array $oldPartnerUids 本身已在行程的同行者Uid数组
      * @return array
      */
-    public function insertPartners($partners, $tripData)
+    public function insertPartners($partners, $tripData, $oldPartnerUids = [])
     {
-        $batchData = $this->buildInsertBatchData($partners, $tripData);
-        return ShuttleTripPartner::insertAll($batchData);
+        $ShuttleTripPartner = new ShuttleTripPartner();
+        $batchData = $this->buildInsertBatchData($partners, $tripData, $oldPartnerUids);
+        $res = $ShuttleTripPartner->insertAll($batchData);
+        if ($res) {
+            // 如果插入成功，执行以下操作
+            if (isset($tripData['id']) && isset($tripData['line_type'])) {
+                $ShuttleTripPartner->delPartnersCache($tripData['id'], $tripData['line_type'] > 0 ? 1 :0); // 清理同行者列表缓存
+            }
+        }
+        return $res;
     }
 
     /**
      * 同行者上车
      *
-     * @param array $rqTripData 同行者信息
+     * @param array $rqTripData 约车需求的发起者行程信息
      * @param mixed $driverTripData 司机行程 ID or TripData
      */
     public function getOnCar($rqTripData, $driverTripData)
@@ -146,9 +160,33 @@ class Partner extends Service
             if (in_array($value['uid'], $passengersUids)) { // 如果本身是乘客之一
                 continue;
             }
-            $batchData[] = array_merge($defaultData, ['uid'=>$value['uid']]);
+            $upData = $defaultData;
+            $upData['uid'] = $value['uid'];
+            $upData['extra_info'] = json_encode([
+                'line_data' => $lineData,
+                'partner_data' => [ // 把partner表的id写入扩展字段
+                    'id' => $value['id'],
+                    'creater_id' => $rqTripData['uid'],
+                    'trip_id' => $rqTripData['id'],
+                ]
+            ]);
+            $batchData[] = $upData;
         }
-        return ShuttleTrip::insertAll($batchData);
+        Db::connect('database_carpool')->startTrans();
+        try {
+            // 插入主表
+            ShuttleTrip::insertAll($batchData);
+            // 把同行者标记为已上车
+            $ShuttleTripPartner->signGetOn($rqTripData['id'], $lineType > 0 ? 1 : 0);
+            // 提交事务
+            Db::connect('database_carpool')->commit();
+        } catch (\Exception $e) {
+            Db::connect('database_carpool')->rollback();
+            throw new \Exception($e->getMessage());
+            return false;
+        }
+        
+        return true;
     }
 
     /**
@@ -164,6 +202,7 @@ class Partner extends Service
         $TripsPushMsg = new TripsPushMsg();
         $ShuttleTripModel = new ShuttleTrip();
         $UserModel = new UserModel();
+        $ShuttleTripPartner = new ShuttleTripPartner();
         $pushMsgData = [
             'from' => 'shuttle_trip',
             'runType' => 'pickup_partner',
@@ -172,13 +211,16 @@ class Partner extends Service
             'id' => $driverTripData['id'],
         ];
         $driverUid = $driverTripData['uid'] ?? ($driverUserData['uid'] ?? 0);
+        if (count($partners) > 0) {
+            $ShuttleTripPartner->delPartnersCache($partners[0]['trip_id'], $partners[0]['line_type'] > 0 ? 1 :0); // 清除需求的同行者列表缓存
+        }
         foreach ($partners as $key => $value) {
-            $ShuttleTripModel->delMyListCache($value['uid'], 'my');
+            $ShuttleTripModel->delMyListCache($value['uid'], 'my'); // 清除各同行者用户的我的行程
             if ($value['uid'] == $driverUid) { // 排除司机
                 continue;
             }
             $TripsPushMsg->pushMsg($value['uid'], $pushMsgData);
-            if ($runType = 'hitchhiking') { // 把消息也推给司机
+            if ($runType == 'hitchhiking') { // 把消息也推给司机
                 $pushMsgData = [
                     'from' => 'shuttle_trip',
                     'runType' => 'hitchhiking',
@@ -190,5 +232,45 @@ class Partner extends Service
             }
         }
         return true;
+    }
+
+
+    /**
+     * 取消行程而还原同行者
+     *
+     * @param array $tripList 被取消的行程列表
+     * @return void
+     */
+    public function getOffCar($tripList)
+    {
+        $ShuttleTripModel = new ShuttleTrip();
+        $ShuttleTripPartner = new ShuttleTripPartner();
+        foreach ($tripList as $key => $value) {
+            $partnerData = $ShuttleTripModel->getExtraInfo($value, 'partner_data');
+            if (isset($partnerData['id'])) {
+                // $rqTripData = $ShuttleTripModel->getItem($partnerData['id']);
+                $ShuttleTripPartner->signGetOff($partnerData['id']);
+                $ShuttleTripPartner->delPartnersCache($partnerData['trip_id'], $value['line_type'] > 0 ? 1 : 0); // 清理缓存
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 发布行程时检查行程是否有重复 (包含ShuttleTrip, love_wall , info)
+     * @param  integer     $time       timestamp 出发时间的时间戳
+     * @param  integer     $uid        发布者ID
+     * @param  boolean     $listDetail    是否返回列表详情
+     * @param  string      $offsetTime 时间偏差范围
+     */
+    public function getRepetition($time, $uid, $offsetTime = 60 * 15, $level = null)
+    {
+        $time = is_numeric($time) ? $time : strtotime($time);
+        $level = $level ?: [[60*10,10]];
+        $ShuttleTripPartner = new ShuttleTripPartner();
+        $TripsService = new TripsService();
+        $list = $ShuttleTripPartner->getListByTimeOffset($time, $uid, $offsetTime);
+        $res = $TripsService->checkRepetitionByList($list, $time, 0, $offsetTime, $level);
+        return $res;
     }
 }
