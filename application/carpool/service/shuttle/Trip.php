@@ -8,8 +8,10 @@ use app\carpool\model\ShuttleTrip as ShuttleTripModel;
 use app\carpool\service\Trips as TripsService;
 use app\carpool\service\TripsList as TripsListService;
 use app\carpool\service\TripsMixed as TripsMixedService;
+use app\carpool\service\shuttle\Partner as PartnerService;
 use app\carpool\service\TripsPushMsg;
 use app\carpool\model\ShuttleLineDepartment;
+use app\carpool\model\ShuttleTripPartner;
 use app\user\model\Department;
 use my\RedisData;
 use my\Utils;
@@ -435,35 +437,35 @@ class Trip extends Service
         $uid = $userData['uid'];
 
         if (empty($tripData)) {
-            return $this->error(20002, '该行程不存在', $tripData);
+            return $this->setError(20002, '该行程不存在', $tripData);
         }
         if (time() - strtotime($tripData['time']) > 20 * 60) {
             return $this->setError(30007, lang('行程已经开始一段时间了，无法操作'));
         }
         $userType = $tripData['user_type'];
         $extData = [];
-
+        $res = false;
         if ($userType == 1) { // 如果从司机行程进行操作
             //检查是否已取消或完成
             if (in_array($tripData['status'], [-1, 3, 4, 5])) {
-                return $this->error(30001, lang('The trip has been completed or cancelled. Operation is not allowed'), $tripData);
+                return $this->setError(30001, lang('The trip has been completed or cancelled. Operation is not allowed'), $tripData);
             }
             // 检查是否该行程的成员
             if ($tripData['uid'] == $uid) { //如果是司机自已操作
                 $extData['i_am_driver'] = true;
                 $passengers = $ShuttleTripModel->passengers($id);
                 $extData['passengers'] = $passengers;
-                $res = $ShuttleTripModel->cancelDriveTrip($tripData);
+                $res = $this->runRowCancel($tripData); // 执行取消
             } else { // 如果是乘客从司机空座位上操作
                 $myTripData = $ShuttleTripModel->findPtByDt($id, $uid, ['status','between',[0,5]]);
                 if ($myTripData) {
                     if ($myTripData['status'] > 2) {
-                        return $this->error(30001, lang('该行程已经过期或结束，无法操作'));
+                        return $this->setError(30001, lang('该行程已经过期或结束，无法操作'));
                     }
                     $extData['myTripData'] = $myTripData;
-                    $res = $ShuttleTripModel->cancelPassengerTrip($myTripData);
+                    $res = $this->runRowCancel($myTripData); // 执行取消
                 } else {
-                    return $this->error(30001, lang('你不是司机或乘客，无法操作'));
+                    return $this->setError(30001, lang('你不是司机或乘客，无法操作'));
                 }
             }
         } else { // 从乘客行程操作
@@ -475,26 +477,109 @@ class Trip extends Service
                 $extData['driverTripData'] = $driverTripData;
                 if ($driverTripData['status'] == 3) {
                     // 如果司机行程为结束，则此无法操作, （如果司结行程未结束，即使自己行程点了结束，也可进行取消）
-                    return $this->error(-1, lang('行程已结束，无法操作'), $tripData);
+                    return $this->setError(-1, lang('行程已结束，无法操作'), $tripData);
                 }
             } elseif ($tripData['status'] == 3) { // 如果trip_id不大于0且状态为结束，则无法操作
-                return $this->error(-1, lang('行程已结束，无法操作'), $tripData);
+                return $this->setError(-1, lang('行程已结束，无法操作'), $tripData);
             }
             if ($tripData['uid'] == $uid) { //如果是乘客自已操作
-                $res = $ShuttleTripModel->cancelPassengerTrip($tripData);
+                // XXX: 如果是乘客自已操作
             } elseif ($ShuttleTripModel->checkIsDriver($tripData, $uid)) { // 如果是司机操作乘客
                 $extData['i_am_driver'] = true;
-                $res = $ShuttleTripModel->cancelPassengerTrip($tripData);
             } else {
-                return $this->error(30001, lang('你不能操作别人的行程'));
+                return $this->setError(30001, lang('你不能操作别人的行程'));
             }
+            // 执行取消
+            $res = $this->runRowCancel($tripData); // 执行取消
+        }
+        if ($res) {
+            $this->doAfterStatusChange($tripData, $userData, 'cancel', $extData);
+        }
+        return $res;
+    }
+
+    /**
+     * 执行取消行程并删除同行者行
+     *
+     * @param mixed $idOrData 要取消的行程行
+     * @return boolean
+     */
+    public function runRowCancel($idOrData)
+    {
+        $ShuttleTripModel = new ShuttleTripModel();
+        $PartnerService  = new PartnerService();
+        $tripData =  $ShuttleTripModel->getDataByIdOrData($idOrData);
+        $userType = $tripData['user_type'];
+        Db::connect('database_carpool')->startTrans();
+        try {
+            if ($userType == 1) { // 如果是司机行程
+                $res = $ShuttleTripModel->cancelDriveTrip($tripData);
+                if ($res) {
+                    // 如果有同行者要还原，则还原同行者
+                    $resData = $ShuttleTripModel->getError();
+                    $partnerTripList = $resData['partnerTripList'] ?? [];
+                    $PartnerService->getOffCar($partnerTripList);
+                }
+            } else { // 如果是乘客行程
+                $res = $ShuttleTripModel->cancelPassengerTrip($tripData);
+                if ($res && $tripData['trip_id'] > 0) { // 如果该行程是有司机配对的，成功后：
+                    $from_type = $tripData['line_type'] > 0 ? 1 : 0 ;
+                    $PartnerModel  = new ShuttleTripPartner();
+                    if ($tripData['comefrom'] == 4) { // 如果该行程本身是同行者行程
+                        $partnerData = $ShuttleTripModel->getExtraInfo($tripData, 'partner_data');
+                        if (isset($partnerData['id']) && $partnerData['id'] > 0) {
+                            $PartnerModel->where('id', $partnerData['id'])->update(['is_delete' => 1]); // 删
+                            $this->resetRequestSeatCount($tripData['id'], $from_type); // 重计seat_count;
+                        }
+                    } elseif ($tripData['comefrom'] == 2 &&  time() <= strtotime($tripData['time'])) { // 如果该行程是发起的约车需求
+                        $partnerMap = [
+                            ['is_delete', '=', Db::raw(0)],
+                            ['trip_id', '=', $tripData['id']],
+                        ];
+                        $partnerMap[] = $from_type ? ['line_type', '>', 0] : ['line_type', '=', 0];
+                        $havePartner = $PartnerModel->where($partnerMap)->count(); // 查出所有partners
+                        if ($havePartner > 0) {
+                            $PartnerModel->where($partnerMap)->update(['is_delete' => 1]); // 删
+                            $this->resetRequestSeatCount($tripData['id'], $from_type); // 重计seat_count;
+                        }
+                    }
+                }
+            }
+            // 提交事务
+            Db::connect('database_carpool')->commit();
+        } catch (\Exception $e) {
+            Db::connect('database_carpool')->rollback();
+            $errorMsg = $e->getMessage();
+            return $this->setError(-1, lang('Failed'), ['errorMsg'=>$errorMsg]);
         }
         if (isset($res) && $res) {
-            $this->doAfterStatusChange($tripData, $userData, 'cancel', $extData);
             return true;
         }
         $errorData = $ShuttleTripModel->getError();
-        return $this->error($errorData['code'] ?? -1, $errorData['msg'] ?? 'Failed', $errorData['data'] ?? []);
+        return $this->setError($errorData['code'] ?? -1, $errorData['msg'] ?? 'Failed', $errorData['data'] ?? []);
+    }
+
+
+    /**
+     * 重计算约车需求的seat_count（计算同行者）
+     * 成功后会自动清除同行者列表缓存，以及该行程item缓存
+     *
+     * @param integer $trip_id 行程id
+     * @param integer $from_type 0普通行程，1上下班行程
+     */
+    public function resetRequestSeatCount($trip_id, $from_type)
+    {
+        $ShuttleTripPartner = new ShuttleTripPartner();
+        $ShuttleTripModel = new ShuttleTripModel();
+        // 处理原行程seat_count数
+        $partnersCount = $ShuttleTripPartner->countPartners($trip_id, $from_type);
+        $seat_count = intval($partnersCount) + 1;
+        $res = $ShuttleTripModel->where('id', $trip_id)->update(['seat_count'=>$seat_count]);
+        if ($res) {
+            $ShuttleTripModel->delItemCache($trip_id); // 清除约车需求行程的缓存
+            $ShuttleTripPartner->delPartnersCache($trip_id, $from_type); // 清除行程的同行者列表缓存
+        }
+        return $res;
     }
 
     /**
@@ -502,7 +587,7 @@ class Trip extends Service
      *
      * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
      * @param mixed $uidOrData 当为数字时，为用户id；当为array时，为该用户的data; ;
-     * @return void
+     * @return boolean
      */
     public function finish($idOrData, $uidOrData)
     {
