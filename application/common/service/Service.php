@@ -3,7 +3,7 @@
 namespace app\common\service;
 
 use my\RedisData;
-
+use my\Utils;
 use think\Db;
 
 class Service
@@ -76,21 +76,6 @@ class Service
      */
     public function formatTimeFields($data, $dataType = 'item', $fields = ['time','create_time'])
     {
-        if (is_string($fields)) {
-            $fields = explode(',', $fields);
-        }
-
-        if ($dataType == 'list') {
-            foreach ($data as $key => $value) {
-                $data[$key] = $this->formatTimeFields($value, 'item', $fields);
-            }
-        } else {
-            foreach ($fields as $key => $value) {
-                if (isset($data[$value])) {
-                    $data[$value] = is_numeric($data[$value]) ? $data[$value] : strtotime($data[$value]);
-                }
-            }
-        }
-        return $data;
+        return Utils::getInstance()->formatTimeFields($data, $dataType, $fields);
     }
 }

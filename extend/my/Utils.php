@@ -115,4 +115,50 @@ class Utils
         }
         return $data;
     }
+
+    /**
+     * 格式化时间字段
+     *
+     * @param array $data 要处理的数据
+     * @param string $dataType 处理的数据格式类型 [list or item]
+     * @param mixed $fields 要处理的字段 可为string||array
+     * @return array
+     */
+    public function formatTimeFields($data, $dataType = 'item', $fields = ['updata_time', 'create_time'])
+    {
+        if (is_string($fields)) {
+            $fields = explode(',', $fields);
+        }
+
+        if ($dataType == 'list') {
+            foreach ($data as $key => $value) {
+                $data[$key] = $this->formatTimeFields($value, 'item', $fields);
+            }
+        } else {
+            foreach ($fields as $key => $value) {
+                if (isset($data[$value])) {
+                    $data[$value] = is_numeric($data[$value]) ? $data[$value] : strtotime($data[$value]);
+                }
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * 从列表抽取某字段组成数组
+     *
+     * @param array $list 列表
+     * @param string $field 字段名
+     * @return array
+     */
+    public function getListColumn($list, $field)
+    {
+        $returnData = [];
+        foreach ($list as $key => $value) {
+            if (isset($value[$field])) {
+                $returnData[] = $value[$field];
+            }
+        }
+        return $returnData;
+    }
 }
