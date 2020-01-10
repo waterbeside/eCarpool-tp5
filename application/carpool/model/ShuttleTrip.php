@@ -412,6 +412,7 @@ class ShuttleTrip extends BaseModel
         if (empty($tripData)) {
             return $this->setError(20002, '该行程不存在', $tripData);
         }
+        $returnData = [];
         // 查出所有乘客行程，以便作消息推送;
         Db::connect('database_carpool')->startTrans();
         try {
@@ -426,23 +427,35 @@ class ShuttleTrip extends BaseModel
                 $map = [
                     ['trip_id', '=', $id],
                     ['status', '>', -1],
-                    ['comefrom', 'between', [2, 3]],
+                    ['comefrom', 'between', [2, 4]],
                 ];
                 $this->where($map)->update($upData);
             } else { // 如果未过出发时间
+                // 取消自主上车的乘客
                 $map = [
                     ['trip_id', '=', $id],
                     ['status', '>', -1],
                     ['comefrom', '=', 3],
                 ];
                 $this->where($map)->update($upData);
+                // 还原发了需求的乘客
                 $map2 = [
                     ['trip_id', '=', $id],
                     ['status', '>', -1],
                     ['comefrom', '=', 2],
                 ];
-                // 取消所有从约车需求上车乘客行程(还原成约车需求)
+                $requestTripList = $this->where($map2)->select(); // 先查出所有约车需求，以便还原partner表的内容
+                $returnData['requestTripList'] = $requestTripList;
                 $this->where($map2)->update(['status' => 0, 'trip_id'=>0, 'operate_time'=>date('Y-m-d H:i:s')]);
+                // 还原通过同行者方式搭车的乘客 (取消这些乘客的行程)
+                $map3 = [
+                    ['trip_id', '=', $id],
+                    ['status', '>', -1],
+                    ['comefrom', '=', 4],
+                ];
+                $partnerTripList = $this->where($map3)->select(); // 先查出，以便还原partner表的内容
+                $returnData['partnerTripList'] = $partnerTripList;
+                $this->where($map3)->update($upData); // 更改状态为取消
                 $this->delListCache($tripData['line_id'], 'requests');
             }
             // 提交事务
@@ -454,6 +467,7 @@ class ShuttleTrip extends BaseModel
             return $this->setError(-1, $errorMsg, []);
         }
         $this->delListCache($tripData['line_id'], 'cars');
+        $this->setError(0, 'Successful', $returnData); // 如果有同行者信息，则放在此，以便还原。
         return true;
     }
 
@@ -599,5 +613,22 @@ class ShuttleTrip extends BaseModel
             $redis->cache($cacheKey, $res, 60);
         }
         return $res;
+    }
+
+    /**
+     * 取得Extra_info内容
+     *
+     * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
+     * @return array
+     */
+    public function getExtraInfo($idOrData, $key = null)
+    {
+        $tripData = $this->getDataByIdOrData($idOrData);
+        try {
+            $extra_data = json_decode($tripData['extra_info'], true);
+        } catch (\Exception $e) {  //其他错误
+            $extra_data = null;
+        }
+        return $key ? ($extra_data[$key] ?? null) : $extra_data;
     }
 }
