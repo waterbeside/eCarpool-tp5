@@ -309,7 +309,8 @@ class Trip extends ApiBase
             $this->jsonReturn(992, 'Error param');
         }
         $ShuttleTripService = new ShuttleTripService();
-        $res = $ShuttleTripService->passengers($id, [], ['id', 'time', 'create_time', 'status', 'comefrom']) ?: [];
+        $tripFields = ['id', 'time', 'create_time', 'status', 'comefrom', 'user_type'];
+        $res = $ShuttleTripService->passengers($id, [], $tripFields) ?: [];
         $returnData = [
             'lists' => $res,
         ];
@@ -339,7 +340,8 @@ class Trip extends ApiBase
         if ($show_member) {
             if ($data['user_type'] == 1) {
                 if ($show_member == 2) {
-                    $data['passengers'] = $ShuttleTripServ->passengers($id, [], ['id', 'time', 'create_time', 'status', 'comefrom']) ?: [];
+                    $tripFields = ['id', 'time', 'create_time', 'status', 'comefrom', 'user_type'];
+                    $data['passengers'] = $ShuttleTripServ->passengers($id, [], $tripFields) ?: [];
                     $data['took_count'] = count($data['passengers']);
                 } else {
                     $ShuttleTrip = new ShuttleTrip();
