@@ -228,7 +228,6 @@ class Partner extends ApiBase
             return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error check');
         }
         $from_type = $itemData['line_type'] > 0 ? 1 : 0;
-        $ShuttleTripModel = new ShuttleTrip();
         Db::connect('database_carpool')->startTrans();
         try {
             // 执行删除
