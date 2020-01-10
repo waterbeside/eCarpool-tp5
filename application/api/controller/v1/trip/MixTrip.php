@@ -88,4 +88,26 @@ class MixTrip extends ApiBase
         
         return $this->jsonReturn(0, ['lists' => $listData], 'Success');
     }
+
+    /**
+     * 指定时间内的我的行程
+     *
+     */
+    public function my($range_type)
+    {
+        $userData = $this->getUserData(1);
+        $uid = $userData['uid'];
+        $redis = new RedisData();
+        $TripsMixedService = new TripsMixedService();
+        $cacheKey =  $TripsMixedService->getComingListCacheKey($uid);
+        $listData = $redis->cache($cacheKey);
+        if (is_array($listData) && empty($listData)) {
+            return $this->jsonReturn(20002, lang('No data'));
+        }
+        if (!$listData) {
+            // TODO:: 取得今天的我的行程的数据
+        }
+        
+        return $this->jsonReturn(0, ['lists' => $listData], 'Success');
+    }
 }
