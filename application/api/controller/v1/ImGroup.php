@@ -246,8 +246,8 @@ class ImGroup extends ApiBase
         $userData = $this->getUserData(1);
         $uid =  $userData['uid'];
 
-        $signature     = input('request.signature');
-        $group         = input('request.group/s');
+        $signature     = input('request.signature') ?: (input('post.signature') ?: input('get.signature'));
+        $group     = input('request.group/s') ?: (input('post.group/s') ?: input('get.group/s'));
 
         if (!$signature || !$group) {
             $this->jsonReturn(992, [], 'Empty signature or group');
@@ -280,8 +280,8 @@ class ImGroup extends ApiBase
         $userData = $this->getUserData(1);
         $uid =  $userData['uid'];
 
-        $owner     = input('request.owner');
-        $group     = input('request.group');
+        $owner     = input('request.owner') ?: (input('post.owner') ?: input('get.owner'));
+        $group     = input('request.group') ?: (input('post.group') ?: input('get.group'));
         $now       = time();
 
         $placeholder_users = $this->placeholder_users;

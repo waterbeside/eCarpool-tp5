@@ -159,7 +159,7 @@ class Sms extends ApiBase
      */
     protected function codeCache($usage, $phone, $code = false, $msg = "", $exp = 600)
     {
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $key = "common:sms_code:" . $usage . ":" . $phone;
         if ($code) {
             $data = [
@@ -168,21 +168,20 @@ class Sms extends ApiBase
                 'time' => time()
             ];
             // Cache::tag('public')->set($key, $data ,$exp);
-            $redis->setex($key, $exp, json_encode($data));
+            $redis->cache($key, $data, $exp);
             return true;
         }
         if ($code === false) {
             // $res_array = Cache::tag('public')->get($key);
-            $res = $redis->get($key);
+            $res = $redis->cache($key);
             if (!$res) {
                 return false;
             }
-            $res_array = json_decode($res, true);
-            return $res_array;
+            return $res;
         }
         if ($code === null) {
             // Cache::tag('public')->rm($key);
-            $res = $redis->delete($key);
+            $res = $redis->del($key);
             return true;
         }
     }
@@ -294,7 +293,7 @@ class Sms extends ApiBase
                     }*/
                     break;
                 case 104: //合并账号
-                    $type = input('param.type', 0);
+                    $type = input('param.type', 0) ?: ( input('post.type', 0) ?: input('get.type', 0));
                     if (!$type) { // 默认必先做jwt验证
                         $userData = $this->getUserData(1);
                         if ($userData['phone'] == $phone) {
@@ -393,7 +392,8 @@ class Sms extends ApiBase
         switch ($usage) {
                 /******** 验证登入 *********/
             case 100:
-                $client = input('param.client');
+                $client = input('param.client') ?: input('post.client') ?: input('get.client');
+
                 if (!in_array(strtolower($client), array('ios', 'android', 'h5', 'web', 'third'))) {
                     return  $this->jsonReturn(992, [], 'client error');
                 };
@@ -706,8 +706,6 @@ class Sms extends ApiBase
         );*/
         return  $sendRes;
     }
-
-
 
 
     /**

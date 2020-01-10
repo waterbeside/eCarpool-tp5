@@ -12,9 +12,9 @@ class GetLang
     public function run(Request $request, $controller = null, $setting = [])
     {
         if (!$controller->language_l) {
-            $lang_s =  input('request._language');
-            $lang_s = $lang_s ? $lang_s : input('request.lang');
-            $lang_s = $lang_s ? $lang_s : request()->header('Accept-Language');
+            $lang_s = input('request._language') ?: (input('post._language') ?: input('get._language'));
+            $lang_s = $lang_s ?: (input('request.lang') ?: (input('post.lang') ?: input('get.lang')));
+            $lang_s = $lang_s ?: request()->header('Accept-Language');
 
             $language = $this->formatLangCode($lang_s);
             $controller->language_l = $this->language_l;
