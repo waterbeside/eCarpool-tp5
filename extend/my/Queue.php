@@ -21,7 +21,7 @@ class Queue
     {
         $setting = array_merge($this->setting, $setting);
         $this->queueKey = $key;
-        $this->redis = new RedisData();
+        $this->redis = RedisData::getInstance();
         $this->redis->select($setting['db']);
     }
 
