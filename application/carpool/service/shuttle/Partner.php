@@ -96,12 +96,13 @@ class Partner extends Service
     }
 
     /**
-     * 生成插入同伴表的批量数据
+     * 同行者入库
      *
      * @param array $partners 同伴的用户信息列表
      * @param array $tripData 行程基本信息, $rqData['line_data']
+     * @param array $userData 操作者用户信息，主要用于推送
      * @param array $oldPartnerUids 本身已在行程的同行者Uid数组
-     * @return array
+     * @return mixed 如果成功，则返回插入的数据列表;
      */
     public function insertPartners($partners, $tripData, $oldPartnerUids = [])
     {
@@ -111,10 +112,35 @@ class Partner extends Service
         if ($res) {
             // 如果插入成功，执行以下操作
             if (isset($tripData['id']) && isset($tripData['line_type'])) {
+                // 清缓存
                 $ShuttleTripPartner->delPartnersCache($tripData['id'], $tripData['line_type'] > 0 ? 1 :0); // 清理同行者列表缓存
             }
         }
-        return $res;
+        return $res ? $batchData : 0;
+    }
+
+    /**
+     * 加完同行者的操作(推消息)
+     *
+     * @param array $partnerBatchData 插入成功后所返的同行者数据
+     * @param array $tripData 约车需求的行程数据
+     * @param array $userData 操作用户的数据
+     */
+    public function doAfterAddPartners($partnerBatchData, $tripData, $userData)
+    {
+        // 推送
+        $TripsPushMsg = new TripsPushMsg();
+        foreach ($partnerBatchData as $key => $value) {
+            $pushMsgData = [
+                'from' => 'shuttle_trip',
+                'runType' => 'partner_save',
+                'userData'=> $userData,
+                'tripData'=> $tripData,
+                'id' => $tripData['id'],
+            ];
+            $TripsPushMsg->pushMsg($value['uid'], $pushMsgData);
+        }
+        return true;
     }
 
     /**

@@ -418,7 +418,7 @@ class Trip extends ApiBase
                     'line_type' => $rqData['line_data']['type'],
                     'time' => date('Y-m-d H:i:s', $rqData['time'])
                 ];
-                $PartnerServ->insertPartners($partners, $tripData);
+                $addPartnerRes = $PartnerServ->insertPartners($partners, $tripData);
             }
             // 提交事务
             Db::connect('database_carpool')->commit();
@@ -432,6 +432,9 @@ class Trip extends ApiBase
         if (!$addRes) {
             $errorData = $ShuttleTripService->getError();
             return $this->jsonReturn($errorData['code'], $errorData['data'], $errorData['msg']);
+        }
+        if (isset($addPartnerRes) && is_array($addPartnerRes)) {
+            $PartnerServ->doAfterAddPartners($addPartnerRes, $tripData, $userData);
         }
         return $this->jsonReturn(0, ['id'=>$addRes], 'Successful');
     }

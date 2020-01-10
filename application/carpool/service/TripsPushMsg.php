@@ -31,7 +31,7 @@ class TripsPushMsg extends Service
             ]
         ];
 
-        if ($runType == "cancel") {
+        if ($runType == "cancel") { // 取消行程
             if ($isDriver) { // 如果是司机，则推给乘客
                 // $push_msg = lang("The driver {:name} cancelled the trip", ["name"=>$userData['name']]) ;
                 $push_msg = "司机" . $userData['name'] . "取消了行程";
@@ -39,17 +39,19 @@ class TripsPushMsg extends Service
                 // $push_msg = lang("The passenger {:name} cancelled the trip", ["name"=>$userData['name']]) ;
                 $push_msg = "乘客" . $userData['name'] . "取消了行程";
             }
-        } elseif ($runType == 'get_on') {
+        } elseif ($runType == 'get_on') { // 上车 （暂没用）
             // $push_msg = lang("The passenger {:name} has got on your car", ["name"=>$userData['name']]) ;
             $push_msg = '乘客' . $userData['name'] . '上了你的车';
-        } elseif ($runType == "riding" || $runType == "hitchhiking") {
+        } elseif ($runType == "riding" || $runType == "hitchhiking") { // 搭车
             // $push_msg = lang('{:name} took your car', ["name"=>$userData['name']]);
             $push_msg = $userData['name'] . '搭了你的车';
-        } elseif ($runType == "pickup") {
+        } elseif ($runType == "pickup") { // 搭客
             // $push_msg = lang('{:name} accepted your ride requst', ["name"=>$userData['name']]);
             $push_msg = $userData['name'] . '接受了你的约车需求';
-        } elseif ($runType == "pickup_partner") {
+        } elseif ($runType == "pickup_partner") { // 搭同行者
             $push_msg = "你搭上了{$userData['name']}的车";
+        } elseif ($runType == "partner_save") { // 添加同行者
+            $push_msg = "你作为同行伙伴加入了{$userData['name']}的约车需求";
         } else {
             return true;
         }

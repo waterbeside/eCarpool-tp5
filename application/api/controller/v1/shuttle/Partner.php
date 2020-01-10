@@ -184,7 +184,7 @@ class Partner extends ApiBase
                     'line_type' => $tripData['line_type'],
                     'time' => date('Y-m-d H:i:s', $time)
                 ];
-                $PartnerServ->insertPartners($partners_uData, $tripData, $partnerUids);
+                $addPartnerRes = $PartnerServ->insertPartners($partners_uData, $tripData, $partnerUids);
                 // 处理原行程seat_count数
                 $ShuttleTripServ = new ShuttleTripService();
                 $ShuttleTripServ->resetRequestSeatCount($trip_id, $from_type);
@@ -200,6 +200,9 @@ class Partner extends ApiBase
         }
         $ShuttleTripModel->unlockItem($trip_id, $lockKeyFill); // 解锁操作锁
         $ShuttleTripModel->unlockItem($trip_id, $lockKeyFill2); // 解锁行锁
+        if (isset($addPartnerRes) && is_array($addPartnerRes)) {
+            $PartnerServ->doAfterAddPartners($addPartnerRes, $tripData, $userData);
+        }
         return $this->jsonReturn(0, 'Successful');
     }
 
