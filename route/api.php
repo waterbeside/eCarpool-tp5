@@ -90,6 +90,7 @@ Route::group([], function () {
 
     // 混合行程
     Route::rule('api/:version/mixtrip/my_coming', 'api/:version.trip.mix_trip/my_coming', 'GET'); // 取得我将要发生的行程列表，包括普通行程和班车行程
+    Route::rule('api/:version/mixtrip/my', 'api/:version.trip.mix_trip/my', 'GET'); // 取得我将要发生的行程列表，包括普通行程和班车行程
 
 
     //地址相关

@@ -7,6 +7,7 @@ use app\carpool\model\Info as InfoModel;
 use app\carpool\model\ShuttleTrip as ShuttleTripModel;
 use app\carpool\service\shuttle\Trip as ShuttleTripService;
 use app\carpool\service\TripsMixed as TripsMixedService;
+use app\carpool\service\Trips as TripsService;
 use my\RedisData;
 use my\Utils;
 
@@ -90,24 +91,46 @@ class MixTrip extends ApiBase
     }
 
     /**
-     * 指定时间内的我的行程
+     * 我的未来n小时内的行程
      *
      */
-    public function my($range_type)
+    public function my()
     {
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
         $redis = new RedisData();
         $TripsMixedService = new TripsMixedService();
+        $nextHour = 24; // 取未来多少小时的数据
         $cacheKey =  $TripsMixedService->getComingListCacheKey($uid);
-        $listData = $redis->cache($cacheKey);
+        $returnData = [
+            'next_hour'=> $nextHour,
+        ];
+
+        $rowKey = "page_1,nextHour_{$nextHour}";
+        $listData = $redis->hCache($cacheKey, $rowKey);
         if (is_array($listData) && empty($listData)) {
-            return $this->jsonReturn(20002, lang('No data'));
+            return $this->jsonReturn(20002, $returnData, lang('No data'));
         }
         if (!$listData) {
-            // TODO:: 取得今天的我的行程的数据
+            $TripsServ = new TripsService();
+            $ShuttleTripModel = new ShuttleTripModel();
+
+            // 先查普通行程數據
+            $list_1 = $TripsServ->getUnionListByTimeOffset(time(), $uid, [60 * 10, 60 * 60 * $nextHour]);
+            // 再取上下班行程数据
+            $list_2 = $ShuttleTripModel->getListByTimeOffset(time(), $uid, [60 * 10, 60 * 60 * $nextHour]);
+            
+            $listData = array_merge($list_1 ?: [], $list_2 ?: []);
+            if ($listData) {
+                $listData =  Utils::getInstance()->listSortBy($listData, 'time', 'asc');
+            }
         }
-        
-        return $this->jsonReturn(0, ['lists' => $listData], 'Success');
+        if (empty($listData)) {
+            $listData = $redis->hCache($cacheKey, $rowKey, [], 10);
+            return $this->jsonReturn(20002, $returnData, lang('No data'));
+        }
+        $redis->hCache($cacheKey, $rowKey, $listData, 60 * 2);
+        $returnData['lists'] = $listData;
+        return $this->jsonReturn(0, $returnData, 'Success');
     }
 }
