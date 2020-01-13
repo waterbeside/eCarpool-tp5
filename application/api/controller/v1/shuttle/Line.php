@@ -28,8 +28,10 @@ class Line extends ApiBase
     }
 
 
-    public function index($type = 1, $show_count = 1, $page = 1, $pagesize = 0)
+    public function index($type = 1, $show_count = 1, $get_sort = 1, $page = 1, $pagesize = 0)
     {
+        $userData = $this->getUserData(0);
+        $uid = $userData['uid'] ?? 0;
         $redis = new RedisData();
         $departmentModel = new Department();
         $shuttleLineModel = new ShuttleLineModel();
@@ -88,6 +90,8 @@ class Line extends ApiBase
                 $redis->hCache($cacheKey, $rowCacheKey, $returnData, $ex);
             }
         }
+
+        // 取得当前路线的约车需求数
         if (is_numeric($show_count) && $show_count > 0) {
             foreach ($returnData['lists'] as $key => $value) {
                 $countData = [
@@ -97,7 +101,18 @@ class Line extends ApiBase
                 $returnData['lists'][$key]['countData'] = $countData;
             }
         }
-        
+
+        // 排序方法
+        if (is_numeric($get_sort) && $get_sort > 0) {
+            foreach ($returnData['lists'] as $key => $value) {
+                $used_total = $shuttleTrip->countByLine($value['id'], 'used_total');
+                $user_used_total = $uid > 0 ? $shuttleTrip->countByLine($value['id'], 'used_total', $uid) : 0;
+                $sort_0 = $value['sort'];
+                $sort = $sort_0 * 2 + $used_total * 10 + $user_used_total * 88;
+                $value['sort'] = $sort;
+                $value['sort_hot'] = $used_total;
+            }
+        }
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
 
