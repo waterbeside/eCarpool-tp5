@@ -536,8 +536,6 @@ class Trips extends Service
         ];
         $map1 = $map;
         $map1[] = ["carownid", "=", $uid];
-        
-
         $res_wall = WallModel::where($map1)->select();
         $res = [];
         $wall_ids = [];
