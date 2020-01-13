@@ -75,7 +75,8 @@ class Line extends ApiBase
             if ($keyword) {
                 $map[] = ['start_name|end_name','line',"%$keyword%"];
             }
-            $ctor = ShuttleLineModel::field('is_delete, status, create_time, update_time, admin_department_id', true)->where($map)->order('sort Desc');
+            $ctor = ShuttleLineModel::field('is_delete, status, create_time, update_time, admin_department_id', true)
+                ->where($map)->order('sort Desc');
             $returnData = $this->getListDataByCtor($ctor, $pagesize);
             if (empty($returnData['lists'])) {
                 if (!$keyword) {
