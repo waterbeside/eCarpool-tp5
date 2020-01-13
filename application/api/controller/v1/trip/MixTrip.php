@@ -100,7 +100,7 @@ class MixTrip extends ApiBase
         $uid = $userData['uid'];
         $redis = new RedisData();
         $TripsMixedService = new TripsMixedService();
-        $nextHour = 24; // 取未来多少小时的数据
+        $nextHour = 48; // 取未来多少小时的数据
         $cacheKey =  $TripsMixedService->getComingListCacheKey($uid);
         $returnData = [
             'next_hour'=> $nextHour,
