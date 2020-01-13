@@ -295,6 +295,10 @@ class Trip extends ApiBase
             $redis->hCache($cacheKey, $rowCacheKey, $returnData, $ex);
         }
         $returnData['lists'] = $ShuttleTripService->formatTimeFields($returnData['lists'], 'list', ['time','create_time','update_time']);
+        foreach ($returnData['lists'] as $key => $value) {
+            $timePass = time() - $value['time'];
+            $returnData['lists'][$key]['have_started'] = $timePass >= 0 ? ( $timePass > 20 ? 2 : 1) : 0;
+        }
 
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
