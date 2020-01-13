@@ -114,12 +114,15 @@ class ShuttleTrip extends BaseModel
      * 计算空座位数和约车需求数
      *
      * @param integer $line_id 路线id
-     * @param string $create_type 类型，['cars', 'requests'] 是空座位还是约车需求
+     * @param string $count_type 类型，['cars', 'requests'] 是空座位还是约车需求
      * @return integer
      */
-    public function countByLine($line_id, $create_type)
+    public function countByLine($line_id, $count_type, $uid = 0, $ex = 10)
     {
-        $cacheKey = "carpool:shuttle:trip:countByLine:{$create_type}_lineId_{$line_id}";
+        $cacheKey = "carpool:shuttle:trip:countByLine:lineId_{$line_id}:{$count_type}";
+        if ($uid) {
+            $cacheKey .= ":uid_{$uid}";
+        }
         $redis = $this->redis();
         $res = $redis->cache($cacheKey);
         if ($res === false) {
@@ -128,23 +131,41 @@ class ShuttleTrip extends BaseModel
             ];
             $time = time();
             $offsetTimeArray = $this->getDefatultOffsetTime($time, 0, 'Y-m-d H:i:s');
-            if ($create_type === 'requests') {
+            if ($count_type === 'requests') { // 当前约车需求数
                 $offsetTimeArray[0] = date('Y-m-d H:i:s');
                 $map = $mapBase;
                 $map[] = ['comefrom', '=', 2];
                 $map[] = ['status', '=', 0];
                 $map[] = ['trip_id', '=', 0];
                 $map[] = ['time', 'between', $offsetTimeArray];
-            } elseif ($create_type === 'cars') {
+            } elseif ($count_type === 'cars') { // 当前空座位数
                 $map = $mapBase;
                 $map[] = ['comefrom', '=', 1];
                 $map[] = ['status', 'between', [0,1]];
                 $map[] = ['time', 'between', $offsetTimeArray];
+            } elseif ($count_type === 'used_total') { // 总使用次数
+                $map = $mapBase;
+                $map[] = ['comefrom', '=', 1];
+                $map[] = ['status', '>', -1];
+                if ($uid > 0) {
+                    $map[] = ['uid', '>', $uid];
+                }
+            } elseif ($count_type === 'user_useed_total') {
+                $map = $mapBase;
+                $map[] = ['comefrom', '=', 1];
+                $map[] = ['status', '>', -1];
+            } else {
+                return 0;
             }
             $res = $this->where($map)->count();
-            $redis->cache($cacheKey, $res, 10);
+            
+            $randomExOffset = [1,2,3];
+            $exp_offset = getRandValFromArray($randomExOffset);
+            $ex = $ex ?: 10;
+            $ex +=  $exp_offset * ($ex > 60 ? 60 : ($ex > 10 ? 5 : 1));
+            $redis->cache($cacheKey, $res, $ex);
         }
-        return $res;
+        return $res ?: 0;
     }
 
 
