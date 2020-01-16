@@ -32,8 +32,9 @@ class MixTrip extends ApiBase
         $uid = $userData['uid'];
         $redis = new RedisData();
         $TripsMixedService = new TripsMixedService();
-        $cacheKey =  $TripsMixedService->getComingListCacheKey($uid);
-        $listData = $redis->cache($cacheKey);
+        $cacheKey =  $TripsMixedService->getMyListCacheKey($uid);
+        $rowKey = "coming";
+        $listData = $redis->hCache($cacheKey, $rowKey);
         if (is_array($listData) && empty($listData)) {
             return $this->jsonReturn(20002, lang('No data'));
         }
@@ -94,19 +95,27 @@ class MixTrip extends ApiBase
      * 我的未来n小时内的行程
      *
      */
-    public function my()
+    public function my($type = 0)
     {
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
         $redis = new RedisData();
         $TripsMixedService = new TripsMixedService();
-        $nextHour = 48; // 取未来多少小时的数据
-        $cacheKey =  $TripsMixedService->getComingListCacheKey($uid);
+        
+        $cacheKey =  $TripsMixedService->getMyListCacheKey($uid);
+        $pz = 0;
+        if ($type > 0) {
+            $nextHour = -1;
+            $pz = $type == 1 ? 1 : $pz;
+            $offsetTime = [60 * 10, 'all'];
+        } else {
+            $nextHour = 48; // 取未来多少小时的数据
+            $offsetTime = [60 * 10, 60 * 60 * $nextHour];
+        }
         $returnData = [
             'next_hour'=> $nextHour,
         ];
-
-        $rowKey = "page_1,nextHour_{$nextHour}";
+        $rowKey = "page_1,pz_{$pz},nextHour_{$nextHour}";
         $listData = $redis->hCache($cacheKey, $rowKey);
         if (is_array($listData) && empty($listData)) {
             return $this->jsonReturn(20002, $returnData, lang('No data'));
@@ -115,10 +124,10 @@ class MixTrip extends ApiBase
             $TripsServ = new TripsService();
             $ShuttleTripModel = new ShuttleTripModel();
 
+            // 先取上下班行程数据
+            $list_1 = $ShuttleTripModel->getListByTimeOffset(time(), $uid, $offsetTime, $pz);
             // 先查普通行程數據
-            $list_1 = $TripsServ->getUnionListByTimeOffset(time(), $uid, [60 * 10, 60 * 60 * $nextHour]);
-            // 再取上下班行程数据
-            $list_2 = $ShuttleTripModel->getListByTimeOffset(time(), $uid, [60 * 10, 60 * 60 * $nextHour]);
+            $list_2 = $TripsServ->getUnionListByTimeOffset(time(), $uid, $offsetTime, $pz);
             
             $listData = array_merge($list_1 ?: [], $list_2 ?: []);
             if ($listData) {
