@@ -194,23 +194,28 @@ class ShuttleTrip extends BaseModel
      * @param  string      $offsetTime 时间偏差范围
      *
      */
-    public function getListByTimeOffset($time, $uid, $offsetTime = 60 * 30)
+    public function getListByTimeOffset($time, $uid, $offsetTime = 60 * 30, $limit = 0)
     {
-        // TODO: 改为可把$offsetTime设为数组
+        $map = [
+            ["status", "between", [0,1]],
+            ["uid", "=", $uid],
+        ];
         if (is_numeric($offsetTime)) {
             $offsetTime = [$offsetTime, $offsetTime];
         }
         if (count($offsetTime) < 2) {
             $offsetTime = [$offsetTime[0], $offsetTime[0]];
         }
-        $startTime = $time - $offsetTime[0];
-        $endTime =   $time + $offsetTime[1];
-        $map = [
-            ["status", "between", [0,1]],
-            ["time", "between", [date('Y-m-d H:i:s', $startTime), date('Y-m-d H:i:s', $endTime)]],
-            ["uid", "=", $uid],
-        ];
-        $res_trip = $this->where($map)->select();
+        if (is_numeric($offsetTime[0])) {
+            $startTime = $time - $offsetTime[0];
+            $map[] = ["time", ">=", date('Y-m-d H:i:s', $startTime)];
+        }
+        if (is_numeric($offsetTime[1])) {
+            $endTime = $time + $offsetTime[1];
+            $map[] = ["time", "<=", date('Y-m-d H:i:s', $endTime)];
+        }
+
+        $res_trip = $this->where($map)->limit($limit)->select();
         $res = [];
         if ($res_trip) {
             foreach ($res_trip as $key => $value) {

@@ -516,27 +516,28 @@ class Trips extends Service
      * @param  string      $offsetTime 时间偏差范围
      *
      */
-    public function getUnionListByTimeOffset($time, $uid, $offsetTime = 60 * 30)
+    public function getUnionListByTimeOffset($time, $uid, $offsetTime = 60 * 30, $limit = 0)
     {
-        // TODO: 改为可把$offsetTime设为数组
+        $map = [
+            ["status", "in", [0,1,4]],
+        ];
         if (is_numeric($offsetTime)) {
             $offsetTime = [$offsetTime, $offsetTime];
         }
         if (count($offsetTime) < 2) {
             $offsetTime = [$offsetTime[0], $offsetTime[0]];
         }
-        $startTime = $time - $offsetTime[0];
-        $endTime =   $time + $offsetTime[1];
-        $map = [
-            ["status", "in", [0,1,4]],
-            ["time", ">=", date('YmdHi', $startTime)],
-            ["time", "<=", date('YmdHi', $endTime)],
-            // ["go_time",">=",$startTime],
-            // ["go_time","<=",$endTime],
-        ];
+        if (is_numeric($offsetTime[0])) {
+            $startTime = $time - $offsetTime[0];
+            $map[] = ["time", ">=", date('YmdHi', $startTime)];
+        }
+        if (is_numeric($offsetTime[1])) {
+            $endTime = $time + $offsetTime[1];
+            $map[] = ["time", "<=", date('YmdHi', $endTime)];
+        }
         $map1 = $map;
         $map1[] = ["carownid", "=", $uid];
-        $res_wall = WallModel::where($map1)->select();
+        $res_wall = WallModel::where($map1)->limit($limit)->select();
         $res = [];
         $wall_ids = [];
         if ($res_wall) {
@@ -568,7 +569,7 @@ class Trips extends Service
         if (!empty($wall_ids)) {
             $map2[] = ["love_wall_ID", "not in", $wall_ids];
         }
-        $res_info = InfoModel::where($map2)->select();
+        $res_info = InfoModel::where($map2)->limit($limit)->select();
         if ($res_info) {
             foreach ($res_info as $key => $value) {
                 $userType = $value['carownid'] > 0 && $value['carownid'] == $uid ? 1 : 0;
