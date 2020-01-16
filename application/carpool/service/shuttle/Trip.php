@@ -10,7 +10,7 @@ use app\carpool\service\TripsList as TripsListService;
 use app\carpool\service\TripsMixed as TripsMixedService;
 use app\carpool\service\shuttle\Partner as PartnerService;
 use app\carpool\service\TripsPushMsg;
-use app\carpool\model\ShuttleLineDepartment;
+use app\carpool\model\ShuttleLineRelation;
 use app\carpool\model\ShuttleTripPartner;
 use app\user\model\Department;
 use my\RedisData;
@@ -194,7 +194,7 @@ class Trip extends Service
         ];
         $ShuttleTripModel->delCacheAfterAdd($cData); // 清除行程相关缓存
         (new ShuttleLineModel())->delCommonListCache($uid, $rqData['line_id']); // 清除路线相关的缓存
-        TripsMixedService::getInstance()->delComingListCache($uid); // 清除我将要发生的行程缓存
+        TripsMixedService::getInstance()->delMyListCache($uid); // 清除我将要发生的行程缓存
         return $newid;
     }
 
@@ -363,14 +363,20 @@ class Trip extends Service
             'sex','company_id','department_id','imgpath','carcolor', 'im_id'
         ];
         $fieldsStr = implode(',', Utils::getInstance()->arrayAddString($tripFields, 't.') ?: []);
+        // 设置查询时间范围
         $time = $time ?: time();
         if (is_numeric($timeOffset)) {
             $timeOffset = [$timeOffset, $timeOffset];
         }
         $start_time = $time - $timeOffset[0];
         $end_time = $time + $timeOffset[1];
+        // 查询有没有关系路线，有的话也把这些路线作为条件查询
+        $friendLines = (new ShuttleLineRelation())->getFriendsLine($line_id, 0, 0) ?: [];
+        $lineMap = count($friendLines) > 0 ? ['t.line_id', 'in', array_merge($friendLines, [$line_id])] : ['t.line_id', '=', $line_id];
+        $fieldsStr .= ", (CASE WHEN t.line_id = $line_id THEN 1 ELSE 0 END) AS line_sort ";
+        // 构建查询map
         $map = [
-            ['t.line_id', '=', $line_id],
+            $lineMap,
             ['t.status', 'between', [0,1]],
             ['t.time', 'between', [date('Y-m-d H:i:s', $start_time), date('Y-m-d H:i:s', $end_time)]],
         ];
@@ -385,7 +391,6 @@ class Trip extends Service
             $map[] = ['t.trip_id', '=', 0];
             $map[] = ['t.comefrom', 'between', [1,2]];
         }
-        $TripsService = new TripsService();
         if ($uid > 0) {
             $map[] = ['t.uid', '=', $uid];
             $join = [];
@@ -394,6 +399,7 @@ class Trip extends Service
             if ($uid < 0) {
                 $map[] = ['t.uid', '<>', -1 * $uid];
             }
+            $TripsService = new TripsService();
             $fields_user = $TripsService->buildUserFields('u', $userFields);
             $fieldsStr .=  ',' .$fields_user;
             $join = [
@@ -401,7 +407,7 @@ class Trip extends Service
             ];
         }
         $ShuttleTripModel = new ShuttleTripModel();
-        $list = $ShuttleTripModel->alias('t')->field($fieldsStr)->where($map)->join($join)->order('t.time ASC')->select();
+        $list = $ShuttleTripModel->alias('t')->field($fieldsStr)->where($map)->join($join)->order('t.time ASC, line_sort DESC')->select();
         if (!$list) {
             return [];
         }
@@ -672,7 +678,7 @@ class Trip extends Service
         $doPush = false;
         $ShuttleTripModel->delMyListCache($uid); //清除自己的“我的行程”列表缓存
         $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
-        $TripsMixedService->delComingListCache($uid); // 清除我将要发生的行程缓存
+        $TripsMixedService->delMyListCache($uid); // 清除我将要发生的行程缓存
 
         if ($userType == 1) { // 如果从司机行程进行操作
             if ($tripData['uid'] == $uid) { //如果是司机自已操作
@@ -686,7 +692,7 @@ class Trip extends Service
                     $targetUserid[] = $p_uid;
                     $ShuttleTripModel->delItemCache($value['id']); // 清乘客单项行程缓存
                     $ShuttleTripModel->delMyListCache($p_uid, 'my'); //清除所有乘客的“我的行程”列表缓存
-                    $TripsMixedService->delComingListCache($p_uid); // 清除乘客将要发生的行程缓存
+                    $TripsMixedService->delMyListCache($p_uid); // 清除乘客将要发生的行程缓存
                 }
                 // 推送设置
                 $pushMsgData['isDriver'] = true;
@@ -697,7 +703,7 @@ class Trip extends Service
                 if (!empty($myTripData) && $myTripData['id']) {
                     $ShuttleTripModel->delItemCache($myTripData['id']); // 清乘客单项行程缓存
                     $ShuttleTripModel->delMyListCache($tripData['uid']); //清除司机的“我的行程”列表缓存
-                    $TripsMixedService->delComingListCache($tripData['uid']); // 清除司机将要发生的行程缓存
+                    $TripsMixedService->delMyListCache($tripData['uid']); // 清除司机将要发生的行程缓存
                 }
                 $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
                 // 推送设置
@@ -712,7 +718,7 @@ class Trip extends Service
                     $ShuttleTripModel->delPassengersCache($tripData['trip_id']); // 清司机行程的乘客列表缓存
                     $driverTripData = $extData['driverTripData'] ?: $ShuttleTripModel->getItem($tripData['trip_id']);
                     $ShuttleTripModel->delMyListCache($driverTripData['uid']); //清除司机的“我的行程”列表缓存
-                    $TripsMixedService->delComingListCache($driverTripData['uid']); // 清除司机将要发生的行程缓存
+                    $TripsMixedService->delMyListCache($driverTripData['uid']); // 清除司机将要发生的行程缓存
                     // 推送设置
                     $targetUserid = $driverTripData ? $driverTripData['uid'] : 0;
                     $pushMsgData['isDriver'] = false;
@@ -723,7 +729,7 @@ class Trip extends Service
                 // 清缓存
                 $ShuttleTripModel->delPassengersCache($tripData['trip_id']); // 清除司机的乘客列表缓存
                 $ShuttleTripModel->delMyListCache($tripData['uid']); //清除乘客的“我的行程”列表缓存
-                $TripsMixedService->delComingListCache($tripData['uid']); // 清除乘客将要发生的行程缓存
+                $TripsMixedService->delMyListCache($tripData['uid']); // 清除乘客将要发生的行程缓存
                 // 推送设置
                 $targetUserid = $tripData['uid'];
                 $pushMsgData['isDriver'] = true;
