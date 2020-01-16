@@ -13,6 +13,8 @@ class Queue
 
     public $redis = null;
     public $queueKey = null;
+    public $keyPrefix = 'queue:';
+
     protected $setting = [
         'db' => 4
     ];
@@ -20,7 +22,8 @@ class Queue
     public function __construct($key, $setting = [])
     {
         $setting = array_merge($this->setting, $setting);
-        $this->queueKey = $key;
+        $keyPrefix = isset($setting['keyPrefix']) ? $setting['keyPrefix'] : $this->keyPrefix;
+        $this->queueKey = $keyPrefix.$key;
         $this->redis = RedisData::getInstance();
         $this->redis->select($setting['db']);
     }
