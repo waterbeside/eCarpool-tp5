@@ -16,16 +16,6 @@ use my\Utils;
 
 class TripsMixed extends Service
 {
-    /**
-     * 取得我的未来所有混合行程Cache Key
-     *
-     * @param integer $uid 用户id
-     * @return string
-     */
-    public function getComingListCacheKey($uid)
-    {
-        return "carpool:mixTrip:commingList:{$uid}";
-    }
 
     /**
      * 取得我的混合行程Cache Key
@@ -44,9 +34,9 @@ class TripsMixed extends Service
      * @param integer $uid 用户id
      * @return string
      */
-    public function delComingListCache($uid)
+    public function delMyListCache($uid)
     {
-        $cacheKey = $this->getComingListCacheKey($uid);
+        $cacheKey = $this->getMyListCacheKey($uid);
         $this->redis()->del($cacheKey);
     }
 }
