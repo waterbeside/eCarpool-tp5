@@ -230,15 +230,15 @@ class Trip extends Service
     /**
      * 取得用于冗余进行程表的路线信息；
      *
-     * @param integer $id line_id  or trip_id ;
+     * @param integer $id line_id  or trip_id  or trip_data;
      * @param integer $type type=0时 id为路线id（line_id）, type = 1时id为行程id (trip_id), type = 2 时，先以type=1查，再以type=0查;
      * @return array
      */
-    public function getExtraInfoLineData($id, $type = 0)
+    public function getExtraInfoLineData($idOrData, $type = 0)
     {
         if ($type > 0) {
             $ShuttleTripModel = new ShuttleTripModel();
-            $itemData = $ShuttleTripModel->getDataByIdOrData($id);
+            $itemData = $ShuttleTripModel->getDataByIdOrData($idOrData);
             if (!$itemData) {
                 return null;
             }
@@ -254,7 +254,7 @@ class Trip extends Service
         } else {
             $lineFields = 'id, start_name, start_longitude, start_latitude, end_name, end_longitude, start_id, end_id, end_latitude, map_type, type';
             $ShuttleLineModel = new ShuttleLineModel();
-            $lineData = $ShuttleLineModel->getItem($id, $lineFields);
+            $lineData = $ShuttleLineModel->getItem($idOrData, $lineFields);
         }
         return $lineData;
     }
@@ -357,7 +357,7 @@ class Trip extends Service
      */
     public function getSimilarTrips($line_id, $time = 0, $userType = false, $uid = 0, $timeOffset = [60*15, 60*15])
     {
-        $tripFields = ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom','line_id', 'seat_count'];
+        $tripFields = ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom','line_id', 'seat_count', 'extra_info'];
         $userFields =[
             'uid','loginname','name','nativename','phone','mobile','Department',
             'sex','company_id','department_id','imgpath','carcolor', 'im_id'
@@ -413,6 +413,7 @@ class Trip extends Service
         }
         $list = $list->toArray();
         $list = $this->formatTimeFields($list, 'list', ['time','create_time']);
+        // 如果uid > 0 查询用户信息
         if ($uid > 0) {
             $User = new UserModel();
             $userData = $User->findByUid($uid);
@@ -421,6 +422,20 @@ class Trip extends Service
                 $value = array_merge($value, $userData);
                 $list[$key] = $value;
             }
+        }
+        $lineData = $this->getExtraInfoLineData($line_id, 0);
+        foreach ($list as $key => $value) {
+            // 遍历添加line_data
+            $itemlineData = $value['line_id'] == $line_id ? $lineData : $this->getExtraInfoLineData($value, 1);
+            $list[$key]['line_data'] = [
+                'start_name' => $itemlineData['start_name'],
+                'start_longitude' => $itemlineData['start_longitude'],
+                'start_latitude' => $itemlineData['start_latitude'],
+                'end_name' => $itemlineData['end_name'],
+                'end_longitude' => $itemlineData['end_longitude'],
+                'end_latitude' => $itemlineData['end_latitude'],
+                'map_type' => $itemlineData['map_type'] ?? 0,
+            ];
         }
         return $list;
     }
