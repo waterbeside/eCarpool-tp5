@@ -702,7 +702,7 @@ class Trip extends ApiBase
         }
         $returnData = [
             'lists' => $list,
-            'lineData' => $ShuttleTripService->getExtraInfoLineData($line_id) ?: null,
+            // 'lineData' => $ShuttleTripService->getExtraInfoLineData($line_id, 0) ?: null,
         ];
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
