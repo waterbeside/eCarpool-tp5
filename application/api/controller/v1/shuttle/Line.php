@@ -27,7 +27,6 @@ class Line extends ApiBase
         // $this->checkPassport(1);
     }
 
-
     public function index($type = 1, $show_count = 1, $get_sort = 1, $page = 1, $pagesize = 0)
     {
         $userData = $this->getUserData(0);
@@ -116,10 +115,8 @@ class Line extends ApiBase
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
 
-
     /**
      * 常用路线
-     *
      */
     public function common($type = 0)
     {
