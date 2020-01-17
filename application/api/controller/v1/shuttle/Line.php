@@ -40,7 +40,7 @@ class Line extends ApiBase
         $keyword = input('get.keyword');
         $department_id = -1;
         $userData = $this->getUserData(1);
-
+        // 取理部门可见的数据
         $department_id = $userData['department_id'];
         if (!$department_id) {
             return $this->jsonReturn(20002, lang('No data'));
@@ -50,7 +50,11 @@ class Line extends ApiBase
             return $this->jsonReturn(20002, lang('No data'));
         }
         $departmentPath = $departmentData['path'].','.$departmentData['id'];
-
+        // 处理上下班类型
+        $type = is_numeric($type) ? intval($type) : -1;
+        $pagesize = is_numeric($pagesize) ? intval($pagesize) : 0;
+        $pagesize = in_array($type, [-1, 0]) && $pagesize  < 1 ? 50 : $pagesize;
+        // 处理缓存
         $returnData = null;
         if (!$keyword) {
             $cacheKey  = $shuttleLineModel->getListCacheKey($type);
