@@ -27,7 +27,7 @@ class Line extends ApiBase
         // $this->checkPassport(1);
     }
 
-    public function index($type = 1, $show_count = 1, $get_sort = 1, $page = 1, $pagesize = 0)
+    public function index($type = -2, $show_count = 1, $get_sort = 1, $page = 1, $pagesize = 0)
     {
         $userData = $this->getUserData(0);
         $uid = $userData['uid'] ?? 0;
@@ -70,9 +70,13 @@ class Line extends ApiBase
             $map  = [
                 ['is_delete', "=", Db::raw(0)],
                 ['status', "=", Db::raw(1)],
-                ['type', '=', $type],
                 ['', 'exp', Db::raw("id in $lineidSql")],
             ];
+            if (is_numeric($type) && $type > -1) {
+                $map[] = ['type', '=', $type];
+            } elseif ($type == -2) {
+                $map[] = ['type', '>', 0];
+            }
             if ($keyword) {
                 $map[] = ['start_name|end_name','line',"%$keyword%"];
             }
