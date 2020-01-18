@@ -282,6 +282,7 @@ class TripsChange
             'type'          => $datas->type,
             'map_type'      => $datas->map_type,
             'status'        => 1,
+            'comefrom'      => 3, // 乘客从空座位搭车
         );
         if ($datas->start_lat && $datas->start_lng) {
             $setInfoDatas['start_latlng'] = Db::raw("geomfromtext('point(" . $datas->start_lng . " " . $datas->start_lat . ")')");

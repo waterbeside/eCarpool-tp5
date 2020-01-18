@@ -407,6 +407,7 @@ class Trips extends ApiBase
         } elseif ($from == "info") {
             $inputData['passengerid'] = $uid;
             $inputData['carownid']    = -1;
+            $inputData['comefrom']    = 2; // 来自发布约车需求
             $result = $InfoModel->insertGetId($inputData);
         }
 
@@ -534,7 +535,7 @@ class Trips extends ApiBase
             $extra = $TripsChangeService->errorMsg ? ['pushMsg' => $TripsChangeService->errorMsg] : [];
             $TripsService->removeCache($actor);
             if ($wall_id > 0) {
-                $this->removeWallCache($wall_id);
+                $TripsService->delWallCache($wall_id);
             }
             $TripsDetailServ->delDetailCache($from, $id);
             return $this->jsonReturn(0, [], "success", $extra);
@@ -556,7 +557,7 @@ class Trips extends ApiBase
             $extra = $TripsChangeService->errorMsg ? ['pushMsg' => $TripsChangeService->errorMsg] : [];
             $TripsService->removeCache($actor);
             if ($wall_id > 0) {
-                $this->removeWallCache($wall_id);
+                $TripsService->delWallCache($wall_id);
             }
             $TripsDetailServ->delDetailCache($from, $id);
             return $this->jsonReturn(0, ['infoid' => $res], 'success', $extra);
@@ -857,22 +858,4 @@ class Trips extends ApiBase
         return $this->jsonReturn(0, ['lists' => $res], 'Success');
     }
 
-    /**
-     * 删除基于love_wall_id的缓存；
-     *
-     * @param integer|array $wid
-     * @return void
-     */
-    protected function removeWallCache($wid)
-    {
-        if (is_array($wid)) {
-            $wid = array_unique($wid);
-            foreach ($wid as $v) {
-                $this->removeWallCache($v);
-            }
-        } elseif (is_numeric($wid)) {
-            $InfoModel = new InfoModel();
-            $InfoModel->delPassengersCache($wid);
-        }
-    }
 }
