@@ -857,5 +857,4 @@ class Trips extends ApiBase
         }
         return $this->jsonReturn(0, ['lists' => $res], 'Success');
     }
-
 }
