@@ -11,6 +11,7 @@ use app\carpool\model\User;
 use app\carpool\service\shuttle\Trip as ShuttleTripService;
 use app\carpool\service\shuttle\Partner as ShuttlePartnerService;
 use app\carpool\service\Trips as TripsService;
+use app\carpool\service\TripsMixed;
 use app\carpool\service\TripsPushMsg;
 use app\carpool\validate\shuttle\Trip as ShuttleTripVali;
 use app\carpool\validate\shuttle\Partner as ShuttlePartnerVali;
@@ -455,20 +456,32 @@ class Trip extends ApiBase
     public function hitchhiking($id)
     {
         $userData = $this->getUserData(1);
-        $uid = $userData['uid'];
 
         $ShuttleTripService = new ShuttleTripService();
         $ShuttleTripModel = new ShuttleTrip();
+        $TripsMixed = new TripsMixed();
         $rqData = $ShuttleTripService->getRqData();
         $rqData['trip_id'] = $id;
         $rqData['create_type'] = 'hitchhiking';
-
         // 加锁
         if (!$ShuttleTripModel->lockItem($id, 'hitchhiking')) {
             return $this->jsonReturn(20009, '网络烦忙，请稍候再试');
         }
-
-        $tripData = $ShuttleTripModel->getItem($id); //取得司机行
+        // 处理有没有要同时被取消的行程
+        $cancel_id = input('post.cancel_id/d', 0);
+        $cancel_id_from = input('post.cancel_id_from');
+        if (!in_array($cancel_id_from, ['shuttle_trip', 'wall', 'info'])) {
+            $cancel_id = 0;
+        }
+        if ($cancel_id > 0) {
+            $cancelTripData = $TripsMixed->getTripItem($cancel_id, $cancel_id_from);
+            if (!$TripsMixed->checkBeforeCancel($cancelTripData, $cancel_id_from, $userData)) {
+                $errorData = $TripsMixed->getError();
+                return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error check');
+            }
+        }
+        //取得司机行
+        $tripData = $ShuttleTripModel->getItem($id);
         // 验证
         $ShuttleTripVali = new ShuttleTripVali();
         if (!$ShuttleTripVali->checkHitchhiking($tripData, $userData)) {
@@ -486,7 +499,28 @@ class Trip extends ApiBase
         }
 
         // 入库
-        $addRes = $ShuttleTripService->addTrip($rqData, $userData);
+        Db::connect('database_carpool')->startTrans();
+        try {
+            $checkRept = 1;
+            if ($cancel_id > 0) { // 如果有行程要取消
+                $cancelRes = $TripsMixed->cancelTrip($cancelTripData, $cancel_id_from, $userData, 1);
+                $timeDiff = $rqData['time'] - $tripData['time_x'];
+                $checkRept = $cancelRes && ($timeDiff >= - 30 * 15 && $timeDiff <= 30 * 15) ? 0 : $checkRept;
+                if ($cancelRes) {
+                    $errorData = $TripsMixed->getError();
+                    $pushDatas = $errorData['data'] ?? null;
+                }
+            }
+            $addRes = $ShuttleTripService->addTrip($rqData, $userData, $checkRept);
+            // 提交事务
+            Db::connect('database_carpool')->commit();
+        } catch (\Exception $e) {
+            Db::connect('database_carpool')->rollback();
+            $ShuttleTripModel->unlockItem($id, 'hitchhiking'); // 解锁
+            $errorMsg = $e->getMessage();
+            $err = $ShuttleTripService->getError();
+            return $this->jsonReturn($err['code'] ?? -1, $err['data'] ?? null, $err['msg'] ?? lang('Failed'), ['errorMsg'=>$errorMsg]);
+        }
         $ShuttleTripModel->unlockItem($id, 'hitchhiking'); // 解锁
         if (!$addRes) {
             $errorData = $ShuttleTripService->getError();
@@ -503,6 +537,10 @@ class Trip extends ApiBase
         ];
         $targetUserid = $tripData['uid'];
         $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+        // 如果有要取消的行程，进行取消后推送
+        if ($cancel_id > 0 && isset($pushDatas) && $pushDatas && isset($pushDatas['pushMsgData'])) {
+            $TripsPushMsg->pushMsg($pushDatas['pushTargetUid'] ?? null, $pushDatas['pushMsgData']);
+        }
         // ok
         return $this->jsonReturn(0, ['id'=>$addRes], 'Successful');
     }
@@ -513,9 +551,10 @@ class Trip extends ApiBase
     public function pickup($id)
     {
         $userData = $this->getUserData(1);
-        $uid = $userData['uid'];
+
         $ShuttleTripService = new ShuttleTripService();
         $ShuttleTripModel = new ShuttleTrip();
+        $TripsMixed = new TripsMixed();
         $rqData = $ShuttleTripService->getRqData();
         $rqData['create_type'] = 'pickup';
 
@@ -523,8 +562,22 @@ class Trip extends ApiBase
         if (!$ShuttleTripModel->lockItem($id, 'pickup')) {
             return $this->jsonReturn(20009, '网络烦忙，请稍候再试');
         }
-        $tripData = $ShuttleTripModel->getItem($id); //取得乘客须求行程
-        
+        // 处理有没有要同时被取消的行程
+        $cancel_id = input('post.cancel_id/d', 0);
+        $cancel_id_from = input('post.cancel_id_from');
+        if (!in_array($cancel_id_from, ['shuttle_trip', 'wall', 'info'])) {
+            $cancel_id = 0;
+        }
+        if ($cancel_id > 0) {
+            $cancelTripData = $TripsMixed->getTripItem($cancel_id, $cancel_id_from);
+            if (!$TripsMixed->checkBeforeCancel($cancelTripData, $cancel_id_from, $userData)) {
+                $errorData = $TripsMixed->getError();
+                return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error check');
+            }
+        }
+
+        //取得乘客须求行程
+        $tripData = $ShuttleTripModel->getItem($id);
         // 验证
         $ShuttleTripVali = new ShuttleTripVali();
         if (!$ShuttleTripVali->checkPickup($tripData, $userData)) {
@@ -545,6 +598,16 @@ class Trip extends ApiBase
 
         Db::connect('database_carpool')->startTrans();
         try {
+            $checkRept = 1;
+            if ($cancel_id > 0) { // 如果有行程要取消
+                $cancelRes = $TripsMixed->cancelTrip($cancelTripData, $cancel_id_from, $userData, 1);
+                $timeDiff = $rqData['time'] - $tripData['time_x'];
+                $checkRept = $cancelRes && ($timeDiff >= - 30 * 15 && $timeDiff <= 30 * 15) ? 0 : $checkRept;
+                if ($cancelRes) {
+                    $errorData = $TripsMixed->getError();
+                    $pushDatas = $errorData['data'] ?? null;
+                }
+            }
             // 入库
             $driverTripId = $ShuttleTripService->addTrip($rqData, $userData); // 添加一条司机行程
             if (!$driverTripId) {
@@ -585,6 +648,10 @@ class Trip extends ApiBase
         ];
         $targetUserid = $tripData['uid'];
         $TripsPushMsg->pushMsg($targetUserid, $pushMsgData);
+        // 如果有要取消的行程，进行取消后推送
+        if ($cancel_id > 0 && isset($pushDatas) && $pushDatas && isset($pushDatas['pushMsgData'])) {
+            $TripsPushMsg->pushMsg($pushDatas['pushTargetUid'] ?? null, $pushDatas['pushMsgData']);
+        }
         // 入库成功后清理这些同行者的相关缓存，及推送消息
         if (isset($partners) && count($partners) > 0) {
             $driverTripData = [
