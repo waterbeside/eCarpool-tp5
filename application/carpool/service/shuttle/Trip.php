@@ -46,7 +46,7 @@ class Trip extends Service
     /**
      * 验证添加行程时的时间
      */
-    public function checkAddData($rqData, $uid)
+    public function checkAddData($rqData, $uid, $checkRept = 1)
     {
         // 取得与 create_type 相关数据
         $createTypeData = $this->getCreateTypeInfo($rqData['create_type']);
@@ -79,20 +79,22 @@ class Trip extends Service
             return $this->error(992, lang("The departure time has passed. Please select the time again"));
         }
         // 验证重复行程
-        $TripsService = new TripsService();
-        $repetitionList = $TripsService->getRepetition($time, $uid);
-        if ($repetitionList) {
-            $TripsListService = new TripsListService();
-            // 为重复行程列表添加明细
-            $repetitionList = $TripsListService->getMixedDetailListByRpList($repetitionList);
-            $errorData = $TripsService->getError();
-            // 检查有没有可以合并的行程
-            $matchingList =  in_array($create_type, ['pickup', 'hitchhiking']) ? $this->getMatchingsByRplist($repetitionList, $rqData) : [];
-            if (!empty($matchingList)) {
-                return $this->error(50008, lang('查到你有相似的行程可以合并'), ['lists'=>$repetitionList]);
+        if ($checkRept) {
+            $TripsService = new TripsService();
+            $repetitionList = $TripsService->getRepetition($time, $uid);
+            if ($repetitionList) {
+                $TripsMixedService = new TripsMixedService();
+                // 为重复行程列表添加明细
+                $repetitionList = $TripsMixedService->getMixedDetailListByRpList($repetitionList);
+                $errorData = $TripsService->getError();
+                // 检查有没有可以合并的行程
+                $matchingList =  in_array($create_type, ['pickup', 'hitchhiking']) ? $this->getMatchingsByRplist($repetitionList, $rqData) : [];
+                if (!empty($matchingList)) {
+                    return $this->error(50008, lang('查到你有相似的行程可以合并'), ['lists'=>$repetitionList]);
+                }
+                $this->error($errorData['code'], $errorData['msg'], ['lists'=>$repetitionList]);
+                return false;
             }
-            $this->error($errorData['code'], $errorData['msg'], ['lists'=>$repetitionList]);
-            return false;
         }
         return $rqData;
     }
@@ -142,9 +144,10 @@ class Trip extends Service
      *
      * @param array $rqData 请求参数
      * @param mixed $uidOrData uid or userData
+     * @param integer,boolean $checkRept 是否验证重复行程
      * @return void
      */
-    public function addTrip($rqData, $uidOrData)
+    public function addTrip($rqData, $uidOrData, $checkRept = 1)
     {
 
         // 取得用户信息
@@ -153,7 +156,7 @@ class Trip extends Service
         $uid = $userData['uid'];
 
         // 验证字段合法性
-        $rqData = $this->checkAddData($rqData, $uid);
+        $rqData = $this->checkAddData($rqData, $uid, $checkRept);
         if (!$rqData) {
             return false;
         }
@@ -445,7 +448,7 @@ class Trip extends Service
      * 取消行程
      *
      * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
-     * @param mixed $uidOrData 当为数字时，为用户id；当为array时，为该用户的data; ;
+     * @param mixed $uidOrData 当为数字时，为用户id；当为array时，为该用户的data;
      * @return void
      */
     public function cancel($idOrData, $uidOrData)
@@ -523,9 +526,10 @@ class Trip extends Service
      * 执行取消行程并删除同行者行
      *
      * @param mixed $idOrData 要取消的行程行
+     * @param integer $must 强制取消：如果是乘客行程，是否执行不还源取消，默认还原(即不强制)
      * @return boolean
      */
-    public function runRowCancel($idOrData)
+    public function runRowCancel($idOrData, $must = 0)
     {
         $ShuttleTripModel = new ShuttleTripModel();
         $PartnerService  = new PartnerService();
@@ -542,7 +546,7 @@ class Trip extends Service
                     $PartnerService->getOffCar($partnerTripList);
                 }
             } else { // 如果是乘客行程
-                $res = $ShuttleTripModel->cancelPassengerTrip($tripData);
+                $res = $ShuttleTripModel->cancelPassengerTrip($tripData, $must);
                 if ($res && $tripData['trip_id'] > 0) { // 如果该行程是有司机配对的，成功后：
                     $from_type = $tripData['line_type'] > 0 ? 1 : 0 ;
                     $PartnerModel  = new ShuttleTripPartner();
@@ -664,6 +668,18 @@ class Trip extends Service
         return $this->error($errorData['code'] ?? -1, $errorData['msg'] ?? 'Failed', $errorData['data'] ?? []);
     }
 
+    /**
+     * 执行完完结或取消行程后，进行清除缓存
+     *
+     * @param array $tripData 该行程的data;
+     * @param array $userData 操作用户的data;
+     * @param string $runType 'cancel' or 'finish'
+     * @return void
+     */
+    public function delCacheAfterStatusChange($tripData, $userData, $runType, $extData = [])
+    {
+        return $this->doAfterStatusChange($tripData, $userData, $runType, $extData, 1);
+    }
 
     /**
      * 执行完完结或取消行程后，进行推送或清除缓存
@@ -671,9 +687,10 @@ class Trip extends Service
      * @param array $tripData 该行程的data;
      * @param array $userData 操作用户的data;
      * @param string $runType 'cancel' or 'finish'
+     * @param integer $dontPushMsg  是否不推送， 0进行推送，1不推送
      * @return void
      */
-    public function doAfterStatusChange($tripData, $userData, $runType, $extData = [])
+    public function doAfterStatusChange($tripData, $userData, $runType, $extData = [], $dontPushMsg = 0)
     {
         $ShuttleTripModel = new ShuttleTripModel();
         $TripsMixedService = new TripsMixedService();
@@ -753,7 +770,7 @@ class Trip extends Service
             }
         }
         // 推送
-        if ($runType == 'cancel' && $doPush) {
+        if ($runType == 'cancel' && $doPush && !$dontPushMsg) {
             $TripsPushMsg->pushMsg($targetUserid, $pushMsgData); // 推消息
         }
     }
