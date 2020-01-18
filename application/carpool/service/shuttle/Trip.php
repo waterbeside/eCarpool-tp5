@@ -173,6 +173,7 @@ class Trip extends Service
             'trip_id' => $trip_id,
             'status' => 0,
             'seat_count' => intval($rqData['seat_count']),
+            'department_id' => $userData['department_id'] ?: 0,
         ];
         if ($plate) {
             $updata['plate'] = $plate;

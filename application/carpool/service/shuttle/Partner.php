@@ -188,6 +188,7 @@ class Partner extends Service
             }
             $upData = $defaultData;
             $upData['uid'] = $value['uid'];
+            $upData['department_id'] = $value['department_id'];
             $upData['extra_info'] = json_encode([
                 'line_data' => $lineData,
                 'partner_data' => [ // 把partner表的id写入扩展字段
