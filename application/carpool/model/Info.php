@@ -3,6 +3,7 @@
 namespace app\carpool\model;
 
 use app\common\model\BaseModel;
+use my\Utils;
 
 class Info extends BaseModel
 {
@@ -23,6 +24,11 @@ class Info extends BaseModel
     public $errorMsg = "";
     public $errorData = "";
 
+    public function getItemCacheKey($id)
+    {
+        return "carpool:info:$id";
+    }
+
     /**
      * 取得乘客列表cacheKey;
      *
@@ -31,7 +37,7 @@ class Info extends BaseModel
      */
     public function getPassengersCacheKey($wall_id)
     {
-        return "carpool:nm_trip:passengers:wall_{$wall_id}";
+        return "carpool:wall:passengers:wall_{$wall_id}";
     }
 
     /**
@@ -156,4 +162,56 @@ class Info extends BaseModel
         return $viewSql;
     }
 
+    /**
+     * 通过wall_id取得列表
+     *
+     * @param integer $wall_id 空座位id
+     * @return array
+     */
+    public function getListByWallId($wall_id, $fields = null)
+    {
+        $map = [
+            ['love_wall_ID', '=', $wall_id],
+            ['status', '<>', 2],
+        ];
+        $list = $this->where($map)->select();
+        if (!$list) {
+            return null;
+        }
+        $list = $list->toArray();
+        if ($fields) {
+            $list = Utils::getInstance()->filterListFields($fields);
+        }
+        return $list;
+    }
+
+    /**
+     * 取消info行程
+     *
+     * @param mixed $idOrData 要取消的行程id或数据
+     * @param mixed $uidOrUData 操作者的id或数据
+     * @param integer $must  是否强制取消：如果时间未过，是否不还原乘客到约车需求
+     */
+    public function cancelInfo($idOrData, $uidOrUData, $must = 0)
+    {
+        $infoData = is_numeric($idOrData) ? $this->getItem($idOrData, false) : $idOrData;
+        $infoid = $infoData['infoid'];
+        $uid = is_numeric($uidOrUData) ? $uidOrUData : $uidOrUData['uid'];
+        $infoTime = strtotime($infoData['time'] . '00');
+        $upData = [
+            'cancel_user_id' => $uid,
+            'cancel_time' => date('YmdHis', time()),
+        ];
+        if ($infoTime > time() && !$must && $infoData['comefrom'] == 2) { // 如果未过出发时间 且为还原为约车需求
+            $upData['status'] = 0;
+            $upData['love_wall_ID'] = null;
+            $upData['carownid'] = null;
+        } else { // 如果为直接取消
+            $upData['status'] = 2;
+        }
+        $map = [
+            ['infoid', '=', $infoid]
+        ];
+        return $this->where($map)->update($upData);
+    }
 }

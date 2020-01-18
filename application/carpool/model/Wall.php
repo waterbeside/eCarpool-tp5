@@ -23,6 +23,11 @@ class Wall extends BaseModel
 
     public $errorMsg = "";
 
+    public function getItemCacheKey($id)
+    {
+        return "carpool:wall:$id";
+    }
+
     /**
      * 发布行程时检查行程是否有重复
      * @param  Timestamp   $time       出发时间的时间戳
@@ -107,5 +112,25 @@ class Wall extends BaseModel
         $redis = $this->redis();
         $cacheKey = $this->getMapCarsCacheKey($company_id);
         return $redis->del($cacheKey);
+    }
+
+    /**
+     * 取消love_wall行程
+     *
+     * @param mixed $idOrData 要取消的行程id或数据
+     */
+    public function cancelWall($idOrData)
+    {
+        $wallData = is_numeric($idOrData) ? $this->getItem($idOrData, false) : $idOrData;
+        $id = $wallData['love_wall_ID'];
+        
+        $upData = [
+            'cancel_time' => date('YmdHis', time()),
+            'status' => 2,
+        ];
+        $map = [
+            ['love_wall_ID', '=', $id]
+        ];
+        return $this->where($map)->update($upData);
     }
 }
