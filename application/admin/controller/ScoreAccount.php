@@ -82,8 +82,6 @@ class ScoreAccount extends AdminBase
                 // $map[] = ['u.Department|u.companyname|c.company_name','like', "%{$filter['keyword_dept']}%"];
             }
 
-
-
             if ($export) {
                 $lists = ScoreAccountModel::alias('ac')->field($fields)->join($join)->where($map)->order('ac.id DESC')->select();
             } else {
@@ -139,6 +137,8 @@ class ScoreAccount extends AdminBase
                 $map[] = ['d.fullname|cu.companyname|c.company_name', 'like', "%{$filter['keyword_dept']}%"];
             }
 
+            // $lists = CarpoolUserModel::alias('cu')->field($fields)->join($join)->where($map)->order('uid DESC')->fetchSql()->select();
+            // dump($lists);exit;
 
             if ($export) {
                 $lists = CarpoolUserModel::alias('cu')->field($fields)->join($join)->where($map)->order('uid DESC')->select();

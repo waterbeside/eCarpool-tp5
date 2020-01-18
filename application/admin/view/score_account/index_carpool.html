@@ -29,11 +29,11 @@
                     <div class="layui-inline">
                         &nbsp;&nbsp;&nbsp;&nbsp;{:lang('Points range')}:
                         <div class="layui-input-inline">
-                            <input type="number" name="filter[floor]" value="{$filter['floor'] ? $filter['floor'] :'0'}" placeholder="" class="layui-input"  style="width:82px" >
+                            <input type="number" name="filter[floor]" value="<?php echo isset($filter['floor']) && is_numeric($filter['floor']) ? $filter['floor'] : '' ?>" placeholder="{:lang('unlimited')}" class="layui-input"  style="width:82px" >
                         </div>
                         〜
                         <div class="layui-input-inline">
-                            <input type="number" name="filter[ceiling]" value="{$filter['ceiling'] ? $filter['ceiling'] :''}" placeholder="{:lang('unlimited')}" class="layui-input"  style="width:82px" >
+                            <input type="number" name="filter[ceiling]" value="<?php echo isset($filter['ceiling']) && is_numeric($filter['ceiling']) ? $filter['ceiling'] : '' ?>" placeholder="{:lang('unlimited')}" class="layui-input"  style="width:82px" >
                         </div>
                     </div>
                     <div class="layui-inline">
