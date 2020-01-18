@@ -396,10 +396,10 @@ class ShuttleTrip extends BaseModel
      * 取消乘客行程
      *
      * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
-     * @param integer $type 当为0时，如果未出过出发时间且来自约车需求的，则还原为约车需求，否则直接取消
+     * @param integer $must 当为0时，如果未出过出发时间且来自约车需求的，则还原为约车需求，否则直接取消
      * @return void
      */
-    public function cancelPassengerTrip($idOrData, $type = 0)
+    public function cancelPassengerTrip($idOrData, $must = 0)
     {
         $tripData = $this->getDataByIdOrData($idOrData);
         $id = $tripData['id'];
@@ -415,7 +415,7 @@ class ShuttleTrip extends BaseModel
         $upData = [
             'operate_time'=>date('Y-m-d H:i:s')
         ];
-        if ($type === 0 && time() <= strtotime($tripData['time']) && $tripData['comefrom'] == 2 && $tripData['trip_id'] > 0 && $tripData['seat_count'] < 2) { // 如果未过出发时间 并且是有人搭的约车需求,
+        if ($must === 0 && time() <= strtotime($tripData['time']) && $tripData['comefrom'] == 2 && $tripData['trip_id'] > 0 && $tripData['seat_count'] < 2) { // 如果未过出发时间 并且是有人搭的约车需求,
             $upData['status'] = 0;
             $upData['trip_id'] = 0;
             $upData['seat_count'] = 1;
