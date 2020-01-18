@@ -206,6 +206,9 @@ class Trip extends Base
         if (in_array($targetTripData['status'], [-1, 3])) {
             return $this->setError(30001, lang('对方的行程已取消或完结，无法操作'));
         }
+        if ($tripData['line_id'] != $targetTripData['line_id']) {
+            return $this->setError(50011, lang('对方路线与你的不一致'));
+        }
         $driverTripData = $tripData['user_type'] == 1 ? $tripData : $targetTripData;
         $passengerTripData = $tripData['user_type'] == 1 ?  $targetTripData : $tripData;
 
