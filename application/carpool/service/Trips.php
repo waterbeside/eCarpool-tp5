@@ -489,6 +489,7 @@ class Trips extends Service
             $WallModel = new WallModel();
             // $userData = $this->getUserData(1);
             $userModel = new UserModel();
+            $AddressModel = new Address();
             $userData = $userModel->getItem($uid);
             $company_id = $userData['company_id'];
 
@@ -497,10 +498,11 @@ class Trips extends Service
 
             $cacheKey_01 = $this->cacheKey_myInfo . "u{$uid}";
             $cacheKey_02 = $this->cacheKey_myTrip . "u{$uid}";
-            $cacheKey_03 = "carpool:citys:company_id_$company_id:type_1";
-            $cacheKey_04 = "carpool:citys:company_id_$company_id:type_2";
 
-            $this->redis()->del($cacheKey_01, $cacheKey_02, $cacheKey_03, $cacheKey_04);
+            $this->redis()->del($cacheKey_01, $cacheKey_02);
+            // 删除城市列表缓存
+            $AddressModel->delCitysCache($company_id, 1);
+            $AddressModel->delCitysCache($company_id, 2);
 
             /** 删除空座位列表缓存 */
             $WallModel->delListCache($company_id);
@@ -676,5 +678,24 @@ class Trips extends Service
         $list = array_merge($list_trip, $list_wallinfo);
         $res = $this->checkRepetitionByList($list, $time, 0, $offsetTime, $level);
         return $res;
+    }
+
+    /**
+     * 删除基于love_wall_id的缓存；
+     *
+     * @param integer,array $wid
+     * @return void
+     */
+    public function delWallCache($wid)
+    {
+        if (is_array($wid)) {
+            $wid = array_unique($wid);
+            foreach ($wid as $v) {
+                $this->delWallCache($v);
+            }
+        } elseif (is_numeric($wid)) {
+            $InfoModel = new InfoModel();
+            $InfoModel->delPassengersCache($wid);
+        }
     }
 }
