@@ -2,11 +2,10 @@
 
 namespace app\carpool\model;
 
-use think\facade\Cache;
 use think\Model;
-use my\RedisData;
+use app\common\model\BaseModel;
 
-class Address extends Model
+class Address extends BaseModel
 {
 
     // 设置当前模型对应的完整数据表名称
@@ -21,6 +20,19 @@ class Address extends Model
     protected $update = [];
 
     public $errorMsg = "";
+
+
+    public function getCitysCacheKey($company_id, $type)
+    {
+        $type = $type == 'wall' ? 1 : ($type == 'info' ? 2 : $type);
+        return "carpool:citys:company_id_$company_id:type_$type";
+    }
+
+    public function delCitysCache($company_id, $type)
+    {
+        $cacheKey = $this->getCitysCacheKey($company_id, $type);
+        return $this->redis()->del($cacheKey);
+    }
 
     public function addFromTrips($data)
     {
@@ -112,7 +124,7 @@ class Address extends Model
     public function myCache($uid, $value = false, $ex = 60 * 5)
     {
         $cacheKey = "carpool:address:my_$uid";
-        $redis = new RedisData();
+        $redis = $this->redis();
         if ($value === false) {
             $result =  $redis->cache($cacheKey);
             return $result;
@@ -124,7 +136,7 @@ class Address extends Model
     public function deleteMyCache($uid)
     {
         $cacheKey = "carpool:address:my_$uid";
-        $redis = new RedisData();
-        $redis->delete($cacheKey);
+        $redis = $this->redis();
+        $redis->del($cacheKey);
     }
 }

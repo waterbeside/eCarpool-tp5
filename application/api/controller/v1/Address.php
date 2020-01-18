@@ -23,7 +23,6 @@ class Address extends ApiBase
         // $this->checkPassport(1);
     }
 
-
     /**
      *
      *
@@ -120,16 +119,17 @@ class Address extends ApiBase
     {
         $userData = $this->getUserData(1);
         $company_id = $userData['company_id'];
-        if ($type) {
-            if (!in_array($type, [1, 2, 'wall', 'info'])) {
-                return $this->jsonReturn(992, 'error type');
-            }
-            $cacheKey = "carpool:citys:company_id_$company_id:type_$type";
-            $redis = new RedisData();
-            $res_str =  $redis->get($cacheKey);
-            $res =  $res_str ? json_decode($res_str, true) : false;
-            // $res = Cache::get($cacheKey);
-            if (!$res) {
+        if (!in_array($type, [1, 2, 'wall', 'info'])) {
+            return $this->jsonReturn(992, 'error type');
+        }
+        $type = $type == 'wall' ? 1 : ($type == 'info' ? 2 : $type);
+        $AddressModel = new AddressModel();
+        $cacheKey = $AddressModel->getCitysCacheKey($company_id, $type);
+        $redis = new RedisData();
+        $res =  $redis->cache($cacheKey);
+        // $res = Cache::get($cacheKey);
+        if (!$res) {
+            if ($type) {
                 $join = [];
                 if ($type == 1 || $type == "wall") {
                     $join[] = ['love_wall s', 't.addressid = s.startpid', 'left'];
@@ -164,11 +164,10 @@ class Address extends ApiBase
                 if ($hasNull) {
                     // $res[] = "(null)";
                 }
-                // Cache::set($cacheKey,$res,300);
-                $redis->setex($cacheKey, 300, json_encode($res));
+            } else {
+                $res = AddressModel::group('city')->order('city Desc')->column('city');
             }
-        } else {
-            $res = AddressModel::group('city')->order('city Desc')->cache(30)->column('city');
+            $redis->cache($cacheKey, $res, 300);
         }
         if ($res) {
             $this->jsonReturn(0, $res, lang('Successfully'));
