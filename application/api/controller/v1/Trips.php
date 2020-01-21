@@ -16,8 +16,11 @@ use app\carpool\service\Trips as TripsService;
 use app\carpool\service\TripsChange as TripsChangeService;
 use app\carpool\service\TripsList as TripsListService;
 use app\carpool\service\TripsDetail as TripsDetailService;
+use app\carpool\service\TripsMixed as TripsMixedService;
+use app\carpool\service\TripsPushMsg;
 use InfoController;
 use my\RedisData;
+use my\Utils;
 
 /**
  * 行程相关
@@ -26,10 +29,6 @@ use my\RedisData;
  */
 class Trips extends ApiBase
 {
-
-    protected $cacheKey_myTrip = "carpool:trips:my:";
-    protected $cacheKey_myInfo = "carpool:trips:my_info:";
-    protected $cacheKey_passengers = "carpool:trips:passengers:";
 
     /**
      * 我的行程
@@ -42,9 +41,9 @@ class Trips extends ApiBase
 
         $redis            = new RedisData();
         $TripsListService = new TripsListService();
-
+        $TripsService = new TripsService();
         if (!$type) {
-            $cacheKey = $this->cacheKey_myTrip . "u{$uid}";
+            $cacheKey = $TripsService->getMyListCacheKey($uid);
             $cacheField = "pz{$pagesize}_p{$page}_fd{$fullData}";
             $cacheExp = 60 * 2;
             $cacheData = $redis->hCache($cacheKey, $cacheField);
@@ -435,6 +434,7 @@ class Trips extends ApiBase
         $TripsService = new TripsService();
         $TripsChangeService = new TripsChangeService();
         $WallModel    = new WallModel();
+        $InfoModel = new InfoModel();
         $TripsDetailServ = new TripsDetailService();
 
         //检查参数
@@ -488,6 +488,24 @@ class Trips extends ApiBase
             return $this->jsonReturn($TripsChangeService->errorCode, $TripsChangeService->errorMsg);
         }
 
+        /*********** 取消 ***********/
+        if ($type === 'cancel') {
+            $TripsMixedServ = new TripsMixedService();
+            $TripsPushMsg = new TripsPushMsg();
+            $tripData = $datas->toArray();
+            $cancelRes = $TripsMixedServ->cancelTrip($tripData, $from, $userData, 0);
+            if (!$cancelRes) {
+                return $this->jsonReturn(-1, [], lang('Fail'));
+            }
+            $errorData = $TripsMixedServ->getError();
+            $pushDatas = $errorData['data'] ?? null;
+            // 如果有要取消的行程，进行取消后推送
+            if (isset($pushDatas) && $pushDatas && isset($pushDatas['pushMsgData'])) {
+                $TripsPushMsg->pushMsg($pushDatas['pushTargetUid'] ?? null, $pushDatas['pushMsgData']);
+            }
+            return $this->jsonReturn(0, "success");
+        }
+
         /*********** 完成或取消或上车 ***********/
         if (in_array($type, ["cancel", "finish", "get_on"])) {
             //处理要更新的数据
@@ -525,12 +543,23 @@ class Trips extends ApiBase
             if ($type == "cancel" || $type == "get_on") {
                 $TripsChangeService->pushMsg($checkData);
                 if (!empty($TripsChangeService->data['sendTarget']) && is_array($TripsChangeService->data['sendTarget'])) {
+                    $passengerUids = $TripsChangeService->data['sendTarget'];
                     $actor = array_merge($actor, $TripsChangeService->data['sendTarget']);
                 }
             }
             if ($from == "wall" && $isDriver) { //如果是司机操作空座位，则同时对乘客行程进行操作。
+                if (!isset($passengerUids) || empty($passengerUids)) {
+                    $passengerInfoList = $InfoModel->getListByWallId($id); //查出所有程客行程列表
+                    $passengerUids = Utils::getInstance()->getListColumn($passengerInfoList, 'passengerid') ?: [];
+                    $actor = $type === 'finish' ? array_merge($actor, $passengerUids) : $actor;
+                }
                 $upInfoData = $type == "finish" ? ["status" => 3] : ["status" => 0, "love_wall_ID" => null, "carownid" => -1];
                 InfoModel::where([["love_wall_ID", '=', $id], ["status", "in", [0, 1, 4]]])->update($upInfoData);
+                if ($type == "finish" && !empty($passengerUids)) {
+                    $InfoModel->delUpGpsInfoidCache($passengerUids);
+                }
+            } elseif ($from == 'info') {
+                $InfoModel->delUpGpsInfoidCache([$datas->passengerid, $datas->carownid]);
             }
             $extra = $TripsChangeService->errorMsg ? ['pushMsg' => $TripsChangeService->errorMsg] : [];
             $TripsService->removeCache($actor);
@@ -538,7 +567,7 @@ class Trips extends ApiBase
                 $TripsService->delWallCache($wall_id);
             }
             $TripsDetailServ->delDetailCache($from, $id);
-            return $this->jsonReturn(0, [], "success", $extra);
+            return $this->jsonReturn(0, null, "success", $extra);
         }
 
         /*********** riding 搭车  ***********/
@@ -834,7 +863,8 @@ class Trips extends ApiBase
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
         $redis = new RedisData();
-        $cacheKey =  $this->cacheKey_myInfo . "u{$uid}";
+        $TripsService = new TripsService();
+        $cacheKey =  $TripsService->getMyInfosCacheKey($uid);
         $res = $redis->cache($cacheKey);
         if ($res === false) {
             $map = [
