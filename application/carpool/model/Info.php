@@ -172,7 +172,7 @@ class Info extends BaseModel
     {
         $map = [
             ['love_wall_ID', '=', $wall_id],
-            ['status', '<>', 2],
+            ['status', 'in', [0,1,3,4]],
         ];
         $list = $this->where($map)->select();
         if (!$list) {
@@ -205,7 +205,7 @@ class Info extends BaseModel
         if ($infoTime > time() && !$must && $infoData['comefrom'] == 2) { // 如果未过出发时间 且为还原为约车需求
             $upData['status'] = 0;
             $upData['love_wall_ID'] = null;
-            $upData['carownid'] = null;
+            $upData['carownid'] = -1;
         } else { // 如果为直接取消
             $upData['status'] = 2;
         }
@@ -213,5 +213,22 @@ class Info extends BaseModel
             ['infoid', '=', $infoid]
         ];
         return $this->where($map)->update($upData);
+    }
+
+    /**
+     * 清理用户要上传Gps的info_id缓存
+     *
+     * @param integer $uid 用户id
+     */
+    public function delUpGpsInfoidCache($uid)
+    {
+        if (is_array($uid)) {
+            foreach ($uid as $key => $value) {
+                $this->delUpGpsInfoidCache($value);
+            }
+            return true;
+        }
+        $cacheKey =  "carpool:info_id:{$uid}";
+        return $this->redis()->del($cacheKey);
     }
 }

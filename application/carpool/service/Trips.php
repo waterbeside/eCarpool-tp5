@@ -16,9 +16,40 @@ use my\Utils;
 
 class Trips extends Service
 {
+    /**
+     * 取得我的行程缓存cacheKey
+     */
+    public function getMyListCacheKey($uid)
+    {
+        return "carpool:nm_trip:my:{$uid}";
+    }
 
-    protected $cacheKey_myTrip = "carpool:trips:my:";
-    protected $cacheKey_myInfo = "carpool:trips:my_info:";
+    /**
+     * 删除我的行程缓存
+     */
+    public function delMyListCache($uid)
+    {
+        $cacheKey = $this->getMyListCacheKey($uid);
+        return $this->redis()->del($cacheKey);
+    }
+
+    /**
+     * 取得我的行程缓存cacheKey
+     */
+    public function getMyInfosCacheKey($uid)
+    {
+        return "carpool:nm_trip:my_info:{$uid}";
+    }
+
+    /**
+     * 删除我的行程缓存
+     */
+    public function delMyInfosCache($uid)
+    {
+        $cacheKey = $this->getMyInfosCacheKey($uid);
+        return $this->redis()->del($cacheKey);
+    }
+    
 
     public $defaultUserFields = [
         'uid', 'loginname', 'name','nativename', 'phone', 'mobile', 'Department', 'sex',
@@ -493,13 +524,12 @@ class Trips extends Service
             $userData = $userModel->getItem($uid);
             $company_id = $userData['company_id'];
 
-            $company_ids = $this->getCompanyIds($company_id);
-            $company_ids = is_array($company_ids) ? implode(',', $company_ids) : $company_ids;
+            $this->delMyListCache($uid);
+            $this->delMyInfosCache($uid);
+            // $company_ids = $this->getCompanyIds($company_id);
+            // $company_ids = is_array($company_ids) ? implode(',', $company_ids) : $company_ids;
 
-            $cacheKey_01 = $this->cacheKey_myInfo . "u{$uid}";
-            $cacheKey_02 = $this->cacheKey_myTrip . "u{$uid}";
 
-            $this->redis()->del($cacheKey_01, $cacheKey_02);
             // 删除城市列表缓存
             $AddressModel->delCitysCache($company_id, 1);
             $AddressModel->delCitysCache($company_id, 2);

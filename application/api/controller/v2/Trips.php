@@ -28,9 +28,6 @@ use think\Db;
 class Trips extends ApiBase
 {
 
-    protected $cacheKey_myTrip = "carpool:trips:my:";
-    protected $cacheKey_myInfo = "carpool:trips:my_info:";
-
     /**
      * 我的行程
      */
@@ -42,9 +39,10 @@ class Trips extends ApiBase
 
         $redis            = new RedisData();
         $TripsListService = new TripsListService();
+        $TripsService = new TripsService();
 
         if (!$type) {
-            $cacheKey = $this->cacheKey_myTrip . "u{$uid}";
+            $cacheKey = $TripsService->getMyListCacheKey($uid);
             $cacheField = "pz{$pagesize}_p{$page}_fd{$fullData}";
             $cacheExp = 60 * 2;
             $cacheData = $redis->hCache($cacheKey, $cacheField);
