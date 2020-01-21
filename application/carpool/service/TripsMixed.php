@@ -207,6 +207,7 @@ class TripsMixed extends Service
                 $WallModel->cancelWall($tripData);
                 $passengerInfoList = $InfoModel->getListByWallId($id); //查出所有程客行程
                 if ($passengerInfoList) { // 取消乘客行程
+                    $extData['passengers'] = $passengerInfoList;
                     $pushTargetUid = [];
                     foreach ($passengerInfoList as $key => $value) {
                         $InfoModel->cancelInfo($value, $uidOrUData, $must);
@@ -233,19 +234,35 @@ class TripsMixed extends Service
             } else {
                 return $this->setError(30001, lang('你无权取消与自己无关的行程'));
             }
-            $res = $InfoModel->cancelInfo($tripData, $uidOrUData, $must);
+            Db::connect('database_carpool')->startTrans();
+            try {
+                $res = $InfoModel->cancelInfo($tripData, $uidOrUData, $must);
+                if (is_numeric($tripData['love_wall_ID']) && $tripData['love_wall_ID'] > 0) {
+                    $took_count = $InfoModel->countPassengers($tripData['love_wall_ID']) ?: 0;
+                    if ($took_count === 0) { //如果发现没有有效乘客，则更改空座位状态为0;
+                        WallModel::where(["love_wall_ID", '=', $tripData['love_wall_ID']])->update(["status" => 0]);
+                    }
+                }
+                // 提交事务
+                Db::connect('database_carpool')->commit();
+            } catch (\Exception $e) {
+                // 回滚事务
+                Db::connect('database_carpool')->rollback();
+                $errorMsg = $e->getMessage();
+                return $this->setError(-1, $errorMsg, []);
+            }
             if (!$res) {
                 return $this->setError(-1, 'Failed', []);
             }
         }
+        // 清缓存
+        $this->delCacheAfterCancel($tripData, $from, $userData, $extData);
         // 推消息设置
         $pushMsgData['tripData'] = $tripData;
         $pushMsgData['id'] = $id;
         $pushMsgData['isDriver'] = $isDriver;
         // $TripsPushMsg->pushMsg($targetUserid, $pushMsgData); // 推消息
         $this->setError(0, 'succefull', ['pushMsgData'=>$pushMsgData, 'pushTargetUid'=>$pushTargetUid]);
-        // 清缓存
-        $this->delCacheAfterCancel($tripData, $from, $userData, $extData);
         return true;
     }
 
@@ -272,6 +289,12 @@ class TripsMixed extends Service
             $TripsService->removeCache($actor);
             if ($wall_id > 0) {
                 $TripsService->delWallCache($wall_id);
+            }
+            if (isset($extData['passengers']) && !empty($extData['passengers'])) {
+                foreach ($extData['passengers'] as $key => $value) {
+                    $TripsService->delMyListCache($value['passengerid']);
+                    $TripsService->delMyInfosCache($value['passengerid']);
+                }
             }
             $TripsDetailServ->delDetailCache($from, $id);
         }
