@@ -99,7 +99,7 @@ class TripComments extends ApiBase
         $content    = input('post.content');
         $uid        = $this->userBaseInfo['uid'];
         if (trim($content) == '') {
-            $this->ajaxReturn(992, [], lang('Please enter content'));
+            $this->jsonReturn(992, [], lang('Please enter content'));
         }
         $data = [
             'uid' => $uid,
