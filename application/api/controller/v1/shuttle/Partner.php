@@ -74,7 +74,7 @@ class Partner extends ApiBase
     public function list($id)
     {
         if (!is_numeric($id)) {
-            $this->jsonReturn(992, 'Error Param');
+            $this->jsonReturn(992, lang('Error Param'));
         }
 
         $from = input('param.from');
@@ -83,7 +83,7 @@ class Partner extends ApiBase
         } elseif ($from == 'shuttle_trip') {
             $from_type = 1;
         } else {
-            return $this->jsonReturn('992', 'Error Param');
+            return $this->jsonReturn('992', lang('Error Param'));
         }
 
         $ShuttleTripPartner = new ShuttleTripPartner();
@@ -123,7 +123,7 @@ class Partner extends ApiBase
         } elseif ($from == 'shuttle_trip') {
             $from_type = 1;
         } else {
-            return $this->jsonReturn('992', 'Error Param');
+            return $this->jsonReturn('992', lang('Error Param'));
         }
 
         $rqData['partners'] = input('post.partners');
@@ -137,10 +137,10 @@ class Partner extends ApiBase
         $lockKeyFill = "savePartners,uid_{$uid}";
         $lockKeyFill2 = "savePartners";
         if (!$ShuttleTripModel->lockItem($trip_id, $lockKeyFill, 5, 1)) { // 操作锁
-            return $this->jsonReturn(30006, lang('请不要重复操作'));
+            return $this->jsonReturn(30006, lang('Please do not repeat the operation'));
         }
         if (!$ShuttleTripModel->lockItem($trip_id, $lockKeyFill2)) { // 行锁
-            return $this->jsonReturn(20009, lang('网络烦忙，请稍候再试'));
+            return $this->jsonReturn(20009, lang('The network is busy, please try again later'));
         }
 
         $tripData = $ShuttleTripModel->getItem($trip_id);
@@ -159,7 +159,7 @@ class Partner extends ApiBase
         if (empty($partners_uData) && in_array($uid, $rqData['partners'])) {
             $ShuttleTripModel->unlockItem($trip_id, $lockKeyFill); // 解锁操作锁
             $ShuttleTripModel->unlockItem($trip_id, $lockKeyFill2); // 解锁行锁
-            return $this->jsonReturn(-1, lang('你不能添加你自己作为同行伙伴'));
+            return $this->jsonReturn(-1, lang('You can not add yourself as a fellow partner'));
         }
 
         $time = strtotime($tripData['time']);
@@ -217,7 +217,7 @@ class Partner extends ApiBase
         // 加锁
         $lockKeyFill = "del,uid_{$uid}";
         if (!$ShuttleTripPartner->lockItem($id, $lockKeyFill, 5, 1)) { // 操作锁
-            return $this->jsonReturn(30006, lang('请不要重复操作'));
+            return $this->jsonReturn(30006, lang('Please do not repeat the operation'));
         }
         $itemData = $ShuttleTripPartner->find($id);
         // 验证

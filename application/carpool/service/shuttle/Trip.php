@@ -55,10 +55,10 @@ class Trip extends Service
 
         $time = $rqData['time'] ?: null;
         if (empty($rqData['line_id'])) {
-            return $this->error(992, '请选择路线');
+            return $this->error(992, lang('Please select a route'));
         }
         if (empty($time)) {
-            return $this->error(992, '请选择时间');
+            return $this->error(992, lang('Please select a departure time'));
         }
 
         $create_type = $rqData['create_type'];
@@ -90,7 +90,7 @@ class Trip extends Service
                 // 检查有没有可以合并的行程
                 $matchingList =  in_array($create_type, ['pickup', 'hitchhiking']) ? $this->getMatchingsByRplist($repetitionList, $rqData) : [];
                 if (!empty($matchingList)) {
-                    return $this->error(50008, lang('查到你有相似的行程可以合并'), ['lists'=>$repetitionList]);
+                    return $this->error(50008, lang('You have similar trips that can be merged'), ['lists'=>$repetitionList]);
                 }
                 $this->error($errorData['code'], $errorData['msg'], ['lists'=>$repetitionList]);
                 return false;
@@ -135,7 +135,7 @@ class Trip extends Service
                 'seat_count' => 1,
             ];
         } else {
-            return $this->error(992, 'Error create_type');
+            return $this->error(992, lang('Error create_type'));
         }
     }
 
@@ -185,7 +185,7 @@ class Trip extends Service
         $ShuttleTripModel = new ShuttleTripModel();
         $newid = $ShuttleTripModel->insertGetId($updata);
         if (!$newid) {
-            return $this->error(-1, '添加数据失败');
+            return $this->error(-1, lang('failed'));
         }
         // 清除缓存;
         $cData = [
@@ -274,14 +274,14 @@ class Trip extends Service
     public function getUserTripDetail($id = 0, $userFields = [], $tripFields = [], $show_line = 1)
     {
         if (!$id) {
-            return $this->error(992, 'Error param');
+            return $this->error(992, lang('Error Param'));
         }
         $ShuttleTripModel = new ShuttleTripModel();
         $User = new UserModel();
 
         $itemData = $ShuttleTripModel->getItem($id);
         if (!$itemData) {
-            return $this->error(20002, 'No data');
+            return $this->error(20002, lang('No data'));
         }
         $uid = $itemData['uid'];
         $line_id = $itemData['line_id'];
@@ -320,7 +320,7 @@ class Trip extends Service
     public function passengers($id = 0, $userFields = [], $tripFields = [])
     {
         if (!$id) {
-            $this->error(992, 'Error param');
+            $this->error(992, lang('Error Param'));
             return [];
         }
         $ShuttleTripModel = new ShuttleTripModel();
@@ -462,10 +462,10 @@ class Trip extends Service
         $uid = $userData['uid'];
 
         if (empty($tripData)) {
-            return $this->setError(20002, '该行程不存在', $tripData);
+            return $this->setError(20002, lang('The trip does not exist'), $tripData);
         }
         if (time() - strtotime($tripData['time']) > 20 * 60) {
-            return $this->setError(30007, lang('行程已经开始一段时间了，无法操作'));
+            return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
         $userType = $tripData['user_type'];
         $extData = [];
@@ -485,12 +485,12 @@ class Trip extends Service
                 $myTripData = $ShuttleTripModel->findPtByDt($id, $uid, ['status','between',[0,5]]);
                 if ($myTripData) {
                     if ($myTripData['status'] > 2) {
-                        return $this->setError(30001, lang('该行程已经过期或结束，无法操作'));
+                        return $this->setError(30001, lang('This trip has expired or ended and cannot be operated'));
                     }
                     $extData['myTripData'] = $myTripData;
                     $res = $this->runRowCancel($myTripData); // 执行取消
                 } else {
-                    return $this->setError(30001, lang('你不是司机或乘客，无法操作'));
+                    return $this->setError(30001, lang('You are not the driver or passenger of the trip and cannot operate'));
                 }
             }
         } else { // 从乘客行程操作
@@ -502,17 +502,17 @@ class Trip extends Service
                 $extData['driverTripData'] = $driverTripData;
                 if ($driverTripData['status'] == 3) {
                     // 如果司机行程为结束，则此无法操作, （如果司结行程未结束，即使自己行程点了结束，也可进行取消）
-                    return $this->setError(-1, lang('行程已结束，无法操作'), $tripData);
+                    return $this->setError(-1, lang('Trip has ended and cannot be operated'), $tripData);
                 }
             } elseif ($tripData['status'] == 3) { // 如果trip_id不大于0且状态为结束，则无法操作
-                return $this->setError(-1, lang('行程已结束，无法操作'), $tripData);
+                return $this->setError(-1, lang('Trip has ended and cannot be operated'), $tripData);
             }
             if ($tripData['uid'] == $uid) { //如果是乘客自已操作
                 // XXX: 如果是乘客自已操作
             } elseif ($ShuttleTripModel->checkIsDriver($tripData, $uid)) { // 如果是司机操作乘客
                 $extData['i_am_driver'] = true;
             } else {
-                return $this->setError(30001, lang('你不能操作别人的行程'));
+                return $this->setError(30001, lang('You can not operate someone else`s trip'));
             }
             // 执行取消
             $res = $this->runRowCancel($tripData); // 执行取消
@@ -624,7 +624,7 @@ class Trip extends Service
         $userData = is_numeric($uidOrData) ? $userModel->findByUid($uidOrData) : $uidOrData;
         $uid = $userData['uid'];
         if (empty($tripData)) {
-            return $this->error(20002, '该行程不存在', $tripData);
+            return $this->error(20002, lang('The trip does not exist'), $tripData);
         }
         //检查是否已取消或完成
         if (in_array($tripData['status'], [-1, 3, 4, 5])) {
@@ -646,19 +646,19 @@ class Trip extends Service
                         return true;
                     }
                     if ($myTripData['status'] > 2) {
-                        return $this->error(30001, lang('行程已经过期或结束，无法操作'));
+                        return $this->error(30001, lang('This trip has expired or ended and cannot be operated'));
                     }
                     $extData['myTripData'] = $myTripData;
                     $res = $ShuttleTripModel->finishPassengerTrip($myTripData);
                 } else {
-                    return $this->error(30001, lang('你不是司机或乘客，无法操作'));
+                    return $this->error(30001, lang('You are not the driver or passenger of the trip and cannot operate'));
                 }
             }
         } else { // 从乘客行程操作
             if ($tripData['uid'] == $uid) { //如果是乘客自已操作
                 $res = $ShuttleTripModel->finishPassengerTrip($tripData);
             } else {
-                return $this->error(30001, lang('你不能操作别人的行程'));
+                return $this->error(30001, lang('You can not operate someone else`s trip'));
             }
         }
         if (isset($res) && $res) {

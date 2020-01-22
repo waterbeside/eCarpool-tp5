@@ -129,7 +129,7 @@ class Line extends ApiBase
     public function common($type = 0)
     {
         if (!is_numeric($type)) {
-            $this->jsonReturn(992, 'Error param');
+            $this->jsonReturn(992, lang('Error Param'));
         }
 
         $userData = $this->getUserData(1);

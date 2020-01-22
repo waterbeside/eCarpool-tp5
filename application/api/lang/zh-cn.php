@@ -12,6 +12,9 @@ return [
     "Parameter error" => "参数错误",
     "No permission" => "无权操作",
 
+    'Please do not repeat the operation' => '请不要重复操作',
+    'The network is busy, please try again later' => '网络烦忙，请稍候再试',
+
     //jwt 验证
     'You are not logged in' => '您尚未登入',
     'Login status expired, please login again' => '登录身份过期，请重新登入',
@@ -85,6 +88,37 @@ return [
     'The driver {:name} cancelled the trip' => '司机{:name}取消了行程',
     'The passenger {:name} cancelled the trip' => '乘客{:name}取消了行程',
     'The passenger {:name} has got on your car' => '乘客{:name}上了你的车',
+
+    // 班车拼车相关
+    'Adding driver data failed' => '添加司机数据失败',
+    'License plate number cannot be empty' => '车牌号不能为空',
+    'Not enough seats' => '空座位数不够',
+    'Only the driver can change the number of seats' => '只有司机才可以改变行程座位数',
+    'Please select a route'=>'请选择路线',
+    'Please select a departure time'=>'请选择时间',
+    'The driver is on your list of travel partners, so the driver cannot add himself as a passenger' => '操作失败，该司机是你发布需求时添加的一名乘客，司机无法自己搭自已',
+    'The number of seats you set cannot be less than the number of passengers on your trip' => '您设置的座位数不能比已搭乘客数少',
+    'The trip has been going on for a while. Operation is not allowed' => '行程已经开始一段时间了，无法操作',
+    'The partner does not exist or has been deleted' => '同行伙伴不存在，或已删除',
+    'The request does not exist' => '该约车需求不存在',
+    'The request has been picked up by the driver. You can not add partners' => '该约车需求已被司机接上，不能添加同行伙伴',
+    'The request has been picked up by the driver. You can not operate the partners' => '该约车需求已被司机接上，不能修改同行伙伴',
+    'The route of trip is different from yours' => '对方路线与你的不一致',
+    'The route does not exist' => '该路线不存在',
+    'This trip has expired or ended and cannot be operated' => '该行程已经过期或结束，无法操作',
+    'This trip is not a passenger`s trip, and cannot merge'=> '对方行程不是约车需求行程，无法合并',
+    'This trip is not a driver`s trip, and cannot merge' => '对方行程不是司机行程，无法合并',
+    'Trip has ended and cannot be operated' => '行程已结束，无法操作',
+    'You are among this passenger`s partner, so you cannot add yourself as a passenger' => '操作失败，你是该约车需求的同行乘客，所以无法添加自己作为乘客',
+    'You are not the driver or passenger of the trip and cannot operate' => '你不是该行程的司机或乘客，无法操作',
+    'You are too slow, the passenger was snatched by another driver' => '你慢了一步，该乘客被其他司机抢去!',
+    'You can not add yourself as a fellow partner' => '你不能添加你自己作为同行伙伴',
+    'You can not operate someone else`s trip' => '你不能操作别人的行程',
+    'You cannot cancel this trip that you have not participated in' => '你无权取消与自己无关的行程',
+    'You have similar trips that can be merged' => '你有相似的行程可以合并',
+    'You have joined the trip' => '你已经加入该行程',
+    'Failed, "{:name}" has one or more trips in similar time' => '添加失败，"{:name}"在相近时间内有一个或多个行程',
+    'Failed, "{:name}" has been added as a partner by others in a similar time' => '添加失败，"{:name}"在相近时间内已被其他人添加为同行伙伴',
 
     //附件相关
     "Wrong format" => '格式不正确',

@@ -12,6 +12,9 @@ return [
     "Parameter error" => "Parameter error",
     "No permission" => "No permission",
 
+    'Please do not repeat the operation' => 'Please do not repeat the operation.',
+    'The network is busy, please try again later' => 'The network is busy, please try again later.',
+
     //jwt 验证
     'You are not logged in' => 'You are not logged in',
     'Login status expired, please login again' => 'Login status expired, please login again',
@@ -86,6 +89,37 @@ return [
     'The driver {:name} cancelled the trip' => 'The driver {:name} cancelled the trip',
     'The passenger {:name} cancelled the trip' => 'The passenger {:name} cancelled the trip',
     'The passenger {:name} has got on your car' => 'The passenger {:name} has got on your car',
+
+    // 班车拼车相关
+    'Adding driver data failed' => 'Adding driver data failed.',
+    'License plate number cannot be empty' => 'License plate number cannot be empty',
+    'Not enough seats' => 'Not enough seats.',
+    'Only the driver can change the number of seats' => 'Only the driver can change the number of seats.',
+    'Please select a route'=>'Please select a route',
+    'Please select a departure time'=>'Please select a departure time',
+    'The driver is on your list of travel partners, so the driver cannot add himself as a passenger' => 'Failed, The driver is on your list of travel partners, so the driver cannot add himself as a passenger',
+    'The number of seats you set cannot be less than the number of passengers on your trip' => 'The number of seats you set cannot be less than the number of passengers on your trip',
+    'The trip has been going on for a while. Operation is not allowed' => 'The trip has been going on for a while. Operation is not allowed',
+    'The partner does not exist or has been deleted' => 'The partner does not exist or has been deleted',
+    'The request does not exist' => 'The request does not exist',
+    'The request has been picked up by the driver. You can not add partners' => 'The request has been picked up by the driver. You can not add partners',
+    'The request has been picked up by the driver. You can not operate the partners' => 'The request has been picked up by the driver. You can not operate the partners',
+    'The route of trip is different from yours' => 'The route of trip is different from yours.',
+    'The route does not exist' => 'The route does not exist.',
+    'This trip has expired or ended and cannot be operated' => 'This trip has expired or ended and cannot be operated.',
+    'This trip is not a passenger`s trip, and cannot merge'=> 'This trip is not a passenger`s trip, and cannot merge.',
+    'This trip is not a driver`s trip, and cannot merge' => 'This trip is not a driver`s trip, and cannot merge.',
+    'Trip has ended and cannot be operated' => 'Trip has ended and cannot be operated.',
+    'You are among this passenger`s partner, so you cannot add yourself as a passenger' => 'Failed, You are among this passenger`s partner, so you cannot add yourself as a passenger.',
+    'You are not the driver or passenger of the trip and cannot operate' => 'You are not the driver or passenger of the trip and cannot operate.',
+    'You are too slow, the passenger was snatched by another driver' => 'You are too slow! The passenger was snatched by another driver.',
+    'You can not add yourself as a fellow partner' => 'You can not add yourself as a fellow partner.',
+    'You can not operate someone else`s trip' => 'You can not operate someone else`s trip.',
+    'You cannot cancel this trip that you have not participated in' => 'You cannot cancel this trip that you have not participated in.',
+    'You have similar trips that can be merged' => 'You have similar trips that can be merged.',
+    'You have joined the trip' => 'You have joined the trip.',
+    'Failed, "{:name}" has one or more trips in similar time' => 'Failed, "{:name}" has one or more trips in similar time.',
+    'Failed, "{:name}" has been added as a partner by others in a similar time' => 'Failed, "{:name}" has been added as a partner by others in a similar time.',
 
     //附件相关
     "Wrong format" => 'Wrong format',

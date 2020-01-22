@@ -131,19 +131,19 @@ class TripsMixed extends Service
         // 取行程数据
         $tripData = is_numeric($idOrData) ? $this->getTripItem($idOrData, $from) : $idOrData;
         if (!$tripData) {
-            return $this->setError(20002, 'No trip data');
+            return $this->setError(20002, lang('The trip does not exist'));
         }
         if ($from === 'shuttle_from') { // 上下班行程
             if ($uid != $tripData['uid']) {
-                return $this->setError(30001, lang('你无权取消与自己无关的行程'));
+                return $this->setError(30001, lang('You cannot cancel this trip that you have not participated in'));
             }
         } elseif ($from === 'wall') { // 普通行程空座位
             if ($uid != $tripData['carownid']) {
-                return $this->setError(30001, lang('你无权取消与自己无关的行程'));
+                return $this->setError(30001, lang('You cannot cancel this trip that you have not participated in'));
             }
         } elseif ($from === 'info') { // info行程
             if ($uid != $tripData['passengerid'] && $uid != $tripData['carownid']) {
-                return $this->setError(30001, lang('你无权取消与自己无关的行程'));
+                return $this->setError(30001, lang('You cannot cancel this trip that you have not participated in'));
             }
         }
         return true;
@@ -160,7 +160,7 @@ class TripsMixed extends Service
     public function cancelTrip($idOrData, $from, $uidOrUData, $must = 0)
     {
         if (!in_array($from, ['shuttle_from', 'wall', 'info'])) {
-            return $this->setError(992, 'Error Param');
+            return $this->setError(992, lang('Error Param'));
         }
         // 取用户数据
         $userData = is_numeric($uidOrUData) ? (new UserModel())->getItem($uidOrUData) : $uidOrUData;
@@ -168,7 +168,7 @@ class TripsMixed extends Service
         // 取行程数据
         $tripData = is_numeric($idOrData) ? $this->getTripItem($idOrData, $from) : $idOrData;
         if (!$tripData) {
-            return $this->setError(20002, 'No trip data');
+            return $this->setError(20002, lang('The trip does not exist'));
         }
 
         // $TripsPushMsg = new TripsPushMsg();
@@ -232,7 +232,7 @@ class TripsMixed extends Service
                 $isDriver = 0;
                 $pushTargetUid = $tripData['carownid'];
             } else {
-                return $this->setError(30001, lang('你无权取消与自己无关的行程'));
+                return $this->setError(30001, lang('You cannot cancel this trip that you have not participated in'));
             }
             Db::connect('database_carpool')->startTrans();
             try {

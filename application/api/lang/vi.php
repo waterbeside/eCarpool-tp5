@@ -12,6 +12,8 @@ return [
     "Parameter error" => "Lỗi tham số",
     "No permission" => "Không cho phép",
 
+    'Please do not repeat the operation' => 'Xin vui lòng không lặp lại hoạt động.',
+    'The network is busy, please try again later' => 'Mạng đang bận, vui lòng thử lại sau.',
 
     //jwt 验证
     'You are not logged in' => 'Bạn chưa đăng nhập',
@@ -87,6 +89,38 @@ return [
     'The driver {:name} cancelled the trip' => 'Tài xế {:name} đã hủy chuyến đi',
     'The passenger {:name} cancelled the trip' => 'Hành khách {:name} đã hủy chuyến đi',
     'The passenger {:name} has got on your car' => 'Hành khách {:name} đã lên xe của bạn',
+
+    // 班车拼车相关
+    'Adding driver data failed' => 'Thêm dữ liệu trình điều khiển không thành công.',
+    'License plate number cannot be empty' => 'Số biển số xe không được để trống.',
+    'Not enough seats' => 'Số lượng ghế trống không đủ.',
+    'Only the driver can change the number of seats' => 'Chỉ người lái xe mới có thể thay đổi số lượng ghế trong hành trình.',
+    'Please select a route'=>'Vui lòng chọn một tuyến đường.',
+    'Please select a departure time'=>'Vui lòng chọn thời gian khởi hành.',
+    'The driver is on your list of travel partners, so the driver cannot add himself as a passenger' => 'Failed. The driver is on your list of travel partners, so the driver cannot add himself as a passenger',
+    'The number of seats you set cannot be less than the number of passengers on your trip' => 'Bạn không thể đặt ít chỗ hơn số lượng hành khách đã lên.',
+    'The trip has been going on for a while. Operation is not allowed' => 'Chuyến đi đã bắt đầu một thời gian, bạn không thể hoạt động.',
+    'The partner does not exist or has been deleted' => 'Đối tác ngang hàng không tồn tại hoặc đã bị xóa',
+    'The request does not exist' => 'Nhu cầu đi xe không tồn tại.',
+    'The request has been picked up by the driver. You can not add partners' => 'Yêu cầu đã được chọn bởi trình điều khiển. Bạn không thể thêm đối tác.',
+    'The request has been picked up by the driver. You can not operate the partners' => 'Yêu cầu đã được chọn bởi trình điều khiển. Bạn không thể vận hành các đối tác.',
+    'The route of trip is different from yours' => 'Lộ trình của chuyến đi khác với bạn.',
+    'The route does not exist' => 'Tuyến đường không tồn tại.',
+    'This trip has expired or ended and cannot be operated' => 'Chuyến đi này đã hết hạn hoặc kết thúc và không thể được vận hành',
+    'This trip is not a passenger`s trip, and cannot merge'=> 'Chuyến đi này không phải là chuyến đi của hành khách, và không thể hợp nhất.',
+    'This trip is not a driver`s trip, and cannot merge' => 'Chuyến đi này không phải là chuyến đi của tài xế. và không thể hợp nhất.',
+    'Trip has ended and cannot be operated' => 'Chuyến đi đã kết thúc và không thể được vận hành.',
+    'You are among this passenger`s partner, so you cannot add yourself as a passenger' => 'Hoạt động thất bại，Bạn là một trong những đối tác của hành khách này. vì vậy bạn không thể thêm mình như một hành khách.',
+    'You are not the driver or passenger of the trip and cannot operate' => 'Bạn không phải là tài xế hoặc hành khách của chuyến đi và không thể vận hành.',
+    'You are too slow, the passenger was snatched by another driver' => 'Bạn quá chậm, hành khách đã bị một tài xế khác cướp mất!',
+    'You can not add yourself as a fellow partner' => 'Bạn không thể thêm mình là một đối tác đồng nghiệp.',
+    'You can not operate someone else`s trip' => 'Bạn không thể điều hành chuyến đi của người khác.',
+    'You cannot cancel this trip that you have not participated in' => 'Bạn không có quyền hủy chuyến đi không liên quan gì đến bạn.',
+    'You have similar trips that can be merged' => 'Bạn có những chuyến đi tương tự có thể được hợp nhất.',
+    'You have joined the trip' => 'Bạn đã tham gia chuyến đi.',
+    'Failed, "{:name}" has one or more trips in similar time' => 'Thất bại. "{:name}" có một hoặc nhiều chuyến đi trong thời gian tương tự.',
+    'Failed, "{:name}" has been added as a partner by others in a similar time' => 'Không thành công. "{:name}" đã được thêm vào làm đối tác trong những lần tương tự.',
+
 
     //附件相关
     "Wrong format" => 'Sai định dạng',

@@ -28,7 +28,7 @@ class Partner extends Base
     public function checkSave($rqData, $tripData, $userData)
     {
         if (empty($tripData)) {
-            return $this->setError(20002, '该行程不存在');
+            return $this->setError(20002, lang('The trip does not exist'));
         }
         //检查是否已取消或完成
         if (in_array($tripData['status'], [-1, 3, 4, 5])) {
@@ -36,11 +36,11 @@ class Partner extends Base
         }
         // 检查行程是否一个约车需求
         if ($tripData['user_type'] == 0 && $tripData['comefrom'] == 2) {
-            return $this->setError(20002, '该约车需求不存在');
+            return $this->setError(20002, lang('The request does not exist'));
         }
         // 检查该约车需求是否已经被司机接了
         if ($tripData['trip_id'] > 0) {
-            return $this->setError(-1, '该约车需求已被司机接上，不能添加同行者');
+            return $this->setError(-1, lang('The request has been picked up by the driver. You can not add partners'));
         }
         return $rqData;
     }
@@ -68,7 +68,7 @@ class Partner extends Base
             $partners_uData[$key]['repetitionList'] = $repetitionList ?? [];
             if ($repetitionList) {
                 $hasError = 50009;
-                $errorMsg = lang('添加失败，"{:name}"在相近时间内有一个或多个行程', ['name'=>$value['name']]);
+                $errorMsg = lang('Failed, "{:name}" has one or more trips in similar time', ['name'=>$value['name']]);
                 $errorPartners[] = $partners_uData[$key];
                 break;
             }
@@ -77,7 +77,7 @@ class Partner extends Base
             $partners_uData[$key]['repPartnerList'] = $repPartnerList ?? [];
             if ($repetitionList) {
                 $hasError = 50009;
-                $errorMsg = lang('添加失败，"{:name}"在相近时间内已被其它人添加过作为同行者', ['name'=>$value['name']]);
+                $errorMsg = lang('Failed, "{:name}" has been added as a partner by others in a similar time', ['name'=>$value['name']]);
                 $errorPartners[] = $partners_uData[$key];
                 break;
             }
@@ -101,10 +101,10 @@ class Partner extends Base
         $ShuttleTripPartner = new ShuttleTripPartner();
         $itemData = is_numeric($idOrData) ? $ShuttleTripPartner->find($idOrData) : $idOrData;
         if (empty($itemData)) {
-            return $this->setError(20002, lang('同行者不存在，或已删除'));
+            return $this->setError(20002, lang('The partner does not exist or has been deleted'));
         }
         if ($itemData['uid'] != $uid || $itemData['creater_id'] != $uid) {
-            return $this->setError(30001, lang('你无限操作与自己无关的行程'));
+            return $this->setError(30001, lang('You cannot cancel this trip that you have not participated in'));
         }
         $id = $itemData['id'];
         if ($itemData['is_delete'] === 1) {
@@ -114,9 +114,8 @@ class Partner extends Base
         $tripData = $ShuttleTrip->getItem($itemData['trip_id']);
         // 检查该约车需求是否已经被司机接了
         if ($tripData['trip_id'] > 0) {
-            return $this->setError(-1, lang('该约车需求已被司机接上，不能修改同行者'));
+            return $this->setError(-1, lang('The request has been picked up by the driver. You can not operate the partners'));
         }
         return $itemData;
     }
-
 }

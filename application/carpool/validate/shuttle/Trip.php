@@ -24,10 +24,10 @@ class Trip extends Base
     public function checkPickup($tripData, $userData)
     {
         if (empty($tripData)) {
-            return $this->jsonReturn(20002, '该行程不存在');
+            return $this->jsonReturn(20002, lang('The trip does not exist'));
         }
         if ($tripData['user_type'] == 1) {
-            return $this->setError(-1, lang('该行程不存在'));
+            return $this->setError(20002, lang('The trip does not exist'));
         }
         //检查是否已取消或完成
         if (in_array($tripData['status'], [-1, 3, 4, 5])) {
@@ -38,7 +38,7 @@ class Trip extends Base
             return $this->setError(-1, lang('You can`t take your own'));
         }
         if ($tripData['trip_id'] > 0) { // 检查对方是否已被其它司机搭了
-            return $this->setError(50010, '你慢了一步，该乘客被其他司机抢去!');
+            return $this->setError(50010, lang('You are too slow, the passenger was snatched by another driver'));
         }
         if ($tripData['seat_count'] > 1) {
             $ShuttleTripPartner = new ShuttleTripPartner();
@@ -78,10 +78,10 @@ class Trip extends Base
     public function checkHitchhiking($tripData, $userData)
     {
         if (empty($tripData)) {
-            return $this->setError(20002, '该行程不存在');
+            return $this->setError(20002, lang('The trip does not exist'));
         }
         if ($tripData['user_type'] != 1) {
-            return $this->setError(20002, '该行程不存在');
+            return $this->setError(20002, lang('The trip does not exist'));
         }
         //检查是否已取消或完成
         if (in_array($tripData['status'], [-1, 3])) {
@@ -95,7 +95,7 @@ class Trip extends Base
         $ShuttleTrip = new ShuttleTrip();
         $checkInTripRes = $ShuttleTrip->checkInTrip($tripData, $userData['uid']);
         if ($checkInTripRes) {
-            return $this->setError(50006, lang('您已经搭上该趟车'), $checkInTripRes);
+            return $this->setError(50006, lang('You have joined the trip'), $checkInTripRes);
         }
         // 检查座位是否已满
         $took_count = $ShuttleTrip->countPassengers($tripData['id'], false); //计算已坐车乘客数
@@ -123,14 +123,14 @@ class Trip extends Base
         if (in_array($tripData['status'], [-1, 3, 4, 5])) {
             return $this->setError(-1, lang('The trip has been completed or cancelled. Operation is not allowed'));
         }
-        if ($tripData['user_type'] != 1) {
-            return $this->setError(992, lang('只有司机才可以改变行程座位数'));
-        }
         if ($tripData['uid'] != $uid) {
-            return $this->setError(30001, lang('你不能操作别人的行程'));
+            return $this->setError(30001, lang('You can not operate someone else`s trip'));
+        }
+        if ($tripData['user_type'] != 1) {
+            return $this->setError(992, lang('Only the driver can change the number of seats'));
         }
         if (time() - strtotime($tripData['time']) > 20 * 60) {
-            return $this->setError(30007, lang('你的行程已经开始一段时间了，无法操作'));
+            return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
         if ($rqData['seat_count'] < 1) {
             return $this->setError(992, lang('The number of empty seats cannot be empty'));
@@ -138,7 +138,7 @@ class Trip extends Base
         $ShuttleTrip = new ShuttleTrip();
         $took_count = $ShuttleTrip->countPassengers($rqData['id'], false); //计算已坐车乘客数
         if ($rqData['seat_count'] < $took_count) {
-            return $this->setError(992, lang('您设置的座位数不能比已搭乘客数少'));
+            return $this->setError(992, lang('The number of seats you set cannot be less than the number of passengers on your trip'));
         }
         return $tripData;
     }
@@ -157,22 +157,17 @@ class Trip extends Base
         if (in_array($tripData['status'], [-1, 3, 4, 5])) {
             return $this->setError(-1, lang('The trip has been completed or cancelled. Operation is not allowed'));
         }
-        if ($tripData['user_type'] != 1) {
-            return $this->setError(992, lang('只有司机才可以改变行程座位数'));
-        }
         if ($tripData['uid'] != $uid) {
-            return $this->setError(30001, lang('你不能操作别人的行程'));
+            return $this->setError(30001, lang('You can not operate someone else`s trip'));
+        }
+        if ($tripData['user_type'] != 1) {
+            return $this->setError(992, lang('Only the driver can change the number of seats'));
         }
         if (time() - strtotime($tripData['time']) > 20 * 60) {
-            return $this->setError(30007, lang('你的行程已经开始一段时间了，无法操作'));
+            return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
         if (empty(trim($rqData['plate']))) {
-            return $this->setError(992, lang('车牌号不能为空'));
-        }
-        $ShuttleTrip = new ShuttleTrip();
-        $took_count = $ShuttleTrip->countPassengers($rqData['id'], false); //计算已坐车乘客数
-        if ($rqData['seat_count'] < $took_count) {
-            return $this->setError(992, lang('您设置的座位数不能比已搭乘客数少'));
+            return $this->setError(992, lang('License plate number cannot be empty'));
         }
         return $tripData;
     }
@@ -189,25 +184,25 @@ class Trip extends Base
     public function checkMerge($tripData, $targetTripData, $userData)
     {
         if (!$tripData) {
-            return $this->setError(20002, 'No data');
+            return $this->setError(20002, lang('No data'));
         }
         if ($tripData['uid'] != $userData['uid']) {
-            return $this->setError(30001, lang('你不能操作把别人的行程合并到别人的行程'));
+            return $this->setError(30001, lang('You can not operate someone else`s trip'));
         }
         if (in_array($tripData['status'], [-1, 3, 4, 5])) {
-            return $this->setError(30001, lang('你的行程已取消或完结，无法操作'));
+            return $this->setError(30001, lang('The trip has been completed or cancelled. Operation is not allowed'));
         }
         if (time() - strtotime($tripData['time']) > 20 * 60) {
-            return $this->setError(30007, lang('你的行程已经开始一段时间了，无法操作'));
+            return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
         if (!$targetTripData) {
-            return $this->setError(20002, '目标行程不存在');
+            return $this->setError(20002, lang('The trip does not exist'));
         }
         if (in_array($targetTripData['status'], [-1, 3])) {
-            return $this->setError(30001, lang('对方的行程已取消或完结，无法操作'));
+            return $this->setError(30001, lang('The trip has been completed or cancelled. Operation is not allowed'));
         }
         if ($tripData['line_id'] != $targetTripData['line_id']) {
-            return $this->setError(50011, lang('对方路线与你的不一致'));
+            return $this->setError(50011, lang('The route of trip is different from yours'));
         }
         $driverTripData = $tripData['user_type'] == 1 ? $tripData : $targetTripData;
         $passengerTripData = $tripData['user_type'] == 1 ?  $targetTripData : $tripData;
@@ -220,7 +215,7 @@ class Trip extends Base
                 'seat_count' => $tripData['seat_count'],
                 'took_count' => $took_count,
             ];
-            return $this->setError(50003, $returnData, lang('空座位数不够'));
+            return $this->setError(50003, $returnData, lang('Not enough seats'));
         }
 
         if ($passengerTripData['seat_count'] > 1) {
@@ -234,14 +229,14 @@ class Trip extends Base
 
         if ($tripData['user_type'] == 1) { // 如果自己是司机
             if ($targetTripData['user_type'] != 0 || $targetTripData['comefrom'] != 2) { // 检查对方是否一个约车需求
-                return $this->setError(992, '对方行程不约车需求行程，无法合并');
+                return $this->setError(992, 'This trip is not a passenger`s trip, and cannot merge');
             }
             if ($targetTripData['trip_id'] > 0) { // 检查对方是否已被司机搭了
-                return $this->setError(-1, '你慢了一步，该乘客被其他司机抢去!');
+                return $this->setError(-1, lang('You are too slow, the passenger was snatched by another driver'));
             }
         } else { // 如果是乘客
             if ($targetTripData['user_type'] != 1) { // 检查对方是否司机
-                return $this->setError(992, '对方行程不是司机行程，无法合并');
+                return $this->setError(992, 'This trip is not a driver`s trip, and cannot merge');
             }
         }
         return true;
@@ -263,7 +258,8 @@ class Trip extends Base
             $partnerIds[] = $value['uid'];
         }
         if (in_array($driver_uid, $partnerIds)) {
-            $msg = $uid == $driver_uid ? "对方把你作为同行乘客，你无法添加自己作为乘客" : "该司机是你发布需求时添加的一名乘客，司机无法自己搭自已";
+            $msg = $uid == $driver_uid ? lang('You are among this passenger`s partner, so you cannot add yourself as a passenger')
+                : lang('The driver is on your list of travel partners, so the driver cannot add himself as a passenger');
             return $this->setError(-1, $msg);
         }
         return $partnerIds;

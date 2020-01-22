@@ -37,11 +37,11 @@ class Trip extends ApiBase
     public function list($rqType, $page = 1, $pagesize = 0, $returnType = 1)
     {
         if (!in_array($rqType, ['cars','requests'])) {
-            return $returnType ? $this->jsonReturn(992, 'Error params') : [992, null, 'Error params'];
+            return $returnType ? $this->jsonReturn(992, lang('Error params')) : [992, null, lang('Error params')];
         }
         $line_id = input('get.line_id/d', 0);
         if (!$line_id) {
-            return $returnType ? $this->jsonReturn(992, 'Error line_id') : [992, null, 'Error line_id'];
+            return $returnType ? $this->jsonReturn(992, lang('Error line_id')) : [992, null, lang('Error line_id')];
         }
         $ex = 60 * 1;
         $keyword = input('get.keyword');
@@ -59,7 +59,7 @@ class Trip extends ApiBase
         ];
         $lineData = $ShuttleLineModel->getItem($line_id, $lineFields);
         if (!$lineData) {
-            return $returnType ? $this->jsonReturn(20002, $returnData, 'No data') : [992, $returnData, 'No data'];
+            return $returnType ? $this->jsonReturn(20002, $returnData, lang('No data')) : [992, $returnData, lang('No data')];
         }
         if (!$keyword) {
             $cacheKey  = $ShuttleTrip->getListCacheKeyByLineId($line_id, $rqType);
@@ -68,7 +68,7 @@ class Trip extends ApiBase
         }
         if (is_array($returnData) && empty($returnData)) {
             $returnData['lineData'] = $lineData;
-            return $returnType ? $this->jsonReturn(20002, $returnData, 'No data') : [20002, $returnData, 'No data'];
+            return $returnType ? $this->jsonReturn(20002, $returnData, lang('No data')) : [20002, $returnData, lang('No data')];
         }
         if (!$returnData) {
             $userAlias = 'u';
@@ -112,7 +112,7 @@ class Trip extends ApiBase
                 if (!$keyword) {
                     $redis->hCache($cacheKey, $rowCacheKey, [], $ex);
                 }
-                return $returnType ? $this->jsonReturn(20002, 'No data') : [20002, null, 'No data'];
+                return $returnType ? $this->jsonReturn(20002, lang('No data')) : [20002, null, lang('No data')];
             }
 
             $returnData['lineData'] = $lineData;
@@ -270,7 +270,7 @@ class Trip extends ApiBase
         $rowCacheKey = "pz_{$pagesize},page_$page";
         $returnData = $redis->hCache($cacheKey, $rowCacheKey);
         if (is_array($returnData) && empty($returnData)) {
-            return $this->jsonReturn(20002, $returnData, 'No data');
+            return $this->jsonReturn(20002, $returnData, lang('No data'));
         }
         if (!$returnData) {
             $ex = 60 * 5;
@@ -336,7 +336,7 @@ class Trip extends ApiBase
     public function show($id = 0, $show_line = 1, $show_member = 2)
     {
         if (!$id) {
-            return $this->jsonReturn(992, 'Error param');
+            return $this->jsonReturn(992, lang('Error Param'));
         }
         $ShuttleTripServ = new ShuttleTripService();
         $data  = $ShuttleTripServ->getUserTripDetail($id, [], [], $show_line);
@@ -385,7 +385,7 @@ class Trip extends ApiBase
         $ShuttleTripModel = new ShuttleTrip();
         $lockKeyFill = "u_{$uid}:save";
         if (!$ShuttleTripModel->lockItem(0, $lockKeyFill, 5, 1)) {
-            return $this->jsonReturn(30006, '请不要重复操作');
+            return $this->jsonReturn(30006, lang('Please do not repeat the operation'));
         }
         // 验证
         $ShuttleTripVali = new ShuttleTripVali();
@@ -398,7 +398,7 @@ class Trip extends ApiBase
         $rqData['line_data'] = $ShuttleTripService->getExtraInfoLineData($line_id);
         if (!$rqData['line_data']) {
             $ShuttleTripModel->unlockItem(0, $lockKeyFill); // 解锁
-            $this->jsonReturn(20002, '该路线不存在');
+            $this->jsonReturn(20002, lang('The route does not exist'));
         }
         // 如果是约车需求，要处理同行者
         if ($rqData['create_type'] == 'requests') {
@@ -465,7 +465,7 @@ class Trip extends ApiBase
         $rqData['create_type'] = 'hitchhiking';
         // 加锁
         if (!$ShuttleTripModel->lockItem($id, 'hitchhiking')) {
-            return $this->jsonReturn(20009, '网络烦忙，请稍候再试');
+            return $this->jsonReturn(20009, lang('The network is busy, please try again later'));
         }
         // 处理有没有要同时被取消的行程
         $cancel_id = input('post.cancel_id/d', 0);
@@ -495,7 +495,7 @@ class Trip extends ApiBase
         $rqData['line_data'] = $ShuttleTripService->getExtraInfoLineData($id, 2);
         if (!$rqData['line_data']) {
             $ShuttleTripModel->unlockItem($id, 'hitchhiking'); // 解锁
-            return $this->jsonReturn(20002, '该路线不存在');
+            return $this->jsonReturn(20002, lang('The route does not exist'));
         }
 
         // 入库
@@ -560,7 +560,7 @@ class Trip extends ApiBase
 
         // 加锁
         if (!$ShuttleTripModel->lockItem($id, 'pickup')) {
-            return $this->jsonReturn(20009, '网络烦忙，请稍候再试');
+            return $this->jsonReturn(20009, lang('The network is busy, please try again later'));
         }
         // 处理有没有要同时被取消的行程
         $cancel_id = input('post.cancel_id/d', 0);
@@ -593,7 +593,7 @@ class Trip extends ApiBase
         
         if (!$rqData['line_data']) {
             $ShuttleTripModel->unlockItem($id, 'pickup'); // 解锁
-            return $this->jsonReturn(20002, '该路线不存在');
+            return $this->jsonReturn(20002, lang('The route does not exist'));
         }
 
         Db::connect('database_carpool')->startTrans();
@@ -611,7 +611,7 @@ class Trip extends ApiBase
             // 入库
             $driverTripId = $ShuttleTripService->addTrip($rqData, $userData); // 添加一条司机行程
             if (!$driverTripId) {
-                throw new \Exception("添加司机数据失败");
+                throw new \Exception(lang('Adding driver data failed'));
             }
             $ShuttleTripModel->where('id', $id)->update(['trip_id'=>$driverTripId]); // 乘客行程的trip_id设为司机行程id
 
@@ -670,19 +670,19 @@ class Trip extends ApiBase
     public function change($id = 0)
     {
         if (!$id) {
-            return $this->jsonReturn(992, 'Error param');
+            return $this->jsonReturn(992, lang('Error Param'));
         }
 
         $run = input('post.run') ?: input('param.run') ;
         if (!in_array($run, ['cancel', 'change_seat', 'change_plate'])) { // 不再支持完结
-            return $this->jsonReturn(992, 'Error param');
+            return $this->jsonReturn(992, lang('Error Param'));
         }
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
         $ShuttleTripModel = new ShuttleTrip();
         $tripData = $ShuttleTripModel->getItem($id);
         if (empty($tripData)) {
-            return $this->jsonReturn(20002, '该行程不存在');
+            return $this->jsonReturn(20002, lang('该行程不存在'));
         }
         
         $ShuttleTripService = new ShuttleTripService();
@@ -705,7 +705,7 @@ class Trip extends ApiBase
                 ];
                 $checkRes = $ShuttleTripVali->checkChangePlate($upData, $tripData, $userData['uid']);
             } else {
-                return $this->jsonReturn(992, 'Error param');
+                return $this->jsonReturn(992, lang('Error Param'));
             }
             if (!$checkRes) {
                 $errorData = $ShuttleTripVali->getError();
@@ -719,7 +719,7 @@ class Trip extends ApiBase
                 $errorData = $ShuttleTripService->getError();
                 return $this->jsonReturn($errorData['code'] ?? -1, $errorData['msg'] ?? 'Failed');
             } else {
-                return $this->jsonReturn(-1, 'Failed');
+                return $this->jsonReturn(-1, lang('Failed'));
             }
         }
         if (in_array($run, ['change_seat', 'change_plate'])) {
@@ -743,7 +743,7 @@ class Trip extends ApiBase
 
         $tripData = $ShuttleTripModel->getItem($id);
         if (!$tripData) {
-            return $this->jsonReturn(20002, '路线不存在');
+            return $this->jsonReturn(20002, lang('The route does not exist'));
         }
         $line_id = $tripData['line_id'];
         $time = strtotime($tripData['time']);
@@ -759,7 +759,7 @@ class Trip extends ApiBase
         $matchingUserType = $tripData['user_type'] == 1 ? 0 : 1;
         $list = $ShuttleTripService->getSimilarTrips($line_id, $time, $matchingUserType, -1*$uid, $timeoffset);
         if (!$list) {
-            return $this->jsonReturn(20002, 'No data');
+            return $this->jsonReturn(20002, lang('No data'));
         }
 
         foreach ($list as $key => $value) {
@@ -783,7 +783,7 @@ class Trip extends ApiBase
         $tid = input('post.tid/d', 0); // 对方的行程id
 
         if (!$tid || !$id) {
-            return $this->jsonReturn(992, 'Empty param');
+            return $this->jsonReturn(992, lang('Empty param'));
         }
         $userData = $this->getUserData(1);
 
@@ -800,7 +800,7 @@ class Trip extends ApiBase
         $lockKeyFill_d = 'hitchhiking'; //锁自已 如果自己是司机，就锁hitchhiking, 否则锁pickup
         $lockKeyFill_p = 'pickup'; //锁对方 如果自己是司机，就锁pickup, 否则锁hitchhiking
         if (!$ShuttleTripModel->lockItem($driverTripId, $lockKeyFill_d) || !$ShuttleTripModel->lockItem($passengerTripId, $lockKeyFill_p)) {
-            return $this->jsonReturn(20009, '网络烦忙，请稍候再试');
+            return $this->jsonReturn(20009, lang('The network is busy, please try again later'));
         }
         
         // 验证

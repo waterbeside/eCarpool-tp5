@@ -83,7 +83,7 @@ class MixTrip extends ApiBase
             $listData = array_merge($res1, $res2_list);
             if (count($listData) === 0) {
                 $redis->cache($cacheKey, [], 10);
-                return $this->jsonReturn(20002, 'No Data');
+                return $this->jsonReturn(20002, lang('No Data'));
             }
             $redis->cache($cacheKey, $listData, 60 * 2);
         }
