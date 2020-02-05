@@ -49,7 +49,6 @@ class Line extends ApiBase
         if (!$departmentData) {
             return $this->jsonReturn(20002, lang('No data'));
         }
-        $departmentPath = $departmentData['path'].','.$departmentData['id'];
         // 处理上下班类型
         $type = is_numeric($type) ? intval($type) : -1;
         $pagesize = is_numeric($pagesize) ? intval($pagesize) : 0;
@@ -67,10 +66,7 @@ class Line extends ApiBase
 
         if (!$returnData) {
             // 先查出该部门可访问的line_id
-            $map_lineDept = [
-                ['department_id','in', $departmentPath],
-            ];
-            $lineidSql = ShuttleLineDepartment::field('line_id')->distinct(true)->where($map_lineDept)->buildSql();
+            $lineidSql = (new ShuttleLineDepartment())->getIdsByDepartmentId($departmentData, true);
             $map  = [
                 ['is_delete', "=", Db::raw(0)],
                 ['status', "=", Db::raw(1)],
