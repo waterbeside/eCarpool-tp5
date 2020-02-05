@@ -49,8 +49,8 @@ class TripList extends Service
             $WallModel->getListCacheKey($userData['company_id']) : $InfoModel->getRqListCacheKey($userData['company_id']);
         $rowCacheKey = "tzList_limit{$limit}_pz{$pagesize}_p{$page}_mapType_{$map_type}";
         $returnData = $this->redis()->hCache($cacheKey, $rowCacheKey);
-        if (!is_array($returnData) || true) {
-            $userDefaultFields = [ 'uid', 'loginname', 'name','nativename',  'Department', 'sex', 'company_id', 'department_id', 'imgpath'];
+        if (!is_array($returnData)) {
+            $userDefaultFields = [ 'uid', 'loginname', 'name','nativename',  'Department', 'sex', 'company_id', 'department_id', 'imgpath', 'carnumber'];
             if ($user_type === 1) { // 如果是墙上空座位
                 $map = [
                     ['t.status', 'between', [0,1]],
@@ -59,7 +59,7 @@ class TripList extends Service
                 $map[] = $TripsService->buildCompanyMap($userData, 'u');
 
                 $fields = $TripsService->buildQueryFields('wall_list_tz', 't', ['d'=>'u'], false, 1);
-                $fields.= ", 'wall' as `from`, 0 as line_id, 1 as user_type ";
+                $fields.= ", 'wall' as `from`, 0 as line_id, 0 as line_sort, 1 as user_type ";
                 $fields .=  ',' .$TripsService->buildUserFields('u', $userDefaultFields);
                 $join = $TripsService->buildTripJoins("s, e, d", 't', ['d'=>'u']);
                 $ctor = $WallModel->alias('t')->field($fields)->join($join)->where($map)->order('t.time ASC');
@@ -73,7 +73,7 @@ class TripList extends Service
                 ];
                 $map[] = $TripsService->buildCompanyMap($userData, 'u');
                 $fields = $TripsService->buildQueryFields('info_list_tz', 't', ['p'=>'u'], false, 1);
-                $fields.= ", 'info' as `from`, 0 as line_id, 0 as user_type";
+                $fields.= ", 'info' as `from`, 0 as line_id, 0 as line_sort, 0 as user_type";
                 $fields .=  ',' .$TripsService->buildUserFields('u', $userDefaultFields);
                 $join = $TripsService->buildTripJoins("s, e, p", 't', ['p'=>'u']);
                 $ctor = $InfoModel->alias('t')->field($fields)->join($join)->where($map)->order('t.time ASC');
@@ -90,12 +90,16 @@ class TripList extends Service
             foreach ($list as $key => $value) {
                 $value = $this->formatListItemLineData($value);
                 $value['time'] = strtotime($value['time'].'00');
-                $value['time_od'] = strtotime(date('Y-m-d H', $value['time']).':00:00');
+                // $value['time_od'] = strtotime(date('Y-m-d H', $value['time']).':00:00');
                 $value['create_time'] = strtotime($value['subtime'].'00');
-                unset($value['subtime']);
+                $value['trip_id'] = $value['love_wall_ID'] ?? 0;
                 if ($user_type == 1) {
+                    $value['plate'] = $value['u_carnumber'] ?? '';
                     $value['took_count'] =  $InfoModel->countPassengers($value['id']);
                 }
+                unset($value['subtime']);
+                unset($value['u_carnumber']);
+                unset($value['love_wall_ID']);
                 $list[$key] = $value;
             }
             $returnData['lists'] = $list;
