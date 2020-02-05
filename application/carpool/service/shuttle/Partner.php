@@ -44,8 +44,8 @@ class Partner extends Service
      */
     public function getPartnersUserData($uids, $exclude = [])
     {
-        $uids = Utils::getInstance()->stringSetToArray($uids, 'intval');
-        $exclude = Utils::getInstance()->stringSetToArray($exclude, 'intval');
+        $uids = Utils::getInstance()->stringSetToArray($uids, 'intval', true);
+        $exclude = Utils::getInstance()->stringSetToArray($exclude, 'intval', true);
         $returnData = [];
         $UserModel = new UserModel();
         foreach ($uids as $key => $value) {

@@ -127,7 +127,7 @@ class Partner extends ApiBase
         }
 
         $rqData['partners'] = input('post.partners');
-        $rqData['partners'] = Utils::getInstance()->stringSetToArray($rqData['partners'], 'intval');
+        $rqData['partners'] = Utils::getInstance()->stringSetToArray($rqData['partners'], 'intval', true);
 
         $ShuttleTripModel = new ShuttleTrip();
         $PartnerServ = new ShuttlePartnerServ();
