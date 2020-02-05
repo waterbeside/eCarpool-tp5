@@ -256,7 +256,7 @@ class Trip extends Service
                 $lineData = $this->getExtraInfoLineData($itemData['line_id'], 0);
             }
         } else {
-            $lineFields = 'id, start_name, start_longitude, start_latitude, end_name, end_longitude, start_id, end_id, end_latitude, map_type, type';
+            $lineFields = 'id, start_id, start_name, start_longitude, start_latitude, end_id, end_name, end_longitude, end_latitude, map_type, type';
             $ShuttleLineModel = new ShuttleLineModel();
             $lineData = $ShuttleLineModel->getItem($idOrData, $lineFields);
         }
@@ -316,8 +316,12 @@ class Trip extends Service
      * @param integer $id 行程id
      * @param array $userFields 要读出的用户字段
      * @param integer $returnType 返回数据 1:支持抛出json，2:以数组形式返回数据
+     * @param string $as 字段的补充前缀
+     * @param integer $getFullDepartment 是否取得完整部门数据
+     *
+     * @return array
      */
-    public function passengers($id = 0, $userFields = [], $tripFields = [])
+    public function passengers($id = 0, $userFields = [], $tripFields = [], $as = 'u', $getFullDepartment = 0)
     {
         if (!$id) {
             $this->error(992, lang('Error Param'));
@@ -327,7 +331,8 @@ class Trip extends Service
         $Utils = new Utils();
         $res = $ShuttleTripModel->passengers($id);
         if (empty($res)) {
-            return $this->error(20002, 'No data');
+            $this->error(20002, 'No data');
+            return [];
         }
         $res = $this->formatTimeFields($res, 'list', ['time','create_time']);
         $tripFields = !empty($tripFields) && is_string($tripFields) ? array_map('trim', explode(',', $tripFields)) : $tripFields;
@@ -337,7 +342,7 @@ class Trip extends Service
             $UserModel = new UserModel();
             foreach ($res as $key => $value) {
                 $userData = $UserModel->getItem($value['uid'], $userFields);
-                $userData = $Utils->filterDataFields($userData, [], true, 'u_', -1);
+                $userData = $Utils->filterDataFields($userData, [], true, 'u_', 0);
                 $res[$key] = array_merge($value, $userData);
             }
             $userFields_fill = $Utils->arrayAddString($userFields, 'u_', '', -1);
@@ -345,8 +350,9 @@ class Trip extends Service
         } else {
             $filterFields = $tripFields;
         }
-        $res = Utils::getInstance()->filterListFields($res, $filterFields);
-        return $res;
+        $res = $Utils->formatFieldType($res, ["{$as}_sex"=>'int', "{$as}_company_id"=>'int'], 'list');
+        $res = $Utils->filterListFields($res, $filterFields, false, '', -1);
+        return $res ?: [];
     }
 
     /**
