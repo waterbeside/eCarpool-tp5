@@ -320,7 +320,9 @@ class TripsMixed extends Service
         $list_shuttle = [];
         $user_type = intval($user_type);
         $limit = ( $extData['limit'] ?? 0 ) ?: 0;
-
+        $lnglat = $extData['lnglat'] ?? null;
+        $lnglat = $lnglat ? $Utils->stringSetToArray($lnglat, null, false) : null ;
+        $lnglat = is_array($lnglat) && count($lnglat) > 1 ? $lnglat : null;
         $userData =  $userData ?: (( $extData['userData'] ?? null ) ?: null);
         
         if (in_array($type, [-1, -2 , 1, 2])) {
@@ -337,8 +339,16 @@ class TripsMixed extends Service
         
         $list = array_merge($list_shuttle['lists'], $list_nm['lists']);
         foreach ($list as $key => $value) {
-            $list[$key] = $this->formatResultValue($value, ['extra_info', 'driver_id', 'startpid', 'endpid']);
+            $value = $this->formatResultValue($value, ['extra_info', 'driver_id', 'startpid', 'endpid']);
+            $value['distance'] = 0;
+            if ($lnglat) {
+                $lineData = $value['line_data'];
+                $startPoint = [$lineData['start_longitude'], $lineData['start_latitude']];
+                $value['distance'] = $Utils->getDistance($startPoint, $lnglat) ?: 0;
+            }
+            $list[$key] = $value;
         }
+        $list = $Utils->listSort($list, ['line_sort'=>'DESC', 'distance'=>'ASC', 'time'=>'ASC']);
         $returnData = [
             'lists' => $list,
         ];
@@ -368,7 +378,6 @@ class TripsMixed extends Service
         if (isset($value['u_imgpath']) && trim($value['u_imgpath']) == "") {
             $value_format['u_imgpath'] = 'default/avatar.png';
         }
-        
         return $value_format;
     }
 }

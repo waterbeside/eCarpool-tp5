@@ -158,7 +158,8 @@ class MixTrip extends ApiBase
 
         $type = input('param.type', -1);
         $lineId = input('param.line_id');
-        $start_id = input('param.start_id', -2);
+        $lnglat = input('param.lnglat');
+
         $userData = $this->getUserData(1);
         if ($userType === null) {
             return $this->jsonReturn(992, Lang('Error param'));
@@ -167,6 +168,12 @@ class MixTrip extends ApiBase
         $extData = [
             'limit' => 30,
         ];
+        if ($lineId) {
+            $extData['line_id'] = $lineId;
+        }
+        if ($lnglat) {
+            $extData['lnglat'] = $lnglat;
+        }
         $returnData = $TripsMixedService->lists($userType, $userData, $type, $extData);
         $list = $returnData['lists'];
         $redis->unlock($lockKey); // 解锁
