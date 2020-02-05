@@ -263,26 +263,7 @@ class ApiBase extends Base
      */
     public function getListDataByCtor($ctor, $pagesize = 0)
     {
-        if ($pagesize > 0) {
-            $results =    $ctor->paginate($pagesize, false, ['query' => request()->param()])->toArray();
-            $resData = $results['data'] ?? [];
-            $pageData = $this->getPageData($results);
-        } else {
-            $resData =    $ctor->select();
-            $resData = $resData ? $resData->toArray() : [];
-            $total = count($resData);
-            $pageData = [
-                'total' => $total,
-                'pageSize' => 0,
-                'lastPage' => 1,
-                'currentPage' => 1,
-            ];
-        }
-        $returnData = [
-            'lists' => $resData,
-            'page' => $pageData,
-        ];
-        return $returnData;
+        return $this->utils()->getListDataByCtor($ctor, $pagesize);
     }
 
     /**
@@ -290,12 +271,7 @@ class ApiBase extends Base
      */
     public function getPageData($results)
     {
-        return [
-            'total' => $results['total'] ?? 0,
-            'pageSize' => $results['per_page'] ?? 1,
-            'lastPage' => $results['last_page'] ?? 1,
-            'currentPage' => intval($results['current_page']) ?? 1,
-        ];
+        return $this->utils()->getPageData($results);
     }
     
     public function utils()
