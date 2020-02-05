@@ -45,6 +45,7 @@ class TripList extends Service
         $type = intval($type);
         $limit = ( $extData['limit'] ?? 0 ) ?: 0;
         $pagesize = ( $extData['limit'] ?? 0 ) ?: 0;
+        $lineId = ( $extData['line_id'] ?? 0 ) ?: 0;
         $userData = $userData ?: (( $extData['userData'] ?? null ) ?: null);
         $page = input('get.page', 1);
 
@@ -54,9 +55,9 @@ class TripList extends Service
         $userAlias = 'u';
 
         $cacheKey =  $ShuttleTripModel->getListCacheKeyByLineId(0, ($user_type == 1 ? 'cars' : 'requests'));
-        $rowCacheKey = "tzList_limit{$limit}_pz{$pagesize}_p{$page}";
+        $rowCacheKey = "tzList_limit{$limit}_pz{$pagesize}_p{$page}".($lineId ? "lineId_$lineId" : '');
         $returnData = $this->redis()->hCache($cacheKey, $rowCacheKey);
-        if (!is_array($returnData) || true) {
+        if (!is_array($returnData)) {
             $offsetTimeArray = [
                 date('Y-m-d H:i:s', time() - (5 * 60)),
                 date('Y-m-d H:i:s', time() + (60 * 60 * 24 * 2))
@@ -67,6 +68,20 @@ class TripList extends Service
             $fields = implode(',', $Utils->arrayAddString($tripFields, 't.'));
             $fields .= ", 'shuttle_trip' as `from`";
             $fields .=  ',' .$TripsService->buildUserFields($userAlias, $userDefaultFields);
+            if ($lineId > 0) {
+                $friendLines = (new ShuttleLineRelation())->getFriendsLine($lineId, 0, 0) ?: [];
+                $friendLinesWhen = '';
+                if (count($friendLines) >0) {
+                    $friendLinesStr = array_map('strval', $friendLines);
+                    $friendLinesWhen = count($friendLines) >0 ? "WHEN t.line_id in($friendLinesStr) THEN 1" : '';
+                }
+                $fields .= ", (CASE WHEN t.line_id = $lineId THEN 10 
+                    {$friendLinesWhen} 
+                    ELSE 0 END) AS line_sort ";
+            } else {
+                $fields .= ', 0 AS line_sort';
+            }
+            
             if ($user_type === 1) {
                 // $userAlias = 'd';
                 $userType = 1;
@@ -100,7 +115,7 @@ class TripList extends Service
                 $map[] = ['', 'exp', Db::raw("line_id in $lineidSql")];
             }
 
-            $ctor = $ShuttleTripModel->alias('t')->field($fields)->join($join)->where($map)->order('t.time ASC');
+            $ctor = $ShuttleTripModel->alias('t')->field($fields)->join($join)->where($map)->order('line_sort DESC, t.time ASC');
             // var_dump($ctor);exit;
             if ($limit) {
                 $list = $ctor->limit($limit)->select();
@@ -116,9 +131,13 @@ class TripList extends Service
                 $value['line_data'] =  $ShuttleTripService->getExtraInfoLineData($value, 2);
                 $value['line_data'] = $Utils->filterDataFields($value['line_data'], $lineFields);
                 $value['time'] = strtotime($value['time']);
-                $value['time_od'] = strtotime(date('Y-m-d H', $value['time']).':00:00');
+                // $value['time_od'] = strtotime(date('Y-m-d H', $value['time']).':00:00');
                 $value['create_time'] = strtotime($value['create_time']);
-                $value['took_count'] =  $ShuttleTripModel->countPassengers($value['id']);
+                if ($user_type == 1) {
+                    $value['took_count'] =  $ShuttleTripModel->countPassengers($value['id']);
+                } else {
+                    unset($value['plate']);
+                }
                 $list[$key] = $value;
             }
             $returnData['lists'] = $list;
