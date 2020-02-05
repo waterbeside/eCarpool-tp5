@@ -136,7 +136,6 @@ class Trip extends ApiBase
     /**
      * 空座位列表
      *
-     * @param integer $type 上下班类型
      * @param integer $page 页码
      * @param integer $pagesize 每页多少条
      */
