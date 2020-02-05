@@ -15,8 +15,8 @@ use app\carpool\service\Trips as TripsService;
 use app\carpool\service\TripsChange as TripsChangeService;
 use app\carpool\service\TripsList as TripsListService;
 use app\carpool\service\TripsDetail as TripsDetailService;
-use Info;
-use InfoController;
+use app\carpool\service\nmtrip\Trip as NmTripService;
+
 use my\RedisData;
 use think\Db;
 
@@ -68,9 +68,12 @@ class Trips extends ApiBase
         }
         
         // TODO::添加显示乘客到列表
+        $NmTripService = new NmTripService();
         foreach ($returnData['lists'] as $k => $v) {
             $returnData['lists'][$k]['passengers'] = $v['love_wall_ID'] > 0 ?
-                $this->passengers($v['love_wall_ID'], null, 0, ['p_name','p_sex','p_phone','p_mobile','status','subtime','time'], 20) : [];
+                $NmTripService->passengers($v['love_wall_ID'], ['name', 'sex', 'phone', 'mobile'], ['time', 'subtime', 'status'], 'p')
+                // $this->passengers($v['love_wall_ID'], null, 0, ['p_name','p_sex','p_phone','p_mobile','status','subtime','time'], 20)
+                : [];
         }
         $this->jsonReturn(0, $returnData, "success");
     }
@@ -173,8 +176,10 @@ class Trips extends ApiBase
         }
 
         // TODO::添加显示乘客到列表
+        $NmTripService = new NmTripService();
         foreach ($returnData['lists'] as $k => $v) {
-            $returnData['lists'][$k]['passengers'] = $this->passengers($v['id'], null, 0, ['p_name','p_sex','p_phone','p_mobile','status','subtime','time'], 30);
+            // $returnData['lists'][$k]['passengers'] = $this->passengers($v['id'], null, 0, ['p_name','p_sex','p_phone','p_mobile','status','subtime','time'], 30);
+            $returnData['lists'][$k]['passengers'] = $NmTripService->passengers($v['id'], ['name', 'sex', 'phone', 'mobile'], ['time', 'subtime', 'status'], 'p');
         }
         $this->jsonReturn(0, $returnData, "success");
     }
@@ -235,6 +240,20 @@ class Trips extends ApiBase
      */
     public function passengers($id, $status = "neq|2", $returnType = 1, $showFields = null, $exp = 10)
     {
+        $NmTripService = new NmTripService();
+        $tripFields = [
+            'id', 'status', 'time', 'subtime',
+            'start_name', 'start_latitude', 'start_longitude',
+            'end_name', 'end_latitude', 'end_longitude'
+        ];
+        $list = $NmTripService->passengers($id, [], $tripFields, 'p', 1);
+        $returnData = [
+            'lists' => $list
+        ];
+        return $this->jsonReturn(0, $returnData, 'Successful');
+
+        // dump($list);exit;
+        /** 下边为旧方法，暂时弃用 */
         if (empty($status)) {
             $status = "neq|2";
         }

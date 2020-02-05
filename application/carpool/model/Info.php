@@ -3,6 +3,7 @@
 namespace app\carpool\model;
 
 use app\common\model\BaseModel;
+use app\carpool\service\Trips as TripsServ;
 use my\Utils;
 
 class Info extends BaseModel
@@ -54,6 +55,20 @@ class Info extends BaseModel
     }
 
     /**
+     * 取得接口的需车需求列表缓存Key
+     *
+     * @param string $company_id 公司id
+     * @return string
+     */
+    public function getRqListCacheKey($company_id)
+    {
+        $TripsServ = new TripsServ();
+        $company_ids = $TripsServ->getCompanyIds($company_id);
+        $company_ids = is_array($company_ids) ? implode(',', $company_ids) : $company_ids;
+        return "carpool:nm_trip:request_list:companyId_{$company_ids}";
+    }
+
+    /**
      * 计算乘客个数
      *
      * @param integer $id 空座位id
@@ -66,6 +81,43 @@ class Info extends BaseModel
             ['status', 'in', [0,1,3,4]],
         ];
         return $this->where($map)->count();
+    }
+
+    /**
+     * 取得乘客行程列表
+     *
+     * @param [type] $wall_id
+     * @return void
+     */
+    public function passengers($wall_id)
+    {
+        $cacheKey = $this->getPassengersCacheKey($wall_id);
+        $redis = $this->redis();
+        $res = $redis->cache($cacheKey);
+        if ($res === false) {
+            $map = [
+                ['t.love_wall_ID', '=', $wall_id],
+                ['t.status', 'in', [0,1,3,4]],
+            ];
+            $field = '*,
+            startname as start_name, endname as end_name,
+            x(start_latlng) as start_longitude , y(start_latlng) as start_latitude, 
+            x(end_latlng) as end_longitude, y(end_latlng) as end_latitude';
+            $field .= " ,t.infoid as id, 'info' as `from`, 0 as user_type ";
+            $res = $this->alias('t')->field($field)->field('start_latlng, end_latlng', true)->where($map)->order('t.subtime ASC')->select();
+            if (!$res) {
+                $redis->cache($cacheKey, [], 5);
+            }
+            $res =  $res->toArray();
+            foreach ($res as $key => $value) {
+                unset($res[$key]['start_latlng']);
+                unset($res[$key]['end_latlng']);
+                $res[$key]['time'] = strtotime($value['time'].'00');
+                $res[$key]['subtime'] = strtotime($value['subtime'].'00');
+            }
+            $redis->cache($cacheKey, $res, 20);
+        }
+        return $res;
     }
 
     /**
@@ -202,7 +254,7 @@ class Info extends BaseModel
             'cancel_user_id' => $uid,
             'cancel_time' => date('YmdHis', time()),
         ];
-        if ($infoTime > time() && !$must && $infoData['comefrom'] == 2) { // 如果未过出发时间 且为还原为约车需求
+        if ($infoTime > time() && !$must && $infoData['comefrom'] == 2 && $infoData['carownid'] > 0) { // 如果未过出发时间 且为还原为约车需求
             $upData['status'] = 0;
             $upData['love_wall_ID'] = null;
             $upData['carownid'] = -1;
