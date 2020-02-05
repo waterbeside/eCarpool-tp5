@@ -114,15 +114,27 @@ class Trips extends Service
     /**
      * 创件要select的地址字段
      */
-    public function buildAddressFields($fields = "", $alias = 't')
+    public function buildAddressFields($fields = "", $alias = 't', $type = 0)
     {
         $fields .= ",{$alias}.startpid, {$alias}.endpid";
-        $fields .= ", x({$alias}.start_latlng) as start_lng, y({$alias}.start_latlng) as start_lat";
-        $fields .= ", x({$alias}.end_latlng) as end_lng, y({$alias}.end_latlng) as end_lat";
-        $fields .= ", {$alias}.startname , {$alias}.start_gid ";
-        $fields .= ", {$alias}.endname , {$alias}.end_gid ";
-        $fields .= ',s.addressname as start_addressname, s.latitude as start_latitude, s.longtitude as start_longitude';
-        $fields .= ',e.addressname as end_addressname, e.latitude as end_latitude, e.longtitude as end_longitude';
+        if ($type == 1) {
+            $fields .= ", x({$alias}.start_latlng) as start_longitude, y({$alias}.start_latlng) as start_latitude";
+            $fields .= ", x({$alias}.end_latlng) as end_longitude, y({$alias}.end_latlng) as end_latitude";
+            $fields .= ", {$alias}.startname as start_name ";
+            $fields .= ", {$alias}.endname as end_name ";
+        } elseif ($type == 2) {
+            $fields .= ',s.addressname as start_addressname, s.latitude as start_latitude, s.longtitude as start_longitude';
+            $fields .= ',e.addressname as end_addressname, e.latitude as end_latitude, e.longtitude as end_longitude';
+        } else {
+            $fields .= ", x({$alias}.start_latlng) as start_lng, y({$alias}.start_latlng) as start_lat";
+            $fields .= ", x({$alias}.end_latlng) as end_lng, y({$alias}.end_latlng) as end_lat";
+            $fields .= ", {$alias}.startname , {$alias}.start_gid ";
+            $fields .= ", {$alias}.endname , {$alias}.end_gid ";
+            $fields .= ',s.addressname as start_addressname, s.latitude as start_latitude, s.longtitude as start_longitude';
+            $fields .= ',e.addressname as end_addressname, e.latitude as end_latitude, e.longtitude as end_longitude';
+        }
+        
+        
         return $fields;
     }
 
@@ -132,10 +144,10 @@ class Trips extends Service
      * @param  string|array $filter
      * @return array
      */
-    public function buildTripJoins($filter = "d,p,s,e,department", $alias = 't')
+    public function buildTripJoins($filter = "d,p,s,e,department", $alias = 't', $joinAlias = [])
     {
         if (is_string($filter)) {
-            $filter = explode(",", $filter);
+            $filter = array_map('trim', explode(",", $filter));
         }
         $join = [];
         if (is_array($filter)) {
@@ -143,31 +155,41 @@ class Trips extends Service
                 $filter[$key] = mb_strtolower($value);
             }
             if (in_array('s', $filter) || in_array('start', $filter)) {
-                $join[] = ['address s', "s.addressid = {$alias}.startpid", 'left'];
+                $as = $joinAlias['s'] ?? 's';
+                $join[] = ["address $as", "$as.addressid = {$alias}.startpid", 'left'];
             }
             if (in_array('e', $filter) || in_array('end', $filter)) {
-                $join[] = ['address e', "e.addressid = {$alias}.endpid", 'left'];
+                $as = $joinAlias['e'] ?? 'e';
+                $join[] = ["address $as", "$as.addressid = {$alias}.endpid", 'left'];
             }
             if (in_array('d', $filter) || in_array('driver', $filter)) {
-                $join[] = ['user d', "d.uid = {$alias}.carownid", 'left'];
+                $as = $joinAlias['d'] ?? 'd';
+                $join[] = ["user $as", "$as.uid = {$alias}.carownid", 'left'];
                 if (in_array('department', $filter)) {
-                    $join[] = ['t_department dd', 'dd.id = d.department_id', 'left'];
+                    $join[] = ["t_department {$as}d", "{$as}d.id = $as.department_id", 'left'];
                 }
             }
             if (in_array('u', $filter) || in_array('driver', $filter)) {
-                $join[] = ['user u', "u.uid = {$alias}.userid", 'left'];
+                $as = $joinAlias['u'] ?? 'u';
+                $join[] = ["user $as", "$as.uid = {$alias}.userid", 'left'];
                 if (in_array('department', $filter)) {
-                    $join[] = ['t_department ud', 'ud.id = u.department_id', 'left'];
+                    $join[] = ["t_department {$as}d", "{$as}d.id = {$as}.department_id", 'left'];
                 }
             }
             if (in_array('p', $filter) || in_array('passenger', $filter)) {
-                $join[] = ['user p', "p.uid = {$alias}.passengerid", 'left'];
+                $as = $joinAlias['p'] ?? 'p';
+                $join[] = ["user $as", "$as.uid = {$alias}.passengerid", 'left'];
                 if (in_array('department', $filter)) {
-                    $join[] = ['t_department pd', 'pd.id = p.department_id', 'left'];
+                    $join[] = ["t_department {$as}d", "{$as}d.id = $as.department_id", 'left'];
                 }
             }
         }
         return $join;
+    }
+
+    public function buildJoin($table, $tableId, $mainTableId, $tableAs = 'u', $mainTableAs = 't')
+    {
+        return ["$table $tableAs", "{$tableAs}.{$tableId} = {$mainTableAs}.{$mainTableId}", 'left'];
     }
 
 
@@ -415,15 +437,15 @@ class Trips extends Service
     /**
      * 创建查询的字段
      */
-    public function buildQueryFields($type = 'all', $alias = 't')
+    public function buildQueryFields($type = 'all', $alias = 't', $joinAlias = [], $department = true, $addressFieldType = 0)
     {
         $fields = "{$alias}.time, {$alias}.status , {$alias}.subtime";
         $fields .= $type == 'all' ? ", {$alias}.infoid , {$alias}.love_wall_ID ,  {$alias}.trip_type ,  {$alias}.passengerid, {$alias}.carownid ,  {$alias}.seat_count,   {$alias}.map_type " : '';
 
-        $fields .= $type == 'wall_list'   ?   ", {$alias}.seat_count" : '';
-        $fields .= $type == 'wall_list'   ?   ", {$alias}.love_wall_ID as id,   {$alias}.carownid as driver_id " : '';
+        $fields .= in_array($type, ['wall_list', 'wall_list_tz']) ? ", {$alias}.seat_count" : '';
+        $fields .= in_array($type, ['wall_list', 'wall_list_tz'])  ?   ", {$alias}.love_wall_ID as id,   {$alias}.carownid as driver_id " : '';
 
-        $fields .= $type == 'info_list'   ?   ", {$alias}.infoid as id, {$alias}.love_wall_ID ,  {$alias}.carownid as driver_id , {$alias}.passengerid as passenger_id " : '';
+        $fields .= in_array($type, ['info_list', 'info_list_tz'])  ?   ", {$alias}.infoid as id, {$alias}.love_wall_ID ,  {$alias}.carownid as driver_id , {$alias}.passengerid as passenger_id " : '';
 
         $fields .= $type == 'wall_detail' ?   ", {$alias}.seat_count, {$alias}.map_type, {$alias}.im_tid, {$alias}.im_chat_tid" : '';
         $fields .= $type == 'wall_detail' ?   ", {$alias}.love_wall_ID as id ,{$alias}.love_wall_ID ,{$alias}.carownid as driver_id " : '';
@@ -432,17 +454,20 @@ class Trips extends Service
         $fields .= $type == 'info_detail' ?   ", {$alias}.infoid as id, {$alias}.infoid , {$alias}.love_wall_ID , {$alias}.subtime , {$alias}.carownid as driver_id, {$alias}.passengerid as passenger_id " : '';
 
 
+
         if (in_array($type, ['all', 'wall_list', 'wall_detail', 'info_detail'])) {
-            $fields .= ',' . $this->buildUserFields('d');
-            $fields .= ', dd.fullname as d_full_department';
+            $as = $joinAlias['d'] ?? 'd';
+            $fields .= ',' . $this->buildUserFields($as);
+            $fields .= $department ? ", {$as}d.fullname as {$as}_full_department" : '';
         }
 
         if (in_array($type, ['all', 'info_list', 'info_detail'])) {
-            $fields .= ',' . $this->buildUserFields('p');
-            $fields .= ', pd.fullname as p_full_department';
+            $as = $joinAlias['p'] ?? 'p';
+            $fields .= ',' . $this->buildUserFields($as);
+            $fields .= $department ? ", {$as}d.fullname as {$as}_full_department" : '';
         }
+        $fields .=  $this->buildAddressFields('', 't', $addressFieldType);
 
-        $fields .=  $this->buildAddressFields();
         return $fields;
     }
 
@@ -522,7 +547,10 @@ class Trips extends Service
             $userModel = new UserModel();
             $AddressModel = new Address();
             $userData = $userModel->getItem($uid);
-            $company_id = $userData['company_id'];
+            if (empty($userData)) {
+                return false;
+            }
+            $company_id = $userData['company_id'] ?? 0;
 
             $this->delMyListCache($uid);
             $this->delMyInfosCache($uid);
