@@ -378,7 +378,5 @@ class Utils
             }
         }
         return $data;
-        
     }
-
 }
