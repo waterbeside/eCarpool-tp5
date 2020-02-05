@@ -4,6 +4,8 @@ namespace app\carpool\service;
 
 use app\common\service\Service;
 use app\carpool\service\shuttle\Trip as ShuttleTripService;
+use app\carpool\service\shuttle\TripList as ShuttleTripListService;
+use app\carpool\service\nmtrip\TripList as NmTripListService;
 use app\carpool\service\Trips as TripService;
 use app\carpool\service\TripsDetail as TripsDetailService;
 use app\carpool\model\ShuttleTrip as ShuttleTripModel;
@@ -12,9 +14,9 @@ use app\carpool\model\Wall as WallModel;
 use app\carpool\model\Address;
 use app\carpool\model\Configs as ConfigsModel;
 use app\carpool\model\User as UserModel;
+use app\carpool\model\ShuttleLineDepartment;
 use think\Db;
 use my\Utils;
-use Wall;
 
 class TripsMixed extends Service
 {
@@ -299,5 +301,74 @@ class TripsMixed extends Service
             $TripsDetailServ->delDetailCache($from, $id);
         }
         return true;
+    }
+
+
+    /**
+     * 推荐列表
+     *
+     * @param integer $user_type 1司机，0乘客
+     * @param array $userData 用户数据
+     * @param integer $type 上下班类型，-2包括上下班，-1包括所有，0普通，1上班，2下班
+     * @param array $extData 扩展数据
+     * @return array
+     */
+    public function lists($user_type, $userData = null, $type = -1, $extData = null)
+    {
+        $Utils = new Utils();
+        // 取得班车行程
+        $list_shuttle = [];
+        $user_type = intval($user_type);
+        $limit = ( $extData['limit'] ?? 0 ) ?: 0;
+
+        $userData =  $userData ?: (( $extData['userData'] ?? null ) ?: null);
+        
+        if (in_array($type, [-1, -2 , 1, 2])) {
+            $ShuttleTripListService = new ShuttleTripListService();
+            $lineType = $type < 0 ? -2 : $type;
+            $list_shuttle = $ShuttleTripListService->lists($user_type, $userData, $lineType, $extData);
+        }
+        // 普通行程
+        $list_nm = [];
+        if (in_array($type, [-1 , 0])) {
+            $NmTripListService = new NmTripListService();
+            $list_nm = $NmTripListService->lists($user_type, $userData, $extData);
+        }
+        
+        $list = array_merge($list_shuttle['lists'], $list_nm['lists']);
+        foreach ($list as $key => $value) {
+            $list[$key] = $this->formatResultValue($value, ['extra_info', 'driver_id', 'startpid', 'endpid']);
+        }
+        $returnData = [
+            'lists' => $list,
+        ];
+        return $returnData;
+    }
+
+    /**
+     * 格式化结果字段
+     */
+    public function formatResultValue($value, $unset = [])
+    {
+        $value_format = $value;
+        
+        //整理指定字段为整型
+        $int_field_array = [
+            'u_uid', 'u_sex', 'u_company_id', 'u_department_id',
+        ];
+        $value = json_decode(json_encode($value), true);
+        foreach ($value as $key => $v) {
+            if (in_array($key, $int_field_array)) {
+                $value_format[$key] = intval($v);
+            }
+            if (!empty($unset) && in_array($key, $unset)) {
+                unset($value_format[$key]);
+            }
+        }
+        if (isset($value['u_imgpath']) && trim($value['u_imgpath']) == "") {
+            $value_format['u_imgpath'] = 'default/avatar.png';
+        }
+        
+        return $value_format;
     }
 }

@@ -14,8 +14,8 @@ use my\Utils;
 use think\Db;
 
 /**
- * 班车路线
- * Class index
+ * 混合行程
+ * Class MixTrip
  * @package app\api\controller
  */
 class MixTrip extends ApiBase
@@ -141,5 +141,48 @@ class MixTrip extends ApiBase
         $redis->hCache($cacheKey, $rowKey, $listData, 60 * 2);
         $returnData['lists'] = $listData;
         return $this->jsonReturn(0, $returnData, 'Success');
+    }
+
+    /**
+     * 推荐列表
+     *
+     * @return void
+     */
+    public function rclist($userType = null)
+    {
+        $redis = new RedisData();
+        $lockKey = 'carpool:mixTrip:rclist';
+        if (!$redis->lock($lockKey, 10, 200, 20 * 1000)) { // 添加并发锁
+            return $this->jsonReturn(20009, lang('The network is busy, please try again later'));
+        }
+
+        $type = input('param.type', -1);
+        $lineId = input('param.line_id');
+        $start_id = input('param.start_id', -2);
+        $userData = $this->getUserData(1);
+        if ($userType === null) {
+            return $this->jsonReturn(992, Lang('Error param'));
+        }
+        $TripsMixedService = new TripsMixedService();
+        $extData = [
+            'limit' => 30,
+        ];
+        $returnData = $TripsMixedService->lists($userType, $userData, $type, $extData);
+        $list = $returnData['lists'];
+        $redis->unlock($lockKey); // 解锁
+        if (empty($list)) {
+            return $this->jsonReturn(20002, lang('No data'));
+        }
+        return $this->jsonReturn(0, $returnData);
+    }
+
+    public function cars()
+    {
+        $this->rclist(1);
+    }
+
+    public function requests()
+    {
+        $this->rclist(0);
     }
 }
