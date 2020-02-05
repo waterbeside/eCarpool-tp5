@@ -102,16 +102,18 @@ class Utils
      * 把 "1,2,3" 处理为 [1,2,3], 把1
      *
      * @param mixed $data string,integer,array
+     * @param string $mapFun 处理元素的函数
+     * @param boolean $unique 是否设置不重复，默认为是
      * @return array
      */
-    public function stringSetToArray($data, $mapFun = null)
+    public function stringSetToArray($data, $mapFun = null, $unique = true)
     {
         $data = is_string($data) ? array_map('trim', explode(',', $data)) :
         (
             is_numeric($data) ? [$data] :
             (is_array($data) ? array_map('trim', $data) : [])
         );
-        $data = array_unique($data);
+        $data = $unique ? array_unique($data) : $data;
         if ($mapFun) {
             $data = array_map($mapFun, $data);
         }
@@ -199,6 +201,51 @@ class Utils
     }
 
     /**
+     * 列表数组排序
+     *
+     * @param array $list 列表
+     * @param array $sortRule 排序规则 格式 ['field1'=>'ASC','field2'=>'DESC']
+     * @return array 返回重新排序后的列表
+     */
+    public function listSort($list, $sortRule = [])
+    {
+        $fieldsRuleArray = []; //提取字段值
+        foreach ($list as $key => $row) {
+            foreach ($sortRule as $field => $sort) {
+                $fieldsRuleArray[$field][$key] = $row[$field];
+            }
+        }
+        $sortParams = [];
+        $sortNames = [
+            'ASC' => SORT_ASC,
+            'DESC' => SORT_DESC,
+        ];
+        foreach ($fieldsRuleArray as $key => $value) {
+            $sortParams[] = $fieldsRuleArray[$key];
+            $sortName = $sortRule[$key] ?? SORT_ASC;
+            if (!in_array($sortName, [SORT_ASC, SORT_DESC]) && is_string($sortName)) {
+                $sortName =  strtoupper($sortRule[$key] ?? 'ASC');
+                $sortName = $sortNames[$sortName] ?? SORT_ASC;
+            }
+            $sortParams[] = $sortName ;
+        }
+        $sortParams[] = &$list;
+        if (count($sortParams) > 0) {
+            call_user_func_array('array_multisort', $sortParams);
+            // array_multisort(...$sortParams);
+        }
+        
+        // array_multisort($fieldsRuleArray['line_sort'], SORT_ASC, $fieldsRuleArray['distance'], SORT_DESC, $list);
+
+        // var_dump(...$sortParams);
+        // array_multisort(...$sortParams);
+        return $list;
+    }
+
+
+
+
+    /**
      * 通过数据构造器取数据
      */
     public function getListDataByCtor($ctor, $pagesize = 0)
@@ -250,6 +297,9 @@ class Utils
     public function getDistance($lng1, $lat1, $lng2 = null, $lat2 = null)
     {
         if (is_array($lng1) && is_array($lat1)) {
+            if (count($lng1) < 2 || count($lat1) < 2) {
+                return false;
+            }
             $start = $lng1;
             $end = $lat1;
             $lng1 = $start[0];
