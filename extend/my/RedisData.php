@@ -123,10 +123,11 @@ class RedisData extends Redis
      *
      * @param string $lockKey cache key
      * @param integer $ex key超时时间
-     * @param integer $runCount 取锁失败后的取锁循环次数，每次间隔2ms时间
+     * @param integer $runCount 取锁失败后的取锁循环次数，每次间隔$sleep微秒时间
+     * @param integer $sleep  间格时间单位微秒
      * @return boolean
      */
-    public function lock($lockKey, $ex = 10, $runCount = 50)
+    public function lock($lockKey, $ex = 10, $runCount = 50, $sleep = 20*1000)
     {
         if ($runCount < 1) {
             return false;
@@ -146,8 +147,8 @@ class RedisData extends Redis
             }
         }
         if (!$lock) {
-            //休眠2毫秒
-            usleep(2000);
+            //休眠10毫秒
+            usleep($sleep);
             $runCount = $runCount - 1 ?? 0;
             $lock = $this->lock($lockKey, $ex, $runCount);
         }
