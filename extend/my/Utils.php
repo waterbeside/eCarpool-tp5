@@ -27,7 +27,7 @@ class Utils
      * @param string $preStr 要添加在开头的字符串
      * @param string $endStr 要添加在尾部的字符串
      * @param integer $keyDo 负数为转小写，正数为转大写，0为不处理
-     * @return void
+     * @return array
      */
     public function arrayAddString($array, $preStr = '', $endStr = '', $keyDo = 0)
     {
@@ -70,7 +70,9 @@ class Utils
             foreach ($data as $k => $value) {
                 $newKey = $keyDo > 0 ? strtoupper($k) : ($keyDo < 0 ? strtolower($k) : $k);
                 $data[$keyFill.$newKey] = $value;
-                unset($data[$k]);
+                if ($k != $keyFill.$newKey) {
+                    unset($data[$k]);
+                }
             }
         }
         return $data;
@@ -195,4 +197,188 @@ class Utils
         }
         return $list;
     }
+
+    /**
+     * 通过数据构造器取数据
+     */
+    public function getListDataByCtor($ctor, $pagesize = 0)
+    {
+        if ($pagesize > 0) {
+            $results =    $ctor->paginate($pagesize, false, ['query' => request()->param()])->toArray();
+            $resData = $results['data'] ?? [];
+            $pageData = $this->getPageData($results);
+        } else {
+            $resData =    $ctor->select();
+            $resData = $resData ? $resData->toArray() : [];
+            $total = count($resData);
+            $pageData = [
+                'total' => $total,
+                'pageSize' => 0,
+                'lastPage' => 1,
+                'currentPage' => 1,
+            ];
+        }
+        $returnData = [
+            'lists' => $resData,
+            'page' => $pageData,
+        ];
+        return $returnData;
+    }
+
+    /**
+     * 取得分页数据
+     */
+    public function getPageData($results)
+    {
+        return [
+            'total' => $results['total'] ?? 0,
+            'pageSize' => $results['per_page'] ?? 1,
+            'lastPage' => $results['last_page'] ?? 1,
+            'currentPage' => intval($results['current_page']) ?? 1,
+        ];
+    }
+
+    /**
+     * 通过经续度查询直线距离
+     *
+     * @param mixed $lng1 start_lng or [start_lng, start_lat]
+     * @param mixed $lat1 start_lat or [end_lng, end_lat]
+     * @param float $lng2 end_lng or null
+     * @param float $lat2 end_lat or null
+     * @return void
+     */
+    public function getDistance($lng1, $lat1, $lng2 = null, $lat2 = null)
+    {
+        if (is_array($lng1) && is_array($lat1)) {
+            $start = $lng1;
+            $end = $lat1;
+            $lng1 = $start[0];
+            $lat1 = $start[1];
+            $lng2 = $end[0];
+            $lat2 = $end[1];
+        }
+        //将角度转为狐度
+        $radLat1=deg2rad($lat1);//deg2rad()函数将角度转换为弧度
+        $radLat2=deg2rad($lat2);
+        $radLng1=deg2rad($lng1);
+        $radLng2=deg2rad($lng2);
+        $a=$radLat1-$radLat2;
+        $b=$radLng1-$radLng2;
+        $s= 2*asin(sqrt(pow(sin($a/2), 2)+cos($radLat1)*cos($radLat2)*pow(sin($b/2), 2)))*6378.137*1000;//计算出来的结果单位为米
+        return floor($s);
+    }
+
+    /**
+     * 取得计算经纬度距离字段的sql
+     *
+     * @param string $fieldLng 经度字段名
+     * @param string $fieldlat 纬度字段名
+     * @param string $lng 用户经度
+     * @param string $lat 用户纬度
+     * @return string
+     */
+    public function getDistanceFieldSql($fieldLng, $fieldlat, $lng, $lat, $asName = 'distance')
+    {
+        return "ROUND(
+            6378.138 * 2 * ASIN(
+                SQRT(
+                    POW(SIN(({$lat} * PI() / 180 - {$fieldlat} * PI() / 180) / 2), 2) 
+                    + COS({$lat} * PI() / 180) * COS({$fieldlat} * PI() / 180) * POW(SIN(({$lng} * PI() / 180 - {$fieldLng} * PI() / 180) / 2), 2)
+                )
+            ) * 1000
+        ) AS {$asName}";
+    }
+
+    /**
+     * 把多个字段包装到一个数组字段
+     *
+     * @param array $data 要处理的数组
+     * @param array $fieldsRule 要包装的字段名 [newkey=>[field1,field2]]
+     * @param integer $returnDataType 0返回包装后的所有，1仅返会被包装的数据
+     * @return array
+     */
+    public function packFieldsToField($data, $fieldsRule, $returnDataType = 0)
+    {
+        foreach ($fieldsRule as $newkey => $fieldArray) {
+            $fieldnames = [];
+            foreach ($fieldArray as $key => $value) {
+                $fieldnames[$key] = is_array($value) ? $value[0] : $value;
+            }
+            $newKewData = [];
+            foreach ($data as $key => $value) {
+                if (in_array($key, $fieldnames)) {
+                    $fieldname = $fieldArray[$key] ?? $key;
+                    $newKewData[$fieldname] = $value;
+                    unset($data[$key]);
+                }
+            }
+            $data[$newkey] = $newKewData;
+        }
+        return $returnDataType ? $newKewData : $data;
+    }
+
+    /**
+     * 格式化字段类型
+     *
+     * @param array $data 要处理的数据
+     * @param array $fieldTypeRule 处理规则 如 ['sex'=>'int']
+     * @param string $dataType item or list
+     * @return array
+     */
+    public function formatFieldType($data, $fieldTypeRule, $dataType = 'item')
+    {
+        if ($dataType === 'list') {
+            foreach ($data as $key => $value) {
+                $data[$key] = $this->formatFieldType($value, $fieldTypeRule, 'item');
+            }
+        } else {
+            foreach ($data as $key => $value) {
+                if (isset($fieldTypeRule[$key])) {
+                    $type = $fieldTypeRule[$key];
+                    if ($type === 'int') {
+                        $data[$key] = intval($value);
+                    } elseif ($type === 'float') {
+                        $data[$key] = floatval($value);
+                    } elseif ($type === 'string') {
+                        $data[$key] = strval($value);
+                    } elseif (is_array($type) && $type[0] == 'array') {
+                        $sp = $type[1] ?? ',';
+                        $data[$key] = explode($sp, $value);
+                    } elseif (is_array($type) && $type[0] == 'string') {
+                        $sp = $type[1] ?? ',';
+                        $data[$key] = implode($sp, $value);
+                    }
+                }
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * 更改数组key名称
+     *
+     * @param array $data 要处理的数据
+     * @param array $keyRule 处理规则 如 ['uid'=>'u_uid']
+     * @param string $dataType item or list
+     * @return array
+     */
+    public function changeArrayKeyName($data, $keyRule, $dataType = 'item')
+    {
+        if ($dataType === 'list') {
+            foreach ($data as $key => $value) {
+                $data[$key] = $this->changeArrayKeyName($value, $keyRule, 'item');
+            }
+        } else {
+            foreach ($data as $key => $value) {
+                if (isset($keyRule[$key])) {
+                    $newKey = $keyRule[$key];
+                    $data[$newKey] = $value;
+                    unset($data[$key]);
+                }
+            }
+        }
+        return $data;
+        
+    }
+
 }
