@@ -27,6 +27,7 @@ class Line extends ApiBase
         // $this->checkPassport(1);
     }
 
+
     public function index($type = -2, $show_count = 1, $get_sort = 1, $page = 1, $pagesize = 0)
     {
         $userData = $this->getUserData(0);
@@ -121,8 +122,10 @@ class Line extends ApiBase
 
     /**
      * 常用路线
+     *
+     * @param integer $type -2包括上下班，-1包括所有，0普通，1上班，2下班
      */
-    public function common($type = 0)
+    public function common($type = -2)
     {
         if (!is_numeric($type)) {
             $this->jsonReturn(992, lang('Error Param'));
@@ -148,8 +151,12 @@ class Line extends ApiBase
                 ['t.uid', '=', $uid],
                 ['l.is_delete', '=', Db::raw(0)],
                 ['l.status', "=", Db::raw(1)],
-                ['l.type', "=", $type]
             ];
+            if (is_numeric($type) && $type > -1) {
+                $map[] = ['t.type', '=', $type];
+            } elseif ($type == -2) {
+                $map[] = ['t.type', '>', 0];
+            }
             $join = [
                 ['t_shuttle_line l','l.id = t.line_id', 'left'],
             ];
