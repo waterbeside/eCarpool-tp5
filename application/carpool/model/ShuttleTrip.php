@@ -175,9 +175,10 @@ class ShuttleTrip extends BaseModel
      * @param string $alias 创建sql时，表的别名
      * @return string
      */
-    public function getListField($alias = '')
+    public function getListField($alias = '', $fieldArray = null)
     {
-        $fieldArray = ['id', 'comefrom', 'user_type','trip_id', 'line_id', 'plate', 'status', 'time', 'create_time', 'seat_count'];
+        $fieldArray = empty($fieldArray) ?
+            ['id', 'comefrom', 'user_type','trip_id', 'line_id', 'plate', 'status', 'time', 'create_time', 'seat_count'] : $fieldArray;
         $newFieldArray = [];
         foreach ($fieldArray as $key => $value) {
             $newField = $alias ? $alias.'.'.$value : $value;
