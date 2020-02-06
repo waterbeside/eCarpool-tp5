@@ -6,6 +6,7 @@ use app\api\controller\ApiBase;
 use app\carpool\model\ShuttleLine as ShuttleLineModel;
 use app\carpool\model\ShuttleLineDepartment;
 use app\carpool\model\ShuttleTrip;
+use app\carpool\model\ShuttleTripGps;
 use app\carpool\model\ShuttleTripPartner;
 use app\carpool\model\User;
 use app\carpool\service\shuttle\Trip as ShuttleTripService;
@@ -332,18 +333,24 @@ class Trip extends ApiBase
      * @param integer $show_line 是否返回路线数据
      * @param integer $show_member 是否返回对方参与者的用户数据
      */
-    public function show($id = 0, $show_line = 1, $show_member = 2)
+    public function show($id = 0, $show_line = 1, $show_member = 2, $show_gps = 0)
     {
         if (!$id) {
             return $this->jsonReturn(992, lang('Error Param'));
         }
         $ShuttleTripServ = new ShuttleTripService();
+        
         $data  = $ShuttleTripServ->getUserTripDetail($id, [], [], $show_line);
-
         if (!$data) {
             return $this->jsonReturn(20002, 'No data');
         }
         $trip_id = $data['trip_id'];
+
+        if ($show_gps) {
+            $ShuttleTripGps = new ShuttleTripGps();
+            $gpsRes = $ShuttleTripGps->getGpsByTripAndUid($id, $data['u_uid']);
+            $data['gps'] = $gpsRes['gps'] ?? [];
+        }
 
         if ($show_member) {
             if ($data['user_type'] == 1) {
@@ -359,6 +366,10 @@ class Trip extends ApiBase
                 $ShuttleTripPartner = new ShuttleTripPartner();
                 $data['partners'] = $ShuttleTripPartner->getPartners($id, 1) ?? [];
                 $data['driver'] = $ShuttleTripServ->getUserTripDetail($trip_id, [], [], 0) ?: null;
+                if ($show_gps) {
+                    $gpsRes = $ShuttleTripGps->getGpsByTripAndUid($data['driver']['id'], $data['driver']['u_uid']);
+                    $data['driver']['gps'] = $gpsRes['gps'] ?? [];
+                }
             }
         }
         $timePass = time() - $data['time'];
