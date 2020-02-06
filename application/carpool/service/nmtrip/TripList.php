@@ -72,6 +72,7 @@ class TripList extends Service
                 $offsetTimeArray[0] = date('YmdHi', time() + 30);
                 $map = [
                     ['t.status', 'between', [0,1]],
+                    ['t.carownid', '<', 1],
                     ['t.time', 'between', $offsetTimeArray],
                 ];
                 $map[] = $TripsService->buildCompanyMap($userData, 'u');
