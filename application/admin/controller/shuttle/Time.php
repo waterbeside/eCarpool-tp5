@@ -11,7 +11,7 @@ use think\Db;
 
 /**
  * 班车可选时间管理
- * Class line
+ * Class Time
  * @package app\admin\controller
  */
 class Time extends AdminBase
