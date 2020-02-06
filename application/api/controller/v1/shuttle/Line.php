@@ -153,9 +153,9 @@ class Line extends ApiBase
                 ['l.status', "=", Db::raw(1)],
             ];
             if (is_numeric($type) && $type > -1) {
-                $map[] = ['t.type', '=', $type];
+                $map[] = ['l.type', '=', $type];
             } elseif ($type == -2) {
-                $map[] = ['t.type', '>', 0];
+                $map[] = ['l.type', '>', 0];
             }
             $join = [
                 ['t_shuttle_line l','l.id = t.line_id', 'left'],
