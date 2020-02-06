@@ -349,7 +349,7 @@ class Trip extends ApiBase
         if ($show_gps) {
             $ShuttleTripGps = new ShuttleTripGps();
             $gpsRes = $ShuttleTripGps->getGpsByTripAndUid($id, $data['u_uid']);
-            $data['gps'] = $gpsRes['gps'] ?? [];
+            $data['gps'] = $gpsRes['gps'] ?? null;
         }
 
         if ($show_member) {
@@ -368,7 +368,7 @@ class Trip extends ApiBase
                 $data['driver'] = $ShuttleTripServ->getUserTripDetail($trip_id, [], [], 0) ?: null;
                 if ($show_gps) {
                     $gpsRes = $ShuttleTripGps->getGpsByTripAndUid($data['driver']['id'], $data['driver']['u_uid']);
-                    $data['driver']['gps'] = $gpsRes['gps'] ?? [];
+                    $data['driver']['gps'] = $gpsRes['gps'] ?? null;
                 }
             }
         }
