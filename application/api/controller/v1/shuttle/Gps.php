@@ -25,9 +25,6 @@ class Gps extends ApiBase
         }
         $redis = new RedisData();
         $ShuttleTripGps = new ShuttleTripGps();
-        if ($trip_id > 0) {
-
-        }
         $res = $ShuttleTripGps->getGpsByTripAndUid($trip_id, $uid);
         return $this->jsonReturn(0, $res, 'Successful');
     }
