@@ -47,6 +47,7 @@ class TripList extends Service
         $pagesize = ( $extData['limit'] ?? 0 ) ?: 0;
         $lineId = ( $extData['line_id'] ?? 0 ) ?: 0;
         $userData = $userData ?: (( $extData['userData'] ?? null ) ?: null);
+        $showPassenger = ( $extData['show_passenger'] ?? 0 ) ?: 0;
         $page = input('get.page', 1);
 
         $ShuttleTripModel = new ShuttleTripModel();
@@ -135,6 +136,10 @@ class TripList extends Service
                 $value['create_time'] = strtotime($value['create_time']);
                 if ($user_type == 1) {
                     $value['took_count'] =  $ShuttleTripModel->countPassengers($value['id']);
+                    if ($showPassenger) {
+                        $userFields = ['uid', 'loginname', 'name', 'sex'];
+                        $value['passengers'] = $ShuttleTripService->passengers($value['id'], $userFields, ['id','status','time'], 0) ?: [];
+                    }
                 } else {
                     unset($value['plate']);
                 }

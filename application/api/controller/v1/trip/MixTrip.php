@@ -159,6 +159,7 @@ class MixTrip extends ApiBase
         $type = input('param.type', -1);
         $lineId = input('param.line_id');
         $lnglat = input('param.lnglat');
+        $showPassenger = input('param.show_passenger', 0);
 
         $userData = $this->getUserData(1);
         if ($userType === null) {
@@ -173,6 +174,9 @@ class MixTrip extends ApiBase
         }
         if ($lnglat) {
             $extData['lnglat'] = $lnglat;
+        }
+        if ($showPassenger) {
+            $extData['show_passenger'] = $showPassenger;
         }
         $returnData = $TripsMixedService->lists($userType, $userData, $type, $extData);
         $list = $returnData['lists'];

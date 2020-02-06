@@ -4,6 +4,7 @@ namespace app\carpool\service\nmtrip;
 use app\common\service\Service;
 use app\carpool\model\User as UserModel;
 use app\carpool\service\Trips as TripsService;
+use app\carpool\service\nmtrip\Trip as NmTripService;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
 use app\user\model\Department as DepartmentModel;
@@ -34,6 +35,7 @@ class TripList extends Service
         $limit = ( $extData['limit'] ?? 0 ) ?: 0;
         $pagesize = ( $extData['limit'] ?? 0 ) ?: 0;
         $map_type = $extData['map_type'] ?? 0;
+        $showPassenger = ( $extData['show_passenger'] ?? 0 ) ?: 0;
         $page = input('get.page', 1);
 
         $userData = $userData ?: (( $extData['userData'] ?? null ) ?: null);
@@ -43,6 +45,7 @@ class TripList extends Service
             date('YmdHi', time() + (60 * 60 * 24 * 2))
         ];
         $TripsService = new TripsService();
+        $NmTripService = new NmTripService();
         $InfoModel = new InfoModel();
         $WallModel = new WallModel();
         $cacheKey = $user_type === 1 ?
@@ -96,6 +99,10 @@ class TripList extends Service
                 if ($user_type == 1) {
                     $value['plate'] = $value['u_carnumber'] ?? '';
                     $value['took_count'] =  $InfoModel->countPassengers($value['id']);
+                    if ($showPassenger) {
+                        $userFields = ['uid', 'loginname', 'name', 'sex'];
+                        $value['passengers'] = $NmTripService->passengers($value['id'], $userFields, ['id','status','time'], 'u', 0) ?: [];
+                    }
                 }
                 unset($value['subtime']);
                 unset($value['u_carnumber']);
