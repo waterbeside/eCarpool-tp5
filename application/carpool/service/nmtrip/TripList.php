@@ -73,7 +73,7 @@ class TripList extends Service
                 ];
                 $map[] = $TripsService->buildCompanyMap($userData, 'u');
                 $fields = $TripsService->buildQueryFields('info_list_tz', 't', ['p'=>'u'], false, 1);
-                $fields.= ", 'info' as `from`, 0 as line_id, 0 as line_sort, 0 as user_type";
+                $fields.= ", 'info' as `from`, 0 as line_id, 0 as line_sort, 0 as user_type, 1 as seat_count";
                 $fields .=  ',' .$TripsService->buildUserFields('u', $userDefaultFields);
                 $join = $TripsService->buildTripJoins("s, e, p", 't', ['p'=>'u']);
                 $ctor = $InfoModel->alias('t')->field($fields)->join($join)->where($map)->order('t.time ASC');
