@@ -85,7 +85,7 @@ class MixTrip extends ApiBase
                 $redis->cache($cacheKey, [], 10);
                 return $this->jsonReturn(20002, lang('No Data'));
             }
-            $redis->cache($cacheKey, $listData, 60 * 2);
+            $redis->cache($cacheKey, $listData, 50);
         }
         
         return $this->jsonReturn(0, ['lists' => $listData], 'Success');
