@@ -32,7 +32,6 @@ class ShuttleLineDepartment extends BaseModel
     public function getIdsByDepartmentId($departmentIdOrData, $buildSql = false)
     {
         $DepartmentModel = new DepartmentModel();
-        
         $departmentData = is_numeric($departmentIdOrData) ? $DepartmentModel->getItem($departmentIdOrData) : $departmentIdOrData;
         if (!$departmentData) {
             return $this->setError(20002, lang('No data'));
