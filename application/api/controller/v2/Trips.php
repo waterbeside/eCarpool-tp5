@@ -254,46 +254,46 @@ class Trips extends ApiBase
 
         // dump($list);exit;
         /** 下边为旧方法，暂时弃用 */
-        if (empty($status)) {
-            $status = "neq|2";
-        }
-        $TripsService = new TripsService();
-        $InfoModel = new InfoModel();
-        $res = false;
-        if ($status == 'neq|2') {
-            $cacheKey = $InfoModel->getPassengersCacheKey($id);
-            $randExp = getRandValFromArray([2, 4, 6]);
-            $exp = $exp < 60 ? $exp + $randExp * 3 : $exp + $randExp * 5;
-            $redis = new RedisData();
-            $res = $redis->cache($cacheKey);
-        }
+        // if (empty($status)) {
+        //     $status = "neq|2";
+        // }
+        // $TripsService = new TripsService();
+        // $InfoModel = new InfoModel();
+        // $res = false;
+        // if ($status == 'neq|2') {
+        //     $cacheKey = $InfoModel->getPassengersCacheKey($id);
+        //     $randExp = getRandValFromArray([2, 4, 6]);
+        //     $exp = $exp < 60 ? $exp + $randExp * 3 : $exp + $randExp * 5;
+        //     $redis = new RedisData();
+        //     $res = $redis->cache($cacheKey);
+        // }
         
         
-        if ($res === false) {
-            $res =  $this->info_list("", $status, 0, $id, 0, 'status ASC, time ASC');
-            if ($status == 'neq|2') {
-                $redis->cache($cacheKey, $res, $exp);
-            }
-        }
-        if ($res) {
-            foreach ($res['lists'] as $key => $value) {
-                if (is_array($showFields)) {
-                    $itemData = [];
-                    foreach ($showFields as $field) {
-                        $itemData[$field] = isset($value[$field]) ? $value[$field] : null;
-                    }
-                    $res['lists'][$key] = $itemData;
-                } else {
-                    $res['lists'][$key] = $TripsService->unsetResultValue($value, ['love_wall_ID']);
-                }
-            }
-            if (isset($res['page'])) {
-                unset($res['page']);
-            }
-        }
-        $code = $res && count($res['lists']) > 0 ? 0  : 20002;
-        $msg =  $res && count($res['lists']) > 0 ? 'Successful'  : 'No data';
-        return $returnType ? $this->jsonReturn($code, $res, $msg) : ( $res['lists'] ? $res['lists'] : [] );
+        // if ($res === false) {
+        //     $res =  $this->info_list("", $status, 0, $id, 0, 'status ASC, time ASC');
+        //     if ($status == 'neq|2') {
+        //         $redis->cache($cacheKey, $res, $exp);
+        //     }
+        // }
+        // if ($res) {
+        //     foreach ($res['lists'] as $key => $value) {
+        //         if (is_array($showFields)) {
+        //             $itemData = [];
+        //             foreach ($showFields as $field) {
+        //                 $itemData[$field] = isset($value[$field]) ? $value[$field] : null;
+        //             }
+        //             $res['lists'][$key] = $itemData;
+        //         } else {
+        //             $res['lists'][$key] = $TripsService->unsetResultValue($value, ['love_wall_ID']);
+        //         }
+        //     }
+        //     if (isset($res['page'])) {
+        //         unset($res['page']);
+        //     }
+        // }
+        // $code = $res && count($res['lists']) > 0 ? 0  : 20002;
+        // $msg =  $res && count($res['lists']) > 0 ? 'Successful'  : 'No data';
+        // return $returnType ? $this->jsonReturn($code, $res, $msg) : ( $res['lists'] ? $res['lists'] : [] );
     }
 
     /**
