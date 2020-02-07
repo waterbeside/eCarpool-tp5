@@ -1,0 +1,111 @@
+<div class="amain-body ">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <div class="layui-tab-content">
+            <form class="layui-form  " action="{:url('admin/shuttle.address/edit',['id'=>$data['addressid']])}" method="post" style="margin-right:15px;" id="editForm">
+                <blockquote class="layui-elem-quote layui-elem-quote-warning">
+                    辅助工具：
+                    <a href="https://lbs.amap.com/console/show/picker" target="_blank"><i class="fa fa-map-marker"></i> 高德经纬度查询</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                </blockquote>
+                <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
+                    <legend>站点</legend>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="addressname" value="{$data.addressname}" required lay-verify="required" placeholder="站点名" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">经度</label>
+                        <div class="layui-input-block">
+                            <input type="number" name="longitude" value="{$data.longtitude}" required lay-verify="required" placeholder="经度 longitude" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">纬度</label>
+                        <div class="layui-input-block">
+                            <input type="number" name="latitude" value="{$data.latitude}" required lay-verify="required" placeholder="纬度 latitude" class="layui-input">
+                        </div>
+                    </div>
+                </fieldset>
+                
+
+                <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">所属类型</label>
+                        <div class="layui-input-block">
+                            <select name="address_type">
+                                <option value="4" {if condition="$data.address_type==4"} selected="selected"{/if}> 上下班普通站点</option>
+                                <option value="3" {if condition="$data.address_type==3"} selected="selected"{/if}> 公司站点</option>
+                                <option value="{$data.address_type}" <?php if(!in_array($data['address_type'], [3, 4])) {?>selected="selected" <?php } ?> > 其它</option>
+                            </select>
+                            <div class="layui-form-mid layui-word-aux">选择上班路线还是下班路线</div>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-block">
+                            <select name="status">
+                                <option value="1" {if condition="$data.status > 0"} selected="selected"{/if}> 启用</option>
+                                <option value="-1" {if condition="$data.status == -1"} selected="selected"{/if}> 禁用</option>
+                            </select>
+                            <div class="layui-form-mid layui-word-aux">是否可用</div>
+                        </div>
+                    </div>
+                    <!-- <div class="layui-form-item">
+                        <label class="layui-form-label">地图类型</label>
+                        <div class="layui-input-block">
+                            <select name="map_type">
+                                <option value="0"> 高德</option>
+                                <option value="1"> Google</option>
+                            </select>
+                        </div>
+                    </div> -->
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">排序</label>
+                        <div class="layui-input-block">
+                            <input type="number" name="ordernum" value="{$data.ordernum}"  placeholder="排序" class="layui-input">
+                            <div class="layui-form-mid layui-word-aux">越大越前</div>
+                        </div>
+                    </div>
+                    
+                </fieldset>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="*">保存</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    PAGE_EXEC = {
+        init: function () {
+            var _this = this;
+
+            var colorpicker = layui.colorpicker;
+            colorpicker.render({
+                elem: '#u-color',
+                change: function(color){
+                    console.log(color);
+                    $('#editForm').find('input[name="color"]').val(color);
+                }
+            });
+            form.render();
+            element.init();
+            
+        },
+    }
+
+    $(function () {
+        PAGE_EXEC.init();
+    });
+</script>

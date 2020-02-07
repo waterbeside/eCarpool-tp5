@@ -1,0 +1,111 @@
+{extend name="base" /}
+{block name="body"}
+<style>
+    .P-shuttle-address-list .my-tag-item {margin:-2px 0 4px; line-height: 12px;}
+</style>
+<div class="amain-body P-shuttle-address-list">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <ul class="amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/shuttle.address/index')}"  >班车站点管理</a></li>
+            <li class="btn-item btn-item-right">
+                <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/shuttle.address/add')}"  data-title="添加站点"  data-trigger="modal" >
+                <i class="fa fa-plus"></i> 添加站点</a>
+            </li>
+            <!-- <li class="btn-item btn-item-right">
+                <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/shuttle.address/add',['batch'=>1])}" data-width="90%"  data-title="添加路线"  data-trigger="modal" >
+                <i class="fa fa-plus"></i> 批量添加</a>
+            </li> -->
+        </ul>
+
+        <div class="layui-tab-content">
+            <form class="layui-form layui-form-pane" action="{:url('admin/shuttle.address/index')}" method="get">
+            <div class="layui-inline">
+                <div class="layui-input-inline">
+                    <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="起终点关键词" class="layui-input" style="width:140px" >
+                </div>
+                <!-- <div class="layui-input-inline">
+                    <input type="hidden" name="region_id" value="{$region_id}"  class="layui-input layui-input-inline " readonly  >
+                    <a onclick="openLayer('{:url('admin/Department/list_dialog',['fun'=>'selectFilterDept'])}','{:lang('Region or department')}');" href="javascript:void(0);"  class="layui-btn  layui-btn-primary" data-target="region_id:id" data-tips="{:lang('Region or department')}" data-title="{:lang('Region or department')}" data-tips-position="3" >
+                        {$regionData ? str_replace(',',' / ',$regionData['fullname']) : lang('Region or department')}
+                    </a>
+                </div> -->
+                <div class="layui-input-inline">
+                    <select name="filter[type]">
+                        <option value="" > 类型: 不限</option>
+                        <option value="3" <?php if(isset($filter['type']) && is_numeric($filter['type']) && $filter['type'] == 3 ){ echo 'selected="selected"'; } ?> > 公司站点</option>
+                        <option value="4" <?php if(isset($filter['type']) && is_numeric($filter['type']) && $filter['type'] == 4  ){ echo 'selected="selected"'; } ?> > 非公司站点</option>
+                    </select>
+                </div>
+                <div class="layui-input-inline">
+                    <select name="filter[is_delete]">
+                        <option value="0" <?php if(isset($filter['is_delete']) && is_numeric($filter['is_delete']) && $filter['is_delete'] == 0 ){ echo 'selected="selected"'; } ?> > 是否已删: 未删</option>
+                        <option value="1" <?php if(isset($filter['is_delete']) && is_numeric($filter['is_delete']) && $filter['is_delete'] == 1  ){ echo 'selected="selected"'; } ?> > 是否已删: 已删</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <input type="hidden" name="export" value="0">
+                <button class="layui-btn"><i class="fa fa-search"></i></button>
+            </div>
+            </form>
+            <hr>
+
+            <table lay-filter="listtable" class="layui-table">
+                <thead>
+                    <tr>
+                        <th lay-data="{field:'id', width:100, fixed:'left'}" >ID</th>
+                        <th lay-data="{field:'type', width:120, fixed:'left'}">类型</th>
+                        <th lay-data="{field:'addressname',minWidth:180}">名称</th>
+                        <th lay-data="{field:'lnglat', width:220, }">lng, lat</th>
+                        <!-- <th lay-data="{field:'department_ids'}">可用地区或部门</th> -->
+                        <!-- <th lay-data="{field:'admin_department_id',  width:180,}">地区管理组</th> -->
+                        <th lay-data="{field:'status', width:80}">状态</th>
+                        <th lay-data="{field:'ordernum', width:80}">排序</th>
+                        <th lay-data="{field:'options', width:120, fixed:'right'}">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {foreach name="list" item="vo"}
+                    <tr>
+                        <td>
+                        <div <?php echo  ($vo['is_delete']  ? 'class="is_delete"' : ''); ?>>
+                            {$vo.addressid}
+                        </div>
+                        <td><?php echo ($vo['address_type'] == 3 ? '公司站点' : ($vo['address_type'] == 4 ? '上下班普通站点' : '其它')); ?></td>
+                        </td>
+                        <td>{$vo.addressname}</td>
+                        <td>{$vo.longitude}, {$vo.latitude} </td>
+                        <!-- <td>{$vo.company_id}</td> -->
+                        <td>{$vo.status > 0 ? '正常': '不显示'}</td>
+                        <td>{$vo.ordernum}</td>
+                        <td>
+                            <a href="{:url('admin/shuttle.address/edit',['id'=>$vo['addressid']])}"  class="layui-btn   layui-btn-xs " data-title="編輯站点"  data-trigger="modal" title="編輯"><i class="layui-icon">&#xe642;</i></a>
+                            <?php if ($vo['is_delete'] === 0) { ?>
+                                <a href="{:url('admin/shuttle.address/delete',['id'=>$vo['addressid']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除"><i class="layui-icon">&#xe640;</i></a>
+                            <?php } ?>
+                        </td>
+                    </tr>
+                    {/foreach}
+                </tbody>
+            </table>
+            <!--分页-->
+            {$list|raw}
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+PAGE_EXEC = {
+    init: function(){
+        initLayuiTable({ limit: {$pagesize} })
+        cSetLayTableDelRowStyle('P-shuttle-line-list');
+    }
+}
+PAGE_EXEC.init()
+
+</script>
+{/block}
