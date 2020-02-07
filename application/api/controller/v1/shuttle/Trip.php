@@ -323,6 +323,9 @@ class Trip extends ApiBase
         $returnData = [
             'lists' => $res,
         ];
+        if (empty($res)) {
+            return $this->jsonReturn(20002, lang('No data'));
+        }
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
 
