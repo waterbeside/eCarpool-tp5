@@ -317,7 +317,9 @@ class TripsMixed extends Service
     {
         $Utils = new Utils();
         // 取得班车行程
-        $list_shuttle = [];
+        $list_shuttle = [
+            'lists' => [],
+        ];
         $user_type = intval($user_type);
         $limit = ( $extData['limit'] ?? 0 ) ?: 0;
         $lnglat = $extData['lnglat'] ?? null;
@@ -331,7 +333,9 @@ class TripsMixed extends Service
             $list_shuttle = $ShuttleTripListService->lists($user_type, $userData, $lineType, $extData);
         }
         // 普通行程
-        $list_nm = [];
+        $list_nm = [
+            'lists' => [],
+        ];
         if (in_array($type, [-1 , 0])) {
             $NmTripListService = new NmTripListService();
             $list_nm = $NmTripListService->lists($user_type, $userData, $extData);
