@@ -113,7 +113,9 @@ class TripList extends Service
             if ($userData) {
                 // 查找自己所在部门的可见路线;
                 $lineidSql = (new ShuttleLineDepartment())->getIdsByDepartmentId($userData['department_id'], true);
-                $map[] = ['', 'exp', Db::raw("line_id in $lineidSql")];
+                if ($lineidSql) {
+                    $map[] = ['', 'exp', Db::raw("t.line_id in $lineidSql")];
+                }
             }
 
             $ctor = $ShuttleTripModel->alias('t')->field($fields)->join($join)->where($map)->order('line_sort DESC, t.time ASC');
