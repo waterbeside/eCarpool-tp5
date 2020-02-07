@@ -13,6 +13,10 @@ use think\Db;
 
 class Trip extends Service
 {
+    public $defaultUserFields = [
+        'uid', 'loginname', 'name','nativename', 'phone', 'mobile', 'Department', 'sex',
+        'company_id', 'department_id', 'companyname', 'imgpath', 'carcolor', 'im_id'
+    ];
 
     /**
      * 取得乘客列表
