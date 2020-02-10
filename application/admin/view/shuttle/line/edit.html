@@ -11,53 +11,50 @@
                     <a href="https://www.w3cschool.cn/tools/index?name=cpicker" target="_blank"><i class="fa fa-tachometer"></i> 在线拾色</a>
                     <a href="http://www.5tu.cn/colors/yansebiao.html" target="_blank"><i class="fa fa-tachometer"></i> 在线拾色2</a>
                 </blockquote>
-                <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
+                <fieldset class="layui-elem-field address-box" style="padding:24px 20px 12px 0;">
                     <legend>起点</legend>
                     <div class="layui-form-item">
                         <label class="layui-form-label">名称</label>
                         <div class="layui-input-block">
-                            <input type="text" name="start_name" value="{$data.start_name}" required lay-verify="required" placeholder="起点名称"
-                                class="layui-input">
+                            <a class="layui-btn layui-btn-primary btn-select-address" onclick="FORM_PAGE_EXEC.selectAddress(this)" title="选择起点">{$data.start_name}<small> #{$data.start_id}</small></a>
+                            <input type="hidden" class="input-addressid" name="start_id" value="{$data.start_id}" required  placeholder="起点id" >
+                            <input type="hidden" class="layui-input input-addressname" name="start_name" value="{$data.start_name}" readonly  placeholder="起点名称">
                         </div>
                     </div>
                     <div class="layui-form-item">
                         <label class="layui-form-label">经度</label>
                         <div class="layui-input-block">
-                            <input type="number" name="start_longitude" value="{$data.start_longitude}" required lay-verify="required" placeholder="起点经度 longitude"
-                                class="layui-input">
+                            <input type="number" class="layui-input input-longitude"  name="start_longitude" value="{$data.start_longitude}" readonly  placeholder="起点经度 longitude">
                     </div>
                     </div>
                     <div class="layui-form-item">
                         <label class="layui-form-label">纬度</label>
                         <div class="layui-input-block">
-                            <input type="number" name="start_latitude" value="{$data.start_latitude}" required lay-verify="required" placeholder="起点纬度 latitude"
-                                class="layui-input">
+                            <input type="number" class="layui-input input-latitude"  name="start_latitude" value="{$data.start_latitude}" readonly  placeholder="起点纬度 latitude">
                         </div>
                     </div>
                 </fieldset>
                 
-                <fieldset class="layui-elem-field" style="padding:24px 20px 12px 0;">
+                <fieldset class="layui-elem-field address-box" style="padding:24px 20px 12px 0;">
                     <legend>终点</legend>
-
                     <div class="layui-form-item">
                         <label class="layui-form-label">名称</label>
                         <div class="layui-input-block">
-                            <input type="text" name="end_name" value="{$data.end_name}" required lay-verify="required" placeholder="终点名称"
-                                class="layui-input">
+                            <a class="layui-btn layui-btn-primary btn-select-address" onclick="FORM_PAGE_EXEC.selectAddress(this)" title="选择终点">{$data.end_name}<small> #{$data.end_id}</small></a>
+                            <input type="hidden" class="input-addressid" name="end_id" value="{$data.end_id}" required  placeholder="终点id" >
+                            <input type="hidden" class="layui-input input-addressname" name="end_name" value="{$data.end_name}" readonly placeholder="终点名称">
                         </div>
                     </div>
                     <div class="layui-form-item">
                         <label class="layui-form-label">经度</label>
                         <div class="layui-input-block">
-                            <input type="number" name="end_longitude" value="{$data.end_longitude}" required lay-verify="required" placeholder="终点经度 longitude"
-                                class="layui-input">
+                            <input type="number" class="layui-input input-longitude" name="end_longitude" value="{$data.end_longitude}" readonly placeholder="终点经度 longitude">
                         </div>
                     </div>
                     <div class="layui-form-item">
                         <label class="layui-form-label">纬度</label>
                         <div class="layui-input-block">
-                            <input type="number" name="end_latitude" value="{$data.end_latitude}" required lay-verify="required" placeholder="终点纬度 latitude"
-                                class="layui-input">
+                            <input type="number" class="layui-input input-latitude" name="end_latitude" value="{$data.end_latitude}" readonly placeholder="终点纬度 latitude">
                         </div>
                     </div>
                 </fieldset>
@@ -155,7 +152,7 @@
 </div>
 
 <script>
-    PAGE_EXEC = {
+    FORM_PAGE_EXEC = {
         datas: {
             deptsData: <?php echo $deptsData ? json_encode($deptsData) : '[]'; ?>,
         },
@@ -172,13 +169,44 @@
                     $('#editForm').find('input[name="color"]').val(color);
                 }
             });
-
         },
+
+        selectAddress: function(btnObj) {
+            var _this = this;
+            var $addressBox = $(btnObj).closest('.address-box');
+            var $btn = $addressBox.find('.btn-select-address');
+            var title = $btn.attr('title') || '选择地址';
+            _this.addressBox = $addressBox;
+            var url = "{:url('admin/shuttle.address/public_selects')}";
+            _this.addressModal = $.kanModal({
+                target:'model-select-address',
+                title: title,
+                nobackdrop: false,
+                remote: url,
+                data:{},
+                onLoadSuccess: function(a) {
+                    return false;
+                }
+            })
+            _this.addressModal.show();
+        },
+
+        selectAddressItem: function(res) {
+            var _this = this;
+            var $addressBox = _this.addressBox;
+            $addressBox.find('.btn-select-address').html(res.addressname+ "<small> #"+res.addressid+"</small>");
+            $addressBox.find('.input-addressid').val(res.addressid);
+            $addressBox.find('.input-addressname').val(res.addressname);
+            $addressBox.find('.input-latitude').val(res.latitude);
+            $addressBox.find('.input-longitude').val(res.longitude);
+            _this.addressModal.close();
+        }
+    
     }
 
 
     $(function () {
-        PAGE_EXEC.init();
+        FORM_PAGE_EXEC.init();
 
     });
 </script>

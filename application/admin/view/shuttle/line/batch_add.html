@@ -25,25 +25,29 @@
                         <div class="layui-form-item item">
                             <div class="item-inner" >
                                 
-                                <div class="layui-input-inline" style="width: 310px;" >
-                                    <input type="text" name="start_name" value="" required  placeholder="起点名称" class="layui-input" style="width: 120px;">
-                                    <input type="number" name="start_longitude" value="" required placeholder="起点经度 longitude" class="layui-input" style="width: 90px;">
-                                    <input type="number" name="start_latitude" value="" required placeholder="起点纬度 latitude" class="layui-input"  style="width: 90px;">
+                                <div class="layui-input-inline address-box" style="width: auto;" >
+                                    <a class="layui-btn layui-btn-primary btn-select-address" onclick="FORM_PAGE_EXEC.selectAddress(this)" title="选择起点">选择起点</a>
+                                    <input type="hidden" class="input-addressid" name="start_id" value="" required  placeholder="起点id" >
+                                    <input type="hidden"  class="input-addressname"  name="start_name" value="" required  placeholder="起点名称" class="layui-input" style="width: 120px;">
+                                    <input type="hidden" class="input-longitude"  name="start_longitude" value="" required placeholder="起点经度 longitude" class="layui-input" style="width: 90px;">
+                                    <input type="hidden" class="input-latitude" name="start_latitude" value="" required placeholder="起点纬度 latitude" class="layui-input"  style="width: 90px;">
                                 </div>
                                 
                                 <div style="float: left; width: 20px; line-height: 36px; padding: 0;">
                                     <i class="fa fa-arrow-right color-show"></i>
                                 </div>
-                                <div class="layui-input-inline" style="width: 310px;" >
-                                    <input type="text" name="end_name" value="" required  placeholder="终点名称" class="layui-input" style="width: 120px;">
-                                    <input type="number" name="end_longitude" value="" required placeholder="终点经度 longitude" class="layui-input" style="width: 90px;">
-                                    <input type="number" name="end_latitude" value="" required placeholder="终点纬度 latitude" class="layui-input" style="width: 90px;">
+                                <div class="layui-input-inline address-box" style="width: auto;" >
+                                    <a class="layui-btn layui-btn-primary btn-select-address" onclick="FORM_PAGE_EXEC.selectAddress(this)" title="选择终点">选择终点</a>
+                                    <input type="hidden" class="input-addressid"  name="end_id" value="" required  placeholder="终点id" >
+                                    <input type="hidden" class="input-addressname" name="end_name" value="" required  placeholder="终点名称" class="layui-input" style="width: 120px;">
+                                    <input type="hidden" class="input-longitude" name="end_longitude" value="" required placeholder="终点经度 longitude" class="layui-input" style="width: 90px;">
+                                    <input type="hidden" class="input-latitude" name="end_latitude" value="" required placeholder="终点纬度 latitude" class="layui-input" style="width: 90px;">
                                 </div>
                                 <div class="layui-input-inline" style="width: 120px;" >
                                     <input type="text" name="color" value="" placeholder="颜色 #FFFFFF" class="layui-input" style="width: 90px;" 
-                                        onfocus="PAGE_EXEC.setColorFocus(this)" 
-                                        onchange="PAGE_EXEC.setColor(this)"
-                                        onblur="PAGE_EXEC.setColor(this)"
+                                        onfocus="FORM_PAGE_EXEC.setColorFocus(this)" 
+                                        onchange="FORM_PAGE_EXEC.setColor(this)"
+                                        onblur="FORM_PAGE_EXEC.setColor(this)"
                                     >
                                 </div>
                                 
@@ -145,10 +149,12 @@
     </div>
 </div>
 
-<script>
 
-    PAGE_EXEC = {
+<script>
+    var FORM_PAGE_EXEC = {
         colorInput: null,
+        addressBox: null,
+        addressModal: null,
         init: function () {
             var _this = this;
             var colorpicker = layui.colorpicker;
@@ -176,7 +182,7 @@
         },
 
         setColorFocus: function(obj){
-            PAGE_EXEC.colorInput = $(obj);
+            FORM_PAGE_EXEC.colorInput = $(obj);
         },
 
         setColor: function(obj){
@@ -206,11 +212,42 @@
             });
             return false;
         },
+
+        selectAddress: function(btnObj) {
+            var _this = this;
+            var $addressBox = $(btnObj).closest('.address-box');
+            var $btn = $addressBox.find('.btn-select-address');
+            var title = $btn.attr('title') || '选择地址';
+            _this.addressBox = $addressBox;
+            var url = "{:url('admin/shuttle.address/public_selects')}";
+            _this.addressModal = $.kanModal({
+                target:'model-select-address',
+                title: title,
+                nobackdrop: false,
+                remote: url,
+                data:{},
+                onLoadSuccess: function(a) {
+                    return false;
+                }
+            })
+            _this.addressModal.show();
+        },
+
+        selectAddressItem: function(res) {
+            var _this = this;
+            var $addressBox = _this.addressBox;
+            $addressBox.find('.btn-select-address').html(res.addressname+ "<small> #"+res.addressid+"</small>");
+            $addressBox.find('.input-addressid').val(res.addressid);
+            $addressBox.find('.input-addressname').val(res.addressname);
+            $addressBox.find('.input-latitude').val(res.latitude);
+            $addressBox.find('.input-longitude').val(res.longitude);
+            _this.addressModal.close();
+        }
     
     }
 
     $(function () {
-        PAGE_EXEC.init();
+        FORM_PAGE_EXEC.init();
     });
     
 </script>
