@@ -8,6 +8,7 @@ use app\carpool\model\ShuttleTime as ShuttleTimeModel;
 use app\carpool\model\Address as AddressModel;
 use app\admin\controller\AdminBase;
 use think\facade\Validate;
+use my\Utils;
 use think\Db;
 
 /**
@@ -158,5 +159,43 @@ class Address extends AdminBase
             $this->log('删除班车时刻失败，id=' . $id, -1);
             return $this->jsonReturn(-1, '删除失败');
         }
+    }
+
+    public function public_selects($filter = null, $is_ajax = false, $fun = "FORM_PAGE_EXEC.selectAddressItem")
+    {
+        $map = [];
+        $is_delete = isset($filter['is_delete']) &&  $filter['is_delete'] ? Db::raw(1) : Db::raw(0);
+        $map[] = ['is_delete', '=', $is_delete];
+        if (isset($filter['type']) && $filter['type']) {
+            $map[] = ['address_type', '=', $filter['type']];
+        } else {
+            $map[] = ['address_type', '>', 2];
+        }
+        if (isset($filter['id']) && $filter['id']) {
+            $map[] = ['addressid', '=', $filter['id']];
+        }
+        if (isset($filter['keyword']) && $filter['keyword']) {
+            $keyword = $filter['keyword'];
+            $map[] = ['addressname|city', 'like', "%{$keyword}%"];
+        }
+        $fields = 'addressname, addressid, latitude, longtitude as longitude, is_delete, status';
+        $ctor = AddressModel::field($fields)->where($map)->order('ordernum DESC, create_time DESC , addressid DESC ');
+        $returnData = Utils::getInstance()->getListDataByCtor($ctor, 20);
+        if ($is_ajax) {
+            $returnData['pagination'] = $returnData['page'];
+            $returnData['filter'] = $filter;
+            $returnData['fun'] = $fun;
+            $returnData['param'] = input('param.');
+            return $this->jsonReturn(0, $returnData);
+        } else {
+            $this->assign('lists', $returnData['lists']);
+            $this->assign('pagination', $returnData['page']);
+            $this->assign('filter', $filter);
+            $this->assign('fun', $fun);
+            $this->assign('param', input('param.'));
+        }
+        
+        return $this->fetch('public_selects');
+        
     }
 }

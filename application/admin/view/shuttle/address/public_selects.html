@@ -1,0 +1,228 @@
+<div class="amain-body P-admin-address-dialog">
+
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <div class="layui-tab-content">
+
+                <form class="layui-form layui-form-pane" id="form-address-search" action="{:url('')}" method="get" onsubmit="return ADDRESS_DIALOG_EXCE.search();">
+                    <div class="layui-inline">
+                        <input type="hidden" name="is_ajax" value="1"/>
+                        <input type="hidden" name="fun" value="{$fun}"/>
+                        <label class="layui-form-label">检索</label>
+                        <div class="layui-input-inline">
+                            <input type="number" name="filter[id]" value="{$filter['id'] ? $filter['id'] :''}" placeholder="id" class="layui-input" style="width:140px" >
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="keyword" class="layui-input" style="width:140px" >
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <input type="hidden" name="export" value="0">
+                        <button class="layui-btn"><i class="fa fa-search"></i></button>
+                    </div>
+                </form>
+                <hr>
+
+                <table lay-filter="listtable" class="layui-table">
+                    <thead>
+                        <tr>
+                            <th lay-data="{field:'addressid', width:100, fixed:'left'}" >ID</th>
+                            <th lay-data="{field:'addressname', width:100}">地址</th>
+                            <th lay-data="{field:'status', width:100}">Status</th>
+                            <th lay-data="{field:'options', width:80,fixed:'right'}">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="j-list-body">
+                    {foreach name="lists" item="vo"}
+                    <tr>
+                        <td>
+                            <div <?php echo  ($vo['is_delete']  ? 'class="text-gray"' : ''); ?>>
+                            {$vo.addressid}
+                            </div>
+                        </td>
+                        <td>
+                            <div <?php echo  ($vo['is_delete']  ? 'class="text-gray"' : ''); ?>>
+                                {$vo.addressname}
+                                <span class="text-gray">
+                                    [{$vo.longitude},{$vo.latitude}]
+                                </span>
+                            </div>
+                        </td>
+
+                        <td>{$vo.status}</td>
+
+                        <!-- <td><a  class="layui-btn layui-btn-normal layui-btn-xs " data-title="分数管理"  data-trigger="modal" href="">0</a></td> -->
+
+                        <td>
+                            <?php if($vo['is_delete']){ ?>
+                            <button href="javascript:void(0);"  class="layui-btn   layui-btn-xs " title="选择" disabled>选择</button>
+                            <?php }else{
+                                $returnItemData = $vo;
+                            ?>
+                            <button href="javascript:void(0);"  class="layui-btn   layui-btn-xs " title="选择" onclick='<?php echo $fun.'('.json_encode($returnItemData).')'; ?>'>选择</button>
+                            <?php } ?>
+
+                        </td>
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+                <!--分页-->
+                <div class="page ajax-pagination">
+                    <a class="layui-btn layui-btn-xs layui-btn-primary btn-left" onclick="ADDRESS_DIALOG_EXCE.pagePrev()" title="Previous page"><i class="fa fa-arrow-left"></i></a>
+                    <div class="pageTips"> {$pagination.currentPage}/{$pagination.lastPage} </div>
+                    <a class="layui-btn layui-btn-xs layui-btn-primary btn-right" onclick="ADDRESS_DIALOG_EXCE.pageNext()" title="Next page"><i class="fa fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script id="address-item-template" type="text/html">
+    <tr>
+        <td>
+            <div {{# if(d.item.is_delete){ }} class="text-gray" {{#  } }}>
+            {{ d.item.addressid }}
+            </div>
+        </td>
+        <td>
+            <div {{# if(d.item.is_delete){ }} class="text-gray" {{#  } }}>
+                {{ d.item.addressname }}
+                <span class="text-gray">
+                    [{{ d.item.longitude }},{{ d.item.latitude }}]
+                </span>
+            </div>
+        </td>
+
+        <td>{{ d.item.status }}</td>
+        <td>
+            {{# if(d.item.is_delete){ }}
+            <button href="javascript:void(0);"  class="layui-btn layui-btn-xs " title="选择" disabled>选择</button>
+            {{# }else{ }}
+            {{# d.index }}
+            <button href="javascript:void(0);"  class="layui-btn layui-btn-xs j-select-btn" title="选择" data-index="{{ d.index }}" onclick="ADDRESS_DIALOG_EXCE.selectItem({{ d.index }})">选择</button>
+            {{# } }}
+        </td>
+    </tr>
+</script>
+<script>
+    var laytpl = layui.laytpl;
+    ADDRESS_DIALOG_EXCE = {
+        listData: [],
+        currentPage:1,
+        fun: "{$fun}",
+        param:  <?php echo $param ? json_encode($param) : '{}' ?>,
+        pagination: <?php echo $pagination ? json_encode($pagination) : 'null' ?>,
+
+        getPageDialogBox: function() {
+            return $('.P-admin-address-dialog');
+        },
+        getListBox: function() {
+            return this.getPageDialogBox().find('.j-list-body');
+        },
+        getPageBox: function() {
+            return this.getPageDialogBox().find('.ajax-pagination');
+        },
+        renderItem: function () {
+            var _this = this;
+            var listWrapper = document.getElementById('list-wrapper');
+            var dataLength = _this.listData.length;
+            var $listBox = _this.getListBox();
+            if (dataLength < 1) {
+                var html = '<tr><td colspan="4" style="text-align:center"> No Data </td></tr>'
+                $listBox.html(html);
+                return false;
+            }
+
+            var itemTemplate = $("#address-item-template").html();
+            var itemHtml = "";
+            $(_this.listData).each(function (index, el) {
+                console.log(index);
+                itemHtml += laytpl(itemTemplate).render({
+                    index: index,
+                    item: el,
+                });
+                // console.log({index:index,item:el});
+            });
+            $listBox.html(itemHtml);
+        },
+
+        renderPagination: function() {
+            var _this = this;
+            var $paginationBox = _this.getPageBox();
+            var currentPage = _this.currentPage;
+            var lastPage = _this.pagination.lastPage;
+            console.log(lastPage);
+            $paginationBox.find('.pageTips').text(currentPage+'/'+lastPage);
+        },
+
+        selectItem: function(index) {
+            var _this = this;
+            var returnData = $.extend({},_this.listData[index]);
+            <?php echo $fun.'('; ?>returnData<?php echo ')'; ?>
+        },
+
+        search: function() {
+            var _this = this;
+            var $form = $('#form-address-search');
+            var data = $form.serialize();
+            _this.loadData(data);
+            return false;
+        },
+
+        loadData: function(data) {
+            var _this = this;
+            var loadingHtml = '<tr><td colspan="4" style="text-align:center"> <i class="fa fa-spinner fa-spin"></i> </td></tr>'
+            $(".P-admin-address-dialog .j-list-body").html(loadingHtml);
+            console.log(data);
+            if (typeof data === 'number') {
+                var page = data;
+                data = _this.param;
+                data.page = _this.currentPage;
+            }
+            data = data || _this.param;
+            if (typeof data === 'object') {
+                data.is_ajax = 1 
+            }
+            var url = "{:url('')}";
+            $.ajax({
+                type: 'get',
+                dataType: 'json',
+                data: data,
+                url:url,
+                success:function(res){
+                    if (res.code === 0) {
+                        var data = res.data;
+                        _this.listData = data.lists
+                        _this.pagination = data.page
+                        _this.currentPage = data.page.currentPage
+                        _this.renderItem();
+                        _this.renderPagination();
+                        _this.param = res.param;
+                    }
+                    console.log(res);
+                }
+            })
+            return false;
+        },
+        
+        pagePrev: function() {
+            var _this = this;
+            var page = _this.currentPage || 1;
+            if (page-1 < 1) {
+                layer.msg('已经是第一页');
+                return false;
+            }
+            _this.loadData(page-1);
+        },
+
+        pageNext: function() {
+            var _this = this;
+            var page = _this.currentPage || 1;
+            if (page+1 > _this.pagination.lastPage) {
+                layer.msg('已经是最后一页');
+                return false;
+            }
+            _this.loadData(page+1);
+        }
+    }
+</script>
