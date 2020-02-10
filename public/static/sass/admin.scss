@@ -223,6 +223,12 @@ body {background:#FFF; color:$color-black-l1}
   }
 }
 
+.ajax-pagination {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
 //登入
 .p-login {
   $wrapper-width: 430px;
