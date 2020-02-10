@@ -199,7 +199,7 @@ class Trip extends ApiBase
         if (is_array($returnData) && empty($returnData)) {
             return $this->jsonReturn(20002, $returnData, 'No data');
         }
-        $userFields = ['uid', 'loginname', 'name', 'nativename', 'sex', 'phone', 'mobile', 'imgpath', 'im_id'];
+        $userFields = ['uid', 'loginname', 'name', 'nativename', 'sex', 'phone', 'mobile', 'imgpath', 'im_id', 'Department'];
         if (!$returnData) {
             $ex = 60 * 3;
             $userAlias = 'u';
