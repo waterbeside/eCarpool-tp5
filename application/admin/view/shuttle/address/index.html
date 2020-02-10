@@ -69,7 +69,7 @@
                     {foreach name="list" item="vo"}
                     <tr>
                         <td>
-                        <div <?php echo  ($vo['is_delete']  ? 'class="is_delete"' : ''); ?>>
+                        <div>
                             {$vo.addressid}
                         </div>
                         <td><?php echo ($vo['address_type'] == 3 ? '公司站点' : ($vo['address_type'] == 4 ? '上下班普通站点' : '其它')); ?></td>
