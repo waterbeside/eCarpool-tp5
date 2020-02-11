@@ -139,7 +139,16 @@ class MixTrip extends ApiBase
             return $this->jsonReturn(20002, $returnData, lang('No data'));
         }
         $redis->hCache($cacheKey, $rowKey, $listData, 60 * 2);
-        $returnData['lists'] = $listData;
+        $newListData = [];
+        $now = time();
+        foreach ($listData as $key => $value) {
+            if ($value['user_type'] == 0 && $value['trip_id'] == 0 && $value['time'] <= $now) {
+                // 如果是乘客行程，且没司机接，并车过了出发时间 则不显示
+                continue;
+            }
+            $newListData[] = $value;
+        }
+        $returnData['lists'] = $newListData;
         return $this->jsonReturn(0, $returnData, 'Success');
     }
 
