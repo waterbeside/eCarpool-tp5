@@ -494,10 +494,12 @@ class Trips extends ApiBase
             $TripsPushMsg = new TripsPushMsg();
             $tripData = $datas->toArray();
             $cancelRes = $TripsMixedServ->cancelTrip($tripData, $from, $userData, 0);
-            if (!$cancelRes) {
-                return $this->jsonReturn(-1, [], lang('Fail'));
-            }
             $errorData = $TripsMixedServ->getError();
+            if (!$cancelRes) {
+                $errorCode = $errorData['code'] ?: -1;
+                $errorMsg = $errorData['msg'] ?: lang('Fail');
+                return $this->jsonReturn($errorCode, null, $errorMsg);
+            }
             $pushDatas = $errorData['data'] ?? null;
             // 如果有要取消的行程，进行取消后推送
             if (isset($pushDatas) && $pushDatas && isset($pushDatas['pushMsgData'])) {
