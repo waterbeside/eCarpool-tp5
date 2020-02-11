@@ -242,7 +242,7 @@ class TripsMixed extends Service
                 if (is_numeric($tripData['love_wall_ID']) && $tripData['love_wall_ID'] > 0) {
                     $took_count = $InfoModel->countPassengers($tripData['love_wall_ID']) ?: 0;
                     if ($took_count === 0) { //如果发现没有有效乘客，则更改空座位状态为0;
-                        WallModel::where(["love_wall_ID", '=', $tripData['love_wall_ID']])->update(["status" => 0]);
+                        WallModel::where([["love_wall_ID", '=', $tripData['love_wall_ID']]])->update(["status" => 0]);
                     }
                 }
                 // 提交事务
