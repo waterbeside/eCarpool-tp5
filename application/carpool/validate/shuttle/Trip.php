@@ -91,6 +91,11 @@ class Trip extends Base
         if ($userData['uid'] == $tripData['uid']) {
             return $this->setError(-1, lang('You can`t take your own'));
         }
+        //检查出发时间是否已经过了
+        $time = strtotime($tripData['time']);
+        if (time() > ($time + 300)) {
+            return $this->setError(992, lang("The departure time has passed. Please select the time again"));
+        }
         // 检查是否已经是乘客成员之一
         $ShuttleTrip = new ShuttleTrip();
         $checkInTripRes = $ShuttleTrip->checkInTrip($tripData, $userData['uid']);

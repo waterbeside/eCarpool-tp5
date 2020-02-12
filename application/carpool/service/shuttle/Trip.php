@@ -75,7 +75,7 @@ class Trip extends Service
         }
 
         //检查出发时间是否已经过了
-        if (time() > $time) {
+        if ($create_type != 'hitchhiking' && time() > $time) {
             return $this->error(992, lang("The departure time has passed. Please select the time again"));
         }
         // 验证重复行程
