@@ -27,6 +27,15 @@
                             <input type="number" name="latitude" value="{$data.latitude}" required lay-verify="required" placeholder="纬度 latitude" class="layui-input">
                         </div>
                     </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">座标类型</label>
+                        <div class="layui-input-block">
+                            <select name="map_type">
+                                <option value="0" {if condition="$data.map_type==0"} selected="selected"{/if}> 高德地图</option>
+                                <option value="1" {if condition="$data.map_type==1"} selected="selected"{/if}> Google map</option>
+                            </select>
+                        </div>
+                    </div>
                 </fieldset>
                 
 
