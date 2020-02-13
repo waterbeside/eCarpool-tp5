@@ -62,6 +62,7 @@ return [
     "The point of departure must not be empty" => '起点不能为空',
     "The destination cannot be empty" => '终点不能为空',
     "The departure time has passed. Please select the time again" => "出发时间已经过了，请重选时间。",
+    "The departure time has passed. Unable to operate" => "出发时间已经过了，无法操作。",
     "You have already made one trip at {:time}, should not be published twice within the same time" => "您在 {:time} 已有一趟行程，在相近时间内请勿重复发布",
     "You have already made one trip at {:time}, please do not post in a similar time" => "您在 {:time} 已有一趟行程，请不要在相近时间多次添加行程",
     "You have multiple trips in {:time} minutes, please do not post in a similar time" => "你在该出发时间的{:time}分钟前后已有多趟行程，请不要在相近时间内多次添加行程",

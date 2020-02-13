@@ -63,6 +63,7 @@ return [
     "The point of departure must not be empty" => 'Điểm bắt đầu không được để trống',
     "The destination cannot be empty" => 'Điểm kết thúc không được để trống',
     "The departure time has passed. Please select the time again" => "Thời gian khởi hành đã quá hạn, vui lòng chọn lại thời gian",
+    "The departure time has passed. Unable to operate" => "Thời gian khởi hành đã trôi qua và không thể được vận hành.",
     "You have already made one trip at {:time}, should not be published twice within the same time" => "Bạn có chuyến đi lúc {:time}, vui lòng không lặp lại trong thời gian tương tự",
     "You have already made one trip at {:time}, please do not post in a similar time" => "Bạn có chuyến đi lúc {:time}, Đừng thêm các chuyến đi nhiều lần trong thời gian tương tự",
     "You have multiple trips in {:time} minutes, please do not post in a similar time" => "Bạn có nhiều chuyến đi trong {:time} phút, Đừng thêm các chuyến đi nhiều lần trong thời gian tương tự",

@@ -63,6 +63,7 @@ return [
     "The point of departure must not be empty" => 'The point of departure must not be empty',
     "The destination cannot be empty" => 'The destination cannot be empty',
     "The departure time has passed. Please select the time again" => 'The departure time has passed. Please select the time again.',
+    "The departure time has passed. Unable to operate" => "The departure time has passed. Unable to operate.",
     "You have already made one trip at {:time}, should not be published twice within the same time" => "You have already made one trip at {:time}, should not be published twice within the same time",
     "You have already made one trip at {:time}, please do not post in a similar time" => "You have already made one trip at {:time}, please do not post in a similar time",
     "You have multiple trips in {:time} minutes, please do not post in a similar time" => "You have multiple trips around {:time} minutes of the departure time, please do not post in a similar time",
