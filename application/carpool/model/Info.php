@@ -55,6 +55,27 @@ class Info extends BaseModel
     }
 
     /**
+     * 取得乘客数cacheKey;
+     *
+     * @param integer $wall_id 行程id
+     * @return string
+     */
+    public function getTookCountCacheKey($wall_id)
+    {
+        return "carpool:wall:passengersCount:wall_{$wall_id}";
+    }
+
+    /**
+     * 删除乘客数缓存
+     */
+    public function delTookCountCache($id)
+    {
+        $cacheKey = $this->getTookCountCacheKey($id);
+        return $this->redis()->del($cacheKey);
+    }
+
+
+    /**
      * 取得接口的需车需求列表缓存Key
      *
      * @param string $company_id 公司id
@@ -72,15 +93,25 @@ class Info extends BaseModel
      * 计算乘客个数
      *
      * @param integer $id 空座位id
+     * @param integer $ex 缓存的有效期，单位秒
      * @return integer
      */
-    public function countPassengers($id)
+    public function countPassengers($id, $ex = 5)
     {
-        $map = [
-            ['love_wall_ID', '=', $id],
-            ['status', 'in', [0,1,3,4]],
-        ];
-        return $this->where($map)->count();
+        $cacheKey = $this->getTookCountCacheKey($id);
+        $redis = $this->redis();
+        $res = $redis->cache($cacheKey);
+        if ($res === false || $ex === false) {
+            $map = [
+                ['love_wall_ID', '=', $id],
+                ['status', 'in', [0,1,3,4]],
+            ];
+            $res = $this->where($map)->count();
+            if (is_numeric($ex)) {
+                $redis->cache($cacheKey, $res, $ex);
+            }
+        }
+        return $res;
     }
 
     /**
