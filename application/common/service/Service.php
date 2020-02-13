@@ -10,6 +10,7 @@ class Service
 {
 
     protected static $redisObj = null;
+    protected $models = null;
     public $errorCode = 0;
     public $errorMsg = '';
     public $data = [];
@@ -23,6 +24,22 @@ class Service
         }
 
         return static::$instance;
+    }
+
+    /**
+     * 取得模型
+     *
+     * @param string $name 模型名称
+     * @param string $common 模块名
+     * @return model
+     */
+    public function getModel($name = '', $common = 'common')
+    {
+        $formatName = md5($name.'|'.$common);
+        if (!isset($this->models[$formatName]) || !$this->models[$formatName]) {
+            $this->models[$formatName] = app()->model($name, 'model', false, $common);
+        }
+        return $this->models[$formatName];
     }
 
     public function error($code, $msg, $data = [])
