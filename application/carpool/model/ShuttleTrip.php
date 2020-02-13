@@ -88,7 +88,7 @@ class ShuttleTrip extends BaseModel
      */
     public function getDefatultOffsetTime($time, $offset = 0, $format = null)
     {
-        $startTime = $time - (20 * 60);
+        $startTime = $time - (5 * 60);
         $endTime = $time + (60 * 60 * 24 * 7 - $offset);
 
         return [
