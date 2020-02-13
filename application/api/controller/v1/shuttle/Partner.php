@@ -235,6 +235,8 @@ class Partner extends ApiBase
             // 处理原行程seat_count数
             $ShuttleTripServ = new ShuttleTripService();
             $ShuttleTripServ->resetRequestSeatCount($itemData['trip_id'], $from_type);
+            // 提交事务
+            Db::connect('database_carpool')->commit();
         } catch (\Exception $e) {
             Db::connect('database_carpool')->rollback();
             $errorMsg = $e->getMessage();

@@ -103,7 +103,7 @@ class Partner extends Base
         if (empty($itemData)) {
             return $this->setError(20002, lang('The partner does not exist or has been deleted'));
         }
-        if ($itemData['uid'] != $uid || $itemData['creater_id'] != $uid) {
+        if ($itemData['uid'] != $uid && $itemData['creater_id'] != $uid) {
             return $this->setError(30001, lang('You cannot cancel this trip that you have not participated in'));
         }
         $id = $itemData['id'];
