@@ -82,7 +82,7 @@ class Trip extends ApiBase
                 $comefrom = 1;
             } elseif ($rqType === 'requests') {
                 // $userAlias = 'p';
-                $offsetTimeArray[0] = date('Y-m-d H:i:s', time() + 30);
+                $offsetTimeArray[0] = date('Y-m-d H:i:s', time() + 10);
                 $userType = 0;
                 $comefrom = 2;
             }
@@ -266,6 +266,7 @@ class Trip extends ApiBase
         $redis = new RedisData();
         $ShuttleTrip = new ShuttleTrip();
         $ShuttleTripService = new ShuttleTripService();
+        $TripsMixed = new TripsMixed();
         $cacheKey = $ShuttleTrip->getMyListCacheKey($uid, 'history');
         $rowCacheKey = "pz_{$pagesize},page_$page";
         $returnData = $redis->hCache($cacheKey, $rowCacheKey);
@@ -297,8 +298,7 @@ class Trip extends ApiBase
         }
         $returnData['lists'] = $ShuttleTripService->formatTimeFields($returnData['lists'], 'list', ['time','create_time','update_time']);
         foreach ($returnData['lists'] as $key => $value) {
-            $timePass = time() - $value['time'];
-            $returnData['lists'][$key]['have_started'] = $timePass >= 0 ? ( $timePass > 20 * 60 ? 2 : 1) : 0;
+            $returnData['lists'][$key]['have_started'] = $TripsMixed->haveStartedCode($value['time']);
         }
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
@@ -374,8 +374,10 @@ class Trip extends ApiBase
                 }
             }
         }
-        $timePass = time() - $data['time'];
-        $data['have_started'] = $timePass >= 0 ? ( $timePass > 20 ? 2 : 1) : 0;
+
+        $TripsMixed = new TripsMixed();
+        $data['have_started'] = $TripsMixed->haveStartedCode($data['time']);
+
         unset($data['trip_id']);
         return $this->jsonReturn(0, $data, 'Successful');
     }
