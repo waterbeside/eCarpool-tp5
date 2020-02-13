@@ -74,8 +74,8 @@ class Trip extends Service
             return $rqData;
         }
 
-        //检查出发时间是否已经过了
-        if ($create_type != 'hitchhiking' && time() > $time) {
+        //检查出发时间是否已经过了 (乘车和搭客另外检查时间)
+        if ($create_type != 'hitchhiking' && $create_type != 'pickup' && time() > $time) {
             return $this->error(992, lang("The departure time has passed. Please select the time again"));
         }
         // 验证重复行程

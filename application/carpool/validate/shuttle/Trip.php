@@ -4,6 +4,7 @@ namespace app\carpool\validate\shuttle;
 use app\common\validate\Base;
 use app\carpool\model\ShuttleTrip;
 use app\carpool\model\ShuttleTripPartner;
+use app\carpool\service\TripsMixed;
 use my\Utils;
 
 class Trip extends Base
@@ -39,6 +40,13 @@ class Trip extends Base
         }
         if ($tripData['trip_id'] > 0) { // 检查对方是否已被其它司机搭了
             return $this->setError(50010, lang('You are too slow, the passenger was snatched by another driver'));
+        }
+        //检查出发时间是否已经过了
+        $time = strtotime($tripData['time']);
+        $TripsMixed = new TripsMixed();
+        $haveStarted = $TripsMixed->haveStartedCode($time);
+        if ($haveStarted > 1) {
+            return $this->setError(992, lang("The departure time has passed. Unable to operate"));
         }
         if ($tripData['seat_count'] > 1) {
             $ShuttleTripPartner = new ShuttleTripPartner();
@@ -93,8 +101,10 @@ class Trip extends Base
         }
         //检查出发时间是否已经过了
         $time = strtotime($tripData['time']);
-        if (time() > ($time + 300)) {
-            return $this->setError(992, lang("The departure time has passed. Please select the time again"));
+        $TripsMixed = new TripsMixed();
+        $haveStarted = $TripsMixed->haveStartedCode($time);
+        if ($haveStarted > 1) {
+            return $this->setError(992, lang("The departure time has passed. Unable to operate"));
         }
         // 检查是否已经是乘客成员之一
         $ShuttleTrip = new ShuttleTrip();
