@@ -120,10 +120,10 @@ class MixTrip extends ApiBase
         if (is_array($listData) && empty($listData)) {
             return $this->jsonReturn(20002, $returnData, lang('No data'));
         }
+        $TripsServ = new TripsService();
+        $ShuttleTripModel = new ShuttleTripModel();
+        $InfoModel = new InfoModel();
         if (!$listData) {
-            $TripsServ = new TripsService();
-            $ShuttleTripModel = new ShuttleTripModel();
-
             // 先取上下班行程数据
             $list_1 = $ShuttleTripModel->getListByTimeOffset(time(), $uid, $offsetTime, $pz);
             // 先查普通行程數據
@@ -145,6 +145,18 @@ class MixTrip extends ApiBase
             if ($value['user_type'] == 0 && $value['trip_id'] == 0 && $value['time'] <= $now) {
                 // 如果是乘客行程，且没司机接，并车过了出发时间 则不显示
                 continue;
+            }
+            // 如果是司机行程，则计算有多少乘客
+            $value['took_count'] = 0;
+            if ($value['user_type'] == 1) {
+                $value['took_count'] = $TripsMixedService->countPassengers($value['id'], $value['from']);
+                // if ($value['from'] == 'shuttle_trip') {
+                //     $value['took_count'] = $ShuttleTripModel->countPassengers($value['id']);
+                // } elseif ($value['from'] == 'wall') {
+                //     $value['took_count'] =  $InfoModel->countPassengers($value['id']);
+                // } elseif ($value['from'] == 'info') {
+                //     $value['took_count'] = 1;
+                // }
             }
             $newListData[] = $value;
         }

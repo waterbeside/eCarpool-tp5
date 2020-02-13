@@ -21,6 +21,7 @@ use my\Utils;
 class TripsMixed extends Service
 {
 
+
     /**
      * 取得我的混合行程Cache Key
      *
@@ -405,5 +406,25 @@ class TripsMixed extends Service
             $haveStart = 1;
         }
         return $haveStart;
+    }
+
+    /**
+     * 取得乘客数
+     *
+     * @param integer $id 行程id
+     * @param string $from 来自 shuttle_trip or wall or info
+     * @return integer
+     */
+    public function countPassengers($id, $from)
+    {
+        $count = 0;
+        if ($from == 'shuttle_trip') {
+            $count = $this->getModel('ShuttleTrip', 'carpool')->countPassengers($id);
+        } elseif ($from == 'wall') {
+            $count =  $this->getModel('Info', 'carpool')->countPassengers($id);
+        } elseif ($from == 'info') {
+            $count = 1;
+        }
+        return $count ?: 0;
     }
 }
