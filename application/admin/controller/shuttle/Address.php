@@ -87,7 +87,7 @@ class Address extends AdminBase
                 return $this->batch_add();
             }
             $data['longtitude'] = $data['longitude'];
-            $validate_result = $this->validate($data, 'app\carpool\validate\address');
+            $validate_result = $this->validate($data, 'app\carpool\validate\Address');
             if ($validate_result !== true) {
                 return $this->jsonReturn(-1, $validate_result);
             }
