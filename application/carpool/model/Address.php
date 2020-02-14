@@ -21,6 +21,17 @@ class Address extends BaseModel
 
     public $errorMsg = "";
 
+    /**
+     * 取得单项数据缓存Key设置
+     *
+     * @param integer $id 主键
+     * @return string
+     */
+    public function getItemCacheKey($id)
+    {
+        return "carpool:address:$id";
+    }
+
 
     public function getCitysCacheKey($company_id, $type)
     {
