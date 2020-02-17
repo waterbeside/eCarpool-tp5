@@ -39,7 +39,7 @@ class Line extends ApiBase
 
         $ex = 60 * 30;
         $keyword = input('get.keyword');
-        $department_id = -1;
+        $comid = input('get.comid', 0);
         $userData = $this->getUserData(1);
         // 取理部门可见的数据
         $department_id = $userData['department_id'];
@@ -95,20 +95,17 @@ class Line extends ApiBase
             }
         }
 
-        // 取得当前路线的约车需求数
-        if (is_numeric($show_count) && $show_count > 0) {
-            foreach ($returnData['lists'] as $key => $value) {
+        foreach ($returnData['lists'] as $key => $value) {
+            // 取得当前路线的约车需求数
+            if (is_numeric($show_count) && $show_count > 0) {
                 $countData = [
                     'cars' => $shuttleTrip->countByLine($value['id'], 'cars'),
                     'requests' => $shuttleTrip->countByLine($value['id'], 'requests'),
                 ];
-                $returnData['lists'][$key]['countData'] = $countData;
+                $value['countData'] = $countData;
             }
-        }
-
-        // 排序方法
-        if (is_numeric($get_sort) && $get_sort > 0) {
-            foreach ($returnData['lists'] as $key => $value) {
+            // 排序方法
+            if (is_numeric($get_sort) && $get_sort > 0) {
                 $used_total = $shuttleTrip->countByLine($value['id'], 'used_total');
                 $user_used_total = $uid > 0 ? $shuttleTrip->countByLine($value['id'], 'used_total', $uid) : 0;
                 $sort_0 = $value['sort'];
@@ -116,6 +113,23 @@ class Line extends ApiBase
                 $value['sort'] = $sort;
                 $value['sort_hot'] = $used_total;
             }
+            // 检查颜色
+            if (empty($value['color'])) {
+                $value['color'] = $shuttleLineModel->getRandomColor() ?: $value['color'];
+            }
+            $returnData['lists'][$key] = $value;
+        }
+        if ($comid > 0) {
+            $fitList = [];
+            foreach ($returnData['lists'] as $key => $value) {
+                if ($comid == $value['start_id'] || $comid == $value['end_id']) {
+                    $fitList[] = $value;
+                }
+            }
+            $returnData['lists'] = $fitList;
+        }
+        if (empty($returnData['lists'])) {
+            return $this->jsonReturn(20002, 'No data');
         }
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
@@ -133,7 +147,6 @@ class Line extends ApiBase
 
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
-
         $shuttleLineModel = new ShuttleLineModel();
         $redis = new RedisData();
         $ex = 60 * 60;
@@ -172,6 +185,55 @@ class Line extends ApiBase
         $list = ShuttleTripService::getInstance()->formatTimeFields($listData, 'list', ['time']);
         $returnData = [
             'lists' => $list
+        ];
+        return $this->jsonReturn(0, $returnData, 'Successful');
+    }
+
+
+    /**
+     * 查找我可选的路线公司
+     *
+     */
+    public function companys()
+    {
+        $userData = $this->getUserData(1);
+        $uid = $userData['uid'];
+        $departmentId = $userData['department_id'];
+        $cacheKey = "carpool:shuttle:line:companys:dptId_$departmentId";
+        $redis = new RedisData();
+        $list = $redis->cache($cacheKey);
+        if (is_array($list) && empty($list)) {
+            $this->jsonReturn(20002, 'No data');
+        }
+
+        if (empty($list)) {
+            $ShuttleLineDepartment = new ShuttleLineDepartment();
+            $DepartmentModel = new Department();
+            $departmentData =  $DepartmentModel->getItem($departmentId);
+            if (!$departmentData) {
+                return $this->jsonReturn(20002, lang('No data'));
+            }
+            $departmentPath = $departmentData['path'].','.$departmentId;
+            $join = [
+                ['t_shuttle_line l', 't.line_id = l.id', 'left'],
+            ];
+            $field = 'l.end_id as id, l.end_name as name, l.end_longitude as longitude, l.end_latitude as latitude';
+            $map = [
+                ['l.is_delete', "=", Db::raw(0)],
+                ['l.status', "=", Db::raw(1)],
+                ['l.type', "=", '1'],
+                ['t.department_id', 'in', $departmentPath],
+            ];
+            $res = $ShuttleLineDepartment->alias('t')->field($field)->distinct(true)->join($join)->where($map)->select();
+            if (!$res) {
+                $redis->cache($cacheKey, [], 20);
+                return $this->jsonReturn(20002, 'No data');
+            }
+            $list = $res->toArray();
+            $redis->cache($cacheKey, $list, 60);
+        }
+        $returnData = [
+            'lists' => $list,
         ];
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
