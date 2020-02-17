@@ -2,7 +2,7 @@
 
 namespace app\carpool\model;
 
-use think\facade\Cache;
+use think\Db;
 use my\RedisData;
 use app\common\model\BaseModel;
 
@@ -43,6 +43,18 @@ class ShuttleLine extends BaseModel
     }
 
     /**
+     * 清除接口列表的缓存
+     *
+     * @param integer $type 上下班类型
+     * @return void
+     */
+    public function delListCache($type)
+    {
+        $cacheKey = $this->getListCacheKey($type);
+        return $this->redis()->del($cacheKey);
+    }
+
+    /**
      * 取得接口的用户的常用列表缓存的Key
      *
      * @param integer $uid uid
@@ -60,21 +72,75 @@ class ShuttleLine extends BaseModel
      * @param integer $type 上下班类型
      * @return void
      */
-    public function delListCache($type)
-    {
-        $cacheKey = $this->getListCacheKey($type);
-        return $this->redis()->del($cacheKey);
-    }
-
-    /**
-     * 清除接口列表的缓存
-     *
-     * @param integer $type 上下班类型
-     * @return void
-     */
     public function delCommonListCache($uid, $type)
     {
         $cacheKey = $this->getCommonListCacheKey($uid, $type);
         return $this->redis()->del($cacheKey);
+    }
+
+    /**
+     * 取得路线颜色数组缓存Key
+     *
+     * @return string
+     */
+    public function getColorsCacheKey()
+    {
+        return "carpool:shuttle:line:colors";
+    }
+
+    /**
+     * 清除路线颜色数组缓存
+     *
+     * @return void
+     */
+    public function delColorsCache()
+    {
+        $cacheKey = $this->getColorsCacheKey();
+        return $this->redis()->del($cacheKey);
+    }
+
+    /**
+     * 取得颜色数组
+     *
+     * @param integer $limit 取数量
+     * @param integer $ex 缓存时长
+     * @return void
+     */
+    public function getColors($limit = 50, $ex = 60 * 60)
+    {
+        $cacheKey = $this->getColorsCacheKey();
+        $rowKey = "limit_$limit";
+        $res = $this->redis()->hCache($cacheKey, $rowKey);
+        if (is_array($res) && empty($res)) {
+            return $this->jsonReturn(20002, [], lang('No data'));
+        }
+        if (!$res || $ex === false) {
+            $map = [
+                ['is_delete', '=', Db::raw(0)],
+                ['status', '=', Db::raw(1)],
+                ['', 'exp', Db::raw('color IS NOT NULL')]
+            ];
+            $res = $this->where($map)->group('color')->limit($limit)->column('color');
+            if (is_numeric($ex)) {
+                if (!$res) {
+                    $this->redis()->hCache($cacheKey, $rowKey, [], 60 * 5);
+                } else {
+                    $this->redis()->hCache($cacheKey, $rowKey, $res, $ex);
+                }
+            }
+        }
+        return $res;
+    }
+
+    /**
+     * 随机取一个颜色
+     *
+     * @return string
+     */
+    public function getRandomColor()
+    {
+        $colors = $this->getColors() ?: [];
+        $res = getRandValFromArray($colors, 1) ?: '';
+        return empty(trim($res)) ? trim($res) : '';
     }
 }
