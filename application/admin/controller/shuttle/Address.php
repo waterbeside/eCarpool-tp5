@@ -196,6 +196,5 @@ class Address extends AdminBase
         }
         
         return $this->fetch('public_selects');
-        
     }
 }
