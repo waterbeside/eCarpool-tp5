@@ -141,6 +141,6 @@ class ShuttleLine extends BaseModel
     {
         $colors = $this->getColors() ?: [];
         $res = getRandValFromArray($colors, 1) ?: '';
-        return empty(trim($res)) ? trim($res) : '';
+        return !empty(trim($res)) ? trim($res) : '';
     }
 }
