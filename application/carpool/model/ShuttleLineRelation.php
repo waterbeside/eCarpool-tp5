@@ -60,7 +60,7 @@ class ShuttleLineRelation extends BaseModel
         if (is_array($res) && empty($res)) {
             return $res;
         }
-        if (!$res || true) {
+        if (!$res) {
             $map = [
                 [$rv ? 'relation_id' : 'line_id', '=', $line_id],
             ];
