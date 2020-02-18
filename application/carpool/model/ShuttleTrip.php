@@ -117,7 +117,7 @@ class ShuttleTrip extends BaseModel
      * @param string $count_type 类型，['cars', 'requests'] 是空座位还是约车需求
      * @return integer
      */
-    public function countByLine($line_id, $count_type, $uid = 0, $ex = 10)
+    public function countByLine($line_id, $count_type, $uid = 0, $ex = 60)
     {
         $cacheKey = "carpool:shuttle:trip:countByLine:lineId_{$line_id}:{$count_type}";
         if ($uid) {
