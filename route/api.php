@@ -90,11 +90,11 @@ Route::group([], function () {
     Route::rule('api/:version/shuttle/partner/:id', 'api/:version.shuttle.partner/del', 'DELETE'); // 删除同行者
 
     // 混合行程
-    Route::rule('api/:version/mixtrip/my_coming', 'api/:version.trip.mix_trip/my_coming', 'GET'); // 取得我将要发生的行程列表，包括普通行程和班车行程
-    Route::rule('api/:version/mixtrip/my', 'api/:version.trip.mix_trip/my', 'GET'); // 取得我将要发生的行程列表，包括普通行程和班车行程
-    Route::rule('api/:version/mixtrip/cars', 'api/:version.trip.mix_trip/cars', 'GET'); // 混合行程cars
-    Route::rule('api/:version/mixtrip/requests', 'api/:version.trip.mix_trip/requests', 'GET'); // 混合行程cars
-    Route::rule('api/:version/mixtrip/rclist', 'api/:version.trip.mix_trip/rclist', 'GET'); // 混合行程rclist
+    Route::rule('api/:version/mixtrip/my_coming$', 'api/:version.trip.mix_trip/my_coming', 'GET'); // 取得我将要发生的行程列表，包括普通行程和班车行程
+    Route::rule('api/:version/mixtrip/my$', 'api/:version.trip.mix_trip/my', 'GET'); // 取得我将要发生的行程列表，包括普通行程和班车行程
+    Route::rule('api/:version/mixtrip/cars$', 'api/:version.trip.mix_trip/cars', 'GET'); // 混合行程cars
+    Route::rule('api/:version/mixtrip/requests$', 'api/:version.trip.mix_trip/requests', 'GET'); // 混合行程cars
+    Route::rule('api/:version/mixtrip/rclist$', 'api/:version.trip.mix_trip/rclist', 'GET'); // 混合行程rclist
 
 
     //地址相关
