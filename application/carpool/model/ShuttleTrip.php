@@ -148,9 +148,9 @@ class ShuttleTrip extends BaseModel
                 $map[] = ['comefrom', '=', 1];
                 $map[] = ['status', '>', -1];
                 if ($uid > 0) {
-                    $map[] = ['uid', '>', $uid];
+                    $map[] = ['uid', '=', $uid];
                 }
-            } elseif ($count_type === 'user_useed_total') {
+            } elseif ($count_type === 'user_used_total') {
                 $map = $mapBase;
                 $map[] = ['comefrom', '=', 1];
                 $map[] = ['status', '>', -1];
