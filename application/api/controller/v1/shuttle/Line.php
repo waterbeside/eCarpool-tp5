@@ -121,7 +121,7 @@ class Line extends ApiBase
             if ($lnglat) {
                 $startPoint = [$value['start_longitude'], $value['start_latitude']];
                 $value['distance'] = $Utils->getDistance($startPoint, $lnglat) ?: 0;
-                $sortDistanc = -1 * floor($value['distance'] / 1000);
+                $sortDistanc = -1 * round(($value['distance'] / 1000), 1);
                 $value['sort'] = $value['sort'] + $sortDistanc * 10;
             }
             // 检查颜色
@@ -248,6 +248,7 @@ class Line extends ApiBase
                 if (in_array($value['id'], $haveIds)) {
                     continue;
                 }
+                $haveIds[] = $value['id'];
                 $list[] = $value;
             }
             $redis->cache($cacheKey, $list, 60);
