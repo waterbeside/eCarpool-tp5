@@ -9,6 +9,7 @@ use app\carpool\service\shuttle\Trip as ShuttleTripService;
 use app\carpool\model\ShuttleLineDepartment;
 use app\user\model\Department;
 use my\RedisData;
+use my\Utils;
 
 
 use think\Db;
@@ -36,6 +37,9 @@ class Line extends ApiBase
         $departmentModel = new Department();
         $shuttleLineModel = new ShuttleLineModel();
         $shuttleTrip = new ShuttleTrip();
+        $Utils = new Utils();
+        $lnglat = input('param.lnglat');
+        $lnglat = $lnglat ? $Utils->stringSetToArray($lnglat, null, false) : null ;
 
         $ex = 60 * 30;
         $keyword = input('get.keyword');
@@ -113,10 +117,18 @@ class Line extends ApiBase
                 $value['sort'] = $sort;
                 $value['sort_hot'] = $used_total;
             }
+            $value['distance'] = 0;
+            if ($lnglat) {
+                $startPoint = [$value['start_longitude'], $value['start_latitude']];
+                $value['distance'] = $Utils->getDistance($startPoint, $lnglat) ?: 0;
+                $sortDistanc = -1 * floor($value['distance'] / 1000);
+                $value['sort'] = $value['sort'] + $sortDistanc * 10;
+            }
             // 检查颜色
             if (empty($value['color'])) {
                 $value['color'] = $shuttleLineModel->getRandomColor() ?: $value['color'];
             }
+            
             $returnData['lists'][$key] = $value;
         }
         if ($comid > 0) {
@@ -229,7 +241,15 @@ class Line extends ApiBase
                 $redis->cache($cacheKey, [], 20);
                 return $this->jsonReturn(20002, 'No data');
             }
-            $list = $res->toArray();
+            $listRes = $res->toArray();
+            $haveIds = [];
+            $list = [];
+            foreach ($listRes as $key => $value) {
+                if (in_array($value['id'], $haveIds)) {
+                    continue;
+                }
+                $list[] = $value;
+            }
             $redis->cache($cacheKey, $list, 60);
         }
         $returnData = [
