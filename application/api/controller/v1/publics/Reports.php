@@ -129,7 +129,6 @@ class Reports extends ApiBase
                     FROM ( $tableAll ) as ta LEFT JOIN user as u on ta.carownid =  u.uid  
                     GROUP BY  carownid   
                     ORDER BY num DESC $limit";
-
                 $datas  =  Db::connect('database_carpool')->query($sql);
                 $returnData = array(
                     "lists" => $datas,
@@ -137,7 +136,6 @@ class Reports extends ApiBase
                 );
                 $redis->cache($cacheKey, $returnData, $cacheExp);
                 return $this->jsonReturn(0, $returnData, "Successful");
-
                 break;
             case 1: //取得乘客排名
                 $where = " t.status <> 2 AND carownid IS NOT NULL AND carownid > 0 AND t.time >=  " . $period[0] . " AND t.time < " . $period[1] . "";
