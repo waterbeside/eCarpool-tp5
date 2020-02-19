@@ -49,9 +49,11 @@ class TripsPushMsg extends Service
             // $push_msg = lang('{:name} accepted your ride requst', ["name"=>$userData['name']]);
             $push_msg = $userData['name'] . '接受了你的约车需求';
         } elseif ($runType == "pickup_partner") { // 搭同行者
-            $push_msg = "你搭上了{$userData['name']}的车";
+            $push_msg = $userData['name'] . '接受了你的约车需求';
+            // $push_msg = "你搭上了{$userData['name']}的车";
         } elseif ($runType == "partner_save") { // 添加同行者
-            $push_msg = "你作为同行伙伴加入了{$userData['name']}的约车需求";
+            $push_msg = "您成功加入到{$userData['name']}的约车需求";
+            // $push_msg = "你作为同行伙伴加入了{$userData['name']}的约车需求";
         } else {
             return true;
         }
