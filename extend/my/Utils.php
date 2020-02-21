@@ -292,7 +292,7 @@ class Utils
      * @param mixed $lat1 start_lat or [end_lng, end_lat]
      * @param float $lng2 end_lng or null
      * @param float $lat2 end_lat or null
-     * @return void
+     * @return integer
      */
     public function getDistance($lng1, $lat1, $lng2 = null, $lat2 = null)
     {
@@ -343,28 +343,30 @@ class Utils
      * 把多个字段包装到一个数组字段
      *
      * @param array $data 要处理的数组
-     * @param array $fieldsRule 要包装的字段名 [newkey=>[field1,field2]]
+     * @param array $fieldsRule 要包装的字段名 [newkey=>[field1,field2,'field3'=>'field3_fromat']]
      * @param integer $returnDataType 0返回包装后的所有，1仅返会被包装的数据
      * @return array
      */
     public function packFieldsToField($data, $fieldsRule, $returnDataType = 0)
     {
+        $newKeyDatas = [];
         foreach ($fieldsRule as $newkey => $fieldArray) {
             $fieldnames = [];
             foreach ($fieldArray as $key => $value) {
-                $fieldnames[$key] = is_array($value) ? $value[0] : $value;
+                $fieldnames[$key] = !is_numeric($key) ? $key : $value;
             }
-            $newKewData = [];
+            $newKeyData = [];
             foreach ($data as $key => $value) {
                 if (in_array($key, $fieldnames)) {
                     $fieldname = $fieldArray[$key] ?? $key;
-                    $newKewData[$fieldname] = $value;
+                    $newKeyData[$fieldname] = $value;
                     unset($data[$key]);
                 }
             }
-            $data[$newkey] = $newKewData;
+            $newKeyDatas[] = $newKeyData;
+            $data[$newkey] = $newKeyData;
         }
-        return $returnDataType ? $newKewData : $data;
+        return $returnDataType ? $newKeyDatas : $data;
     }
 
     /**
