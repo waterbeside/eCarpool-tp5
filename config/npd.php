@@ -26,5 +26,11 @@ return [
 
     "replace_attachment_url" => [
         'http://gitsite.net:8082/' => 'https://cm.gitsite.net/',
-    ]
+    ],
+
+    "patent_type" => [
+        ['name' => '发明专利', 'name_en' => 'Invention patent'],
+        ['name' => '实用新型专利', 'name_en' => 'Utility model patent'],
+        ['name' => '外观设计专利', 'name_en' => 'Design patent'],
+    ],
 ];

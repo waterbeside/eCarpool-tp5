@@ -392,7 +392,7 @@ class ShuttleTrip extends BaseModel
     {
         $tripData = $this->getDataByIdOrData($idOrData);
         if (empty($tripData)) {
-            return $this->setError(20002, '该行程不存在', $tripData);
+            return $this->setError(20002, lang('The trip does not exist'), $tripData);
         }
         if ($tripData['user_type'] == 1 && $tripData['uid'] == $uid) {
             return true; // 我是该司机行程的主人
@@ -417,7 +417,7 @@ class ShuttleTrip extends BaseModel
         $tripData = $this->getDataByIdOrData($idOrData);
         $id = $tripData['id'];
         if (empty($tripData)) {
-            return $this->setError(20002, '该行程不存在', $tripData);
+            return $this->setError(20002, lang('The trip does not exist'), $tripData);
         }
         if ($tripData['status'] == -1) {
             return true;
@@ -457,7 +457,7 @@ class ShuttleTrip extends BaseModel
         $tripData = $this->getDataByIdOrData($idOrData);
         $id = $tripData['id'];
         if (empty($tripData)) {
-            return $this->setError(20002, '该行程不存在', $tripData);
+            return $this->setError(20002, lang('The trip does not exist'), $tripData);
         }
         $returnData = [];
         // 查出所有乘客行程，以便作消息推送;
@@ -536,7 +536,7 @@ class ShuttleTrip extends BaseModel
         $tripData = $this->getDataByIdOrData($idOrData);
         $id = $tripData['id'];
         if (empty($tripData)) {
-            return $this->setError(20002, '该行程不存在', $tripData);
+            return $this->setError(20002, lang('The trip does not exist'), $tripData);
         }
         if ($tripData['status'] == 3) {
             return true;
@@ -566,7 +566,7 @@ class ShuttleTrip extends BaseModel
         $tripData = $this->getDataByIdOrData($idOrData);
         $id = $tripData['id'];
         if (empty($tripData)) {
-            return $this->setError(20002, '该行程不存在', $tripData);
+            return $this->setError(20002, lang('The trip does not exist'), $tripData);
         }
         Db::connect('database_carpool')->startTrans();
         try {
@@ -608,7 +608,7 @@ class ShuttleTrip extends BaseModel
         $tripData = $this->getDataByIdOrData($idOrData);
         $id = $tripData['id'];
         if (empty($tripData)) {
-            return $this->setError(20002, '该行程不存在', $tripData);
+            return $this->setError(20002, lang('The trip does not exist'), $tripData);
         }
         $map = [
             ['status', '>', 0],

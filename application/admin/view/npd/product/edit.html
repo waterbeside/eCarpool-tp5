@@ -212,22 +212,37 @@
                             <td><input name="patent.cty_name" placeholder="" class="layui-input" value="{$value.cty_name}"></td>
                             <td><input name="patent.cty_name_en" placeholder="" class="layui-input" value="{$value.cty_name_en}" ></td>
                             <td><input name="patent.sn" placeholder="" class="layui-input" value="{$value.sn}"></td>
-                            <td><input name="patent.type_name" placeholder="" class="layui-input" value="{$value.type_name}"></td>
+                            <td>
+                                <select name="patent.type_name" lay-verify="required">
+                                    <option value="">-</option>
+                                    {foreach name="patent_type_list" item="vo"}
+                                    <option value="{$vo.name}" {if condition="$value.type_name==$vo.name"} selected="selected"{/if}>{$vo.name} ({$vo.name_en})</option>
+                                    {/foreach}
+                                </select>
+                            </td>
+                            
+                            <!-- <td><input name="patent.type_name" placeholder="" class="layui-input" value="{$value.type_name}"></td> -->
                             <td class="opt">
                                 <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this)"><i class="fa fa-plus"></i></a>
                                 <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this,1)"><i class="fa fa-copy"></i></a>
                                 <a href="javascript:void(0)" class="btn btn-delete" onclick="MyDynItem.del(this,{dl_action:2})"><i class="fa fa-times"></i></a>
                             </td>
-                            </tr>
-
-
+                        </tr>
                         <?php }}else{  ?>
                         <tr class="patent-item item">
                             <td class="handle"><i class="fa fa-bars handle-icon"></i></td>
                             <td><input name="patent.cty_name" placeholder="" class="layui-input" ></td>
                             <td><input name="patent.cty_name_en" placeholder="" class="layui-input" ></td>
                             <td><input name="patent.sn" placeholder="" class="layui-input" ></td>
-                            <td><input name="patent.type_name" placeholder="" class="layui-input" ></td>
+                            <td>
+                                <select name="patent.type_name" lay-verify="required">
+                                    <option value="">-</option>
+                                    {foreach name="patent_type_list" item="vo"}
+                                    <option value="{$vo.name}">{$vo.name} ({$vo.name_en})</option>
+                                    {/foreach}
+                                </select>
+                            </td>
+                            <!-- <td><input name="patent.type_name" placeholder="" class="layui-input" ></td> -->
                             <td class="opt">
                                 <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this)"><i class="fa fa-plus"></i></a>
                                 <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this,1)"><i class="fa fa-copy"></i></a>

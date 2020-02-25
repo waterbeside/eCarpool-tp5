@@ -109,6 +109,7 @@ class Product extends AdminBase
             }
             $category_level_list = array2level($category_level_list);
             $this->assign('category_level_list', $category_level_list);
+            $this->assign('patent_type_list', config('npd.patent_type'));
             return $this->fetch();
         }
     }
@@ -161,7 +162,7 @@ class Product extends AdminBase
             }
             $category_level_list = array2level($category_level_list);
             $this->assign('category_level_list', $category_level_list);
-            
+            $this->assign('patent_type_list', config('npd.patent_type'));
             return $this->fetch('edit', ['data' => $dataDetail]);
         }
     }
