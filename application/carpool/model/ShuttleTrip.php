@@ -36,11 +36,16 @@ class ShuttleTrip extends BaseModel
      *
      * @param integer $line_id 路线id
      * @param string $create_type 类型，['cars', 'requests'] 是空座位还是约车需求
+     * @param integer $uid 用户id
      * @return string
      */
-    public function getListCacheKeyByLineId($line_id, $create_type)
+    public function getListCacheKeyByLineId($line_id, $create_type, $uid = null)
     {
-        return "carpool:shuttle:tripList:lineId_{$line_id}:{$create_type}";
+        $cacheKey =  "carpool:shuttle:tripList:lineId_{$line_id}:{$create_type}";
+        if (is_string($uid) || is_numeric($uid)) {
+            $cacheKey .= ":uid_{$uid}";
+        }
+        return $cacheKey;
     }
 
     /**
@@ -262,11 +267,14 @@ class ShuttleTrip extends BaseModel
         if (isset($data['create_type'])) {
             // 清除指定line_id列表缓存
             if (isset($data['line_id']) && $data['line_id'] > 0 &&  in_array($data['create_type'], ['cars', 'requests'])) {
-                $list_cacheKey = $this->getListCacheKeyByLineId($data['line_id'], $data['create_type']);
+                $this->delListCache($data['line_id'], $data['create_type']);
                 $count_cacheKey = "carpool:shuttle:trip:countByLine:{$data['create_type']}_lineId_{$data['line_id']}";
-                $redis->del($list_cacheKey, $count_cacheKey);
+                $redis->del($count_cacheKey);
             }
-
+            // 清除自己所见的空座位和或约车需求列表缓存
+            if (isset($data['uid'])  &&  in_array($data['create_type'], ['cars', 'requests'])) {
+                $this->delListCache(0, $data['create_type'], $data['uid']);
+            }
             // 清除乘客列表缓存
             if (isset($data['trip_id']) && $data['trip_id'] > 0  && in_array($data['create_type'], ['hitchhiking'])) {
                 $this->delPassengersCache($data['trip_id']);
@@ -324,21 +332,25 @@ class ShuttleTrip extends BaseModel
      * 清除空座位和约车需求列表缓存
      *
      * @param integer $line_id 路线id
-     * @param string $type 'cars' or 'requests'
+     * @param string $type 'cars' or 'requests' or 'my' or 'history'
+     * @param integer $uid 用户id
      * @return void
      */
-    public function delListCache($line_id, $type = null)
+    public function delListCache($line_id, $type = null, $uid = null)
     {
         if (in_array($type, ['my', 'history'])) {
-            return $this->delMyListCache($line_id, $type);
+            $this->delMyListCache($line_id, $type);
         }
         $redis = $this->redis();
         if (!$type) {
-            $cacheKey_1 = $this->getListCacheKeyByLineId($line_id, 'cars');
-            $cacheKey_2 = $this->getListCacheKeyByLineId($line_id, 'requests');
-            $redis->del($cacheKey_1, $cacheKey_2);
+            $this->delListCache($line_id, 'cars', $uid);
+            $this->delListCache($line_id, 'requests', $uid);
         } else {
-            $cacheKey = $this->getListCacheKeyByLineId($line_id, $type);
+            if (!$line_id > 0) {
+                $cacheKey_0 = $this->getListCacheKeyByLineId(0, $type);
+                $redis->del($cacheKey_0);
+            }
+            $cacheKey = $this->getListCacheKeyByLineId($line_id, $type, $uid);
             $redis->del($cacheKey);
         }
     }
@@ -429,6 +441,7 @@ class ShuttleTrip extends BaseModel
         }
         if ($upData['status'] == 0 || $tripData['trip_id']  == 0) { // 如果是取消到约车需求 则刷新约车需求缓存
             $this->delListCache($tripData['line_id'], 'requests');
+            $this->delListCache(0, 'requests', $tripData['uid']);
         }
         return true;
     }
@@ -490,7 +503,11 @@ class ShuttleTrip extends BaseModel
                 $partnerTripList = $this->where($map3)->select(); // 先查出，以便还原partner表的内容
                 $returnData['partnerTripList'] = $partnerTripList;
                 $this->where($map3)->update($upData); // 更改状态为取消
+                // 清除约车需求缓存
                 $this->delListCache($tripData['line_id'], 'requests');
+                foreach ($requestTripList as $key => $value) {
+                    $this->delListCache(0, 'requests', $value['uid']);
+                }
             }
             // 提交事务
             Db::connect('database_carpool')->commit();
@@ -500,7 +517,9 @@ class ShuttleTrip extends BaseModel
             $errorMsg = $e->getMessage();
             return $this->setError(-1, $errorMsg, []);
         }
+        // 清司机列表缓存
         $this->delListCache($tripData['line_id'], 'cars');
+        $this->delListCache(0, 'cars', $tripData['uid']);
         $this->setError(0, 'Successful', $returnData); // 如果有同行者信息，则放在此，以便还原。
         return true;
     }
@@ -573,6 +592,7 @@ class ShuttleTrip extends BaseModel
             return $this->setError(-1, $errorMsg, []);
         }
         $this->delListCache($tripData['line_id'], 'cars');
+        $this->delListCache(0, 'cars', $tripData['uid']);
         return true;
     }
 
