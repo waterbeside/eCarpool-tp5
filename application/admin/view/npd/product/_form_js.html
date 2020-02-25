@@ -74,7 +74,7 @@ FORM_PAGE_EXEC = {
         var upData = $.extend({},data.field);
         var merchandizingData = [];
         
-        let merchData = MyDynItem.getData("#merch-list",['merch.ppo_no','merch.desc', 'merch.remark'],'.');
+        let merchData = MyDynItem.getData("#merch-list",['merch.ppo_no','merch.desc', 'merch.remark', 'merch.remark_en'],'.');
         let patentData = MyDynItem.getData("#patent-list",['patent.cty_name','patent.cty_name_en','patent.sn','patent.type_name'],'.');
         upData.merchandizing = merchData;
         upData.patent = patentData;
