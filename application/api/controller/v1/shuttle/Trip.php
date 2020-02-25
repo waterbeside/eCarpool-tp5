@@ -49,7 +49,7 @@ class Trip extends ApiBase
         $orderby = $orderby == 'distance' ? 'distance' : 'time';
         $lnglat = input('get.lnglat', '');
         $lnglat = is_array($lnglat) ? $lnglat : explode(',', $lnglat);
-        $lnglat = count($lnglat) > 1 ? $lnglat : null;
+        $lnglat = count($lnglat) > 1 ? array_map('trim', $lnglat) : null;
         // if (!$line_id) {
         //     return $returnType ? $this->jsonReturn(992, lang('Error line_id')) : [992, null, lang('Error line_id')];
         // }
@@ -73,12 +73,12 @@ class Trip extends ApiBase
 
         
         // 缓存处理
-        $ex = $line_id > 0 ? 60 * 1 : 10;
-        $cacheKey  = $ShuttleTrip->getListCacheKeyByLineId($line_id, $rqType);
-        if (!empty($lnglat)) {
-            $cacheKey .= ":{$lnglat[0]},{$lnglat[1]}";
-        }
-        $rowCacheKey = "pz_{$pagesize},page_$page,type_$type,comid_$comid,keyword_$keyword";
+        $ex = (!empty($lnglat) && $line_id == 0) || !empty($keyword) ? 10 : 60;
+        $cacheUid = !empty($lnglat) && $line_id == 0 ? $userData['uid'] : null;
+        $cacheKey  = $ShuttleTrip->getListCacheKeyByLineId($line_id, $rqType, $cacheUid);
+        
+        $rowCacheKey = "pz_{$pagesize},page_$page,type_$type,comid_$comid,orderby_$orderby,keyword_$keyword";
+        $rowCacheKey .= !empty($lnglat) && $line_id == 0 ? ",lnglat_{$lnglat[0]},{$lnglat[1]}" : '';
         $returnData = $redis->hCache($cacheKey, $rowCacheKey);
         if (is_array($returnData) && empty($returnData)) {
             // $returnData['lineData'] = $lineData;
@@ -87,21 +87,26 @@ class Trip extends ApiBase
         if (!$returnData) {
             $userAlias = 'u';
             $offsetTimeArray = $ShuttleTrip->getDefatultOffsetTime(time(), 0, 'Y-m-d H:i:s');
-            $order = 't.time ASC';
+            // 字段
             $fields = $ShuttleTrip->getListField('t'); // 行程相关字段
             $fields .=  ',' .$TripsService->buildUserFields($userAlias); // 用户相关字段
-            $fields .= ',l.id as l_id, l.start_id, l.start_name, l.start_longitude, l.start_latitude, l.end_id, l.end_name, l.end_longitude, l.end_latitude'; // 路线相关字段
+            $fields .= ',l.id as l_id, l.start_id, l.start_name, l.start_longitude, l.start_latitude, l.end_id, l.end_name, l.end_longitude, l.end_latitude, l.map_type'; // 路线相关字段
             if (!empty($lnglat) && $line_id == 0) {
                 // TODO: 添加 distance 字段以排序
                 $fieldLng = $type == 2 && $comid > 0 ? 'l.end_longitude' : 'l.start_longitude';
                 $fieldLat = $type == 2  && $comid > 0 ? 'l.end_latitude' : 'l.start_latitude';
                 $distanceSql = $Utils->getDistanceFieldSql($fieldLng, $fieldLat, $lnglat[0], $lnglat[1], 'distance');
                 $fields .=  ','.$distanceSql;
-                $order = 'distance ASC, t.time ASC';
             } else {
                 $fields .=  ', 0 as distance';
             }
-
+            // 排序
+            $order = 't.time ASC';
+            if ($orderby == 'distance') {
+                $order = 'distance ASC, t.time ASC';
+            } else {
+                $order = 't.time ASC, distance ASC';
+            }
             if ($rqType === 'cars') {
                 // $userAlias = 'd';
                 $userType = 1;
@@ -112,10 +117,12 @@ class Trip extends ApiBase
                 $userType = 0;
                 $comefrom = 2;
             }
+            // join
             $join = [
                 ["user {$userAlias}", "t.uid = {$userAlias}.uid", 'left'],
                 ["t_shuttle_line l", "t.line_id = l.id", 'left'],
             ];
+            // where
             $map  = [
                 ['t.status', 'between', [0,1]],
                 ['t.time', 'between', $offsetTimeArray],
@@ -177,7 +184,12 @@ class Trip extends ApiBase
         foreach ($returnData['lists'] as $key => $value) {
             $value = $ShuttleTripService->formatTimeFields($value, 'item', ['time','create_time']);
             $value = $Utils->packFieldsToField($value, [
-                'line_data' => ['l_id' => 'id', 'start_id', 'start_name', 'start_longitude', 'start_latitude', 'end_id', 'end_name', 'end_longitude', 'end_latitude'],
+                'line_data' => [
+                    'l_id' => 'id',
+                    'start_id', 'start_name', 'start_longitude', 'start_latitude',
+                    'end_id', 'end_name', 'end_longitude', 'end_latitude',
+                    'map_type'
+                ],
             ]);
             $returnData['lists'][$key] = $value;
         }
