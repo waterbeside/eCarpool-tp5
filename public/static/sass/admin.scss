@@ -62,7 +62,9 @@ select.my-select {
     }
 
   }
-  &-layout-admin .layui-body { top:0}
+  &-layout-admin .layui-body { 
+    bottom:0
+  }
   &-table {
     color:$color-silver-d3;
     tbody tr:hover {background-color: darken($color-dark-white,3%);}
@@ -97,6 +99,7 @@ select.my-select {
 }
 
 
+.clear {clear: both; height: 0; display: block; line-height: 0;;}
 .blank10 {@include blank(10px)}
 .blank12 {@include blank(12px)}
 .blank20 {@include blank(20px)}
@@ -116,7 +119,7 @@ body {background:#FFF; color:$color-black-l1}
 }
 
 .layui-form-pane {
-  .layui-form-label ,.layui-input-inline, .layui-inline .layui-btn { margin:2px 0;}
+  // .layui-form-label ,.layui-input-inline, .layui-inline .layui-btn { margin:2px 0;}
 }
 
 .aframe  {
@@ -200,7 +203,8 @@ body {background:#FFF; color:$color-black-l1}
   }
   .layui-tab-content > .layui-tab-item{
     $top:  41px;
-    position: absolute; top: $top; left: 0; right: 0; bottom: $height-header - $top - 3;   
+    position: absolute; top: $top; left: 0; right: 0; bottom:0;
+    // bottom: $height-header - $top - 3;   
     overflow: hidden; transition: all 0.3s;z-index: 2;
   }
   .iframe-wrapper {
@@ -253,6 +257,16 @@ body {background:#FFF; color:$color-black-l1}
 
 }
 
+.amain-search-bar {
+  &::after {
+    content:''; clear: both;
+  }
+}
+
+.amain-float-box {
+  float: left; 
+  margin:0 10px 10px 0;
+}
 
 .amain-fieldset {
   padding:20px 12px 12px;  margin-bottom: 12px;
@@ -354,7 +368,7 @@ body {background:#FFF; color:$color-black-l1}
         input {display: inline; max-width: 120px;vertical-align: middle; }
         select { height: 30px; line-height: 30px;}
       }
-    } 
+    }
   }
 }
 
