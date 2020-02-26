@@ -52,7 +52,7 @@ class Trip extends Base
             $ShuttleTripPartner = new ShuttleTripPartner();
             $partners = $ShuttleTripPartner->getPartners($tripData['id'], 1) ?? [];
             // 如果有同行者，检查司机是否在同行者中
-            if (!$this->checkDriverInPartners($partners, $userData['uid'], $userData['uid'])) {
+            if ($this->checkDriverNotInPartners($partners, $userData['uid'], $userData['uid']) === false) {
                 return false;
             }
         }
@@ -237,7 +237,7 @@ class Trip extends Base
             $ShuttleTripPartner = new ShuttleTripPartner();
             $partners = $ShuttleTripPartner->getPartners($passengerTripData['id'], 1) ?? [];
             // 如果有同行者，检查司机是否在同行者中
-            if (!$this->checkDriverInPartners($partners, $driverTripData['id'], $userData['uid'])) {
+            if ($this->checkDriverNotInPartners($partners, $driverTripData['id'], $userData['uid']) === false) {
                 return false;
             }
         }
@@ -266,8 +266,11 @@ class Trip extends Base
      * @param integer $uid 操作者uid
      * @return void
      */
-    public function checkDriverInPartners($partners, $driver_uid, $uid)
+    public function checkDriverNotInPartners($partners, $driver_uid, $uid)
     {
+        if (empty($partners)) {
+            return true;
+        }
         $partnerIds = [];
         foreach ($partners as $key => $value) {
             $partnerIds[] = $value['uid'];
