@@ -427,4 +427,21 @@ class TripsMixed extends Service
         }
         return $count ?: 0;
     }
+
+    /**
+     * 清理用户要上传Gps的info_id缓存
+     *
+     * @param integer $uid 用户id
+     */
+    public function delUpGpsInfoidCache($uid)
+    {
+        if (is_array($uid)) {
+            foreach ($uid as $key => $value) {
+                $this->delUpGpsInfoidCache($value);
+            }
+            return true;
+        }
+        $cacheKey =  "carpool:info_id:{$uid}";
+        return $this->redis()->del($cacheKey);
+    }
 }

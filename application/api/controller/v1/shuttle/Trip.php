@@ -23,7 +23,7 @@ use think\Db;
 
 /**
  * 班车行程
- * Class Line
+ * Class Trip
  * @package app\api\controller
  */
 class Trip extends ApiBase
@@ -432,7 +432,7 @@ class Trip extends ApiBase
                 $data['partners'] = $ShuttleTripPartner->getPartners($id, 1) ?? [];
                 $data['driver'] = $ShuttleTripServ->getUserTripDetail($trip_id, [], [], 0) ?: null;
                 if ($show_gps) {
-                    $gpsRes = $ShuttleTripGps->getGpsByTripAndUid($data['driver']['id'], $data['driver']['u_uid']);
+                    $gpsRes = isset($data['driver']['id']) ? $ShuttleTripGps->getGpsByTripAndUid($data['driver']['id'], $data['driver']['u_uid']) : null;
                     $data['driver']['gps'] = $gpsRes['gps'] ?? null;
                 }
             }
@@ -603,6 +603,8 @@ class Trip extends ApiBase
             $errorData = $ShuttleTripService->getError();
             $this->jsonReturn($errorData['code'], $errorData['data'], lang('Failed').'. '.$errorData['msg']);
         }
+        // 清缓存
+        $TripsMixed->delUpGpsInfoidCache([$userData['uid'], $tripData['uid']]); // 清除是否要上传GPS接口缓存
         // 推消息
         $TripsPushMsg = new TripsPushMsg();
         $pushMsgData = [
@@ -714,6 +716,7 @@ class Trip extends ApiBase
         // 消缓存
         $ShuttleTripModel->delItemCache($id); // 消单项行程缓存
         $ShuttleTripModel->delListCache($rqData['line_id']); // 取消该路线的空座位和约车需求列表
+        $TripsMixed->delUpGpsInfoidCache([$userData['uid'], $tripData['uid']]); // 清除是否要上传GPS接口缓存
         // 推消息
         $TripsPushMsg = new TripsPushMsg();
         $pushMsgData = [
@@ -759,7 +762,7 @@ class Trip extends ApiBase
         $ShuttleTripModel = new ShuttleTrip();
         $tripData = $ShuttleTripModel->getItem($id);
         if (empty($tripData)) {
-            return $this->jsonReturn(20002, lang('该行程不存在'));
+            return $this->jsonReturn(20002, lang('The trip does not exist'));
         }
         
         $ShuttleTripService = new ShuttleTripService();

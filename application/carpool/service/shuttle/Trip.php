@@ -54,7 +54,7 @@ class Trip extends Service
 
 
         $time = $rqData['time'] ?: null;
-        if (empty($rqData['line_id'])) {
+        if (empty($rqData['line_id']) || empty($rqData['line_data'])) {
             return $this->error(992, lang('Please select a route'));
         }
         if (empty($time)) {
@@ -163,10 +163,13 @@ class Trip extends Service
         $plate = $rqData['user_type'] == 1 ? $userData['carnumber'] : '';
         $trip_id = isset($rqData['trip_id']) && is_numeric($rqData['trip_id']) ? $rqData['trip_id'] : 0;
 
+        $time_offset = isset($rqData['time_offset']) && is_numeric($rqData['time_offset']) ? $rqData['time_offset'] : 0;
+        $time_offset = $time_offset > 60 * 60 ? 60 * 60 : $time_offset;
         // 创建入库数据
         $updata = [
-            'line_id' => $rqData['line_id'],
+            'line_id' => $rqData['line_id'] ?: 0,
             'time' => date('Y-m-d H:i:s', $rqData['time']),
+            'time_offset' => $time_offset,
             'uid' => $uid,
             'user_type' => $rqData['user_type'],
             'comefrom' => $rqData['comefrom'],
@@ -182,6 +185,17 @@ class Trip extends Service
             $updata['line_type'] = intval($rqData['line_data']['type']);
             $updata['extra_info'] = json_encode(['line_data' => $rqData['line_data']]);
         }
+        $upLineData = [
+            'start_id' => $rqData['line_data']['start_id'] ?? 0,
+            'start_name' => $rqData['line_data']['start_name'] ?? '',
+            'start_longitude' => $rqData['line_data']['start_longitude'] ?? 0,
+            'start_latitude' => $rqData['line_data']['start_latitude'] ?? 0,
+            'end_id' => $rqData['line_data']['end_id'] ?? 0,
+            'end_name' => $rqData['line_data']['end_name'] ?? '',
+            'end_longitude' => $rqData['line_data']['end_longitude'] ?? 0,
+            'end_latitude' => $rqData['line_data']['end_latitude'] ?? 0,
+        ];
+        $updata = array_merge($updata, $upLineData);
         $ShuttleTripModel = new ShuttleTripModel();
         $newid = $ShuttleTripModel->insertGetId($updata);
         if (!$newid) {
@@ -718,6 +732,7 @@ class Trip extends Service
         $ShuttleTripModel->delMyListCache($uid); //清除自己的“我的行程”列表缓存
         $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
         $TripsMixedService->delMyListCache($uid); // 清除我将要发生的行程缓存
+        $TripsMixedService->delUpGpsInfoidCache($uid); // 清除是否要上传GPS接口缓存
 
         if ($userType == 1) { // 如果从司机行程进行操作
             if ($tripData['uid'] == $uid) { //如果是司机自已操作
@@ -732,6 +747,7 @@ class Trip extends Service
                     $ShuttleTripModel->delItemCache($value['id']); // 清乘客单项行程缓存
                     $ShuttleTripModel->delMyListCache($p_uid, 'my'); //清除所有乘客的“我的行程”列表缓存
                     $TripsMixedService->delMyListCache($p_uid); // 清除乘客将要发生的行程缓存
+                    $TripsMixedService->delUpGpsInfoidCache($p_uid); // 清除是否要上传GPS接口缓存
                 }
                 // 推送设置
                 $pushMsgData['isDriver'] = true;
@@ -743,6 +759,7 @@ class Trip extends Service
                     $ShuttleTripModel->delItemCache($myTripData['id']); // 清乘客单项行程缓存
                     $ShuttleTripModel->delMyListCache($tripData['uid']); //清除司机的“我的行程”列表缓存
                     $TripsMixedService->delMyListCache($tripData['uid']); // 清除司机将要发生的行程缓存
+                    $TripsMixedService->delUpGpsInfoidCache($tripData['uid']); // 清除是否要上传GPS接口缓存
                 }
                 $ShuttleTripModel->delPassengersCache($id); //清除乘客列表缓存
                 // 推送设置
@@ -758,6 +775,7 @@ class Trip extends Service
                     $driverTripData = $extData['driverTripData'] ?: $ShuttleTripModel->getItem($tripData['trip_id']);
                     $ShuttleTripModel->delMyListCache($driverTripData['uid']); //清除司机的“我的行程”列表缓存
                     $TripsMixedService->delMyListCache($driverTripData['uid']); // 清除司机将要发生的行程缓存
+                    $TripsMixedService->delUpGpsInfoidCache($driverTripData['uid']); // 清除是否要上传GPS接口缓存
                     // 推送设置
                     $targetUserid = $driverTripData ? $driverTripData['uid'] : 0;
                     $pushMsgData['isDriver'] = false;
@@ -769,6 +787,7 @@ class Trip extends Service
                 $ShuttleTripModel->delPassengersCache($tripData['trip_id']); // 清除司机的乘客列表缓存
                 $ShuttleTripModel->delMyListCache($tripData['uid']); //清除乘客的“我的行程”列表缓存
                 $TripsMixedService->delMyListCache($tripData['uid']); // 清除乘客将要发生的行程缓存
+                $TripsMixedService->delUpGpsInfoidCache($tripData['uid']); // 清除是否要上传GPS接口缓存
                 // 推送设置
                 $targetUserid = $tripData['uid'];
                 $pushMsgData['isDriver'] = true;
@@ -783,7 +802,7 @@ class Trip extends Service
     }
 
     /**
-     * 执行完完结或取消行程后，进行推送或清除缓存
+     * 执行完合并行程后，进行推送或清除缓存
      *
      * @param array $dvTripData 司机行程的data;
      * @param array $psTripData 乘客行程的data;
@@ -793,9 +812,11 @@ class Trip extends Service
     public function doAfterMerge($dvTripData, $psTripData, $userData)
     {
         $ShuttleTripModel = new ShuttleTripModel();
+        $TripsMixedService = new TripsMixedService();
         // 清除“我的行程”列表缓存
         $ShuttleTripModel->delMyListCache($dvTripData['uid'], 'my');
         $ShuttleTripModel->delMyListCache($psTripData['uid'], 'my');
+        $TripsMixedService->delUpGpsInfoidCache([$dvTripData['uid'], $psTripData['uid']]); // 清除是否要上传GPS接口缓存
         // 清除行情明细缓存
         $ShuttleTripModel->delItemCache($dvTripData['id']);
         $ShuttleTripModel->delItemCache($psTripData['id']);
