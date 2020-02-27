@@ -314,7 +314,7 @@ class Utils
         $radLng2=deg2rad($lng2);
         $a=$radLat1-$radLat2;
         $b=$radLng1-$radLng2;
-        $s= 2*asin(sqrt(pow(sin($a/2), 2)+cos($radLat1)*cos($radLat2)*pow(sin($b/2), 2)))*6378.137*1000;//计算出来的结果单位为米
+        $s= 2*asin(sqrt(pow(sin($a/2), 2)+cos($radLat1)*cos($radLat2)*pow(sin($b/2), 2)))*6371*1000;//计算出来的结果单位为米
         return floor($s);
     }
 
@@ -327,16 +327,22 @@ class Utils
      * @param string $lat 用户纬度
      * @return string
      */
-    public function getDistanceFieldSql($fieldLng, $fieldlat, $lng, $lat, $asName = 'distance')
+    public function getDistanceFieldSql($fieldLng, $fieldlat, $lng, $lat, $asName = 'distance', $type = 0)
     {
-        return "ROUND(
-            6378.138 * 2 * ASIN(
-                SQRT(
-                    POW(SIN(({$lat} * PI() / 180 - {$fieldlat} * PI() / 180) / 2), 2) 
-                    + COS({$lat} * PI() / 180) * COS({$fieldlat} * PI() / 180) * POW(SIN(({$lng} * PI() / 180 - {$fieldLng} * PI() / 180) / 2), 2)
-                )
-            ) * 1000
-        ) AS {$asName}";
+        if ($type == 0) {
+            $radius = 6371 * 1000;
+            $sql = " (ST_DISTANCE_SPHERE(point({$fieldLng}, {$fieldlat}), point({$lng}, {$lat}), {$radius})) AS {$asName} ";
+        } else {
+            $sql = "ROUND(
+                6371 * 2 * ASIN(
+                    SQRT(
+                        POW(SIN(({$lat} * PI() / 180 - {$fieldlat} * PI() / 180) / 2), 2) 
+                        + COS({$lat} * PI() / 180) * COS({$fieldlat} * PI() / 180) * POW(SIN(({$lng} * PI() / 180 - {$fieldLng} * PI() / 180) / 2), 2)
+                    )
+                ) * 1000
+            ) AS {$asName}";
+        }
+        return $sql;
     }
 
     /**
@@ -430,5 +436,22 @@ class Utils
             }
         }
         return $data;
+    }
+
+    /**
+     * 生成随机16进制颜色
+     *
+     * @return string
+     */
+    public function randColor()
+    {
+        $str='0123456789ABCDEF';
+        $estr='#';
+        $len=strlen($str);
+        for ($i=1; $i<=6; $i++) {
+            $num = rand(0, $len-1);
+            $estr = $estr.$str[$num];
+        }
+        return $estr;
     }
 }
