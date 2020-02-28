@@ -1,6 +1,6 @@
 <?php
 
-namespace app\admin\controller;
+namespace app\admin\controller\npd;
 
 use app\npd\model\Product as ProductModel;
 use app\npd\model\ProductRecommend;
@@ -19,7 +19,7 @@ class ProductRcm extends AdminBase
 
 
     /**
-     * 产品图册管理
+     * 产品推荐
      * @param array $filter  筛选
      * @return mixed
      */
