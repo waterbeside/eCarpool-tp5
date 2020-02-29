@@ -5,6 +5,7 @@ use app\common\service\Service;
 use app\carpool\model\User as UserModel;
 use app\carpool\model\ShuttleLine as ShuttleLineModel;
 use app\carpool\model\ShuttleTrip as ShuttleTripModel;
+use app\carpool\model\Address as AddressModel;
 use app\carpool\service\Trips as TripsService;
 use app\carpool\service\TripsList as TripsListService;
 use app\carpool\service\TripsMixed as TripsMixedService;
@@ -40,6 +41,19 @@ class Trip extends Service
         $rqData['trip_id'] = $rqData['trip_id'] ?? input('post.trip_id/d', 0);
         $rqData['seat_count'] = $rqData['seat_count'] ?? input('post.seat_count/d', 0);
         $rqData['time'] = $rqData['time'] ?? input('post.time/d', 0);
+        $rqData['time_offset'] = $rqData['time_offset'] ?? input('post.time_offset/d', 0);
+        $rqData['map_type'] =  $rqData['map_type'] ?? input('post.map_type/d', 0);
+        $rqData['start'] =  $rqData['start'] ?? input('post.start');
+        $rqData['end'] =  $rqData['end'] ?? input('post.end');
+        try {
+            $rqData['start']       = is_array($rqData['start']) ? $rqData['start'] : json_decode($rqData['start'], true);
+            $rqData['end']         = is_array($rqData['end']) ? $rqData['end'] : json_decode($rqData['end'], true);
+        } catch (\Exception $e) {
+            $rqData['start'] = null;
+            $rqData['end'] = null;
+            // $msg =  $e->getMessage();
+            // $this->jsonReturn(992, [], 'Error Param', ['error'=>$msg, 'data'=>$datas]);
+        }
         return $rqData;
     }
 
@@ -273,8 +287,71 @@ class Trip extends Service
             $lineFields = 'id, start_id, start_name, start_longitude, start_latitude, end_id, end_name, end_longitude, end_latitude, map_type, type';
             $ShuttleLineModel = new ShuttleLineModel();
             $lineData = $ShuttleLineModel->getItem($idOrData, $lineFields);
+            if ($lineData) {
+                $lineData['start_type'] = $lineData['type'] == 1 ? 4 : ($lineData['type'] == 2 ? 3 : 0 );
+                $lineData['end_type'] = $lineData['type'] == 1 ? 3 : ($lineData['type'] == 2 ? 4 : 0 );
+            }
         }
         return $lineData;
+    }
+
+    /**
+     * 通过请求来的数据生成路线数据
+     *
+     * @param array $rqData 创建行程时请求来的数据
+     * @param array $userData 操作用户的用户数据
+     * @return array 返回路线字段信息
+     */
+    public function getLineDataByRq($rqData = null, $userData = null)
+    {
+        $AddressModel = new AddressModel();
+        $createAddress = array();
+        //处理起终点
+        if (!$rqData['line_id']) {
+            if ($rqData['map_type'] != 1) { // 如果是高德地图
+                $createAddress = $AddressModel->createAddress($rqData, $userData);
+                if ($createAddress === false) {
+                    return $this->setError(992, $AddressModel->errorMsg);
+                }
+            } else { // 如果是谷歌地图
+                $createAddress = [
+                    'start' => $rqData['start'],
+                    'end' => $rqData['end'],
+                ];
+                $start_id = $createAddress['start']['addressid'] ?? 0;
+                $start_id = $start_id > 0 ? $start_id : 0;
+                $end_id = $createAddress['end']['addressid'] ?? 0;
+                $end_id = $end_id > 0 ? $end_id : 0;
+                $createAddress['start']['addressid'] = $start_id;
+                $createAddress['end']['addressid'] = $end_id;
+            }
+            $returnData = [
+                'id' => 0, // 没有line_id
+                'start_id' => $createAddress['start']['addressid'] ?? 0,
+                'start_name' => $createAddress['start']['addressname'],
+                'start_longitude' => $createAddress['start']['longitude'],
+                'start_latitude' => $createAddress['start']['latitude'],
+                'start_type' => $createAddress['start']['address_type'],
+                'end_id' => $createAddress['end']['addressid'] ?? 0,
+                'end_name' => $createAddress['end']['addressname'],
+                'end_longitude' => $createAddress['end']['longitude'],
+                'end_latitude' => $createAddress['end']['latitude'],
+                'end_type' => $createAddress['end']['address_type'],
+                'map_type' => $rqData['map_type'] ?? 0,
+                'type' => 0, // 普通行程类型
+            ];
+            $emptyStart = empty($returnData['start_name']) || (empty($returnData['start_longitude']) && empty($returnData['start_latitude'])) ? true : false;
+            $emptyEnd = empty($returnData['end_name']) || (empty($returnData['end_longitude']) && empty($returnData['end_latitude'])) ? true : false;
+            if ($emptyStart || $emptyEnd) {
+                return $this->setError(992, lang('Error route line data'));
+            }
+        } elseif ($rqData['line_id'] > 0) {
+            $returnData = $this->getExtraInfoLineData($rqData['line_id'], 0);
+            if (empty($returnData)) {
+                return $this->setError(20002, lang('The route does not exist'));
+            }
+        }
+        return $returnData;
     }
 
     /**

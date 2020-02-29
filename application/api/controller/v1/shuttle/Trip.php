@@ -41,6 +41,7 @@ class Trip extends ApiBase
         if (!in_array($rqType, ['cars','requests'])) {
             return $returnType ? $this->jsonReturn(992, lang('Error params')) : [992, null, lang('Error params')];
         }
+        $dev = input('param.dev/d', 0);
         $keyword = input('get.keyword/s', '', 'trim');
         $line_id = input('get.line_id/d', 0);
         $type = input('get.type/d', -2);
@@ -71,6 +72,7 @@ class Trip extends ApiBase
         //     return $returnType ? $this->jsonReturn(20002, $returnData, lang('No data')) : [992, $returnData, lang('No data')];
         // }
 
+
         
         // 缓存处理
         $ex = (!empty($lnglat) && $line_id == 0) || !empty($keyword) ? 10 : 60;
@@ -86,17 +88,19 @@ class Trip extends ApiBase
         }
         if (!$returnData) {
             $userAlias = 'u';
-            $offsetTimeArray = $ShuttleTrip->getDefatultOffsetTime(time(), 0, 'Y-m-d H:i:s');
+            $time = time();
+            $betweenTimeBase = $ShuttleTrip->getBaseTimeBetween($time, 'default', 'Y-m-d H:i:s');
             // 字段
             $fields = $ShuttleTrip->getListField('t'); // 行程相关字段
             $fields .=  ',' .$TripsService->buildUserFields($userAlias); // 用户相关字段
-            $fields .= ',l.id as l_id, l.start_id, l.start_name, l.start_longitude, l.start_latitude, l.end_id, l.end_name, l.end_longitude, l.end_latitude, l.map_type'; // 路线相关字段
+            // $fields .= ',l.id as l_id, l.start_id, l.start_name, l.start_longitude, l.start_latitude, l.end_id, l.end_name, l.end_longitude, l.end_latitude, l.map_type'; // 路线相关字段
             if (!empty($lnglat) && $line_id == 0) {
                 // TODO: 添加 distance 字段以排序
-                $fieldLng = $type == 2 && $comid > 0 ? 'l.end_longitude' : 'l.start_longitude';
-                $fieldLat = $type == 2  && $comid > 0 ? 'l.end_latitude' : 'l.start_latitude';
+                $fieldLng = $type == 2 && $comid > 0 ? 't.end_longitude' : 't.start_longitude';
+                $fieldLat = $type == 2  && $comid > 0 ? 't.end_latitude' : 't.start_latitude';
                 $distanceSql = $Utils->getDistanceFieldSql($fieldLng, $fieldLat, $lnglat[0], $lnglat[1], 'distance');
                 $fields .=  ','.$distanceSql;
+                $lnglatRangeSql = $Utils->buildCoordRangeWhereSql($fieldLng, $fieldLat, $lnglat[0], $lnglat[1], 1000*200);
             } else {
                 $fields .=  ', 0 as distance';
             }
@@ -109,24 +113,27 @@ class Trip extends ApiBase
             }
             if ($rqType === 'cars') {
                 // $userAlias = 'd';
+                $betweenTimeArray = $ShuttleTrip->getBaseTimeBetween($time, [60 * 5, 0]);
                 $userType = 1;
                 $comefrom = 1;
             } elseif ($rqType === 'requests') {
                 // $userAlias = 'p';
-                $offsetTimeArray[0] = date('Y-m-d H:i:s', time() + 10);
+                $betweenTimeArray = $ShuttleTrip->getBaseTimeBetween($time, [10, 0]);
                 $userType = 0;
                 $comefrom = 2;
             }
             // join
             $join = [
                 ["user {$userAlias}", "t.uid = {$userAlias}.uid", 'left'],
-                ["t_shuttle_line l", "t.line_id = l.id", 'left'],
+                // ["t_shuttle_line l", "t.line_id = l.id", 'left'],
             ];
             // where
             $map  = [
-                ['t.status', 'between', [0,1]],
-                ['t.time', 'between', $offsetTimeArray],
-                ['t.trip_id', '=', Db::raw(0)]
+                ['t.time', 'between', $betweenTimeBase],
+                ['t.is_delete', '=', Db::raw(0)],
+                ['t.status', 'in', [0,1]],
+                ['t.trip_id', '=', Db::raw(0)],
+                ['', 'exp', Db::raw(" (UNIX_TIMESTAMP(time) - time_offset) < {$betweenTimeArray[1]} AND (UNIX_TIMESTAMP(time) + time_offset) > {$betweenTimeArray[0]}")]
             ];
             // 筛司机乘客
             if (isset($userType)) {
@@ -136,18 +143,27 @@ class Trip extends ApiBase
             if (isset($comefrom)) {
                 $map[] = ['t.comefrom', '=', Db::raw($comefrom)];
             }
+            // 允许相互拼车的公司组
+            $map[] = $TripsService->buildCompanyMap($userData, 'u');
+            //
+            if (isset($lnglatRangeSql)) {
+                $map[] = ['', 'exp', Db::raw($lnglatRangeSql)];
+            }
+
             // 筛路线
             if ($line_id > 0) {
                 $map[] =  ['t.line_id', '=', $line_id];
             } elseif (is_numeric($type)) {
                 if ($type > -1) {
                     $map[] = ['t.line_type', '=', $type];
+                    if ($type > 0) {
+                        // 先查出该部门可访问的line_id
+                        $lineidSql = (new ShuttleLineDepartment())->getIdsByDepartmentId($userData['department_id'], true);
+                        $map[] = ['', 'exp', Db::raw("t.line_id in $lineidSql")];
+                    }
                 } elseif ($type == -2) {
                     $map[] = ['t.line_type', '>', 0];
                 }
-                // 先查出该部门可访问的line_id
-                $lineidSql = (new ShuttleLineDepartment())->getIdsByDepartmentId($userData['department_id'], true);
-                $map[] = ['', 'exp', Db::raw("t.line_id in $lineidSql")];
             }
             // 筛公司站点
             if ($comid > 0) {
@@ -166,6 +182,9 @@ class Trip extends ApiBase
                 $map[] = ["{$userAlias}.name|{$userAlias}.nativename", 'line', "%$keyword%"];
             }
             $ctor = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map)->order($order);
+            if ($dev) {
+                return $this->jsonReturn(0, $ctor->fetchSql()->select());
+            }
             $returnData = $this->getListDataByCtor($ctor, $pagesize);
             if (empty($returnData['lists'])) {
                 if (!$keyword) {
@@ -183,9 +202,11 @@ class Trip extends ApiBase
 
         foreach ($returnData['lists'] as $key => $value) {
             $value = $ShuttleTripService->formatTimeFields($value, 'item', ['time','create_time']);
+            $extraInfo = $Utils->json2Array($value['extra_info']);
+            unset($value['extra_info']);
+            $value['map_type'] = $extraInfo['line_data']['map_type'] ?? 0;
             $value = $Utils->packFieldsToField($value, [
                 'line_data' => [
-                    'l_id' => 'id',
                     'start_id', 'start_name', 'start_longitude', 'start_latitude',
                     'end_id', 'end_name', 'end_longitude', 'end_latitude',
                     'map_type'
@@ -267,8 +288,8 @@ class Trip extends ApiBase
             $ex = 60 * 3;
             $userAlias = 'u';
             $fields_user = $TripsService->buildUserFields($userAlias, $userFields);
-            $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id, t.plate, t.seat_count, t.status';
-            $fields .= ', l.type as line_type, l.start_name, l.end_name, l.map_type, t.time, t.create_time';
+            $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id, t.plate, t.seat_count, t.status, t.time, t.create_time';
+            $fields .= ', l.type as line_type, l.start_name, l.end_name, l.map_type ';
             $fields .=  ',' .$fields_user;
             $map  = [
                 ['t.status', 'between', [0,1]],
@@ -456,8 +477,8 @@ class Trip extends ApiBase
         $uid = $userData['uid'];
         $ShuttleTripService = new ShuttleTripService();
         $rqData = $ShuttleTripService->getRqData($rqData);
-        $line_id = $rqData['line_id'];
-        $dev = input('post.dev/d', 0);
+
+
         // 加锁
         $ShuttleTripModel = new ShuttleTrip();
         $lockKeyFill = "u_{$uid}:save";
@@ -472,19 +493,18 @@ class Trip extends ApiBase
             return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error check');
         }
 
-        $rqData['line_data'] = $ShuttleTripService->getExtraInfoLineData($line_id);
+        $rqData['line_data'] = $ShuttleTripService->getLineDataByRq($rqData);
         if (!$rqData['line_data']) {
             $ShuttleTripModel->unlockItem(0, $lockKeyFill); // 解锁
-            $this->jsonReturn(20002, lang('The route does not exist'));
+            $errorData = $ShuttleTripService->getError();
+            return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error line data');
         }
+
         // 如果是约车需求，要处理同行者
         if ($rqData['create_type'] == 'requests') {
             $rqData['partners'] = input('post.partners');
             $PartnerServ = new ShuttlePartnerService();
             $partners = $PartnerServ->getPartnersUserData($rqData['partners'], $userData['uid']);
-            if ($dev) {
-                dump($partners);
-            }
             $ShuttlePartnerVali = new ShuttlePartnerVali();
             if (!$ShuttlePartnerVali->checkRepetition($partners, $rqData['time'])) {
                 $errorData = $ShuttlePartnerVali->getError();
