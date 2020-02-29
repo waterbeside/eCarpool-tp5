@@ -20,6 +20,7 @@ class Address extends BaseModel
     protected $update = [];
 
     public $errorMsg = "";
+    public $itemCacheExpire = 2 * 60;
 
     /**
      * 取得单项数据缓存Key设置
@@ -45,6 +46,71 @@ class Address extends BaseModel
         return $this->redis()->del($cacheKey);
     }
 
+    /**
+     * 创建起终点
+     */
+    public function createAddress($datas, $userData)
+    {
+        $createAddress = [];
+        //处理起点
+        $startData = $datas['start'];
+        if ((!isset($datas['start']['addressid']) || !(is_numeric($datas['start']['addressid']) && $datas['start']['addressid'] > 0))) {
+            $startRes = $this->createAnAddress($startData, $userData);
+        } else { // 如果有address id
+            $startRes = $this->getItem($datas['start']['addressid'], ['addressid','addressname','longtitude','latitude','address_type']);
+            if (empty($startRes)) {
+                $startRes = $this->createAnAddress($startData, $userData);
+            } else {
+                $startRes['longitude'] = $startRes['longtitude'];
+                unset($startRes['longtitude']);
+            }
+        }
+        if (!$startRes) {
+            return $this->setError(-1, lang("The point of departure must not be empty"));
+        }
+        $createAddress['start'] = $startRes;
+
+        //处理终点
+        $endDatas = $datas['end'];
+        if ((!isset($datas['end']['addressid']) || !(is_numeric($datas['end']['addressid']) && $datas['end']['addressid'] > 0))) {
+            $endRes = $this->createAnAddress($endDatas, $userData);
+        } else { // 如果有address id
+            $endRes = $this->getItem($datas['end']['addressid'], ['addressid','addressname','longtitude','latitude','address_type']);
+            if (empty($endRes)) {
+                $endRes = $this->createAnAddress($endRes, $userData);
+            } else {
+                $endRes['longitude'] = $endRes['longtitude'];
+                unset($endRes['longtitude']);
+            }
+        }
+        if (!$endRes) {
+            return $this->setError(-1, lang("The destination cannot be empty"));
+        }
+        $createAddress['end'] = $endRes;
+        return $createAddress;
+    }
+
+    /**
+     * 创建一个站点
+     */
+    public function createAnAddress($addressDatas, $userData)
+    {
+        $addressDatas['company_id'] = $userData['company_id'];
+        $addressDatas['create_uid'] = $userData['uid'];
+        $addressRes = $this->addFromTrips($addressDatas);
+        if (!$addressRes) {
+            return $this->setError(-1, lang("The adress must not be empty"));
+        }
+        // $addressDatas['addressid'] = $addressRes['addressid'];
+        return $addressRes;
+    }
+
+    /**
+     * 通过行程请求来的数据新建站点
+     *
+     * @param array $data 请求数据
+     * @return array 返回有用的站点数据
+     */
     public function addFromTrips($data)
     {
         if (empty($data['longitude']) || empty($data['latitude']) || empty($data['addressname'])) {
