@@ -346,6 +346,76 @@ class Utils
     }
 
     /**
+     * 跟据中心座标和距离计算四角经纬度
+     *
+     * @param double $lng 经度
+     * @param double $lat 纬度
+     * @param integer $distance 距离(单位：米)
+     * @return void
+     */
+    public function getSquareCoord($lng, $lat = null, $distance = 1000)
+    {
+        $lnglatOffset = $this->getOffsetCoord($lng, $lat, $distance);
+        $dlng = $lnglatOffset[0];
+        $dlat = $lnglatOffset[1];
+        return [
+            'lt' => [$lng - $dlng, $lat + $dlat],
+            'rt' => [$lng + $dlng, $lat + $dlat],
+            'lb' => [$lng - $dlng, $lat - $dlat],
+            'rb' => [$lng + $dlng, $lat - $dlat]
+        ];
+    }
+
+
+    /**
+     * 根据距离计算经纬度偏移值
+     *
+     * @param double $lng 经度
+     * @param double $lat 纬度
+     * @param integer $distance 距离(单位：米)
+     * @return array [lng,lat]
+     */
+    public function getOffsetCoord($lng, $lat = null, $distance = 1000)
+    {
+        if (is_array($lng)) {
+            if (count($lng) < 2) {
+                $lng = $lng[0];
+            }
+            $lat = $lng[1];
+            $lng = $lng[0];
+        }
+        $radius = 6371 * 1000;
+        $dlng = 2 * asin(sin($distance / (2 * $radius)) / cos(deg2rad($lat)));
+        $dlng = rad2deg($dlng);
+        $dlat = $distance / $radius;
+        $dlat = rad2deg($dlat);
+        return [$dlng, $dlat];
+    }
+
+    /**
+     * 根据距离生成经纬范围的sql where
+     *
+     * @param string $fieldLng 经度字段名
+     * @param string $fieldlat 纬度字段名
+     * @param string $lng 用户经度
+     * @param string $lat 用户纬度
+     * @param integer $distance 距离(单位：米)
+     * @return string
+     */
+    public function buildCoordRangeWhereSql($fieldLng, $fieldlat, $lng, $lat, $distance = 1000)
+    {
+        $lnglatOffset = $this->getOffsetCoord($lng, $lat, $distance);
+        $dlng = $lnglatOffset[0];
+        $lngS = $lng - $dlng;
+        $lngE = $lng + $dlng;
+        $dlat = $lnglatOffset[1];
+        $latS = $lat - $dlat;
+        $latE = $lat + $dlat;
+        $sql = "({$fieldLng} between {$lngS} AND {$lngE} AND {$fieldlat} between {$latS} AND {$latE} )";
+        return $sql;
+    }
+
+    /**
      * 把多个字段包装到一个数组字段
      *
      * @param array $data 要处理的数组
@@ -453,5 +523,25 @@ class Utils
             $estr = $estr.$str[$num];
         }
         return $estr;
+    }
+
+    /**
+     * json to arrayy
+     *
+     * @param string $json Json string
+     * @param boolean $noForceToArray 不强行返数组
+     * @return array
+     */
+    public function json2Array($json, $noForceToArray = false)
+    {
+        if ($json === false) {
+            return $noForceToArray ? false : [];
+        }
+        try {
+            $res = json_decode($json, true);
+        } catch (\Exception $e) {
+            $res = $noForceToArray ? $json : [];
+        }
+        return $res;
     }
 }
