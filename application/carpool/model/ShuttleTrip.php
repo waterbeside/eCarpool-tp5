@@ -198,7 +198,7 @@ class ShuttleTrip extends BaseModel
         $fieldArray = empty($fieldArray) ?
             [
                 'id', 'comefrom', 'user_type','trip_id', 'line_id', 'plate', 'status', 'time', 'time_offset', 'create_time', 'seat_count',
-                'start_id', 'start_name', 'start_longitude', 'start_latitude', 'end_id', 'end_name', 'end_longitude', 'end_latitude', 'extra_info'
+                'line_type', 'start_id', 'start_name', 'start_longitude', 'start_latitude', 'end_id', 'end_name', 'end_longitude', 'end_latitude', 'extra_info'
             ] : $fieldArray;
         $newFieldArray = [];
         foreach ($fieldArray as $key => $value) {
