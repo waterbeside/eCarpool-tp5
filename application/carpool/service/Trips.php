@@ -379,12 +379,16 @@ class Trips extends Service
     public function createOneAddress($addressDatas, $userData)
     {
         $AddressModel = new Address();
-        $addressDatas['company_id'] = $userData['company_id'];
-        $addressDatas['create_uid'] = $userData['uid'];
-        $addressRes = $AddressModel->addFromTrips($addressDatas);
+        $addressRes = $AddressModel->createAnAddress($addressDatas, $userData);
         if (!$addressRes) {
-            return $this->error(-1, lang("The adress must not be empty"));
+            return $this->setError(-1, lang("The adress must not be empty"));
         }
+        // $addressDatas['company_id'] = $userData['company_id'];
+        // $addressDatas['create_uid'] = $userData['uid'];
+        // $addressRes = $AddressModel->addFromTrips($addressDatas);
+        // if (!$addressRes) {
+        //     return $this->setError(-1, lang("The adress must not be empty"));
+        // }
         // $addressDatas['addressid'] = $addressRes['addressid'];
         return $addressRes;
     }
