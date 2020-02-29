@@ -83,19 +83,29 @@ class ShuttleTrip extends BaseModel
     }
 
 
+
     /**
-     * 取得空座位列表的时间起终值
+     * 取得行程的基本时间范围
      *
      * @param integer $time 时间戳
-     * @param integer $offset 结束时间向前偏移秒数
+     * @param mixed $maxOffset integer or array 最大范围偏移, 当为array时格式必为[前偏移值,后偏称值]
      * @param string $format 时间格式
+     * @param string $addEndTime 多少秒后结束，默认值为7天。
      * @return array
      */
-    public function getDefatultOffsetTime($time, $offset = 0, $format = null)
+    public function getBaseTimeBetween($time = null, $maxOffset = 60 * 60, $format = null, $addEndTime = 60 * 60 * 24 * 7)
     {
-        $startTime = $time - (5 * 60);
-        $endTime = $time + (60 * 60 * 24 * 7 - $offset);
-
+        if (is_array($maxOffset)) {
+            $offsetA = $maxOffset[0];
+            $offsetB = $maxOffset[1] ?? $offsetA;
+        } elseif (is_numeric($maxOffset)) {
+            $offsetA = $maxOffset;
+            $offsetB = $maxOffset;
+        } else {
+            return $this->getBaseTimeBetween($time, 60 * 60, $format, $addEndTime);
+        }
+        $startTime = $time - $offsetA;
+        $endTime = $time +  $offsetB + $addEndTime;
         return [
             $format ? date($format, $startTime) : $startTime,
             $format ? date($format, $endTime) : $endTime,
@@ -135,19 +145,22 @@ class ShuttleTrip extends BaseModel
                 ['line_id', '=', $line_id],
             ];
             $time = time();
-            $offsetTimeArray = $this->getDefatultOffsetTime($time, 0, 'Y-m-d H:i:s');
+            $offsetTimeArray = $this->getBaseTimeBetween($time, 'default', 'Y-m-d H:i:s');
             if ($count_type === 'requests') { // 当前约车需求数
-                $offsetTimeArray[0] = date('Y-m-d H:i:s');
                 $map = $mapBase;
+                $betweenTimeArray = $this->getBaseTimeBetween($time, [10, 0]);
                 $map[] = ['comefrom', '=', 2];
                 $map[] = ['status', '=', 0];
                 $map[] = ['trip_id', '=', 0];
                 $map[] = ['time', 'between', $offsetTimeArray];
+                $map[] = ['', 'exp', Db::raw(" (UNIX_TIMESTAMP(time) - time_offset) < {$betweenTimeArray[1]} AND (UNIX_TIMESTAMP(time) + time_offset) > {$betweenTimeArray[0]}")];
             } elseif ($count_type === 'cars') { // 当前空座位数
                 $map = $mapBase;
+                $betweenTimeArray = $this->getBaseTimeBetween($time, [60 * 5, 0]);
                 $map[] = ['comefrom', '=', 1];
                 $map[] = ['status', 'between', [0,1]];
                 $map[] = ['time', 'between', $offsetTimeArray];
+                $map[] = ['', 'exp', Db::raw(" (UNIX_TIMESTAMP(time) - time_offset) < {$betweenTimeArray[1]} AND (UNIX_TIMESTAMP(time) + time_offset) > {$betweenTimeArray[0]}")];
             } elseif ($count_type === 'used_total') { // 总使用次数
                 $map = $mapBase;
                 $map[] = ['comefrom', '=', 1];
@@ -183,7 +196,10 @@ class ShuttleTrip extends BaseModel
     public function getListField($alias = '', $fieldArray = null)
     {
         $fieldArray = empty($fieldArray) ?
-            ['id', 'comefrom', 'user_type','trip_id', 'line_id', 'plate', 'status', 'time', 'create_time', 'seat_count'] : $fieldArray;
+            [
+                'id', 'comefrom', 'user_type','trip_id', 'line_id', 'plate', 'status', 'time', 'time_offset', 'create_time', 'seat_count',
+                'start_id', 'start_name', 'start_longitude', 'start_latitude', 'end_id', 'end_name', 'end_longitude', 'end_latitude', 'extra_info'
+            ] : $fieldArray;
         $newFieldArray = [];
         foreach ($fieldArray as $key => $value) {
             $newField = $alias ? $alias.'.'.$value : $value;
