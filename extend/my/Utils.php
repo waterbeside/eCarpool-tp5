@@ -248,12 +248,22 @@ class Utils
     /**
      * 通过数据构造器取数据
      */
-    public function getListDataByCtor($ctor, $pagesize = 0)
+    public function getListDataByCtor($ctor, $pagesize = 0, $usePaginate = true)
     {
-        if ($pagesize > 0) {
+        if ($pagesize > 0 && $usePaginate) {
             $results =    $ctor->paginate($pagesize, false, ['query' => request()->param()])->toArray();
             $resData = $results['data'] ?? [];
             $pageData = $this->getPageData($results);
+        } elseif ($pagesize > 0 && !$usePaginate) {
+            $page = input('param.page/d', 1);
+            $resData = $ctor->page($page, $pagesize)->select();
+            $resData = $resData ?: [];
+            $pageData = [
+                'total' => -1,
+                'pageSize' => $pagesize,
+                'lastPage' => -1,
+                'currentPage' => $page,
+            ];
         } else {
             $resData =    $ctor->select();
             $resData = $resData ? $resData->toArray() : [];

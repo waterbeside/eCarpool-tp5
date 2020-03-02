@@ -261,9 +261,9 @@ class ApiBase extends Base
     /**
      * 通过数据构造器取数据
      */
-    public function getListDataByCtor($ctor, $pagesize = 0)
+    public function getListDataByCtor($ctor, $pagesize = 0, $usePaginate = true)
     {
-        return $this->utils()->getListDataByCtor($ctor, $pagesize);
+        return $this->utils()->getListDataByCtor($ctor, $pagesize, $usePaginate);
     }
 
     /**
