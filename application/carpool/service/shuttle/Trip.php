@@ -325,6 +325,15 @@ class Trip extends Service
                 $createAddress['start']['addressid'] = $start_id;
                 $createAddress['end']['addressid'] = $end_id;
             }
+            $startType = $createAddress['start']['address_type'] ?? 1;
+            $endType = $createAddress['end']['address_type'] ?? 1;
+            $lineType = 0;
+            if ($startType == 3 && $endType != 3) { // 如果起点是公司
+                $lineType = 2; // 下班
+            } elseif ($startType != 3 &&  $endType == 3) { // 如果终点是公司
+                $lineType = 1; // 上班
+            }
+
             $returnData = [
                 'id' => 0, // 没有line_id
                 'start_id' => $createAddress['start']['addressid'] ?? 0,
@@ -338,7 +347,7 @@ class Trip extends Service
                 'end_latitude' => $createAddress['end']['latitude'],
                 'end_type' => $createAddress['end']['address_type'],
                 'map_type' => $rqData['map_type'] ?? 0,
-                'type' => 0, // 普通行程类型
+                'type' => $lineType,
             ];
             $emptyStart = empty($returnData['start_name']) || (empty($returnData['start_longitude']) && empty($returnData['start_latitude'])) ? true : false;
             $emptyEnd = empty($returnData['end_name']) || (empty($returnData['end_longitude']) && empty($returnData['end_latitude'])) ? true : false;
@@ -375,27 +384,24 @@ class Trip extends Service
             return $this->error(20002, lang('No data'));
         }
         $uid = $itemData['uid'];
-        $line_id = $itemData['line_id'];
-        try {
-            $trip_info = json_decode($itemData['extra_info'], true);
-        } catch (\Exception $e) {  //其他错误
-            $trip_info = null;
-        }
+
+        $extraInfo = Utils::getInstance()->json2Array($itemData['extra_info']);
         $itemData = $this->formatTimeFields($itemData, 'item', ['time','create_time']);
-        $tripFields = $tripFields ?: ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom', 'trip_id', 'seat_count', 'line_id', 'plate'];
+        $tripFields = $tripFields ?: [
+            'id', 'time', 'time_offset', 'create_time', 'status', 'user_type', 'comefrom', 'trip_id',
+            'seat_count', 'line_type', 'plate',
+        ];
+        if ($show_line) {
+            $lineFields = ['start_id', 'start_name', 'start_longitude', 'start_latitude','end_id', 'end_name', 'end_longitude', 'end_latitude', 'map_type'];
+            $itemData['map_type'] = $extraInfo['line_data']['map_type'] ?? 0;
+            $tripFields = array_merge($tripFields, $lineFields);
+        }
 
         $itemData = Utils::getInstance()->filterDataFields($itemData, $tripFields);
         $userFields = $userFields ?: $this->defaultUserFields;
         $userData = $User->findByUid($uid);
         $userData = $userData ? Utils::getInstance()->filterDataFields($userData, $userFields, false, 'u_', -1) : null;
         
-        if ($show_line) {
-            $lineData = null;
-            $lineData = $trip_info['line_data'] ?? $this->getExtraInfoLineData($line_id, 0);
-            $lineFields = 'start_name, start_longitude, start_latitude, end_name, end_longitude, end_latitude, map_type, type';
-            $lineData = Utils::getInstance()->filterDataFields($lineData, $lineFields);
-            $itemData = array_merge($itemData, $lineData);
-        }
         $data = array_merge($itemData ?? [], $userData ?: []);
         return $data ?: null;
     }
