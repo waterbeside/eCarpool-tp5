@@ -162,7 +162,7 @@ class Trip extends ApiBase
                         $map[] = ['', 'exp', Db::raw("t.line_id in $lineidSql")];
                     }
                 } elseif ($type == -2) {
-                    $map[] = ['t.line_type', '>', 0];
+                    $map[] = ['t.line_type', 'in', [1,2]];
                 }
             }
             // 筛公司站点
@@ -266,19 +266,21 @@ class Trip extends ApiBase
      * 我的行程
      *
      * @param integer $page 页码
+     * @param integer $show_member 是否显示成员
      * @param integer $pagesize 每页多少条;
      */
-    public function my($show_member = 1, $page = 1, $pagesize = 0)
+    public function my($show_member = 1, $type = -2, $page = 1, $pagesize = 0)
     {
         $isShowMember = $show_member;
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
+        $Utils = new Utils();
         $redis = new RedisData();
         $TripsService = new TripsService();
         $ShuttleTrip = new ShuttleTrip();
         $ShuttleTripService = new ShuttleTripService();
         $cacheKey = $ShuttleTrip->getMyListCacheKey($uid, 'my');
-        $rowCacheKey = "pz_{$pagesize},page_$page";
+        $rowCacheKey = "pz_{$pagesize},page_$page,type_$type";
         $returnData = $redis->hCache($cacheKey, $rowCacheKey);
         if (is_array($returnData) && empty($returnData)) {
             return $this->jsonReturn(20002, $returnData, 'No data');
@@ -288,14 +290,27 @@ class Trip extends ApiBase
             $ex = 60 * 3;
             $userAlias = 'u';
             $fields_user = $TripsService->buildUserFields($userAlias, $userFields);
-            $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id, t.plate, t.seat_count, t.status, t.time, t.create_time';
+            $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id, t.plate, t.seat_count, t.status, t.time, t.create_time, t.time_offset';
             $fields .= ', l.type as line_type, l.start_name, l.end_name, l.map_type ';
             $fields .=  ',' .$fields_user;
             $map  = [
                 ['t.status', 'between', [0,1]],
+                ['t.is_delete', '=', Db::raw(0)],
                 ['t.uid', '=', $uid],
-                ["t.time", ">", date('Y-m-d H:i:s', strtotime('-30 minute'))],
+                ["t.time", ">", date('Y-m-d H:i:s', strtotime('-60 minute'))],
             ];
+            if (is_numeric($type)) {
+                if ($type > -1) {
+                    $map[] = ['t.line_type', '=', $type];
+                } elseif ($type == -2) {
+                    $map[] = ['t.line_type', 'in', [1,2]];
+                } else {
+                    $type = $Utils->stringSetToArray($type);
+                    if (!empty($type)) {
+                        $map[] = ['t.line_type', 'in', $type];
+                    }
+                }
+            }
             $join = [
                 ["user {$userAlias}", "t.uid = {$userAlias}.uid", 'left'],
                 ["t_shuttle_line l", "l.id = t.line_id", 'left'],
@@ -362,9 +377,10 @@ class Trip extends ApiBase
             $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id, t.uid, t.status, t.time, t.create_time';
             $fields .= ', l.type as line_type, l.start_name, l.end_name, l.map_type';
             $map  = [
-                // ['t.status', 'between', [0,1,3]],
+                ['t.status', 'in', [-1,0,1,2,3,4,5]],
+                ['t.is_delete', '=', Db::raw(0)],
                 ['t.uid', '=', $uid],
-                ["t.time", "<", date('Y-m-d H:i:s', strtotime('-20 minute'))],
+                ["t.time", "<", date('Y-m-d H:i:s', strtotime('-60 minute'))],
             ];
             $join = [
                 ["t_shuttle_line l", "l.id = t.line_id", 'left'],
@@ -376,13 +392,13 @@ class Trip extends ApiBase
                 return $this->jsonReturn(20002, 'No data');
             }
             foreach ($returnData['lists'] as $key => $value) {
-                $returnData['lists'][$key]['took_count'] = in_array($value['comefrom'], [1, 4]) ? $ShuttleTrip->countPassengers($value['id']) : null;
+                $returnData['lists'][$key]['took_count'] = in_array($value['comefrom'], [1]) ? $ShuttleTrip->countPassengers($value['id']) : null;
             }
             $redis->hCache($cacheKey, $rowCacheKey, $returnData, $ex);
         }
         $returnData['lists'] = $ShuttleTripService->formatTimeFields($returnData['lists'], 'list', ['time','create_time','update_time']);
         foreach ($returnData['lists'] as $key => $value) {
-            $returnData['lists'][$key]['have_started'] = $TripsMixed->haveStartedCode($value['time']);
+            $returnData['lists'][$key]['have_started'] = $TripsMixed->haveStartedCode($value['time'], $value['time_offset']);
         }
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
