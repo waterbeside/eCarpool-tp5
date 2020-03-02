@@ -361,6 +361,55 @@ class TripsMixed extends Service
     }
 
     /**
+     * 为混合行程取得合并的表数据的sql;
+     *
+     * @param integer $uid 用户id
+     * @param mixed $statusSet 状态筛选 array [1,2,3]
+     * @param array $timeBetween 时间筛选 [timestamp,timestamp]
+     * @param array $timeBetweenInfo 时间筛选(旧行程表) [timestamp,timestamp]
+     * @return string
+     */
+    public function buildListUnionSql($uid, $statusSet = [0,1,3,4,5], $timeBetween = null, $timeBetweenInfo = null)
+    {
+        // 先取shuttle_trip表行程
+        $ShuttleTripModel = new ShuttleTripModel();
+        $map = [
+            ['is_delete', '=', Db::raw(0)]
+        ];
+        if (!empty($timeBetween) && is_array($timeBetween)) {
+            $timeStart = date('Y-m-d H:i:s', $timeBetween[0]);
+            $timeEnd = date('Y-m-d H:i:s', $timeBetween[1]);
+            if (empty($timeBetween[0])) {
+                $map[] = ['time', '<', $timeEnd];
+            } elseif (empty($timeBetween[1])) {
+                $map[] = ['time', '>', $timeStart];
+            } else {
+                $map[] = ['time', 'between', [$timeStart, $timeEnd]];
+            }
+        }
+        if (is_array($statusSet)) {
+            $map[] = ['status', 'in', $statusSet];
+        } elseif (is_numeric($statusSet)) {
+            $map[] = ['status', '=', $statusSet];
+        } elseif (is_string($statusSet)) {
+            $map[] = ['status', 'in', explode(',', $statusSet)];
+        } else {
+            $map[] = ['status', 'in', [0,1,3,4,5]];
+        }
+        // XXX: 因用于Union, 请勿改变字段顺序
+        $fields = "'shuttle_trip' as 'from', id, trip_id, status, uid, user_type, comefrom, seat_count";
+        $fields .= ', start_id, start_name, start_longitude, start_latitude, end_id, end_name, end_longitude, end_latitude, null as map_type';
+        $fields .= ', time, time_offset, create_time, plate,line_type, extra_info';
+        $sql_uShuttle = $ShuttleTripModel->alias('a')->field($fields)->where($map)->order('time Desc')->buildSql();
+
+        // 再取wall和info行程
+        $InfoModel = new InfoModel();
+        $sql_uOld = $InfoModel->buildMixedUnionSql($uid, $statusSet, $timeBetweenInfo);
+        
+        return "($sql_uShuttle union $sql_uOld)";
+    }
+
+    /**
      * 格式化结果字段
      */
     public function formatResultValue($value, $unset = [])
@@ -392,15 +441,15 @@ class TripsMixed extends Service
      * @param integer $time 行程出发时间的时间戳
      * @return integer 0 未出发，大于0为已出发，1为刚出发不久;
      */
-    public function haveStartedCode($time)
+    public function haveStartedCode($time, $time_offset = 0)
     {
         $haveStart = 0;
-        $timePass = time() - $time;
+        $timePass = time() - ($time + $time_offset);
         if ($timePass > 60 * 60 * 24) {
             $haveStart = 4;
         } elseif ($timePass > 30 * 60) {
             $haveStart = 3;
-        } elseif ($timePass > 8 * 60) {
+        } elseif ($timePass > 5 * 60) {
             $haveStart = 2;
         } elseif ($timePass >= 0) {
             $haveStart = 1;
@@ -415,13 +464,13 @@ class TripsMixed extends Service
      * @param string $from 来自 shuttle_trip or wall or info
      * @return integer
      */
-    public function countPassengers($id, $from)
+    public function countPassengers($id, $from, $ex = 10)
     {
         $count = 0;
         if ($from == 'shuttle_trip') {
-            $count = $this->getModel('ShuttleTrip', 'carpool')->countPassengers($id);
+            $count = $this->getModel('ShuttleTrip', 'carpool')->countPassengers($id, $ex);
         } elseif ($from == 'wall') {
-            $count =  $this->getModel('Info', 'carpool')->countPassengers($id);
+            $count =  $this->getModel('Info', 'carpool')->countPassengers($id, $ex);
         } elseif ($from == 'info') {
             $count = 1;
         }

@@ -3,6 +3,7 @@
 namespace app\api\controller\v1\trip;
 
 use app\api\controller\ApiBase;
+use app\carpool\model\Address as AddressModel;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\ShuttleTrip as ShuttleTripModel;
 use app\carpool\service\shuttle\Trip as ShuttleTripService;
@@ -162,6 +163,88 @@ class MixTrip extends ApiBase
         }
         $returnData['lists'] = $newListData;
         return $this->jsonReturn(0, $returnData, 'Success');
+    }
+
+    /**
+     * 历史行程
+     *
+     * @param integer $page
+     * @param integer $pagesize
+     * @return void
+     */
+    public function history($page = 1, $pagesize = 20)
+    {
+        $userData = $this->getUserData(1);
+        $uid = $userData['uid'];
+        $pagesize =  is_numeric($pagesize) &&  $pagesize > 0 ? $pagesize : 20;
+        $redis = new RedisData();
+        $ShuttleTrip = new ShuttleTripModel();
+        $ShuttleTripService = new ShuttleTripService();
+        $TripsMixed = new TripsMixedService();
+        
+        $cacheKey = $ShuttleTrip->getMyListCacheKey($uid, 'history');
+        $rowCacheKey = "mixed_pz_{$pagesize},page_$page";
+        $returnData = $redis->hCache($cacheKey, $rowCacheKey);
+        if (is_array($returnData) && empty($returnData)) {
+            return $this->jsonReturn(20002, $returnData, lang('No data'));
+        }
+        $now = time();
+        if (!$returnData) {
+            $ex = 60 * 5;
+
+            $shuttleTripLaunchDate = config('trips.shuttle_trip_launch_date') ?? null;
+            $timeBetweenInfo = [strtotime('2018-01-01 00:00:00'), $shuttleTripLaunchDate ?  strtotime($shuttleTripLaunchDate) : time('-30 minute')];
+            $baseSql = $TripsMixed->buildListUnionSql($uid, [0,1,3,4,5], [null, strtotime('+60 minute')], $timeBetweenInfo);
+            $ctor =  Db::connect('database_carpool')->table($baseSql)->alias('t')->order('t.time DESC');
+
+            // **** 开始查询
+            $returnData = $this->getListDataByCtor($ctor, $pagesize, false);
+            if (empty($returnData['lists'])) {
+                $redis->hCache($cacheKey, $rowCacheKey, [], $ex);
+                return $this->jsonReturn(20002, 'No data');
+            }
+            foreach ($returnData['lists'] as $key => $value) {
+                $value = $ShuttleTripService->formatTimeFields($value, 'item', ['time','create_time']);
+                $value['have_started'] = $TripsMixed->haveStartedCode($value['time'], $value['time_offset']);
+                // 排除出发未到30分钟，而状态还未结束的行程
+                if ($value['time'] + $value['time_offset'] - $now > -1800 && $value['status'] < 3) {
+                    continue;
+                }
+                $ex = $value['have_started'] > 2 ? 60 * 30 : 10;
+                $value['took_count'] = 0;
+                if ($value['user_type'] == 1) {
+                    $value['took_count'] =  in_array($value['from'], ['shuttle_trip', 'wall']) ?  $TripsMixed->countPassengers($value['id'], $value['from'], $ex) : 1;
+                }
+                $returnData['lists'][$key] = $value;
+            }
+            $redis->hCache($cacheKey, $rowCacheKey, $returnData, $ex);
+        }
+
+        $newList = [];
+        $AddressModel = new AddressModel();
+        foreach ($returnData['lists'] as $key => $value) {
+            if ($value['from'] == 'shuttle_trip') {
+                $extraInfo = $this->utils()->json2Array($value['extra_info']);
+                $value['map_type'] = $extraInfo['line_data']['map_type'] ?? 0;
+            }
+            // 修补缺失的行程相关字段
+            if (empty($value['start_name']) && !empty($value['start_id'])) {
+                $startItem = $AddressModel->getItem($value['start_id']);
+                if ($startItem) {
+                    $value['start_name'] = $startItem['addressname'];
+                }
+            }
+            if (empty($value['end_name']) && !empty($value['end_id'])) {
+                $startItem = $AddressModel->getItem($value['end_id']);
+                if ($startItem) {
+                    $value['end_name'] = $startItem['addressname'];
+                }
+            }
+            unset($value['extra_info']);
+            $newList[] = $value;
+        }
+        $returnData['lists'] = $newList;
+        return $this->jsonReturn(0, $returnData, 'Successful');
     }
 
     /**

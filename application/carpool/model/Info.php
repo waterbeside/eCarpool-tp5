@@ -5,6 +5,7 @@ namespace app\carpool\model;
 use app\common\model\BaseModel;
 use app\carpool\service\Trips as TripsServ;
 use my\Utils;
+use think\Db;
 
 class Info extends BaseModel
 {
@@ -186,9 +187,6 @@ class Info extends BaseModel
     }
 
 
-
-
-
     //取得合并的info和wall表
     public function buildUnionSql($uid, $merge_ids = [], $statusSet = "(0,1,4)")
     {
@@ -242,6 +240,98 @@ class Info extends BaseModel
             ORDER BY  a.time desc";
 
         $viewSql  =  "($viewSql_u1 ) union all ($viewSql_u2 )";
+        return $viewSql;
+    }
+
+    /**
+     * 为混合行程取得合并的表数据的sql;
+     *
+     * @param integer $uid 用户id
+     * @param mixed $statusSet 状态筛选 array [1,2,3]
+     * @param array $timeBetween 状态筛选 [timestamp,timestamp]
+     * @return string
+     */
+    public function buildMixedUnionSql($uid, $statusSet = [0,1,3,4], $timeBetween = null)
+    {
+        $map = [];
+        if (!empty($timeBetween) && is_array($timeBetween)) {
+            $timeStart = date('YmdHi', $timeBetween[0]);
+            $timeEnd = date('YmdHi', $timeBetween[1]);
+            if (empty($timeBetween[0])) {
+                $map[] = ['a.time', '>', $timeStart];
+            } elseif (empty($timeBetween[1])) {
+                $map[] = ['a.time', '<', $timeEnd];
+            } else {
+                $map[] = ['a.time', 'between', [$timeStart, $timeEnd]];
+            }
+        }
+
+        if (is_array($statusSet)) {
+            $map[] = ['status', 'in', $statusSet];
+        } elseif (is_numeric($statusSet)) {
+            $map[] = ['status', '=', $statusSet];
+        } elseif (is_string($statusSet)) {
+            $map[] = ['status', 'in', explode(',', $statusSet)];
+        } else {
+            $map[] = ['status', 'in', [0,1,3,4,]];
+        }
+
+        // XXX: 因用于Union, 请勿改变字段顺序
+        $comeFields = " a.startpid as start_id, a.startname as start_name, 
+            X(start_latlng) as start_longitude, Y(start_latlng) as start_latitude,
+            a.endpid as end_id, a.endname as end_name, 
+            X(end_latlng) as end_longitude, Y(end_latlng) as end_latitude,
+            a.map_type,
+            DATE_FORMAT(CONCAT(a.time, '00'),'%Y-%m-%d %H:%i:%s') as time,            
+            0 as time_offset,
+            DATE_FORMAT(CONCAT(a.subtime, '00'),'%Y-%m-%d %H:%i:%s') as create_time,
+            '' as plate, 
+            0 as line_type,
+            '{}' as extra_info
+        ";
+
+        $orderStr = 'a.time DESC';
+
+
+        // 从info表取得司机数据
+        $whereUser = $uid > 0 ? "a.carownid = $uid " : '';
+        $viewSql_u1 = $this->alias('a')->field("'info' as 'from',
+            a.infoid as id, 
+            (case when a.love_wall_ID IS NULL then 0 else a.love_wall_ID end) as trip_id ,
+            (case when a.status = -2  then -1 else a.status end) as 'status' ,
+            a.carownid as uid,
+            1 as user_type, 
+            0 as comefrom, 
+            '1' as seat_count,
+            $comeFields")->where($map)->where("$whereUser AND (a.love_wall_id < 1 OR a.love_wall_ID is null)")->order($orderStr)->buildSql();
+
+        // 从info表取得乘客数据
+        $whereUser = $uid > 0 ? " a.passengerid = $uid " : '';
+        $viewSql_u2 = $this->alias('a')->field("'info' as 'from',
+            a.infoid as id, 
+            (case when a.love_wall_ID IS NULL then 0 else a.love_wall_ID end) as trip_id ,
+            (case when a.status = -2  then -1 else a.status end) as 'status' ,
+            a.passengerid as uid,
+            0 as user_type, 
+            a.comefrom, 
+            '1' as seat_count,
+            $comeFields")->where($map)->where($whereUser)->order($orderStr)->buildSql();
+
+
+        // 从love_wall表取得数据
+        $whereUser = $uid > 0 ? "a.carownid = $uid " : '';
+        $viewSql_u3 = Db::connect($this->connection)->table('love_wall')->alias('a')->field("'wall' as 'from',
+            a.love_wall_ID as id, 
+            0 as trip_id ,
+            (case when a.status = -2  then -1 else a.status end) as 'status' ,
+            a.carownid as uid,
+            1 as user_type, 
+            1 as comefrom, 
+            a.seat_count,
+            $comeFields")->where($map)->where($whereUser)->order($orderStr)->buildSql();
+
+        $viewSql  =  "$viewSql_u1 union $viewSql_u2 union $viewSql_u3";
+
         return $viewSql;
     }
 

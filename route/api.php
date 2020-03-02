@@ -95,6 +95,7 @@ Route::group([], function () {
     Route::rule('api/:version/mixtrip/cars$', 'api/:version.trip.mix_trip/cars', 'GET'); // 混合行程cars
     Route::rule('api/:version/mixtrip/requests$', 'api/:version.trip.mix_trip/requests', 'GET'); // 混合行程cars
     Route::rule('api/:version/mixtrip/rclist$', 'api/:version.trip.mix_trip/rclist', 'GET'); // 混合行程rclist
+    Route::rule('api/:version/mixtrip/history$', 'api/:version.trip.mix_trip/history', 'GET'); // 混合历史行程
 
 
     //地址相关
@@ -104,8 +105,8 @@ Route::group([], function () {
     Route::rule('api/:version/address', 'api/:version.address/save', 'POST');
 
 
-    Route::rule('api/:version/grade', 'api/:version.grade/index', 'GET');
-    Route::rule('api/:version/grade', 'api/:version.grade/save', 'POST');
+    Route::rule('api/:version/grade$', 'api/:version.grade/index', 'GET');
+    Route::rule('api/:version/grade$', 'api/:version.grade/save', 'POST');
 
     //用户相关
     Route::resource('api/:version/user', 'api/:version.user');
@@ -114,7 +115,7 @@ Route::group([], function () {
     Route::rule('api/:version/user/:id/position', 'api/:version.user_position/save', 'POST');
 
     //部门相关
-    Route::rule('api/:version/department/selects', 'api/:version.department/selects', 'GET');
+    Route::rule('api/:version/department/selects$', 'api/:version.department/selects', 'GET');
 
     //im_group
     Route::rule('api/:version/im_group/placeholders', 'api/:version.im_group/placeholders', 'GET');
@@ -130,6 +131,7 @@ Route::group([], function () {
     Route::resource('api/:version/publics/idle', 'api/:version.publics.idle');
     Route::rule('api/:version/publics/comments', 'api/:version.publics.comments/index', 'GET');
     Route::rule('api/:version/app/url', 'api/:version.app/get_url', 'GET');
+    
     //报表相关
     Route::rule('api/:version/publics/reports/trips_summary', 'api/:version.publics.reports/trips_summary', 'GET');
     Route::rule('api/:version/publics/reports/month_statis', 'api/:version.publics.reports/month_statis', 'GET');
