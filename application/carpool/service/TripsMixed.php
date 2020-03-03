@@ -328,7 +328,7 @@ class TripsMixed extends Service
         $lnglat = is_array($lnglat) && count($lnglat) > 1 ? $lnglat : null;
         $userData =  $userData ?: (( $extData['userData'] ?? null ) ?: null);
         
-        if (in_array($type, [-1, -2 , 1, 2])) {
+        if (in_array($type, [-3, -1, -2 ,0, 1, 2])) {
             $ShuttleTripListService = new ShuttleTripListService();
             $lineType = $type < 0 ? -2 : $type;
             $list_shuttle = $ShuttleTripListService->lists($user_type, $userData, $lineType, $extData);
@@ -337,7 +337,7 @@ class TripsMixed extends Service
         $list_nm = [
             'lists' => [],
         ];
-        if (in_array($type, [-1 , 0])) {
+        if (in_array($type, [-3, -4])) {
             $NmTripListService = new NmTripListService();
             $list_nm = $NmTripListService->lists($user_type, $userData, $extData);
         }
