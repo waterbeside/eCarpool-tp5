@@ -36,16 +36,18 @@ class TripList extends Service
      * @param array $extData 扩展数据
      * @return array
      */
-    public function lists($user_type, $userData = null, $type = -1, $extData = null)
+    public function lists($userType, $userData = null, $type = -1, $extData = null)
     {
         $Utils = new Utils();
         // 取得班车行程
         $list = [];
-        $user_type = intval($user_type);
+        $userType = intval($userType);
         $type = intval($type);
         $limit = ( $extData['limit'] ?? 0 ) ?: 0;
         $pagesize = ( $extData['limit'] ?? 0 ) ?: 0;
         $lineId = ( $extData['line_id'] ?? 0 ) ?: 0;
+        $startId = ( $extData['start_id'] ?? 0 ) ?: 0;
+        $endId = ( $extData['end_id'] ?? 0 ) ?: 0;
         $userData = $userData ?: (( $extData['userData'] ?? null ) ?: null);
         $showPassenger = ( $extData['show_passenger'] ?? 0 ) ?: 0;
         $page = input('get.page', 1);
@@ -55,21 +57,35 @@ class TripList extends Service
         $ShuttleTripService = new ShuttleTripService();
         $userAlias = 'u';
 
-        $cacheKey =  $ShuttleTripModel->getListCacheKeyByLineId(0, ($user_type == 1 ? 'cars' : 'requests'));
-        $rowCacheKey = "tzList_limit{$limit}_pz{$pagesize}_p{$page}".($lineId ? "lineId_$lineId" : '');
+        $cacheKey =  $ShuttleTripModel->getListCacheKeyByLineId(0, ($userType == 1 ? 'cars' : 'requests'));
+        $rowCacheKey = "tzList_limit{$limit}_pz{$pagesize}_p{$page}".($lineId ? "lineId_$lineId" : '').($startId ? "startId_$startId" : '').($endId ? "endId_$endId" : '');
         $returnData = $this->redis()->hCache($cacheKey, $rowCacheKey);
         if (!is_array($returnData)) {
-            $offsetTimeArray = [
-                date('Y-m-d H:i:s', time() - (5 * 60)),
-                date('Y-m-d H:i:s', time() + (60 * 60 * 24 * 2))
-            ];
+            $time = time();
             
             $tripFields = ['id', 'comefrom', 'user_type','trip_id', 'line_id', 'plate', 'status', 'time', 'create_time', 'seat_count', 'extra_info'];
             $userDefaultFields = [ 'uid', 'loginname', 'name','nativename',  'Department', 'sex', 'company_id', 'department_id', 'imgpath'];
             $fields = implode(',', $Utils->arrayAddString($tripFields, 't.'));
             $fields .= ", 'shuttle_trip' as `from`";
             $fields .=  ',' .$TripsService->buildUserFields($userAlias, $userDefaultFields);
-            if ($lineId > 0) {
+            
+            // 如果传来起终点
+            if ($startId > 0 || $endId > 0) {
+                $lineSortWhen = '';
+                if ($startId > 0 && $endId > 0) {
+                    $lineSortWhen .= "WHEN t.start_id = $startId AND  t.end_id = $endId THEN 10";
+                }
+                if ($startId > 0) {
+                    $lineSortWhen .= "WHEN t.start_id = $startId THEN 8";
+                }
+                if ($endId > 0) {
+                    $lineSortWhen .= "WHEN t.end_id = $endId THEN 5";
+                }
+                if (!empty($lineSortWhen)) {
+                    $fields .= ", (CASE $lineSortWhen ELSE 0 END) AS line_sort ";
+                }
+            } elseif ($lineId > 0) {
+                // 如果传来路线
                 $friendLines = (new ShuttleLineRelation())->getFriendsLine($lineId, 0, 0) ?: [];
                 $friendLinesWhen = '';
                 if (count($friendLines) >0) {
@@ -82,26 +98,26 @@ class TripList extends Service
             } else {
                 $fields .= ', 0 AS line_sort';
             }
-            
-            if ($user_type === 1) {
-                // $userAlias = 'd';
-                $userType = 1;
-                $comefrom = 1;
-            } else {
-                // $userAlias = 'p';
-                $offsetTimeArray[0] = date('Y-m-d H:i:s', time() + 30);
-                $userType = 0;
-                $comefrom = 2;
-            }
+            // join user
             $join = [
                 ["user {$userAlias}", "t.uid = {$userAlias}.uid", 'left'],
             ];
+            // 处理时间范围
+            $betweenTimeBase = $ShuttleTripModel->getBaseTimeBetween($time, 'default', 'Y-m-d H:i:s');
+            if ($userType === 1) {
+                $betweenTimeArray = $ShuttleTripModel->getBaseTimeBetween($time, [60 * 5, 0]);
+                $comefrom = 1;
+            } elseif ($userType === 0) {
+                $betweenTimeArray = $ShuttleTripModel->getBaseTimeBetween($time, [10, 0]);
+                $comefrom = 2;
+            }
             $map  = [
-                ['t.status', 'between', [0,1]],
-                ['t.time', 'between', $offsetTimeArray],
-                ['trip_id', '=', Db::raw(0)],
-                ['user_type', '=', $userType],
-                ['comefrom', '=', $comefrom],
+                ['t.status', 'in', [0,1]],
+                ['t.time', 'between', $betweenTimeBase],
+                ['t.trip_id', '=', Db::raw(0)],
+                ['t.user_type', '=', $userType],
+                ['t.comefrom', '=', $comefrom],
+                ['', 'exp', Db::raw(" (UNIX_TIMESTAMP(t.time) - time_offset) < {$betweenTimeArray[1]} AND (UNIX_TIMESTAMP(t.time) + time_offset) > {$betweenTimeArray[0]}")]
             ];
             if (is_numeric($type) && $type > -1) {
                 $map[] = ['t.line_type', '=', $type];
@@ -119,13 +135,12 @@ class TripList extends Service
             }
 
             $ctor = $ShuttleTripModel->alias('t')->field($fields)->join($join)->where($map)->order('line_sort DESC, t.time ASC');
-            // var_dump($ctor);exit;
             if ($limit) {
                 $list = $ctor->limit($limit)->select();
                 $list = $list ? $list->toArray() : [];
                 $isEmpty  = empty($list);
             } else {
-                $returnData = $Utils->getListDataByCtor($ctor, $pagesize);
+                $returnData = $Utils->getListDataByCtor($ctor, $pagesize, false);
                 $list = $returnData['lists'];
                 $isEmpty  = empty($returnData['lists']);
             }
@@ -136,7 +151,7 @@ class TripList extends Service
                 $value['time'] = strtotime($value['time']);
                 // $value['time_od'] = strtotime(date('Y-m-d H', $value['time']).':00:00');
                 $value['create_time'] = strtotime($value['create_time']);
-                if ($user_type == 1) {
+                if ($userType == 1) {
                     $value['took_count'] =  $ShuttleTripModel->countPassengers($value['id']);
                     if ($showPassenger) {
                         $userFields = ['uid', 'loginname', 'name', 'sex'];
