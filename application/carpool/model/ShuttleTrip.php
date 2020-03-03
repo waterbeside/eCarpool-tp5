@@ -82,6 +82,17 @@ class ShuttleTrip extends BaseModel
         return "carpool:shuttle:trip:{$type}:{$uid}";
     }
 
+    /**
+     * 取得行程城市数组cacheKey
+     *
+     * @param integer $companyId 公司id
+     * @param string $listType 类型，['cars', 'requests'] 是空座位还是约车需求
+     * @return string
+     */
+    public function getCitysCacheKey($companyId, $listType)
+    {
+        return "carpool:shuttle:trip:citys:$companyId,$listType";
+    }
 
 
     /**
@@ -369,6 +380,18 @@ class ShuttleTrip extends BaseModel
             $cacheKey = $this->getListCacheKeyByLineId($line_id, $type, $uid);
             $redis->del($cacheKey);
         }
+    }
+
+    /**
+     * 删除行程城市数组缓存
+     *
+     * @param integer $companyId 公司id
+     * @param string $listType 类型，['cars', 'requests'] 是空座位还是约车需求
+     */
+    public function delCitysCacheKey($companyId, $listType)
+    {
+        $cacheKey = $this->getCitysCacheKey($companyId, $listType);
+        return $this->redis()->del($cacheKey);
     }
 
     /**
