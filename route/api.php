@@ -103,6 +103,8 @@ Route::group([], function () {
     Route::rule('api/:version/address/my', 'api/:version.address/my', 'GET');
     Route::rule('api/:version/address/citys', 'api/:version.address/citys', 'GET');
     Route::rule('api/:version/address', 'api/:version.address/save', 'POST');
+    Route::rule('api/:version/trip_address/citys$', 'api/:version.shuttle.trip_address/citys', 'GET');
+    Route::rule('api/:version/trip_address/my$', 'api/:version.shuttle.trip_address/my', 'GET');
 
 
     Route::rule('api/:version/grade$', 'api/:version.grade/index', 'GET');

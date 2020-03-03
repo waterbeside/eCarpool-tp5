@@ -47,6 +47,29 @@ class Address extends BaseModel
     }
 
     /**
+     * 取得我的推荐站点列表缓存key
+     *
+     * @param integer $uid 用户id
+     * @return string
+     */
+    public function getMyCacheKey($uid)
+    {
+        return "carpool:address:my:$uid";
+    }
+
+    /**
+     * 清除我的推荐站点列表缓存
+     *
+     * @param integer $uid 用户id
+     * @return string
+     */
+    public function deltMyCache($uid)
+    {
+        $cacheKey = $this->getMyCacheKey($uid);
+        return $this->redis()->del($cacheKey);
+    }
+
+    /**
      * 创建起终点
      */
     public function createAddress($datas, $userData)
