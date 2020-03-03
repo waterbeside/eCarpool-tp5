@@ -46,6 +46,7 @@ class Trip extends ApiBase
         $line_id = input('get.line_id/d', 0);
         $type = input('get.type/d', -2);
         $comid = input('get.comid/d', 0);
+        $city = input('get.city/s', '', 'trim');
         $orderby = input('get.orderby', 'time', 'strtolower');
         $orderby = $orderby == 'distance' ? 'distance' : 'time';
         $lnglat = input('get.lnglat', '');
@@ -71,8 +72,6 @@ class Trip extends ApiBase
         // if (!$lineData) {
         //     return $returnType ? $this->jsonReturn(20002, $returnData, lang('No data')) : [992, $returnData, lang('No data')];
         // }
-
-
         
         // 缓存处理
         $ex = (!empty($lnglat) && $line_id == 0) || !empty($keyword) ? 10 : 60;
@@ -81,6 +80,9 @@ class Trip extends ApiBase
         
         $rowCacheKey = "pz_{$pagesize},page_$page,type_$type,comid_$comid,orderby_$orderby,keyword_$keyword";
         $rowCacheKey .= !empty($lnglat) && $line_id == 0 ? ",lnglat_{$lnglat[0]},{$lnglat[1]}" : '';
+        $rowCacheKey .= !empty($city)  && $city == 'all' ? ",city_{$city}" : '';
+        $rowCacheKey .= ",uCompanyId_{$userData['company_id']}";
+        
         $returnData = $redis->hCache($cacheKey, $rowCacheKey);
         if (is_array($returnData) && empty($returnData)) {
             // $returnData['lineData'] = $lineData;
@@ -95,7 +97,7 @@ class Trip extends ApiBase
             $fields .=  ',' .$TripsService->buildUserFields($userAlias); // 用户相关字段
             // $fields .= ',l.id as l_id, l.start_id, l.start_name, l.start_longitude, l.start_latitude, l.end_id, l.end_name, l.end_longitude, l.end_latitude, l.map_type'; // 路线相关字段
             if (!empty($lnglat) && $line_id == 0) {
-                // TODO: 添加 distance 字段以排序
+                // 添加 distance 字段以排序
                 $fieldLng = $type == 2 && $comid > 0 ? 't.end_longitude' : 't.start_longitude';
                 $fieldLat = $type == 2  && $comid > 0 ? 't.end_latitude' : 't.start_latitude';
                 $distanceSql = $Utils->getDistanceFieldSql($fieldLng, $fieldLat, $lnglat[0], $lnglat[1], 'distance');
@@ -127,13 +129,14 @@ class Trip extends ApiBase
                 ["user {$userAlias}", "t.uid = {$userAlias}.uid", 'left'],
                 // ["t_shuttle_line l", "t.line_id = l.id", 'left'],
             ];
+
             // where
             $map  = [
                 ['t.time', 'between', $betweenTimeBase],
                 ['t.is_delete', '=', Db::raw(0)],
                 ['t.status', 'in', [0,1]],
                 ['t.trip_id', '=', Db::raw(0)],
-                ['', 'exp', Db::raw(" (UNIX_TIMESTAMP(time) - time_offset) < {$betweenTimeArray[1]} AND (UNIX_TIMESTAMP(time) + time_offset) > {$betweenTimeArray[0]}")]
+                ['', 'exp', Db::raw(" (UNIX_TIMESTAMP(t.time) - time_offset) < {$betweenTimeArray[1]} AND (UNIX_TIMESTAMP(t.time) + time_offset) > {$betweenTimeArray[0]}")]
             ];
             // 筛司机乘客
             if (isset($userType)) {
@@ -145,12 +148,12 @@ class Trip extends ApiBase
             }
             // 允许相互拼车的公司组
             $map[] = $TripsService->buildCompanyMap($userData, 'u');
-            //
-            if (isset($lnglatRangeSql)) {
+            // 约束座标范围 (当选了城市后不约束)
+            if (isset($lnglatRangeSql) && empty($city)) {
                 $map[] = ['', 'exp', Db::raw($lnglatRangeSql)];
             }
 
-            // 筛路线
+            // 筛路线 或上下班类型
             if ($line_id > 0) {
                 $map[] =  ['t.line_id', '=', $line_id];
             } elseif (is_numeric($type)) {
@@ -178,14 +181,20 @@ class Trip extends ApiBase
             // 排除已删用户；
             $map[] = ["{$userAlias}.is_delete", '=', Db::raw(0)];
 
+            // 如果城市不为空,且没传$comid,则 join站点表以查询城市;
+            if (!empty($city) && empty($comid)) {
+                $join[] = ["address a", "t.start_id = a.addressid", 'left'];
+                $map[] = ["a.city", '=', $city];
+            }
+            // 关键字搜索
             if ($keyword) {
-                $map[] = ["{$userAlias}.name|{$userAlias}.nativename", 'line', "%$keyword%"];
+                $map[] = ["t.start_name|t.end_name{$userAlias}.name|{$userAlias}.nativename", 'like', "%$keyword%"];
             }
             $ctor = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map)->order($order);
             if ($dev) {
                 return $this->jsonReturn(0, $ctor->fetchSql()->select());
             }
-            $returnData = $this->getListDataByCtor($ctor, $pagesize);
+            $returnData = $this->getListDataByCtor($ctor, $pagesize, false);
             if (empty($returnData['lists'])) {
                 if (!$keyword) {
                     $redis->hCache($cacheKey, $rowCacheKey, [], $ex);
@@ -294,7 +303,7 @@ class Trip extends ApiBase
             $fields .= ', l.type as line_type, l.start_name, l.end_name, l.map_type ';
             $fields .=  ',' .$fields_user;
             $map  = [
-                ['t.status', 'between', [0,1]],
+                ['t.status', 'in', [0,1]],
                 ['t.is_delete', '=', Db::raw(0)],
                 ['t.uid', '=', $uid],
                 ["t.time", ">", date('Y-m-d H:i:s', strtotime('-60 minute'))],
