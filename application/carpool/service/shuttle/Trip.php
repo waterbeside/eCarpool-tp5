@@ -68,7 +68,7 @@ class Trip extends Service
 
 
         $time = $rqData['time'] ?: null;
-        if (empty($rqData['line_id']) || empty($rqData['line_data'])) {
+        if (empty($rqData['line_data'])) {
             return $this->error(992, lang('Please select a route'));
         }
         if (empty($time)) {
@@ -178,7 +178,7 @@ class Trip extends Service
         $trip_id = isset($rqData['trip_id']) && is_numeric($rqData['trip_id']) ? $rqData['trip_id'] : 0;
 
         $time_offset = isset($rqData['time_offset']) && is_numeric($rqData['time_offset']) ? $rqData['time_offset'] : 0;
-        $time_offset = $time_offset > 60 * 60 ? 60 * 60 : $time_offset;
+        $time_offset = $time_offset > 60 * 60 ? 60 * 60 : ($time_offset < 0 ? 0 : $time_offset);
         // 创建入库数据
         $updata = [
             'line_id' => $rqData['line_id'] ?: 0,
@@ -484,7 +484,7 @@ class Trip extends Service
         // 构建查询map
         $map = [
             $lineMap,
-            ['t.status', 'between', [0,1]],
+            ['t.status', 'in', [0,1]],
             ['t.time', 'between', [date('Y-m-d H:i:s', $start_time), date('Y-m-d H:i:s', $end_time)]],
         ];
         if ($userType === 1) {

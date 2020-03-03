@@ -491,6 +491,7 @@ class Trips extends Service
         }
         return $company_id;
     }
+
     /**
      * 创建拼车列表以公司id的筛选map
      *

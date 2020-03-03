@@ -56,7 +56,7 @@ class TripList extends Service
             $userDefaultFields = [ 'uid', 'loginname', 'name','nativename',  'Department', 'sex', 'company_id', 'department_id', 'imgpath', 'carnumber'];
             if ($user_type === 1) { // 如果是墙上空座位
                 $map = [
-                    ['t.status', 'between', [0,1]],
+                    ['t.status', 'in', [0,1]],
                     ['t.time', 'between', $offsetTimeArray],
                 ];
                 $map[] = $TripsService->buildCompanyMap($userData, 'u');
@@ -71,7 +71,7 @@ class TripList extends Service
                 // $company_id = $userData['company_id'];
                 $offsetTimeArray[0] = date('YmdHi', time() + 30);
                 $map = [
-                    ['t.status', 'between', [0,1]],
+                    ['t.status', 'in', [0,1]],
                     ['t.carownid', '<', 1],
                     ['t.time', 'between', $offsetTimeArray],
                 ];
