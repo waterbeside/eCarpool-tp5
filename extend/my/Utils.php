@@ -86,12 +86,16 @@ class Utils
      * @param boolean $notSet 参数2设定的字段是否作为排除用
      * @param string $keyFill 为字段添加前缀
      * @param integer $keyDo 负数为转小写，正数为转大写，0为不处理
+     * @param object $fun 内部循环的回调函数
      * @return array
      */
-    public function filterListFields($list, $filterFields = [], $notSet = false, $keyFill = '', $keyDo = 0)
+    public function filterListFields($list, $filterFields = [], $notSet = false, $keyFill = '', $keyDo = 0, $fun = null)
     {
         foreach ($list as $key => $value) {
             $itemData = self::filterDataFields($value, $filterFields, $notSet, $keyFill, $keyDo);
+            if (is_object($fun)) {
+                $itemData = $fun($itemData, $key) ?? $itemData;
+            }
             $list[$key] = $itemData;
         }
         return $list;
@@ -124,7 +128,7 @@ class Utils
      * 格式化时间字段
      *
      * @param array $data 要处理的数据
-     * @param string $dataType 处理的数据格式类型 [list or item]
+     * @param mixed $dataType 处理的数据格式类型 string:'item' or 'list'. object:当此参数为一个函数时，则为列表循环的回调函数
      * @param mixed $fields 要处理的字段 可为string||array
      * @return array
      */
@@ -134,9 +138,13 @@ class Utils
             $fields = explode(',', $fields);
         }
 
-        if ($dataType == 'list') {
+        if ($dataType == 'list' || is_object($dataType)) {
             foreach ($data as $key => $value) {
-                $data[$key] = $this->formatTimeFields($value, 'item', $fields);
+                $value = $this->formatTimeFields($value, 'item', $fields);
+                if (is_object($dataType)) {
+                    $value = $dataType($value, $key) ?? $value;
+                }
+                $data[$key] = $value;
             }
         } else {
             foreach ($fields as $key => $value) {
@@ -460,14 +468,18 @@ class Utils
      *
      * @param array $data 要处理的数据
      * @param array $fieldTypeRule 处理规则 如 ['sex'=>'int']
-     * @param string $dataType item or list
+     * @param mixed $dataType  string:'item' or 'list'. object:当此参数为一个函数时，则为列表循环的回调函数
      * @return array
      */
     public function formatFieldType($data, $fieldTypeRule, $dataType = 'item')
     {
-        if ($dataType === 'list') {
+        if ($dataType === 'list' || is_object($dataType)) {
             foreach ($data as $key => $value) {
-                $data[$key] = $this->formatFieldType($value, $fieldTypeRule, 'item');
+                $value = $this->formatFieldType($value, $fieldTypeRule, 'item');
+                if (is_object($dataType)) {
+                    $value = $dataType($value, $key) ?? $value;
+                }
+                $data[$key] = $value;
             }
         } else {
             foreach ($data as $key => $value) {
@@ -554,4 +566,28 @@ class Utils
         }
         return $res;
     }
+
+    /**
+     * 二维数组根据某个字段去重
+     * @param array $array  二维数组
+     * @param array  去重后的数组
+     * @param object $fun 内部循环的回调函数
+     */
+    public function uniquListField($list, $field, $fun = null)
+    {
+        $fieldValArray = [];
+        $newList = [];
+        foreach ($list as $k => $value) {
+            if (in_array($value[$field], $fieldValArray)) {
+                continue;
+            }
+            if (is_object($fun)) {
+                $value = $fun($value, $k) ?? $value;
+            }
+            $newList[] =$value;
+            $fieldValArray[] = $value[$field];
+        }
+        return $newList;
+    }
+
 }
