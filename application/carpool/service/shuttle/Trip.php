@@ -296,6 +296,32 @@ class Trip extends Service
     }
 
     /**
+     * 通过行程取得line_data数据
+     *
+     * @param integer $idOrData trip id or trip_data;
+     * @return array
+     */
+    public function getLineDataByTrip($idOrData, $filterField = null)
+    {
+        $filterFieldBase = ['start_id', 'start_name', 'start_longitude', 'start_latitude', 'end_id', 'end_name', 'end_longitude', 'end_latitude'];
+        $filterField = !empty($filterField) && is_array($filterField) ? $filterField : array_merge($filterFieldBase, ['map_type']);
+        $ShuttleTripModel = new ShuttleTripModel();
+        $itemData = $ShuttleTripModel->getDataByIdOrData($idOrData);
+        if (!$itemData) {
+            return null;
+        }
+        $lineData =  Utils::getInstance()->filterDataFields($itemData, $filterFieldBase);
+        $lineDataExtra = $this->getExtraInfoLineData($itemData, 1);
+        foreach ($lineData as $key => $value) {
+            $numberField = ['start_id', 'start_longitude', 'start_latitude', 'end_id', 'end_longitude', 'end_latitude'];
+            $lineData[$key] = $value ?: ($lineDataExtra[$key] ?? (in_array($key, $numberField) ? 0 : ''));
+        }
+        $lineData['map_type'] = $lineDataExtra['map_type'];
+        $lineData = Utils::getInstance()->filterDataFields($itemData, $filterField);
+        return $lineData;
+    }
+
+    /**
      * 通过请求来的数据生成路线数据
      *
      * @param array $rqData 创建行程时请求来的数据
