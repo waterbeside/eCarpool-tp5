@@ -24,7 +24,8 @@
                             <option value="" >{:lang('上下班类型')} ({:lang('不限')})</option>
                             <option value="1" {php}echo isset($filter['line_type']) &&  $filter['line_type'] == 1 ? 'selected' : ''; {/php}>{:lang('上班')}</option>
                             <option value="2" {php}echo isset($filter['line_type']) &&  $filter['line_type'] == 2 ? 'selected' : ''; {/php}>{:lang('下班')}</option>
-                            </select>
+                            <option value="0" {php}echo isset($filter['line_type']) && is_numeric($filter['line_type']) && $filter['line_type'] == 0 ? 'selected' : ''; {/php}>{:lang('其它')}</option>
+                        </select>
                         </div>
                         <div class="layui-input-inline">
                             <input type="text" name="filter[keyword_address]" value="{$filter['keyword_address'] ? $filter['keyword_address'] :''}" placeholder="{:lang('Address keyword')}" class="layui-input" >
