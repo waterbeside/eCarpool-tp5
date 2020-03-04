@@ -116,7 +116,6 @@ class Trip extends AdminBase
         $fields .= ', t.start_id, t.start_name, t.start_longitude, t.start_latitude, t.end_id, t.end_name, t.end_longitude, t.end_latitude, t.extra_info';
         $fields .= ", (CASE WHEN t.user_type = 1 THEN t.id ELSE trip_id END) AS x_trip_id, DATE_FORMAT(t.time,'%Y-%m-%d') as time_hour";
         $fields .= ',' . $TripsService->buildUserFields('u');// 用户相关字段
-        // $fields .= ',l.id as l_id, l.start_id, l.start_name, l.start_longitude, l.start_latitude, l.end_id, l.end_name, l.end_longitude, l.end_latitude, l.map_type'; // 路线相关字段
         $fields .= ', ud.fullname as u_full_department  ';
 
          // join
