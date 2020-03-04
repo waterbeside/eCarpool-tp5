@@ -44,7 +44,7 @@ class Trip extends ApiBase
         $dev = input('param.dev/d', 0);
         $keyword = input('get.keyword/s', '', 'trim');
         $line_id = input('get.line_id/d', 0);
-        $type = input('get.type/d', -2);
+        $type = input('get.type/d', -1);
         $comid = input('get.comid/d', 0);
         $city = input('get.city/s', '', 'trim');
         $orderby = input('get.orderby', 'time', 'strtolower');
@@ -159,11 +159,6 @@ class Trip extends ApiBase
             } elseif (is_numeric($type)) {
                 if ($type > -1) {
                     $map[] = ['t.line_type', '=', $type];
-                    if ($type > 0) {
-                        // 先查出该部门可访问的line_id
-                        $lineidSql = (new ShuttleLineDepartment())->getIdsByDepartmentId($userData['department_id'], true);
-                        $map[] = ['', 'exp', Db::raw("t.line_id in $lineidSql")];
-                    }
                 } elseif ($type == -2) {
                     $map[] = ['t.line_type', 'in', [1,2]];
                 }
