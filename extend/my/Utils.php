@@ -265,7 +265,7 @@ class Utils
         } elseif ($pagesize > 0 && !$usePaginate) {
             $page = input('param.page/d', 1);
             $resData = $ctor->page($page, $pagesize)->select();
-            $resData = $resData ?: [];
+            $resData = $resData ? $resData->toArray() : [];
             $pageData = [
                 'total' => -1,
                 'pageSize' => $pagesize,
