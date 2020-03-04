@@ -396,6 +396,8 @@ class TripsMixed extends Service
         } else {
             $map[] = ['status', 'in', [0,1,3,4,5]];
         }
+        $map[] = ['uid', '=', $uid];
+
         // XXX: 因用于Union, 请勿改变字段顺序
         $fields = "'shuttle_trip' as 'from', id, trip_id, status, uid, user_type, comefrom, seat_count";
         $fields .= ', start_id, start_name, start_longitude, start_latitude, end_id, end_name, end_longitude, end_latitude, null as map_type';
