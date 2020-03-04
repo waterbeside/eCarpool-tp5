@@ -378,6 +378,7 @@ class Trip extends Service
         }
         $ShuttleTripModel = new ShuttleTripModel();
         $User = new UserModel();
+        $TripsMixedService = new TripsMixedService();
 
         $itemData = $ShuttleTripModel->getItem($id);
         if (!$itemData) {
@@ -401,7 +402,7 @@ class Trip extends Service
         $userFields = $userFields ?: $this->defaultUserFields;
         $userData = $User->findByUid($uid);
         $userData = $userData ? Utils::getInstance()->filterDataFields($userData, $userFields, false, 'u_', -1) : null;
-        
+        $userData = $TripsMixedService->formatResultValue($userData);
         $data = array_merge($itemData ?? [], $userData ?: []);
         return $data ?: null;
     }

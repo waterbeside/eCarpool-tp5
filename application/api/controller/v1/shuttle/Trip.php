@@ -58,10 +58,10 @@ class Trip extends ApiBase
 
         $Utils = new Utils();
         $redis = new RedisData();
-        $ShuttleLineModel = new ShuttleLineModel();
         $ShuttleTrip = new ShuttleTrip();
         $TripsService = new TripsService();
         $ShuttleTripService = new ShuttleTripService();
+        $TripsMixed = new TripsMixed();
 
         $returnData = null;
         // 先查出路线数据
@@ -211,6 +211,7 @@ class Trip extends ApiBase
 
         foreach ($returnData['lists'] as $key => $value) {
             $value = $ShuttleTripService->formatTimeFields($value, 'item', ['time','create_time']);
+            $value = $TripsMixed->formatResultValue($value);
             $extraInfo = $Utils->json2Array($value['extra_info']);
             unset($value['extra_info']);
             $value['map_type'] = $extraInfo['line_data']['map_type'] ?? 0;
