@@ -62,8 +62,12 @@ class Address extends AdminBase
         
 
         $fields = '*, longtitude as longitude';
+        $DepartmentModel = new Department();
         $list = AddressModel::field($fields)->where($map)->order('ordernum DESC, create_time DESC , addressid DESC ')
-            ->paginate($pagesize, false, ['query' => request()->param()]);
+            ->paginate($pagesize, false, ['query' => request()->param()])->each(function ($item, $key) use ($DepartmentModel) {
+                $item->deptData = $DepartmentModel->getItem($item->department_id);
+            });
+        
         $returnData = [
             'list' => $list,
             'filter' => $filter,
@@ -135,6 +139,10 @@ class Address extends AdminBase
         } else {
             $fields = "t.*";
             $data = AddressModel::alias('t')->field($fields)->find($id);
+            if ($data) {
+                $DepartmentModel = new Department();
+                $data['deptData'] = $DepartmentModel->getItem($data['department_id']);
+            }
             $this->assign('data', $data);
             return $this->fetch('edit');
         }
@@ -148,15 +156,13 @@ class Address extends AdminBase
      */
     public function delete($id)
     {
-        $ShuttleTime = new ShuttleTimeModel();
-        $data = $ShuttleTime->alias('t')->find($id);
-        if ($ShuttleTime->where('id', $id)->update(['is_delete' => 1]) !== false) {
-            $ShuttleTime->delListCache($data['type']);
-            $ShuttleTime->delListCache(-1);
-            $this->log('删除班车时刻成功，id=' . $id, 0);
+        $AddressModel = new AddressModel();
+        $data = $AddressModel->alias('t')->find($id);
+        if ($AddressModel->where('addressid', $id)->update(['is_delete' => 1]) !== false) {
+            $this->log('删除班车站点成功，id=' . $id, 0);
             return $this->jsonReturn(0, '删除成功');
         } else {
-            $this->log('删除班车时刻失败，id=' . $id, -1);
+            $this->log('删除班车站点失败，id=' . $id, -1);
             return $this->jsonReturn(-1, '删除失败');
         }
     }
