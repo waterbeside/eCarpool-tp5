@@ -138,7 +138,6 @@ class Trip extends AdminBase
         $colors = [];
         $Utils = new Utils;
         foreach ($lists as $key => $value) {
-
             if (!$export) {
                 $value['extra_info'] = $Utils->json2Array($value['extra_info']);
             }
