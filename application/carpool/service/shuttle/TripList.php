@@ -58,7 +58,10 @@ class TripList extends Service
         $userAlias = 'u';
 
         $cacheKey =  $ShuttleTripModel->getListCacheKeyByLineId(0, ($userType == 1 ? 'cars' : 'requests'));
-        $rowCacheKey = "tzList,limit{$limit},pz{$pagesize},p{$page},type_$type".($lineId ? ",lineId_$lineId" : '').($startId ? ",startId_$startId" : '').($endId ? ",endId_$endId" : '');
+        $rowCacheKey = "tzList,limit{$limit},pz{$pagesize},p{$page},type_$type";
+        $rowCacheKey .= $userData ? "uCompanyId_{$userData['company_id']}" : '';
+        $rowCacheKey .= ($lineId ? ",lineId_$lineId" : '').($startId ? ",startId_$startId" : '').($endId ? ",endId_$endId" : '');
+
         $returnData = $this->redis()->hCache($cacheKey, $rowCacheKey);
         if (!is_array($returnData)) {
             $time = time();

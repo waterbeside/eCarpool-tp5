@@ -50,7 +50,7 @@ class TripList extends Service
         $WallModel = new WallModel();
         $cacheKey = $user_type === 1 ?
             $WallModel->getListCacheKey($userData['company_id']) : $InfoModel->getRqListCacheKey($userData['company_id']);
-        $rowCacheKey = "tzList_limit{$limit}_pz{$pagesize}_p{$page}_mapType_{$map_type}";
+        $rowCacheKey = "tzList,limit{$limit},pz{$pagesize},p{$page},mapType_{$map_type}";
         $returnData = $this->redis()->hCache($cacheKey, $rowCacheKey);
         if (!is_array($returnData)) {
             $userDefaultFields = [ 'uid', 'loginname', 'name','nativename',  'Department', 'sex', 'company_id', 'department_id', 'imgpath', 'carnumber'];

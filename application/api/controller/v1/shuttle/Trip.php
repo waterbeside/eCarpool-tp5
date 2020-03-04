@@ -79,9 +79,9 @@ class Trip extends ApiBase
         $cacheKey  = $ShuttleTrip->getListCacheKeyByLineId($line_id, $rqType, $cacheUid);
         
         $rowCacheKey = "pz_{$pagesize},page_$page,type_$type,comid_$comid,orderby_$orderby,keyword_$keyword";
+        $rowCacheKey .= ",uCompanyId_{$userData['company_id']}";
         $rowCacheKey .= !empty($lnglat) && $line_id == 0 ? ",lnglat_{$lnglat[0]},{$lnglat[1]}" : '';
         $rowCacheKey .= !empty($city)  && $city == 'all' ? ",city_{$city}" : '';
-        $rowCacheKey .= ",uCompanyId_{$userData['company_id']}";
         
         $returnData = $redis->hCache($cacheKey, $rowCacheKey);
         if (is_array($returnData) && empty($returnData)) {
