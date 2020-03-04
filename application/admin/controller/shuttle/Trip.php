@@ -207,7 +207,7 @@ class Trip extends AdminBase
                 $data['took_count'] = count($data['passengers']);
         } else {
             $ShuttleTripPartner = new ShuttleTripPartner();
-            $data['partners'] = $ShuttleTripPartner->getPartners($id, 1) ?? [];
+            $data['partners'] = $ShuttleTripPartner->getPartners($id, null) ?? [];
             $data['driver'] = $ShuttleTripServ->getUserTripDetail($trip_id, [], [], 0) ?: null;
         }
         $TripsMixed = new TripsMixed();
