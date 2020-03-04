@@ -50,7 +50,7 @@ class Trip extends Base
         }
         if ($tripData['seat_count'] > 1) {
             $ShuttleTripPartner = new ShuttleTripPartner();
-            $partners = $ShuttleTripPartner->getPartners($tripData['id'], 1) ?? [];
+            $partners = $ShuttleTripPartner->getPartners($tripData['id'], null) ?? [];
             // 如果有同行者，检查司机是否在同行者中
             if ($this->checkDriverNotInPartners($partners, $userData['uid'], $userData['uid']) === false) {
                 return false;
@@ -235,7 +235,7 @@ class Trip extends Base
 
         if ($passengerTripData['seat_count'] > 1) {
             $ShuttleTripPartner = new ShuttleTripPartner();
-            $partners = $ShuttleTripPartner->getPartners($passengerTripData['id'], 1) ?? [];
+            $partners = $ShuttleTripPartner->getPartners($passengerTripData['id'], null) ?? [];
             // 如果有同行者，检查司机是否在同行者中
             if ($this->checkDriverNotInPartners($partners, $driverTripData['id'], $userData['uid']) === false) {
                 return false;

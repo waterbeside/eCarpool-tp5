@@ -497,7 +497,7 @@ class Trip extends ApiBase
                 }
             } else {
                 $ShuttleTripPartner = new ShuttleTripPartner();
-                $data['partners'] = $ShuttleTripPartner->getPartners($id, 1) ?? [];
+                $data['partners'] = $ShuttleTripPartner->getPartners($id, null) ?? [];
                 $data['driver'] = $ShuttleTripServ->getUserTripDetail($trip_id, [], [], 0) ?: null;
                 if ($show_gps) {
                     $gpsRes = isset($data['driver']['id']) ? $ShuttleTripGps->getGpsByTripAndUid($data['driver']['id'], $data['driver']['u_uid']) : null;
@@ -764,7 +764,7 @@ class Trip extends ApiBase
             // 查询有没有同行者, 有的话把同行者也带上
             if ($tripData['seat_count'] > 1) {
                 $ShuttleTripPartner = new ShuttleTripPartner();
-                $partners = $ShuttleTripPartner->getPartners($tripData['id'], 1) ?? [];
+                $partners = $ShuttleTripPartner->getPartners($tripData['id'], null) ?? [];
                 $ShuttlePartnerServ = new ShuttlePartnerService();
                 $rqTripData = $tripData;
                 $rqTripData['line_data'] = $rqData['line_data'];
@@ -969,7 +969,7 @@ class Trip extends ApiBase
             // 处理同行者
             if ($passengerTripData['seat_count'] > 1) {
                 $ShuttleTripPartner = new ShuttleTripPartner();
-                $partners = $ShuttleTripPartner->getPartners($tripData['id'], 1) ?? [];
+                $partners = $ShuttleTripPartner->getPartners($tripData['id'], null) ?? [];
                 $ShuttlePartnerServ = new ShuttlePartnerService();
                 $ShuttlePartnerServ->getOnCar($passengerTripData, $driverTripData);
             }

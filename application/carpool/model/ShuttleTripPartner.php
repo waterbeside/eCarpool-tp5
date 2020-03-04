@@ -82,11 +82,11 @@ class ShuttleTripPartner extends BaseModel
      * 取得同行者列表
      *
      * @param integer $trip_id 路线id
-     * @param integer $from_type 类型，0普通行程，1上下班行程
+     * @param integer $from_type 类型，0新普通行程，1上下班行程,  null: 上下班和新普通行程, -3旧普通行程
      * @param integer $ex 缓存有效期
      * @return array
      */
-    public function getPartners($trip_id, $from_type = 0, $ex = 60)
+    public function getPartners($trip_id, $from_type = null, $ex = 60)
     {
         $cacheKey = $this->getPartnersCacheKey($trip_id, $from_type);
         $redis = new RedisData();
@@ -97,7 +97,11 @@ class ShuttleTripPartner extends BaseModel
                 ["status", "=", Db::raw(0)],
                 ['trip_id', '=', $trip_id],
             ];
-            $map[] = $from_type ? ['line_type', '>', 0] : ['line_type', '=', 0];
+            if (is_numeric($from_type)) {
+                $map[] = $from_type > 0 ? ['line_type', '>', 0] : ['line_type', '=', $from_type];
+            } else {
+                $map[] = ['line_type', '>', -1];
+            }
             $res = $this->where($map)->select();
             $res = $res ? $res->toArray() : [];
             if (is_numeric($ex)) {
@@ -111,10 +115,10 @@ class ShuttleTripPartner extends BaseModel
      * 取出同行者id数组
      *
      * @param mixed $tidOrPlist 行程id或同行者列表
-     * @param integer $from_type 0普通行程，1上下班行程，$tidOrPlist为列表时，此参数无效
+     * @param integer $from_type 0新普通行程，1上下班行程，$tidOrPlist为列表时，此参数无效, null: 上下班和新普通行程
      * @return array
      */
-    public function getPartnerUids($tidOrPlist, $from_type = 0)
+    public function getPartnerUids($tidOrPlist, $from_type = null)
     {
         $partners = is_numeric($tidOrPlist) ? $this->getPartners($tidOrPlist, $from_type) : $tidOrPlist;
         $uids = [];

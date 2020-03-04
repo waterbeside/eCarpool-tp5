@@ -79,9 +79,9 @@ class Partner extends ApiBase
 
         $from = input('param.from');
         if (in_array($from, ['info'])) {
-            $from_type = 0;
+            $from_type = -3;
         } elseif ($from == 'shuttle_trip') {
-            $from_type = 1;
+            $from_type = null;
         } else {
             return $this->jsonReturn('992', lang('Error Param'));
         }
