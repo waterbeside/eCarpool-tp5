@@ -7,19 +7,6 @@ use my\RedisData;
 
 class Apps extends BaseModel
 {
-    protected $redisObj = null;
-
-    /**
-     * 创建redis对像
-     * @return redis
-     */
-    public function redis()
-    {
-        if (!$this->redisObj) {
-            $this->redisObj = new RedisData();
-        }
-        return $this->redisObj;
-    }
 
     /**
      * 取得单项数据缓存key的默认值
