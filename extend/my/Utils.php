@@ -265,7 +265,7 @@ class Utils
         } elseif ($pagesize > 0 && !$usePaginate) {
             $page = input('param.page/d', 1);
             $resData = $ctor->page($page, $pagesize)->select();
-            $resData = $resData ? $resData->toArray() : [];
+            $resData = is_object($resData) ? $resData->toArray() : ($resData ?: []);
             $pageData = [
                 'total' => -1,
                 'pageSize' => $pagesize,
@@ -274,7 +274,7 @@ class Utils
             ];
         } else {
             $resData =    $ctor->select();
-            $resData = $resData ? $resData->toArray() : [];
+            $resData = is_object($resData) ? $resData->toArray() : ($resData ?: []);
             $total = count($resData);
             $pageData = [
                 'total' => $total,
@@ -589,5 +589,4 @@ class Utils
         }
         return $newList;
     }
-
 }
