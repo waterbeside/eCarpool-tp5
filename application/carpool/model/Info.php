@@ -299,10 +299,10 @@ class Info extends BaseModel
             a.infoid as id, 
             (case when a.love_wall_ID IS NULL then 0 else a.love_wall_ID end) as trip_id ,
             (case when a.status = -2  then -1 else a.status end) as 'status' ,
-            a.carownid as uid,
+            cast(a.carownid as signed) as uid,
             1 as user_type, 
             0 as comefrom, 
-            '1' as seat_count,
+            1 as seat_count,
             $comeFields")->where($map)->where("$whereUser AND (a.love_wall_id < 1 OR a.love_wall_ID is null)")->order($orderStr)->buildSql();
 
         // 从info表取得乘客数据
@@ -311,10 +311,10 @@ class Info extends BaseModel
             a.infoid as id, 
             (case when a.love_wall_ID IS NULL then 0 else a.love_wall_ID end) as trip_id ,
             (case when a.status = -2  then -1 else a.status end) as 'status' ,
-            a.passengerid as uid,
+            cast(a.passengerid as signed) as uid,
             0 as user_type, 
             a.comefrom, 
-            '1' as seat_count,
+            1 as seat_count,
             $comeFields")->where($map)->where($whereUser)->order($orderStr)->buildSql();
 
 
@@ -324,7 +324,7 @@ class Info extends BaseModel
             a.love_wall_ID as id, 
             0 as trip_id ,
             (case when a.status = -2  then -1 else a.status end) as 'status' ,
-            a.carownid as uid,
+            cast(a.carownid as signed) as uid,
             1 as user_type, 
             1 as comefrom, 
             a.seat_count,
