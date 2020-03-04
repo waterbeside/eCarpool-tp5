@@ -406,7 +406,10 @@ class TripsMixed extends Service
         $InfoModel = new InfoModel();
         $sql_uOld = $InfoModel->buildMixedUnionSql($uid, $statusSet, $timeBetweenInfo);
         
-        return "($sql_uShuttle union $sql_uOld)";
+        if (isset($sql_uOld)) {
+            return "($sql_uShuttle union $sql_uOld)";
+        }
+        return $sql_uShuttle;
     }
 
     /**
