@@ -62,15 +62,21 @@
                             <div class="layui-form-mid layui-word-aux">是否可用</div>
                         </div>
                     </div>
-                    <!-- <div class="layui-form-item">
-                        <label class="layui-form-label">地图类型</label>
-                        <div class="layui-input-block">
-                            <select name="map_type">
-                                <option value="0"> 高德</option>
-                                <option value="1"> Google</option>
-                            </select>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">用户可见部门区域</label>
+                        <div class="layui-input-block J-region-wrapper">
+                            <input type="hidden" name="department_id" value="0" class="layui-input layui-input-inline " readonly>
+                            <a onclick="openLayer('{:url('admin/Department/list_dialog')}','选择区域/部门');"
+                                href="javascript:void(0);" class="layui-btn  layui-btn-primary J-btn-department"
+                                data-target="department_id:id" data-show-target=".J-dept-select-wrapper"
+                                data-paramstr='{"default_id":""}'>
+                                <i class="fa fa-book"></i> <span>选择区域/部门</span>
+                            </a>
+                            <div class="layui-word-aux">选择后，该部门下的用户能看到本站点</div>
                         </div>
-                    </div> -->
+                    </div>
+
                     <div class="layui-form-item">
                         <label class="layui-form-label">排序</label>
                         <div class="layui-input-block">
