@@ -203,6 +203,7 @@ class MixTrip extends ApiBase
                 $redis->hCache($cacheKey, $rowCacheKey, [], $ex);
                 return $this->jsonReturn(20002, 'No data');
             }
+            $newList = [];
             foreach ($returnData['lists'] as $key => $value) {
                 $value = $ShuttleTripService->formatTimeFields($value, 'item', ['time','create_time']);
                 $value['have_started'] = $TripsMixed->haveStartedCode($value['time'], $value['time_offset']);
@@ -215,16 +216,18 @@ class MixTrip extends ApiBase
                 if ($value['user_type'] == 1) {
                     $value['took_count'] =  in_array($value['from'], ['shuttle_trip', 'wall']) ?  $TripsMixed->countPassengers($value['id'], $value['from'], $ex) : 1;
                 }
-                $returnData['lists'][$key] = $value;
+                $newList[] = $value;
             }
+            $returnData['lists'] = $newList;
             $redis->hCache($cacheKey, $rowCacheKey, $returnData, $ex);
         }
 
         $newList = [];
         $AddressModel = new AddressModel();
+        $Utils = new Utils();
         foreach ($returnData['lists'] as $key => $value) {
             if ($value['from'] == 'shuttle_trip') {
-                $extraInfo = $this->utils()->json2Array($value['extra_info']);
+                $extraInfo = $Utils->json2Array($value['extra_info']);
                 $value['map_type'] = $extraInfo['line_data']['map_type'] ?? 0;
             }
             // 修补缺失的行程相关字段
@@ -240,7 +243,19 @@ class MixTrip extends ApiBase
                     $value['end_name'] = $startItem['addressname'];
                 }
             }
-            unset($value['extra_info']);
+            $unsetField = [
+                'start_id', 'start_longitude', 'start_latitude',
+                'end_id', 'end_longitude', 'end_latitude',
+                'extra_info'
+            ];
+            $value = $Utils->filterDataFields($value, $unsetField, true);
+            $value = $Utils->packFieldsToField($value, [
+                'line_data' => [
+                    'start_id', 'start_name', 'start_longitude', 'start_latitude',
+                    'end_id', 'end_name', 'end_longitude', 'end_latitude',
+                    'map_type'
+                ],
+            ]);
             $newList[] = $value;
         }
         $returnData['lists'] = $newList;
