@@ -278,7 +278,7 @@ class Trip extends ApiBase
      * @param integer $show_member 是否显示成员
      * @param integer $pagesize 每页多少条;
      */
-    public function my($show_member = 1, $type = -2, $page = 1, $pagesize = 0)
+    public function my($show_member = 1, $type = -1, $page = 1, $pagesize = 0)
     {
         $isShowMember = $show_member;
         $userData = $this->getUserData(1);
@@ -300,7 +300,7 @@ class Trip extends ApiBase
             $userAlias = 'u';
             $fields_user = $TripsService->buildUserFields($userAlias, $userFields);
             $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id, t.plate, t.seat_count, t.status, t.time, t.create_time, t.time_offset';
-            $fields .= ', l.type as line_type, l.start_name, l.end_name, l.map_type ';
+            $fields .= ', t.line_type, t.start_name, t.end_name, t.extra_info ';
             $fields .=  ',' .$fields_user;
             $map  = [
                 ['t.status', 'in', [0,1]],
@@ -313,6 +313,8 @@ class Trip extends ApiBase
                     $map[] = ['t.line_type', '=', $type];
                 } elseif ($type == -2) {
                     $map[] = ['t.line_type', 'in', [1,2]];
+                } elseif ($type = -1) {
+                    $map[] = ['t.line_type', 'in', [0,1,2]];
                 } else {
                     $type = $Utils->stringSetToArray($type);
                     if (!empty($type)) {
@@ -322,7 +324,6 @@ class Trip extends ApiBase
             }
             $join = [
                 ["user {$userAlias}", "t.uid = {$userAlias}.uid", 'left'],
-                ["t_shuttle_line l", "l.id = t.line_id", 'left'],
             ];
             $ctor = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map)->order('t.time ASC');
             $returnData = $this->getListDataByCtor($ctor, $pagesize);
@@ -353,6 +354,18 @@ class Trip extends ApiBase
                     $value['driver'] = $resDriver ?: [];
                 }
             }
+            // 处理map_type
+            $extraInfo = $Utils->json2Array($value['extra_info']);
+            unset($value['extra_info']);
+            $value['map_type'] = $extraInfo['line_data']['map_type'] ?? 0;
+            // 组合路线字段
+            $value = $Utils->packFieldsToField($value, [
+                'line_data' => [
+                    'start_id', 'start_name', 'start_longitude', 'start_latitude',
+                    'end_id', 'end_name', 'end_longitude', 'end_latitude',
+                    'map_type'
+                ],
+            ]);
             $lists_new[] = $value;
         }
         $returnData['lists'] = $lists_new;
@@ -371,6 +384,7 @@ class Trip extends ApiBase
     {
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
+        $Utils = new Utils();
         $redis = new RedisData();
         $ShuttleTrip = new ShuttleTrip();
         $ShuttleTripService = new ShuttleTripService();
@@ -383,8 +397,8 @@ class Trip extends ApiBase
         }
         if (!$returnData) {
             $ex = 60 * 5;
-            $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id, t.uid, t.status, t.time, t.create_time';
-            $fields .= ', l.type as line_type, l.start_name, l.end_name, l.map_type';
+            $fields = 't.id, t.trip_id, t.user_type, t.comefrom, t.line_id, t.uid, t.status, t.time, t.create_time, t.time_offset';
+            $fields .= ', t.line_type, t.start_name, t.end_name, t.extra_info ';
             $map  = [
                 ['t.status', 'in', [-1,0,1,2,3,4,5]],
                 ['t.is_delete', '=', Db::raw(0)],
@@ -392,7 +406,7 @@ class Trip extends ApiBase
                 ["t.time", "<", date('Y-m-d H:i:s', strtotime('-60 minute'))],
             ];
             $join = [
-                ["t_shuttle_line l", "l.id = t.line_id", 'left'],
+                // ["t_shuttle_line l", "l.id = t.line_id", 'left'],
             ];
             $ctor = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map)->order('t.time DESC');
             $returnData = $this->getListDataByCtor($ctor, $pagesize);
@@ -408,6 +422,18 @@ class Trip extends ApiBase
         $returnData['lists'] = $ShuttleTripService->formatTimeFields($returnData['lists'], 'list', ['time','create_time','update_time']);
         foreach ($returnData['lists'] as $key => $value) {
             $returnData['lists'][$key]['have_started'] = $TripsMixed->haveStartedCode($value['time'], $value['time_offset']);
+            // 处理map_type
+            $extraInfo = $Utils->json2Array($value['extra_info']);
+            unset($value['extra_info']);
+            $value['map_type'] = $extraInfo['line_data']['map_type'] ?? 0;
+            // 组合路线字段
+            $value = $Utils->packFieldsToField($value, [
+                'line_data' => [
+                    'start_id', 'start_name', 'start_longitude', 'start_latitude',
+                    'end_id', 'end_name', 'end_longitude', 'end_latitude',
+                    'map_type'
+                ],
+            ]);
         }
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
