@@ -7,7 +7,7 @@
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
         <ul class="amain-tool-bar" >
-            <li class="layui-this"><a href="{:url('admin/shuttle.address/index')}"  >班车站点管理</a></li>
+            <li class="layui-this"><a href="{:url('admin/shuttle.address/index')}"  >官方站点管理</a></li>
             <li class="btn-item btn-item-right">
                 <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/shuttle.address/add')}"  data-title="添加站点"  data-trigger="modal" >
                 <i class="fa fa-plus"></i> 添加站点</a>
@@ -57,9 +57,10 @@
                         <th lay-data="{field:'id', width:100, fixed:'left'}" >ID</th>
                         <th lay-data="{field:'type', width:120, fixed:'left'}">类型</th>
                         <th lay-data="{field:'addressname',minWidth:180}">名称</th>
-                        <th lay-data="{field:'lnglat', width:220, }">lng, lat</th>
-                        <!-- <th lay-data="{field:'department_ids'}">可用地区或部门</th> -->
-                        <!-- <th lay-data="{field:'admin_department_id',  width:180,}">地区管理组</th> -->
+                        <th lay-data="{field:'lnglat', width:200, }">lng, lat</th>
+                        <!-- <th lay-data="{field:'city',  width:100,}">城市</th> -->
+                        <th lay-data="{field:'address',  width:300,}">Address</th>
+                        <th lay-data="{field:'department_id', minWidth:180}">可用地区或部门</th>
                         <th lay-data="{field:'status', width:80}">状态</th>
                         <th lay-data="{field:'ordernum', width:80}">排序</th>
                         <th lay-data="{field:'options', width:120, fixed:'right'}">操作</th>
@@ -72,11 +73,13 @@
                         <div>
                             {$vo.addressid}
                         </div>
-                        <td><?php echo ($vo['address_type'] == 3 ? '公司站点' : ($vo['address_type'] == 4 ? '上下班普通站点' : '其它')); ?></td>
+                        <td><?php echo ($vo['address_type'] == 3 ? '公司站点' : ($vo['address_type'] == 4 ? '非公司站点' : '其它')); ?></td>
                         </td>
                         <td>{$vo.addressname}</td>
                         <td>{$vo.longitude}, {$vo.latitude} </td>
-                        <!-- <td>{$vo.company_id}</td> -->
+                        <!-- <td>{$vo.city}</td> -->
+                        <td>{$vo.address}</td>
+                        <td>{$vo.deptData.fullname}</td>
                         <td>{$vo.status > 0 ? '正常': '不显示'}</td>
                         <td>{$vo.ordernum}</td>
                         <td>
