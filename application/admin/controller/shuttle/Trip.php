@@ -112,17 +112,18 @@ class Trip extends AdminBase
 
         $TripsService = new TripsService();
 
-        $fields = 't.id, t.time, t.user_type, t.status, t.seat_count, t.plate , t.trip_id  , t.create_time, t.line_type, t.comefrom';
-        $fields .= ", (CASE WHEN t.user_type = 1 THEN t.id ELSE trip_id END) AS x_trip_id, DATE_FORMAT(time,'%Y-%m-%d') as time_hour";
+        $fields = 't.id, t.time, t.time_offset, t.user_type, t.status, t.seat_count, t.plate , t.trip_id  , t.create_time, t.line_type, t.comefrom';
+        $fields .= ', t.start_id, t.start_name, t.start_longitude, t.start_latitude, t.end_id, t.end_name, t.end_longitude, t.end_latitude, t.extra_info';
+        $fields .= ", (CASE WHEN t.user_type = 1 THEN t.id ELSE trip_id END) AS x_trip_id, DATE_FORMAT(t.time,'%Y-%m-%d') as time_hour";
         $fields .= ',' . $TripsService->buildUserFields('u');// 用户相关字段
-        $fields .= ',l.id as l_id, l.start_id, l.start_name, l.start_longitude, l.start_latitude, l.end_id, l.end_name, l.end_longitude, l.end_latitude, l.map_type'; // 路线相关字段
+        // $fields .= ',l.id as l_id, l.start_id, l.start_name, l.start_longitude, l.start_latitude, l.end_id, l.end_name, l.end_longitude, l.end_latitude, l.map_type'; // 路线相关字段
         $fields .= ', ud.fullname as u_full_department  ';
 
          // join
         $join = [
             ["user u", "t.uid = u.uid", 'left'],
             ["t_department ud", "u.department_id = ud.id", 'left'],
-            ["t_shuttle_line l", "t.line_id = l.id", 'left'],
+            // ["t_shuttle_line l", "t.line_id = l.id", 'left'],
         ];
 
         $orderString = 'time_hour DESC, x_trip_id DESC, t.user_type DESC ,t.time DESC';
@@ -138,6 +139,11 @@ class Trip extends AdminBase
         $colors = [];
         $Utils = new Utils;
         foreach ($lists as $key => $value) {
+
+            if (!$export) {
+                $value['extra_info'] = $Utils->json2Array($value['extra_info']);
+            }
+
             $value['time'] = strtotime($value['time']);
             $value['create_time'] = strtotime($value['create_time']);
             $color = $colors[$value['x_trip_id']] ?? null;
