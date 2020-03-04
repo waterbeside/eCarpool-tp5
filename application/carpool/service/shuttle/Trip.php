@@ -541,6 +541,7 @@ class Trip extends Service
             ];
         }
         $ShuttleTripModel = new ShuttleTripModel();
+        $TripsMixedService = new TripsMixedService();
         $list = $ShuttleTripModel->alias('t')->field($fieldsStr)->where($map)->join($join)->order('t.time ASC, line_sort DESC')->select();
         if (!$list) {
             return [];
@@ -557,11 +558,10 @@ class Trip extends Service
                 $list[$key] = $value;
             }
         }
-        $lineData = $this->getExtraInfoLineData($line_id, 0);
         foreach ($list as $key => $value) {
             // 遍历添加line_data
-            $itemlineData = $value['line_id'] == $line_id ? $lineData : $this->getExtraInfoLineData($value, 1);
-            $list[$key]['line_data'] = [
+            $itemlineData =  $this->getExtraInfoLineData($value, 2);
+            $value['line_data'] = [
                 'start_name' => $itemlineData['start_name'],
                 'start_longitude' => $itemlineData['start_longitude'],
                 'start_latitude' => $itemlineData['start_latitude'],
@@ -570,6 +570,8 @@ class Trip extends Service
                 'end_latitude' => $itemlineData['end_latitude'],
                 'map_type' => $itemlineData['map_type'] ?? 0,
             ];
+            $value = $TripsMixedService->formatResultValue($value, ['extra_info']);
+            $list[$key] = $value;
         }
         return $list;
     }
