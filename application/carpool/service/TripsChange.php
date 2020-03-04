@@ -133,7 +133,7 @@ class TripsChange
                 return $this->error(-1, lang('You can`t take your own'));
             }
             $TripsService = new TripsService();
-            if ($TripsService->checkRepetition(strtotime($tripData->time . '00'), $uid)) {
+            if ($TripsService->getRepetition(strtotime($tripData->time . '00'), $uid, 60 * 30, null, ['old'])) {
                 return $this->error(50007, $TripsService->errorMsg);
             }
 

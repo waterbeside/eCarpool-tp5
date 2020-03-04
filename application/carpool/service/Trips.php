@@ -620,7 +620,9 @@ class Trips extends Service
                     'comefrom' => 1,
                     'trip_id' => $value['love_wall_ID'],
                     'line_id' => 0,
+                    'start_id' => $value['startpid'],
                     'start_name' => $value['startname'],
+                    'end_id' => $value['endpid'],
                     'end_name' => $value['endname'],
                     'status' => $value['status'] == 2 ? -1 : $value['status'],
                 ];
@@ -651,7 +653,9 @@ class Trips extends Service
                     'comefrom' => $value['love_wall_ID'] > 0 ? ( $userType ? 1 : 2) : 3,
                     'trip_id' => $value['love_wall_ID'] ?: 0,
                     'line_id' => 0,
+                    'start_id' => $value['startpid'],
                     'start_name' => $value['startname'],
+                    'end_id' => $value['endpid'],
                     'end_name' => $value['endname'],
                     'status' => $value['status'] == 2 ? -1 : $value['status'],
                 ];
@@ -729,16 +733,26 @@ class Trips extends Service
      * 发布行程时检查行程是否有重复 (包含ShuttleTrip, love_wall , info)
      * @param  integer     $time       timestamp 出发时间的时间戳
      * @param  integer     $uid        发布者ID
-     * @param  boolean     $listDetail    是否返回列表详情
      * @param  string      $offsetTime 时间偏差范围
+     * @param  array       $level      检查级别，当为空时，默认[[60*10,10],[60*30,20]]
+     * @param  array       $from       从旧表还是新表检查 ['old','new']
      */
-    public function getRepetition($time, $uid, $offsetTime = 60 * 30, $level = null)
+    public function getRepetition($time, $uid, $offsetTime = 60 * 30, $level = null, $from = null)
     {
+        $offsetTime = $offsetTime === null ? 60 * 30 : $offsetTime;
         $level = $level ?: [[60*10,10],[60*30,20]];
         $ShuttleTripModel = new ShuttleTripModel();
-        $list_trip = $ShuttleTripModel->getListByTimeOffset($time, $uid, $offsetTime);
-        $list_wallinfo = $this->getUnionListByTimeOffset($time, $uid, $offsetTime);
-        $list = array_merge($list_trip, $list_wallinfo);
+        $from = $from ?: ['old','new'];
+        if (is_string($from)) {
+            $from = explode(',', $from);
+        }
+        if (in_array('new', $from)) {
+            $list_trip = $ShuttleTripModel->getListByTimeOffset($time, $uid, $offsetTime);
+        }
+        if (in_array('old', $from)) {
+            $list_wallinfo = $this->getUnionListByTimeOffset($time, $uid, $offsetTime);
+        }
+        $list = array_merge($list_trip??[], $list_wallinfo??[]);
         $res = $this->checkRepetitionByList($list, $time, 0, $offsetTime, $level);
         return $res;
     }

@@ -64,7 +64,7 @@ class Partner extends Base
         $errorMsg = '';
         foreach ($partners_uData as $key => $value) {
             // 验证重复行程
-            $repetitionList = $TripsService->getRepetition($time, $value['uid']);
+            $repetitionList = $TripsService->getRepetition($time, $value['uid'], 60 * 30, null, ['new']);
             $partners_uData[$key]['repetitionList'] = $repetitionList ?? [];
             if ($repetitionList) {
                 $hasError = 50009;

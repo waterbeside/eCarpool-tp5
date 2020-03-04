@@ -95,7 +95,7 @@ class Trip extends Service
         // 验证重复行程
         if ($checkRept) {
             $TripsService = new TripsService();
-            $repetitionList = $TripsService->getRepetition($time, $uid);
+            $repetitionList = $TripsService->getRepetition($time, $uid, 60 * 30, null, ['new']);
             if ($repetitionList) {
                 $TripsMixedService = new TripsMixedService();
                 // 为重复行程列表添加明细

@@ -364,7 +364,7 @@ class Trips extends ApiBase
         }
 
         //计算前后范围内有没有重复行程
-        if ($TripsService->getRepetition($time_x, $uid)) {
+        if ($TripsService->getRepetition($time_x, $uid, 60 * 30, null, ['old'])) {
             $this->jsonReturn(50007, [], $TripsService->errorMsg);
         }
         // if ($WallModel->checkRepetition($time_x, $uid, 60 * 10)) {
@@ -575,7 +575,7 @@ class Trips extends ApiBase
         /*********** riding 搭车  ***********/
         if ($type == "riding" || $type == "hitchhiking") {
             //计算前后范围内有没有重复行程
-            if ($TripsService->getRepetition(strtotime($datas->time . '00'), $uid)) {
+            if ($TripsService->getRepetition(strtotime($datas->time . '00'), $uid, 60 * 30, null, ['old'])) {
                 $this->jsonReturn(50007, [], $TripsService->errorMsg);
             }
             $res = $TripsChangeService->riding($datas, $uid);
@@ -606,12 +606,13 @@ class Trips extends ApiBase
                 if ($step == 1) {
                     $datas->love_wall_ID  = $checkWallRes['love_wall_ID'];
                 } else {
-                    //计算前后范围内有没有重复行程
-                    if ($TripsService->getRepetition(strtotime($datas->time . '00'), $uid)) {
-                        $this->jsonReturn(50007, [], $TripsService->errorMsg);
-                    }
                     return $this->jsonReturn(50008, $checkWallRes, $WallModel->errorMsg);
                     // return $this->jsonReturn(50008, $checkWallRes, "你在该时间段内有一个已发布的空座位，是否将该乘客请求合并到你的空座位上");
+                }
+            } else {
+                //计算前后范围内有没有重复行程
+                if ($TripsService->getRepetition(strtotime($datas->time . '00'), $uid, 60 * 30, null, ['old'])) {
+                    return $this->jsonReturn(50007, [], $TripsService->errorMsg);
                 }
             }
             $datas->carownid = $uid;
