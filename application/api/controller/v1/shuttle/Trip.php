@@ -165,11 +165,11 @@ class Trip extends ApiBase
             }
             // 筛公司站点
             if ($comid > 0) {
-                $cmpFieldName = 'l.start_id|l.end_id';
+                $cmpFieldName = 't.start_id|t.end_id';
                 if ($type == 1) {
-                    $cmpFieldName = 'l.end_id';
+                    $cmpFieldName = 't.end_id';
                 } elseif ($type == 2) {
-                    $cmpFieldName = 'l.start_id';
+                    $cmpFieldName = 't.start_id';
                 }
                 $map[] = [$cmpFieldName, '=', $comid];
             }
