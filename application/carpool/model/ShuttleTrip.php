@@ -252,12 +252,6 @@ class ShuttleTrip extends BaseModel
         $res = [];
         if ($res_trip) {
             foreach ($res_trip as $key => $value) {
-                try {
-                    $trip_info = json_decode($value['extra_info'], true);
-                    $lineData = $trip_info['line_data'];
-                } catch (\Exception $e) {  //其他错误
-                    $lineData = [];
-                }
                 $data = [
                     'from'=>'shuttle_trip',
                     'id' => $value['id'],
@@ -271,8 +265,10 @@ class ShuttleTrip extends BaseModel
                     'comefrom' => $value['comefrom'],
                     'trip_id' => $value['trip_id'],
                     'line_id'  => $value['line_id'],
-                    'start_name' => $lineData['start_name'] ?: '',
-                    'end_name' => $lineData['end_name'] ?: '',
+                    'start_id' => $value['start_id'] ?: 0,
+                    'start_name' => $value['start_name'] ?: '',
+                    'end_id' => $value['end_id'] ?: 0,
+                    'end_name' => $value['end_name'] ?: '',
                     'status' => $value['status'],
                 ];
                 $res[] = $data;
