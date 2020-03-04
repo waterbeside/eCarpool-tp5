@@ -127,11 +127,15 @@ class TripList extends Service
             // 排除已删用户；
             $map[] = ["{$userAlias}.is_delete", '=', Db::raw(0)];
             if ($userData) {
-                // 查找自己所在部门的可见路线;
-                $lineidSql = (new ShuttleLineDepartment())->getIdsByDepartmentId($userData['department_id'], true);
-                if ($lineidSql) {
-                    $map[] = ['', 'exp', Db::raw("t.line_id in $lineidSql")];
+                if ($lineId > 0) {
+                    // 查找自己所在部门的可见路线;
+                    $lineidSql = (new ShuttleLineDepartment())->getIdsByDepartmentId($userData['department_id'], true);
+                    if ($lineidSql) {
+                        $map[] = ['', 'exp', Db::raw("t.line_id in $lineidSql")];
+                    }
                 }
+                // 筛选用户可相互拼车的公司
+                $map[] = $TripsService->buildCompanyMap($userData, 'u');
             }
 
             $ctor = $ShuttleTripModel->alias('t')->field($fields)->join($join)->where($map)->order('line_sort DESC, t.time ASC');
