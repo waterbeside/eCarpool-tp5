@@ -66,7 +66,7 @@ class TripList extends Service
         if (!is_array($returnData)) {
             $time = time();
             
-            $tripFields = ['id', 'comefrom', 'user_type','trip_id', 'line_id', 'plate', 'status', 'time', 'create_time', 'seat_count', 'extra_info'];
+            $tripFields = ['id', 'comefrom', 'user_type','trip_id', 'line_id', 'plate', 'status', 'time', 'time_offset', 'create_time', 'seat_count', 'extra_info'];
             $userDefaultFields = [ 'uid', 'loginname', 'name','nativename',  'Department', 'sex', 'company_id', 'department_id', 'imgpath'];
             $fields = implode(',', $Utils->arrayAddString($tripFields, 't.'));
             $fields .= ", 'shuttle_trip' as `from`";
