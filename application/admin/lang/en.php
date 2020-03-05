@@ -268,6 +268,7 @@ return [
   'Goods information' => 'Goods information',
   'Goods order quantity statistics' => 'Goods order quantity statistics',
   'Last operation time' => 'Last operation time',
+  'Last operation user' => 'Last operation user',
   'Not redeemed or redeemed' => 'Not redeemed or redeemed',
   'Order department' => 'Order department',
   'Order details' => 'Order details',
@@ -280,6 +281,8 @@ return [
   'Total price' => 'Total price',
   'Total purchase price' => 'Total purchase price',
   'Number of people' => 'Number of people',
+  'Foreground user' => 'Foreground user',
+  'Background user' => 'Background user',
 
 
 

@@ -268,6 +268,7 @@ return [
   'Goods information' => '商品信息',
   'Goods order quantity statistics' => '商品下单数查询',
   'Last operation time' => '最后操作时间',
+  'Last operation user' => '最后操作人',
   'Not redeemed or redeemed' => '未兑和已兑',
   'Order department'=>'下单部门',
   'Order details' => '订单详细',
@@ -280,6 +281,8 @@ return [
   'Total price' => '总价',
   'Total purchase price' => '总采购价',
   'Number of people'=> '人数',
+  'Foreground user' => '前台用户',
+  'Background user' => '后台用户',
 
 
 

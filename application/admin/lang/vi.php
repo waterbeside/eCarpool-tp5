@@ -268,6 +268,7 @@ return [
   'Goods information' => 'Thông tin sản phẩm',
   'Goods order quantity statistics' => 'Truy vấn số thứ tự sản phẩm',
   'Last operation time' => 'Thời gian hoạt động lần cuối',
+  'Last operation user' => 'Last operation user',
   'Not redeemed or redeemed' => 'Chưa thanh toán và đổi quà',
   'Order department'=>'Bộ phận đặt hàng',
   'Order details' => 'Chi tiết đặt hàng',
@@ -280,6 +281,8 @@ return [
   'Total price' => 'Số lượng mua',
   'Total purchase price' => 'Tổng giá mua',
   'Number of people'=> 'Số người',
+  'Foreground user' => 'Foreground user',
+  'Background user' => 'Background user',
 
 
 
