@@ -892,7 +892,8 @@ class Trip extends ApiBase
         if (!$tripData) {
             return $this->jsonReturn(20002, lang('The route does not exist'));
         }
-        $line_id = $tripData['line_id'];
+        // $line_id = $tripData['line_id'];
+        
         $time = strtotime($tripData['time']);
         $timeoffset = is_numeric($timeoffset) ? [$timeoffset, $timeoffset] :
             (
@@ -904,7 +905,7 @@ class Trip extends ApiBase
         $timeoffset = count($timeoffset) > 1 ? $timeoffset : [$timeoffset[0], $timeoffset[0]];
 
         $matchingUserType = $tripData['user_type'] == 1 ? 0 : 1;
-        $list = $ShuttleTripService->getSimilarTrips($line_id, $time, $matchingUserType, -1*$uid, $timeoffset);
+        $list = $ShuttleTripService->getSimilarTrips($tripData, $time, $matchingUserType, -1*$uid, $timeoffset);
         if (!$list) {
             return $this->jsonReturn(20002, lang('No data'));
         }

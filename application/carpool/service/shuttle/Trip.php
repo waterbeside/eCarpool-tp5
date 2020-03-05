@@ -482,16 +482,28 @@ class Trip extends Service
     /**
      * 取得相似行程
      *
-     * @param integer $line_id 路线id
+     * @param mixed $tripData 行程数据
      * @param integer $time 时间
      * @param integer $userType  0=匹配乘客行程，1=匹配司机行程
      * @param integer $uid  大于0时=要查找的用户id的行程，小于0时=要排除的用户id的行程
      * @param mixed $timeOffset  时间前后偏移，格式为[10,10]数组。 当为单个数字时，自动变成[数字,数字]
+     * @param integer $radius  起终点半径距离范围
      * @return array
      */
-    public function getSimilarTrips($line_id, $time = 0, $userType = false, $uid = 0, $timeOffset = [60*15, 60*15])
+    public function getSimilarTrips($tripData, $time = 0, $userType = false, $uid = 0, $timeOffset = [60*10, 60*10], $radius = 2000)
     {
-        $tripFields = ['id', 'time', 'create_time', 'status', 'user_type', 'comefrom','line_id', 'seat_count', 'extra_info'];
+        $lineId = $tripData['line_id'] ?? 0;
+        $startId = $tripData['start_id'] ?? 0;
+        $endId = $tripData['end_id'] ?? 0;
+        $startLng = $tripData['start_longitude'] ?? 0;
+        $startLat = $tripData['start_latitude'] ?? 0;
+        $endLng = $tripData['end_longitude'] ?? 0;
+        $endLat = $tripData['end_latitude'] ?? 0;
+        if (empty($lineId) && (!$startLng && !$startLat && !$endLng && !$endLat)) {
+            return [];
+        }
+
+        $tripFields = ['id', 'time', 'time_offset', 'create_time', 'status', 'user_type', 'comefrom','line_id', 'seat_count', 'extra_info'];
         $userFields =[
             'uid','loginname','name','nativename','phone','mobile','Department',
             'sex','company_id','department_id','imgpath','carcolor', 'im_id'
@@ -502,18 +514,45 @@ class Trip extends Service
         if (is_numeric($timeOffset)) {
             $timeOffset = [$timeOffset, $timeOffset];
         }
-        $start_time = $time - $timeOffset[0];
-        $end_time = $time + $timeOffset[1];
+        // $start_time = $time - $timeOffset[0];
+        // $end_time = $time + $timeOffset[1];
+        $start_time = $time - 60 * 60;
+        $end_time = $time + 60 * 60;
         // 查询有没有关系路线，有的话也把这些路线作为条件查询
-        $friendLines = (new ShuttleLineRelation())->getFriendsLine($line_id, 0, 0) ?: [];
-        $lineMap = count($friendLines) > 0 ? ['t.line_id', 'in', array_merge($friendLines, [$line_id])] : ['t.line_id', '=', $line_id];
-        $fieldsStr .= ", (CASE WHEN t.line_id = $line_id THEN 1 ELSE 0 END) AS line_sort ";
+        
+        if ($lineId > 0) {
+            $friendLines = (new ShuttleLineRelation())->getFriendsLine($lineId, 0, 0) ?: [];
+            $lineMap = count($friendLines) > 0 ? ['t.line_id', 'in', array_merge($friendLines, [$lineId])] : ['t.line_id', '=', $lineId];
+            $fieldsStr .= ", (CASE WHEN t.line_id = $lineId THEN 1 ELSE 0 END) AS line_sort ";
+        } else {
+            $lineSortWhen = '';
+            if ($startId > 0 && $endId > 0) {
+                $lineSortWhen .= " WHEN t.start_id = $startId AND  t.end_id = $endId THEN 10 ";
+            }
+            if ($startId > 0) {
+                $lineSortWhen .= " WHEN t.start_id = $startId THEN 8 ";
+            }
+            if ($endId > 0) {
+                $lineSortWhen .= " WHEN t.end_id = $endId THEN 5 ";
+            }
+            if (!empty($lineSortWhen)) {
+                $fieldsStr .= ", (CASE $lineSortWhen ELSE 0 END) AS line_sort ";
+            }
+            $startRangeSql = Utils::getInstance()->buildCoordRangeWhereSql('t.start_longitude', 't.start_latitude', $startLng, $startLat, $radius);
+            $endRangeSql = Utils::getInstance()->buildCoordRangeWhereSql('t.end_longitude', 't.end_latitude', $endLng, $endLat, $radius);
+        }
+        
         // 构建查询map
         $map = [
-            $lineMap,
             ['t.status', 'in', [0,1]],
             ['t.time', 'between', [date('Y-m-d H:i:s', $start_time), date('Y-m-d H:i:s', $end_time)]],
         ];
+        if (isset($lineMap)) {
+            $map[] = $lineMap;
+        }
+        if (isset($startRangeSql) && isset($endRangeSql)) {
+            $map[] = ['', 'EXP', Db::raw("$startRangeSql AND $endRangeSql")];
+        }
         if ($userType === 1) {
             $map[] = ['t.user_type', '=', 1];
             $map[] = ['t.comefrom', '=', 1];
@@ -547,7 +586,6 @@ class Trip extends Service
             return [];
         }
         $list = $list->toArray();
-        $list = $this->formatTimeFields($list, 'list', ['time','create_time']);
         // 如果uid > 0 查询用户信息
         if ($uid > 0) {
             $User = new UserModel();
@@ -558,8 +596,10 @@ class Trip extends Service
                 $list[$key] = $value;
             }
         }
+        $newList = [];
         foreach ($list as $key => $value) {
             // 遍历添加line_data
+            $value = $this->formatTimeFields($value, 'item', ['time','create_time']);
             $itemlineData =  $this->getExtraInfoLineData($value, 2);
             $value['line_data'] = [
                 'start_name' => $itemlineData['start_name'],
@@ -571,9 +611,14 @@ class Trip extends Service
                 'map_type' => $itemlineData['map_type'] ?? 0,
             ];
             $value = $TripsMixedService->formatResultValue($value, ['extra_info']);
-            $list[$key] = $value;
+
+            // 根据time_offset排除个别行
+            $vTimeOffset = $value['time_offset'] > 0 ? [$value['time_offset'], $value['time_offset']] : $timeOffset;
+            if ($value['time'] > $time - $vTimeOffset[0] &&  $value['time'] < $time + $vTimeOffset[1]) {
+                $newList[] = $value;
+            }
         }
-        return $list;
+        return $newList;
     }
 
 
