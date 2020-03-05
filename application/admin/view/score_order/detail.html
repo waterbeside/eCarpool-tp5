@@ -38,35 +38,41 @@
     <table class="layui-table">
         <tbody>
             <tr>
-            <td class="label" width="100">{:lang("Order number")}</td>
-            <td> {$data.uuid|iconv_substr=0,8}/{$data.id}</td>
+                <td class="label" width="100">{:lang("Order number")}</td>
+                <td> {$data.uuid|iconv_substr=0,8}/{$data.id}</td>
             </tr>
             <tr>
-            <td class="label">{:lang("Order time")}</td>
-            <td>
-                <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.creation_time|strtotime}000</span>
-                <span style=" color: #ccc; margin-left:5px">
-                <?php echo  $data['platform']===1 ? '<i class="fa fa-android"></i>' : ($data['platform']===0 ? '<i class="fa fa-apple"></i>':''); ?>
-                </span>
-            </td>
+                <td class="label">{:lang("Order time")}</td>
+                <td>
+                    <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.creation_time|strtotime}000</span>
+                    <span style=" color: #ccc; margin-left:5px">
+                    <?php echo  $data['platform']===1 ? '<i class="fa fa-android"></i>' : ($data['platform']===0 ? '<i class="fa fa-apple"></i>':''); ?>
+                    </span>
+                </td>
             </tr>
             <tr>
-            <td class="label">{:lang('Last operation time')}</td>
-            <td>
-                <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.operation_time|strtotime}000</span>
-            </td>
+                <td class="label">{:lang('Last operation time')}</td>
+                <td>
+                    <span class="J-times-format" data-format="yyyy-mm-dd hh:ii:ss">{$data.operation_time|strtotime}000</span>
+                </td>
             </tr>
             <tr>
-            <td class="label">{:lang('Order status')}</td>
-            <td><div class="layui-badge goodOrder-status_{$data.status}"><?php echo $statusList[$data['status']] ? lang("sl:".$statusList[$data['status']]): $data['status']; ?> </div></td>
+                <td class="label">{:lang('Last operation user')}</td>
+                <td>
+                    <span >{$data.handler > 0 ? lang('Foreground user') : lang('Background user')} {$data.handler}</span>
+                </td>
             </tr>
             <tr>
-            <td class="label">{:lang('Consumption points')}</td>
-            <td>{$data.total}</td>
+                <td class="label">{:lang('Order status')}</td>
+                <td><div class="layui-badge goodOrder-status_{$data.status}"><?php echo $statusList[$data['status']] ? lang("sl:".$statusList[$data['status']]): $data['status']; ?> </div></td>
             </tr>
             <tr>
-            <td class="label">{:lang('Order department')}</td>
-            <td>{$data.region_id ? $data.full_department|str_replace=","," / ",### : $data.region_id}</td>
+                <td class="label">{:lang('Consumption points')}</td>
+                <td>{$data.total}</td>
+            </tr>
+            <tr>
+                <td class="label">{:lang('Order department')}</td>
+                <td>{$data.region_id ? $data.full_department|str_replace=","," / ",### : $data.region_id}</td>
             </tr>
 
         </tbody>
