@@ -64,24 +64,53 @@ class RedisData extends Redis
     /**
      * hGet、hSet合并使用
      *
-     * @param string $cacheKey
-     * @param [type] $field
-     * @param boolean $value
-     * @param integer $ex
+     * @param string $cacheKey Cache key
+     * @param string $rowKey Row key
+     * @param mixed $value 插入期
+     * @param integer $ex 过期时间
+     * @param integer $exType 0:参数$ex为基于key的过期时间，其它:$ex为行的过期时间(当$exType>0时，$exType为key的过期时间，当为-1时，key不过期，当为-2时，不设置key的过期时间
      * @return void
      */
-    public function hCache($cacheKey, $field, $value = false, $ex = 0)
+    public function hCache($cacheKey, $rowKey, $value = false, $ex = 0, $exType = -2)
     {
+        $now = time();
+        $rowExpKey = "_Expire:$rowKey";
         if ($value !== false) {
             $value = $this->formatValue($value);
-            $this->hSet($cacheKey, $field, $value);
-            if ($ex > 0) {
-                $this->expire($cacheKey, $ex);
+            try {
+                $this->multi();
+                $this->hSet($cacheKey, $rowKey, $value);
+                if ($ex > 0) {
+                    if ($exType) {
+                        $expTime = $now + $ex;
+                        $this->hSet($cacheKey, $rowExpKey, $expTime);
+                    } else {
+                        $this->expire($cacheKey, $ex);
+                    }
+                }
+                $this->exec();
+            } catch (\Exception $e) {
+                $errorMsg = $e->getMessage();
+                return false;
             }
             return true;
         } else {
-            $str =  $this->hGet($cacheKey, $field);
-            $redData = $this->formatRes($str);
+            try {
+                $this->multi();
+                $this->hGet($cacheKey, $rowKey);
+                $this->hGet($cacheKey, $rowExpKey);
+                $res = $this->exec();
+            } catch (\Exception $e) {
+                $errorMsg = $e->getMessage();
+                return false;
+            }
+            $resValue = $res[0];
+            $strExtime = $res[1];
+            $redData = $this->formatRes($resValue);
+            if (($strExtime || $ex > 0) && $strExtime < $now) {
+                $this->hDel($cacheKey, $rowKey, $rowExpKey);
+                return false;
+            }
             return $redData;
         }
     }

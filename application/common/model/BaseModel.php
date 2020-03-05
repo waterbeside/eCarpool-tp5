@@ -103,6 +103,11 @@ class BaseModel extends Model
         if ($ex == 'default' || $ex === null) {
             $ex = $this->itemCacheExpire;
         }
+        $exType = 0;
+        if (is_array($ex)) {
+            $exType = $ex[1] ?? $exType;
+            $ex = $ex[0];
+        }
         $redis = self::redis();
         $res = false;
         if (is_numeric($ex)) {
@@ -120,7 +125,7 @@ class BaseModel extends Model
                 $ex +=  $exp_offset * ($ex > 60 ? 60 : ($ex > 10 ? 10 : 1));
                 $ex = empty($res) ? ($ex > 60 * 5 ? round($ex/60) : 5) : $ex;
                 if ($hSet) {
-                    $redis->hCache($cacheKey, $cacheFeild, $res, $ex);
+                    $redis->hCache($cacheKey, $cacheFeild, $res, $ex, $exType);
                 } else {
                     $redis->cache($cacheKey, $res, $ex);
                 }

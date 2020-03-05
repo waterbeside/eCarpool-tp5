@@ -171,7 +171,7 @@ class TripList extends Service
             }
             $returnData['lists'] = $list;
             $exp = $isEmpty ? 10 : 60 * 2;
-            $this->redis()->hCache($cacheKey, $rowCacheKey, $returnData, $exp);
+            $this->redis()->hCache($cacheKey, $rowCacheKey, $returnData, $exp, -1);
         }
 
         return $returnData;
