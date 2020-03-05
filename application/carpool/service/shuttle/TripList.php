@@ -59,7 +59,7 @@ class TripList extends Service
 
         $cacheKey =  $ShuttleTripModel->getListCacheKeyByLineId(0, ($userType == 1 ? 'cars' : 'requests'));
         $rowCacheKey = "tzList,limit{$limit},pz{$pagesize},p{$page},type_$type";
-        $rowCacheKey .= $userData ? "uCompanyId_{$userData['company_id']}" : '';
+        $rowCacheKey .= $userData ? ",uCompanyId_{$userData['company_id']}" : '';
         $rowCacheKey .= ($lineId ? ",lineId_$lineId" : '').($startId ? ",startId_$startId" : '').($endId ? ",endId_$endId" : '');
 
         $returnData = $this->redis()->hCache($cacheKey, $rowCacheKey);
@@ -76,13 +76,13 @@ class TripList extends Service
             if ($startId > 0 || $endId > 0) {
                 $lineSortWhen = '';
                 if ($startId > 0 && $endId > 0) {
-                    $lineSortWhen .= "WHEN t.start_id = $startId AND  t.end_id = $endId THEN 10";
+                    $lineSortWhen .= " WHEN t.start_id = $startId AND  t.end_id = $endId THEN 10 ";
                 }
                 if ($startId > 0) {
-                    $lineSortWhen .= "WHEN t.start_id = $startId THEN 8";
+                    $lineSortWhen .= " WHEN t.start_id = $startId THEN 8 ";
                 }
                 if ($endId > 0) {
-                    $lineSortWhen .= "WHEN t.end_id = $endId THEN 5";
+                    $lineSortWhen .= " WHEN t.end_id = $endId THEN 5 ";
                 }
                 if (!empty($lineSortWhen)) {
                     $fields .= ", (CASE $lineSortWhen ELSE 0 END) AS line_sort ";
