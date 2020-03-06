@@ -148,7 +148,8 @@ class Address extends AdminBase
             $this->log('修改站点成功，id=' . $id, 0);
             return $this->jsonReturn(0, '保存成功');
         } else {
-            $data = (new AddressModel())->getItem($id, true);
+            $AddressModel = new AddressModel();
+            $data = $AddressModel->getItem($id, true);
 
             if ($data) {
                 $DepartmentModel = new Department();

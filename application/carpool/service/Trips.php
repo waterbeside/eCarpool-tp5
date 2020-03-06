@@ -385,7 +385,7 @@ class Trips extends Service
         }
         // $addressDatas['company_id'] = $userData['company_id'];
         // $addressDatas['create_uid'] = $userData['uid'];
-        // $addressRes = $AddressModel->addFromTrips($addressDatas);
+        // $addressRes = $AddressModel->addOne($addressDatas);
         // if (!$addressRes) {
         //     return $this->setError(-1, lang("The adress must not be empty"));
         // }
