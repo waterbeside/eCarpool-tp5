@@ -267,6 +267,7 @@ class TripsChange
      */
     public function riding($datas, $uid)
     {
+        $InfoModel = new InfoModel();
         $setInfoDatas = array(
             'passengerid'   => $uid,
             'carownid'      => $datas->carownid,
@@ -285,8 +286,8 @@ class TripsChange
             'comefrom'      => 3, // 乘客从空座位搭车
         );
         if ($datas->start_lat && $datas->start_lng) {
-            $setInfoDatas['start_latlng'] = Db::raw("geomfromtext('point(" . $datas->start_lng . " " . $datas->start_lat . ")')");
-            $setInfoDatas['end_latlng'] = Db::raw("geomfromtext('point(" . $datas->end_lng . " " . $datas->end_lat . ")')");
+            $setInfoDatas['start_latlng'] = $InfoModel->geomfromtextPoint($datas->start_lng, $datas->start_lat, true);
+            $setInfoDatas['end_latlng'] = $InfoModel->geomfromtextPoint($datas->end_lng, $datas->end_lat, true);
         }
         return InfoModel::insertGetId($setInfoDatas);
     }
