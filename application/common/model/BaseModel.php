@@ -3,6 +3,7 @@
 namespace app\common\model;
 
 use think\Model;
+use think\Db;
 use my\RedisData;
 
 class BaseModel extends Model
@@ -12,6 +13,7 @@ class BaseModel extends Model
     public $errorCode = 0;
     public $errorData = null;
     public $itemCacheExpire = 5 * 60;
+    public $itemFieldsMap = [];
 
     /**
      * 设置error
@@ -85,10 +87,30 @@ class BaseModel extends Model
     }
 
     /**
+     * 把temFieldsMap数组数据格式化成字符串
+     *
+     * @param array $data
+     * @return string
+     */
+    public function itemFieldsMap2Str($data)
+    {
+        if (empty($data)) {
+            return '';
+        }
+        $str = '';
+        foreach ($data as $key => $value) {
+            $sp = !empty($str) ? ',' : '';
+            $as = empty(trim($value)) ? '' : "AS $value";
+            $str .= "$sp $key $as";
+        }
+        return $str;
+    }
+
+    /**
      * 取得单行数据
      *
      * @param integer $id ID
-     * @param mixed $field 选择返回的字段，默认为'*', 为* null时，返回全部字段。 当为数字时或false时，为缓存时效，即提前参数$ex
+     * @param mixed $field 选择返回的字段，默认为'*', 为* null时，返回全部字段。 当为数字时或false时，为缓存时效，即提前参数$ex, 当===true时，为重建缓存
      * @param integer $ex 缓存时效
      * @param array $randomExOffset 有效期随机偏移
      * @param boolean $hSet 是否使用hSet,默认是hSet
@@ -99,6 +121,11 @@ class BaseModel extends Model
         if (is_numeric($field) || $field === false) {
             $ex = $field;
             $field = "*";
+        }
+        $reCache = false;
+        if ($field === true) {
+            $reCache = true;
+            $field = '*';
         }
         if ($ex == 'default' || $ex === null) {
             $ex = $this->itemCacheExpire;
@@ -116,8 +143,10 @@ class BaseModel extends Model
             $res = $hSet ? $redis->hCache($cacheKey, $cacheFeild) : $redis->cache($cacheKey);
         }
 
-        if (!$res || $ex === false) {
-            $res = self::find($id);
+        if (!$res || $ex === false || $reCache) {
+            $queryFields = $this->itemFieldsMap2Str($this->itemFieldsMap);
+            $queryFields = !empty($queryFields) ? '*,'.$queryFields : '';
+            $res = empty($queryFields) ? self::find($id) : self::field($queryFields)->find($id); // 查询
             $res = $res ? $res->toArray() : [];
             if (is_numeric($ex) && $ex > 0) {
                 $randomExOffset = is_array($randomExOffset) ? $randomExOffset : [1,2];
@@ -188,5 +217,19 @@ class BaseModel extends Model
             $lockKey = $lockKey.":".$keyFill;
         }
         return $redis->unlock($lockKey);
+    }
+
+    /**
+     * 取得给座标入库geometry类型字段时要用到的字符串值
+     *
+     * @param double $lng 经度
+     * @param double $lat 纬度
+     * @param boolean $returnDb 是否Db::raw()
+     * @return mixed
+     */
+    public function geomfromtextPoint($lng, $lat, $returnDb = false)
+    {
+        $str = "ST_GEOMFROMTEXT('point(" . $lng . " " . $lat . ")')";
+        return $returnDb ? Db::raw($str) : $str;
     }
 }
