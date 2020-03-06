@@ -28,6 +28,15 @@ class Address extends BaseModel
         'Y(gis)' => 'lat',
     ];
 
+    public function getCommonFields()
+    {
+        $field = ['addressid', 'addressname', 'status', 'city','district', 'address', 'map_type', 'usage_count'];
+        $field = implode(',', $field);
+        $exField = $this->itemFieldsMap2Str($this->itemFieldsMap);
+        $field .= $exField ? ','.$exField : '';
+        return $field;
+    }
+
     /**
      * 取得单项数据缓存Key设置
      *
@@ -94,57 +103,80 @@ class Address extends BaseModel
     }
 
     /**
-     * 创建起终点
+     * 创建起终点\途经点
      */
-    public function createAddress($datas, $userData)
+    public function createTripAddress($datas, $userData)
     {
         $createAddress = [];
         //处理起点
-        $startData = $datas['start'];
-        if ((!isset($datas['start']['addressid']) || !(is_numeric($datas['start']['addressid']) && $datas['start']['addressid'] > 0))) {
-            $startRes = $this->createAnAddress($startData, $userData);
-        } else { // 如果有address id
-            $startRes = $this->getItem($datas['start']['addressid'], ['addressid','addressname','longtitude','latitude','address_type']);
-            if (empty($startRes)) {
-                $startRes = $this->createAnAddress($startData, $userData);
-            } else {
-                $startRes['longitude'] = $startRes['longtitude'];
-                unset($startRes['longtitude']);
-            }
-        }
+        $startRes = $this->createAnAddressOrGetItem($datas['start'], $userData);
         if (!$startRes) {
             return $this->setError(-1, lang("The point of departure must not be empty"));
         }
         $createAddress['start'] = $startRes;
 
         //处理终点
-        $endDatas = $datas['end'];
-        if ((!isset($datas['end']['addressid']) || !(is_numeric($datas['end']['addressid']) && $datas['end']['addressid'] > 0))) {
-            $endRes = $this->createAnAddress($endDatas, $userData);
-        } else { // 如果有address id
-            $endRes = $this->getItem($datas['end']['addressid'], ['addressid','addressname','longtitude','latitude','address_type']);
-            if (empty($endRes)) {
-                $endRes = $this->createAnAddress($endRes, $userData);
-            } else {
-                $endRes['longitude'] = $endRes['longtitude'];
-                unset($endRes['longtitude']);
-            }
-        }
+        $endRes = $this->createAnAddressOrGetItem($datas['end'], $userData);
         if (!$endRes) {
             return $this->setError(-1, lang("The destination cannot be empty"));
         }
         $createAddress['end'] = $endRes;
+
+        // 处理途经点
+        $waypoints = $datas['waypoints'] ?? [];
+        $createAddress['waypoints'] = [];
+        if (!empty($waypoints)) {
+            Db::connect('database_carpool')->startTrans();
+            try {
+                foreach ($waypoints as $key => $value) {
+                    $pointRes = $this->createAnAddressOrGetItem($value, $userData);
+                    $createAddress['waypoints'][] = $pointRes;
+                }
+                Db::connect('database_carpool')->commit();
+            } catch (\Exception $e) {
+                // 回滚事务
+                Db::connect('database_carpool')->rollback();
+                $errorMsg = $e->getMessage();
+                return $this->setError(-1, $errorMsg, []);
+            }
+        }
         return $createAddress;
+    }
+
+
+    /**
+     * 查找站点，如果没有，或者addressid为空，则创建站点
+     *
+     * @param array $addressData 站点数据
+     * @param array $userData 操作用户的数据
+     * @return array 返回站点数据
+     */
+    public function createAnAddressOrGetItem($addressData, $userData)
+    {
+        $addressid = $addressData['addressid'] ?? 0;
+        $addressid = is_numeric($addressData['addressid']) ? $addressData['addressid'] : 0;
+        if ($addressid > 0) {// 如果有address id
+            $pointRes = $this->getItem($addressData['addressid'], ['addressid','addressname','lng','lat','address_type', 'address', 'district']);
+            if (empty($pointRes)) {
+                $pointRes = $this->createAnAddress($addressData, $userData);
+            } else {
+                $pointRes['longitude'] = $pointRes['lng'];
+                $pointRes['latitude'] = $pointRes['lat'];
+            }
+        } else {
+            $pointRes = $this->createAnAddress($addressData, $userData);
+        }
+        return $pointRes;
     }
 
     /**
      * 创建一个站点
      */
-    public function createAnAddress($addressDatas, $userData)
+    public function createAnAddress($addressData, $userData, $radius = 50)
     {
-        $addressDatas['company_id'] = $userData['company_id'];
-        $addressDatas['create_uid'] = $userData['uid'];
-        $addressRes = $this->addFromTrips($addressDatas);
+        $addressData['company_id'] = $userData['company_id'];
+        $addressData['create_uid'] = $userData['uid'];
+        $addressRes = $this->addOne($addressData, $radius);
         if (!$addressRes) {
             $errorData = $this->getError();
             return $this->setError($errorData['code'] ?? -1, $errorData['msg'] ?? lang("The adress must not be empty"));
@@ -157,9 +189,10 @@ class Address extends BaseModel
      * 通过行程请求来的数据新建站点
      *
      * @param array $data 请求数据
+     * @param integer $radius 如果同名称下，该米数半径内有站点，则不插行。返回查出的行.
      * @return array 返回有用的站点数据
      */
-    public function addFromTrips($data)
+    public function addOne($data, $radius = 50, $isForce = 0)
     {
         if (empty($data['longitude']) || empty($data['latitude']) || empty($data['addressname'])) {
             return $this->setError(-1, lang('Parameter error'));
@@ -186,7 +219,7 @@ class Address extends BaseModel
         //如果没有数据，则创建
         $city = isset($data['city']) && $data['city'] ? $data['city'] : "";
         $inputData = [
-            'address_type' => 1,
+            'address_type' => $data['address_type'] ?? 1,
             'addressname' => $data['addressname'],
             'longtitude' => $data['longitude'],
             'latitude'   => $data['latitude'],
@@ -219,6 +252,31 @@ class Address extends BaseModel
         return $data;
     }
 
+    /**
+     * 查找附近站点
+     *
+     * @param array $lnglat [lng, lat] 经纬度
+     * @param array $radius 范围半径
+     * @return array
+     */
+    public function getNear($lnglat, $radius, $extraMap = null, $limit = 10)
+    {
+        $distantSql = "ST_Distance_Sphere(POINT({$lnglat[0]}, {$lnglat[1]}), gis)";
+        $fields = $this->getCommonFields();
+        $fields .= ",$distantSql as distant";
+        $where = [
+            ['', 'EXP', Db::raw("$distantSql < $radius")]
+        ];
+        if (!empty($extraMap)) {
+            $where = array_merge($where, $extraMap);
+        }
+        $orderby = 'distant ASC';
+        $res = $this->field($fields)->where($where)->order($orderby)
+            // ->fetchSql()
+            ->limit($limit)
+            ->select();
+        return $res;
+    }
 
     /**
      * 高德逆地理编码查询
@@ -265,4 +323,6 @@ class Address extends BaseModel
         $redis = $this->redis();
         $redis->del($cacheKey);
     }
+
+
 }
