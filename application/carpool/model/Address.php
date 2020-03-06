@@ -4,6 +4,7 @@ namespace app\carpool\model;
 
 use think\Model;
 use app\common\model\BaseModel;
+use think\Db;
 
 class Address extends BaseModel
 {
@@ -21,6 +22,11 @@ class Address extends BaseModel
 
     public $errorMsg = "";
     public $itemCacheExpire = 2 * 60;
+    public $itemFieldsMap = [
+        'ST_ASTEXT(gis)' => 'gis',
+        'X(gis)' => 'lng',
+        'Y(gis)' => 'lat',
+    ];
 
     /**
      * 取得单项数据缓存Key设置
@@ -67,6 +73,24 @@ class Address extends BaseModel
     {
         $cacheKey = $this->getMyCacheKey($uid);
         return $this->redis()->del($cacheKey);
+    }
+
+    /**
+     * 检查经纬度是否合法
+     *
+     * @param double $lng 经度
+     * @param double $lat 纬度
+     * @return boolean
+     */
+    public function checkLngLat($lng, $lat)
+    {
+        if ($lng > 180 || $lng < -180) {
+            return $this->setError(-1, '经度不合法');
+        }
+        if ($lat > 90 || $lat < -90) {
+            return $this->setError(-1, '纬度不合法');
+        }
+        return true;
     }
 
     /**
@@ -122,7 +146,8 @@ class Address extends BaseModel
         $addressDatas['create_uid'] = $userData['uid'];
         $addressRes = $this->addFromTrips($addressDatas);
         if (!$addressRes) {
-            return $this->setError(-1, lang("The adress must not be empty"));
+            $errorData = $this->getError();
+            return $this->setError($errorData['code'] ?? -1, $errorData['msg'] ?? lang("The adress must not be empty"));
         }
         // $addressDatas['addressid'] = $addressRes['addressid'];
         return $addressRes;
@@ -137,8 +162,10 @@ class Address extends BaseModel
     public function addFromTrips($data)
     {
         if (empty($data['longitude']) || empty($data['latitude']) || empty($data['addressname'])) {
-            $this->errorMsg = lang('Parameter error');
-            return false;
+            return $this->setError(-1, lang('Parameter error'));
+        }
+        if (!$this->checkLngLat($data['longitude'], $data['latitude'])) {
+            return $this->setError(-1, '经纬度不合法');
         }
         //先查找有没有对应的地址
         $findMap = [
@@ -165,6 +192,7 @@ class Address extends BaseModel
             'latitude'   => $data['latitude'],
             'create_time'   => date("Y-m-d H:i:s"),
             'company_id'   => intval($data['company_id']),
+            'gis'  =>  $this->geomfromtextPoint($data['longitude'], $data['longitude'], true),
             'city'       => $city ? $city : '--',
         ];
         if (isset($data['create_uid'])) {
@@ -185,8 +213,7 @@ class Address extends BaseModel
             $data['addressid'] = intval($createID);
             $data = array_merge($data, $inputData);
         } else {
-            $this->errorMsg = lang("Fail");
-            return false;
+            return $this->setError(-1, '添加站点失败');
         }
         unset($data['longtitude']);
         return $data;
@@ -200,7 +227,6 @@ class Address extends BaseModel
      */
     public function regeo($lnglat)
     {
-        
         $location = $lnglat ;
         $batch = false;
         if (is_array($lnglat)) {
