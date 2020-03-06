@@ -338,7 +338,7 @@ class Trip extends Service
         //处理起终点
         if (!$rqData['line_id']) {
             if ($rqData['map_type'] != 1) { // 如果是高德地图
-                $createAddress = $AddressModel->createAddress($rqData, $userData);
+                $createAddress = $AddressModel->createTripAddress($rqData, $userData);
                 if ($createAddress === false) {
                     return $this->setError(992, $AddressModel->errorMsg);
                 }
