@@ -34,6 +34,7 @@ class Trip extends Service
      */
     public function getRqData($rqData = null)
     {
+        $Utils = Utils::getInstance();
         $rqData = $rqData ?: [];
         $rqData['create_type'] = $rqData['create_type'] ?? input('post.create_type');
         $rqData['line_id'] = $rqData['line_id'] ?? input('post.line_id/d', 0);
@@ -45,15 +46,11 @@ class Trip extends Service
         $rqData['map_type'] =  $rqData['map_type'] ?? input('post.map_type/d', 0);
         $rqData['start'] =  $rqData['start'] ?? input('post.start');
         $rqData['end'] =  $rqData['end'] ?? input('post.end');
-        try {
-            $rqData['start']       = is_array($rqData['start']) ? $rqData['start'] : json_decode($rqData['start'], true);
-            $rqData['end']         = is_array($rqData['end']) ? $rqData['end'] : json_decode($rqData['end'], true);
-        } catch (\Exception $e) {
-            $rqData['start'] = null;
-            $rqData['end'] = null;
-            // $msg =  $e->getMessage();
-            // $this->jsonReturn(992, [], 'Error Param', ['error'=>$msg, 'data'=>$datas]);
-        }
+        $rqData['waypoints'] =  $rqData['waypoints'] ?? input('post.waypoints');
+        $rqData['start']       = is_array($rqData['start']) ? $rqData['start'] : $Utils->json2Array($rqData['start']);
+        $rqData['end']         = is_array($rqData['end']) ? $rqData['end'] : $Utils->json2Array($rqData['end']);
+        $rqData['waypoints']   = is_array($rqData['waypoints']) ? $rqData['waypoints'] : $Utils->json2Array($rqData['waypoints']);
+        
         return $rqData;
     }
 

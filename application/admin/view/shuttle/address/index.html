@@ -79,7 +79,7 @@
                         <td>{$vo.longitude}, {$vo.latitude} </td>
                         <!-- <td>{$vo.city}</td> -->
                         <td>{$vo.address}</td>
-                        <td>{$vo.deptData.fullname}</td>
+                        <td>{$vo['deptData']['fullname'] ?? ''}</td>
                         <td>{$vo.status > 0 ? '正常': '不显示'}</td>
                         <td>{$vo.ordernum}</td>
                         <td>

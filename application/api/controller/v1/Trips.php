@@ -644,7 +644,7 @@ class Trips extends ApiBase
             $inputData = [
                 $addressSign . 'pid'  => $map_type ? (isset($addressDatas['gid']) &&  $addressDatas['gid'] ? -1 : 0) : $addressDatas['addressid'],
                 $addressSign . 'name'  => $addressDatas['addressname'],
-                $addressSign . '_latlng'  => Db::raw("geomfromtext('point(" . $addressDatas['longitude'] . " " . $addressDatas['latitude'] . ")')"),
+                $addressSign . '_latlng'  =>  Db::raw("geomfromtext('point(" . $addressDatas['longitude'] . " " . $addressDatas['latitude'] . ")')"),
             ];
             if ($map_type) {
                 if (isset($addressDatas['gid']) &&  $addressDatas['gid']) {
