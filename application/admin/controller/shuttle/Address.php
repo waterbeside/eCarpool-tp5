@@ -96,6 +96,11 @@ class Address extends AdminBase
                 return $this->jsonReturn(-1, $validate_result);
             }
             $AddressModel = new AddressModel();
+            if (!$AddressModel->checkLnglat($data['longitude'], $data['latitude'])) {
+                return $this->jsonReturn(-1, '经纬度不合法');
+            }
+            $data['gis'] = $AddressModel->geomfromtextPoint($data['longitude'], $data['latitude'], true);
+
             $res = $AddressModel->allowField(true)->save($data);
             if (!$res) {
                 return  $this->jsonReturn(-1, '保存失败');
@@ -128,7 +133,13 @@ class Address extends AdminBase
                 return $this->jsonReturn(-1, $validate_result);
             }
             $data['longtitude'] = $data['longitude'];
+
             $AddressModel = new AddressModel();
+            if (!$AddressModel->checkLnglat($data['longitude'], $data['latitude'])) {
+                return $this->jsonReturn(-1, '经纬度不合法');
+            }
+            $data['gis'] = $AddressModel->geomfromtextPoint($data['longitude'], $data['latitude'], true);
+            
             $res = $AddressModel->allowField(true)->save($data, ['addressid'=>$id]);
             if ($res === false) {
                 $this->log('修改站点失败，id=' . $id, -1);
@@ -137,8 +148,8 @@ class Address extends AdminBase
             $this->log('修改站点成功，id=' . $id, 0);
             return $this->jsonReturn(0, '保存成功');
         } else {
-            $fields = "t.*";
-            $data = AddressModel::alias('t')->field($fields)->find($id);
+            $data = (new AddressModel())->getItem($id, true);
+
             if ($data) {
                 $DepartmentModel = new Department();
                 $data['deptData'] = $DepartmentModel->getItem($data['department_id']);
