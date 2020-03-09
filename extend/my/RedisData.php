@@ -216,10 +216,17 @@ class RedisData extends Redis
         }
         $time = time();
         $cacheKey = "temp:geo:getGeohash:$lng,$lat,$time";
-        $this->geoadd($cacheKey, $lng, $lat, $time);
-        $this->expire($cacheKey, 30);
-        $res = $this->geohash($cacheKey, $time);
-        return $res[0] ?? false;
+        try {
+            $this->multi();
+            $this->geoadd($cacheKey, $lng, $lat, $time);
+            $this->geohash($cacheKey, $time);
+            $this->expire($cacheKey, 30);
+            $res = $this->exec();
+        } catch (\Exception $e) {
+            $errorMsg = $e->getMessage();
+            return false;
+        }
+        return $res[1][0] ?? false;
     }
 
     /**
@@ -246,10 +253,17 @@ class RedisData extends Redis
             $lat2 = $end[1];
         }
         $cacheKey = "temp:geo:getDistance:$lng1,$lat1,$lng2,$lat2";
-        $this->geoadd($cacheKey, $lng1, $lat1, 'p1', $lng2, $lat2, 'p2');
-        $this->expire($cacheKey, 30);
-        $res = $this->geodist($cacheKey, 'p1', 'p2', $u);
-        return $res;
+        try {
+            $this->multi();
+            $this->geoadd($cacheKey, $lng1, $lat1, 'p1', $lng2, $lat2, 'p2');
+            $this->geodist($cacheKey, 'p1', 'p2', $u);
+            $this->expire($cacheKey, 30);
+            $res = $this->exec();
+        } catch (\Exception $e) {
+            $errorMsg = $e->getMessage();
+            return false;
+        }
+        return $res[1];
     }
 
     /**
@@ -275,8 +289,16 @@ class RedisData extends Redis
         $lng = $lnglat[0] ?? 0;
         $lat = $lnglat[1] ?? 0;
         $u = $u ?: 'm';
-        $res = $this->georadius($cacheKey, $lng, $lat, $radius, $u, $opt);
-        if ($res) {
+        try {
+            $this->multi();
+            $this->georadius($cacheKey, $lng, $lat, $radius, $u, $opt);
+            $this->expire($cacheKey, 30);
+            $res = $this->exec();
+        } catch (\Exception $e) {
+            $errorMsg = $e->getMessage();
+            return false;
+        }
+        if ($res[0]) {
             $newList = [];
             foreach ($res as $key => $value) {
                 $oListKey = $value[0];
@@ -287,7 +309,6 @@ class RedisData extends Redis
             }
             $list = $newList;
         }
-        $this->expire($cacheKey, 30);
         // $this->del($cacheKey);
         return $list;
 
