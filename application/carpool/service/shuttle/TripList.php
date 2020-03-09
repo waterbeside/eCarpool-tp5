@@ -151,9 +151,9 @@ class TripList extends Service
                 $list = $returnData['lists'];
                 $isEmpty  = empty($returnData['lists']);
             }
-            $lineFields = ['start_name', 'start_longitude', 'start_latitude', 'end_name', 'end_longitude', 'end_latitude', 'map_type'];
+            $lineFields = ['start_name', 'start_longitude', 'start_latitude', 'end_name', 'end_longitude', 'end_latitude', 'map_type', 'waypoints'];
             foreach ($list as $key => $value) {
-                $value['line_data'] =  $ShuttleTripService->getExtraInfoLineData($value, 2);
+                $value['line_data'] =  $ShuttleTripService->getExtraInfoLineData($value, 2, ['name', 'longitude', 'latitude']);
                 $value['line_data'] = $Utils->filterDataFields($value['line_data'], $lineFields);
                 $value['time'] = strtotime($value['time']);
                 // $value['time_od'] = strtotime(date('Y-m-d H', $value['time']).':00:00');

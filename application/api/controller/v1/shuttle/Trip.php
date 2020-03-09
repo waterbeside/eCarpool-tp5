@@ -206,16 +206,8 @@ class Trip extends ApiBase
         foreach ($returnData['lists'] as $key => $value) {
             $value = $ShuttleTripService->formatTimeFields($value, 'item', ['time','create_time']);
             $value = $TripsMixed->formatResultValue($value);
-            $extraInfo = $Utils->json2Array($value['extra_info']);
+            $value = $ShuttleTrip->packLineDataFromTripData($value, null, ['name', 'longitude', 'latitude']);
             unset($value['extra_info']);
-            $value['map_type'] = $extraInfo['line_data']['map_type'] ?? 0;
-            $value = $Utils->packFieldsToField($value, [
-                'line_data' => [
-                    'start_id', 'start_name', 'start_longitude', 'start_latitude',
-                    'end_id', 'end_name', 'end_longitude', 'end_latitude',
-                    'map_type'
-                ],
-            ]);
             $returnData['lists'][$key] = $value;
         }
         return $returnType ? $this->jsonReturn(0, $returnData, 'Successful') : [0, $returnData, 'Successful'];
@@ -349,18 +341,9 @@ class Trip extends ApiBase
                     $value['driver'] = $resDriver ?: [];
                 }
             }
-            // 处理map_type
-            $extraInfo = $Utils->json2Array($value['extra_info']);
-            unset($value['extra_info']);
-            $value['map_type'] = $extraInfo['line_data']['map_type'] ?? 0;
             // 组合路线字段
-            $value = $Utils->packFieldsToField($value, [
-                'line_data' => [
-                    'start_id', 'start_name', 'start_longitude', 'start_latitude',
-                    'end_id', 'end_name', 'end_longitude', 'end_latitude',
-                    'map_type'
-                ],
-            ]);
+            $value = $ShuttleTrip->packLineDataFromTripData($value, null, ['name', 'longitude', 'latitude']);
+            unset($value['extra_info']);
             $lists_new[] = $value;
         }
         $returnData['lists'] = $lists_new;
@@ -417,18 +400,9 @@ class Trip extends ApiBase
         $returnData['lists'] = $ShuttleTripService->formatTimeFields($returnData['lists'], 'list', ['time','create_time','update_time']);
         foreach ($returnData['lists'] as $key => $value) {
             $returnData['lists'][$key]['have_started'] = $TripsMixed->haveStartedCode($value['time'], $value['time_offset']);
-            // 处理map_type
-            $extraInfo = $Utils->json2Array($value['extra_info']);
-            unset($value['extra_info']);
-            $value['map_type'] = $extraInfo['line_data']['map_type'] ?? 0;
             // 组合路线字段
-            $value = $Utils->packFieldsToField($value, [
-                'line_data' => [
-                    'start_id', 'start_name', 'start_longitude', 'start_latitude',
-                    'end_id', 'end_name', 'end_longitude', 'end_latitude',
-                    'map_type'
-                ],
-            ]);
+            $value = $ShuttleTrip->packLineDataFromTripData($value, null, ['name', 'longitude', 'latitude']);
+            unset($value['extra_info']);
         }
         return $this->jsonReturn(0, $returnData, 'Successful');
     }

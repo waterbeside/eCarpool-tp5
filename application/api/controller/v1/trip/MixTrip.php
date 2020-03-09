@@ -229,6 +229,7 @@ class MixTrip extends ApiBase
             if ($value['from'] == 'shuttle_trip') {
                 $extraInfo = $Utils->json2Array($value['extra_info']);
                 $value['map_type'] = $extraInfo['line_data']['map_type'] ?? 0;
+                $value['waypoints'] = $extraInfo['line_data']['waypoints'] ?? [];
             }
             // 修补缺失的行程相关字段
             if (empty($value['start_name']) && !empty($value['start_id'])) {
@@ -243,19 +244,8 @@ class MixTrip extends ApiBase
                     $value['end_name'] = $startItem['addressname'];
                 }
             }
-            $unsetField = [
-                'start_id', 'start_longitude', 'start_latitude',
-                'end_id', 'end_longitude', 'end_latitude',
-                'extra_info'
-            ];
-            $value = $Utils->filterDataFields($value, $unsetField, true);
-            $value = $Utils->packFieldsToField($value, [
-                'line_data' => [
-                    'start_id', 'start_name', 'start_longitude', 'start_latitude',
-                    'end_id', 'end_name', 'end_longitude', 'end_latitude',
-                    'map_type'
-                ],
-            ]);
+            $value = $ShuttleTrip->packLineDataFromTripData($value, ['start_name', 'end_name', 'waypoints'], ['name']);
+            unset($value['extra_info']);
             $newList[] = $value;
         }
         $returnData['lists'] = $newList;

@@ -4,6 +4,7 @@ namespace app\carpool\model;
 
 use think\facade\Cache;
 use my\RedisData;
+use my\Utils;
 use app\common\model\BaseModel;
 
 use think\Db;
@@ -713,11 +714,77 @@ class ShuttleTrip extends BaseModel
     public function getExtraInfo($idOrData, $key = null)
     {
         $tripData = $this->getDataByIdOrData($idOrData);
-        try {
-            $extra_data = json_decode($tripData['extra_info'], true);
-        } catch (\Exception $e) {  //其他错误
-            $extra_data = null;
-        }
+        $Utils = new Utils();
+        $extra_data = $Utils->json2Array($tripData['extra_info'], true);
         return $key ? ($extra_data[$key] ?? null) : $extra_data;
+    }
+
+
+    /**
+     * 取得常用的lineData数据, 并合并返回行程数据
+     *
+     * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
+     * @param array $lineDataField 要筛选的line_data字段
+     * @param array $waypointField 要筛选的waypoint字段
+     * @return array
+     */
+    public function packLineDataFromTripData($idOrData, $lineDataField = null, $waypointField = null)
+    {
+        $Utils = new Utils();
+        $tripData = $this->getDataByIdOrData($idOrData);
+        $extraLineData = $this->getExtraInfo($tripData, 'line_data');
+        $lineDataField = $lineDataField ?: [
+            'start_id', 'start_name', 'start_longitude', 'start_latitude',
+            'end_id', 'end_name', 'end_longitude', 'end_latitude',
+            'map_type','waypoints'
+        ];
+        $tripData['map_type'] = $extraLineData['map_type'] ?? 0;
+        $tripData['waypoints'] = isset($extraLineData['waypoints']) ? $this->formatExtraInfoWaypointField($extraLineData['waypoints'], $waypointField) : [];
+        $tripData = $Utils->packFieldsToField($tripData, [
+            'line_data' => [
+                'start_id', 'start_name', 'start_longitude', 'start_latitude',
+                'end_id', 'end_name', 'end_longitude', 'end_latitude',
+                'map_type','waypoints'
+            ],
+        ]);
+        $tripData['line_data'] = $Utils->filterDataFields($tripData['line_data'], $lineDataField);
+        return $tripData;
+    }
+
+    /**
+     * 取得常用的lineData数据
+     *
+     * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
+     * @param array $lineDataField 要筛选的line_data字段
+     * @param array $waypointField 要筛选的waypoint字段
+     * @return void
+     */
+    public function getCommonLineData($idOrData, $lineDataField = null, $waypointField = null)
+    {
+        $tripData = $this->packLineDataFromTripData($idOrData, $lineDataField, $waypointField);
+        $lineData = $tripData['line_data'] ?? null;
+        return $lineData;
+    }
+
+    /**
+     * 格式化extraInfo取得的waypoint数据
+     *
+     * @param array $waypoints 途经点数据
+     * @param array $fields 途经点字段
+     * @return array
+     */
+    public function formatExtraInfoWaypointField($waypoints, $fields = null)
+    {
+        if (empty($waypoints)) {
+            return [];
+        }
+        $Utils = new Utils();
+        foreach ($waypoints as $key => $value) {
+            $value['name'] = $value['name'] ?? $value['addressname'];
+            unset($value['addressname']);
+            $value = $Utils->filterDataFields($value, $fields);
+            $waypoints[$key] = $value;
+        }
+        return $waypoints;
     }
 }

@@ -263,7 +263,7 @@ class Trip extends Service
      * @param integer $type type=0时 id为路线id（line_id）, type = 1时id为行程id (trip_id), type = 2 时，先以type=1查，再以type=0查;
      * @return array
      */
-    public function getExtraInfoLineData($idOrData, $type = 0)
+    public function getExtraInfoLineData($idOrData, $type = 0, $filterWaypointField = null)
     {
         if ($type > 0) {
             $ShuttleTripModel = new ShuttleTripModel();
@@ -282,6 +282,7 @@ class Trip extends Service
                 $lineData['start_latitude'] = floatval($lineData['start_latitude']);
                 $lineData['end_longitude'] = floatval($lineData['end_longitude']);
                 $lineData['end_latitude'] = floatval($lineData['end_latitude']);
+                $lineData['waypoints'] = $lineData['waypoints'] ? $ShuttleTripModel->formatExtraInfoWaypointField($lineData['waypoints'], $filterWaypointField) : [];
             }
             if (!$lineData && $type == 2) {
                 $lineData = $this->getExtraInfoLineData($itemData['line_id'], 0);
