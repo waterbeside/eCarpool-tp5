@@ -52,7 +52,7 @@
             <span class="city">{{ item.city }}</span>
             <div class="title">{{ item.addressname }}</div>
             <div class="time">{{ item.create_time }}</div>
-            <div class="geo">{{ item.longtitude }}, {{ item.latitude }}</div>
+            <div class="geo">{{ item.lng }}, {{ item.lat }}</div>
             <div class="address">{{ item.address }}</div>
             <div class="district">{{ item.district }}</div>
 
@@ -85,7 +85,7 @@
                 </div>
 
             </div>
-            <div class="geo">{{ d.item.longtitude }}, {{ d.item.latitude }}</div>
+            <div class="geo">{{ d.item.lng }}, {{ d.item.lat }}</div>
             <div class="time">{{ d.item.create_time }}</div>
             <div class="uid">
                 <a href="{:url('admin/User/public_detail')}"  data-data="id={{ d.item.create_uid }}" data-title="用户详情"  data-trigger="modal" title="用户详情">
@@ -227,7 +227,7 @@
 
             console.log('item');
             console.log(item);
-            var lnglat = [item.longtitude, item.latitude];
+            var lnglat = [item.lng, item.lat];
             console.log(lnglat)
             setTimeout(function(){
                 map.setFitView();

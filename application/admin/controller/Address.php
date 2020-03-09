@@ -53,8 +53,9 @@ class Address extends AdminBase
                     }
                 }
             }
-
-            $results = AddressModel::where($map)->order('create_time DESC , addressid DESC ')
+            $AddressModel = new AddressModel();
+            $queryFields = $AddressModel->getCommonFields(['create_time']);
+            $results = AddressModel::field($queryFields)->where($map)->order('create_time DESC , addressid DESC ')
                 ->paginate($pagesize, false, ['query' => request()->param()]);
 
             $datas = $results->toArray();
