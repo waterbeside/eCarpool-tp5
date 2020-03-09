@@ -295,7 +295,7 @@ class Passport extends ApiBase
         if (!isset($data['addressid']) || !$data['addressid'] || !is_numeric($data['addressid'])) {
             $AddressModel = new Address();
             $data['create_uid'] = $uid;
-            $res = $AddressModel->addOne($data);
+            $res = $AddressModel->addOne($data, 50);
             if (!$res) {
                 $errorMsg = $AddressModel->errorMsg ? $AddressModel->errorMsg  : lang("Fail");
                 $this->jsonReturn(-1, [], $errorMsg);

@@ -78,7 +78,7 @@ class Address extends ApiBase
         $data['company_id'] = intval($userData['company_id']);
         $data['create_uid'] = intval($userData['uid']);
         $AddressModel = new AddressModel();
-        $res = $AddressModel->addOne($data);
+        $res = $AddressModel->addOne($data, 50);
         if (!$res) {
             $this->jsonReturn(-1, [], lang('Fail'));
         }
