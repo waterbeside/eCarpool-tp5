@@ -66,7 +66,7 @@ class ShuttleTripWaypoint extends BaseModel
         foreach ($pointList as $key => $value) {
             $itemUpData = [
                 'trip_id' => $tripData['id'],
-                'address_id' =>  $value['address_id'] ?? $value['addressid'],
+                'addressid' =>  $value['address_id'] ?? $value['addressid'],
                 'gis' => $this->geomfromtextPoint($value['longitude'], $value['latitude'], true),
                 'name' => $value['name'] ?? $value['addressname'],
                 'uid' => $tripData['uid'],
