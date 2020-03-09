@@ -589,4 +589,45 @@ class Utils
         }
         return $newList;
     }
+
+    /**
+     * 取得geohash精度数据
+     *
+     * @return array
+     */
+    public function getGeohashErrorData()
+    {
+        return [
+            ['len' => 1, 'latLen' => 2, 'lngLen'=> 3, 'latError'=> 23,'lngError'=> 23, 'distance' => 2500 * 1000],
+            ['len' => 2, 'latLen' => 5, 'lngLen'=> 5, 'latError'=>2.8, 'lngError'=>5.6, 'distance'=> 630 * 1000],
+            ['len' => 3, 'latLen' => 7, 'lngLen'=> 8, 'latError'=>0.7, 'lngError'=>0.7, 'distance'=> 78 *1000],
+            ['len' => 4, 'latLen' => 10, 'lngLen'=> 10, 'latError'=>0.087, 'lngError'=>0.18, 'distance'=> 20 *1000],
+            ['len' => 5, 'latLen' => 12, 'lngLen'=> 13, 'latError'=>0.022, 'lngError'=>0.022, 'distance'=> 2400],
+            ['len' => 6, 'latLen' => 15, 'lngLen'=> 15, 'latError'=>0.0027, 'lngError'=>0.0055, 'distance'=> 610],
+            ['len' => 7, 'latLen' => 17, 'lngLen'=> 18, 'latError'=>0.00068, 'lngError'=>0.00068, 'distance'=> 76],
+            ['len' => 8, 'latLen' => 20, 'lngLen'=> 20, 'latError'=>0.000086, 'lngError'=>0.000172, 'distance'=> 19.11],
+            ['len' => 9, 'latLen' => 22, 'lngLen'=> 23, 'latError'=>0.000021, 'lngError'=>0.000021, 'distance'=> 4.78],
+            ['len' => 10, 'latLen' => 25, 'lngLen'=> 25, 'latError'=>0.00000268, 'lngError'=>0.00000536, 'distance'=> 0.5971],
+            ['len' => 11, 'latLen' => 27, 'lngLen'=> 28, 'latError'=>0.00000067, 'lngError'=>0.00000067, 'distance'=> 0.1492],
+            ['len' => 12, 'latLen' => 30, 'lngLen'=> 30, 'latError'=>0.00000008, 'lngError'=>0.00000017, 'distance'=> 0.0186],
+        ];
+    }
+
+    /**
+     * 通过半径查询geohash应向上取多少位
+     *
+     * @param integer $radius 半径，米为单位
+     * @return integer
+     */
+    public function getGeohashLengthByRadius($radius)
+    {
+        $array = $this->getGeohashErrorData();
+        $aLen = 12;
+        foreach ($array as $key => $value) {
+            if ($value['distance'] > $radius) {
+                $aLen = $value['len'];
+            }
+        }
+        return $aLen;
+    }
 }
