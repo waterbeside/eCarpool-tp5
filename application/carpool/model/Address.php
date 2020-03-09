@@ -4,6 +4,7 @@ namespace app\carpool\model;
 
 use think\Model;
 use app\common\model\BaseModel;
+use my\Utils;
 use think\Db;
 
 class Address extends BaseModel
@@ -28,9 +29,11 @@ class Address extends BaseModel
         'Y(gis)' => 'lat',
     ];
 
-    public function getCommonFields()
+    public function getCommonFields($exFields = null)
     {
-        $field = ['addressid', 'addressname', 'status', 'city','district', 'address', 'map_type', 'usage_count'];
+        $field = ['addressid', 'addressname', 'address_type', 'status', 'city','district', 'address', 'map_type', 'usage_count'];
+        $exFields = is_array($exFields) ? $exFields : [];
+        $field = array_merge($field, $exFields);
         $field = implode(',', $field);
         $exField = $this->itemFieldsMap2Str($this->itemFieldsMap);
         $field .= $exField ? ','.$exField : '';
@@ -105,18 +108,18 @@ class Address extends BaseModel
     /**
      * 创建起终点\途经点
      */
-    public function createTripAddress($datas, $userData)
+    public function createTripAddress($datas, $userData, $radius = 50)
     {
         $createAddress = [];
         //处理起点
-        $startRes = $this->createAnAddressOrGetItem($datas['start'], $userData);
+        $startRes = $this->createAnAddressOrGetItem($datas['start'], $userData, $radius);
         if (!$startRes) {
             return $this->setError(-1, lang("The point of departure must not be empty"));
         }
         $createAddress['start'] = $startRes;
 
         //处理终点
-        $endRes = $this->createAnAddressOrGetItem($datas['end'], $userData);
+        $endRes = $this->createAnAddressOrGetItem($datas['end'], $userData, $radius);
         if (!$endRes) {
             return $this->setError(-1, lang("The destination cannot be empty"));
         }
@@ -129,7 +132,7 @@ class Address extends BaseModel
             Db::connect('database_carpool')->startTrans();
             try {
                 foreach ($waypoints as $key => $value) {
-                    $pointRes = $this->createAnAddressOrGetItem($value, $userData);
+                    $pointRes = $this->createAnAddressOrGetItem($value, $userData, $radius);
                     $createAddress['waypoints'][] = $pointRes;
                 }
                 Db::connect('database_carpool')->commit();
@@ -151,20 +154,22 @@ class Address extends BaseModel
      * @param array $userData 操作用户的数据
      * @return array 返回站点数据
      */
-    public function createAnAddressOrGetItem($addressData, $userData)
+    public function createAnAddressOrGetItem($addressData, $userData, $radius = 50)
     {
         $addressid = $addressData['addressid'] ?? 0;
-        $addressid = is_numeric($addressData['addressid']) ? $addressData['addressid'] : 0;
+        $addressid = is_numeric($addressid) ? $addressid : 0;
         if ($addressid > 0) {// 如果有address id
-            $pointRes = $this->getItem($addressData['addressid'], ['addressid','addressname','lng','lat','address_type', 'address', 'district']);
+            $pointRes = $this->getItem($addressid, ['addressid','addressname','lng','lat','address_type', 'address', 'district']);
             if (empty($pointRes)) {
-                $pointRes = $this->createAnAddress($addressData, $userData);
+                $pointRes = $this->createAnAddress($addressData, $userData, $radius);
             } else {
                 $pointRes['longitude'] = $pointRes['lng'];
                 $pointRes['latitude'] = $pointRes['lat'];
+                unset($pointRes['lng']);
+                unset($pointRes['lat']);
             }
         } else {
-            $pointRes = $this->createAnAddress($addressData, $userData);
+            $pointRes = $this->createAnAddress($addressData, $userData, $radius);
         }
         return $pointRes;
     }
@@ -192,7 +197,7 @@ class Address extends BaseModel
      * @param integer $radius 如果同名称下，该米数半径内有站点，则不插行。返回查出的行.
      * @return array 返回有用的站点数据
      */
-    public function addOne($data, $radius = 50, $isForce = 0)
+    public function addOne($data, $radius = 0)
     {
         if (empty($data['longitude']) || empty($data['latitude']) || empty($data['addressname'])) {
             return $this->setError(-1, lang('Parameter error'));
@@ -200,22 +205,32 @@ class Address extends BaseModel
         if (!$this->checkLngLat($data['longitude'], $data['latitude'])) {
             return $this->setError(-1, '经纬度不合法');
         }
-        //先查找有没有对应的地址
-        $findMap = [
-            'addressname' => $data['addressname'],
-            'latitude' => $data['latitude'],
-            'longtitude' => $data['longitude'],
-        ];
-        $res = $this
-            ->field("address_type,addressname,longtitude as longitude,latitude,create_time,company_id,city,addressid,address,district")
-            ->where($findMap)->find();
-        if ($res) {
-            $data = array_merge($data, $res->toArray());
-            if (isset($data['company_id'])) {
-                $data['company_id'] = intval($data['company_id']);
+        // 查找就近同名站点返回
+        if ($radius > 0) {
+            //先查找有没有相近对应的地址
+            $extraMap = [
+                ['addressname', '=', $data['addressname']],
+            ];
+            $extraField = ['create_time', 'company_id'];
+            $nearAddress = $this->getNear([$data['longitude'], $data['latitude']], $radius, $extraMap, $extraField, 1);
+            if (!empty($nearAddress)) {
+                $nearData = $nearAddress[0];
+                $data = [
+                    'addressid' => $nearData['addressid'],
+                    'address_type' => $nearData['address_type'],
+                    'addressname' => $nearData['addressname'],
+                    'longitude' => $nearData['lng'],
+                    'latitude'   => $nearData['lat'],
+                    'company_id'   => intval($nearData['company_id']),
+                    'city'       => $nearData['city'],
+                    'create_time'       => $nearData['create_time'],
+                    'address'       => $nearData['address'],
+                    'district'       => $nearData['district'],
+                ];
+                return $data;
             }
-            return $data;
         }
+
         //如果没有数据，则创建
         $city = isset($data['city']) && $data['city'] ? $data['city'] : "";
         $inputData = [
@@ -224,8 +239,8 @@ class Address extends BaseModel
             'longtitude' => $data['longitude'],
             'latitude'   => $data['latitude'],
             'create_time'   => date("Y-m-d H:i:s"),
-            'company_id'   => intval($data['company_id']),
-            'gis'  =>  $this->geomfromtextPoint($data['longitude'], $data['longitude'], true),
+            'company_id'   => isset($data['company_id']) ? intval($data['company_id']) : 0,
+            'gis'  =>  $this->geomfromtextPoint($data['longitude'], $data['latitude'], true),
             'city'       => $city ? $city : '--',
         ];
         if (isset($data['create_uid'])) {
@@ -257,24 +272,34 @@ class Address extends BaseModel
      *
      * @param array $lnglat [lng, lat] 经纬度
      * @param array $radius 范围半径
+     * @param array $extraMap 符加筛选条件
+     * @param array $extraFields 补充字段
+     * @param integer $limit 取条数
      * @return array
      */
-    public function getNear($lnglat, $radius, $extraMap = null, $limit = 10)
+    public function getNear($lnglat, $radius, $extraMap = null, $extraFields = null, $limit = 10)
     {
         $distantSql = "ST_Distance_Sphere(POINT({$lnglat[0]}, {$lnglat[1]}), gis)";
-        $fields = $this->getCommonFields();
+        $fields = $this->getCommonFields($extraFields);
         $fields .= ",$distantSql as distant";
+        $redis = $this->redis();
+        $geohash = $lnglat[2] ?? $redis->getGeohash($lnglat);
+        $geohashLen = Utils::getInstance()->getGeohashLengthByRadius($radius);
+        $subHash = substr($geohash, 0, $geohashLen);
         $where = [
             ['', 'EXP', Db::raw("$distantSql < $radius")]
         ];
+        if ($geohash) {
+            $where[] =  ['', 'EXP', Db::raw("geohash like '{$subHash}%' ")];
+        }
         if (!empty($extraMap)) {
             $where = array_merge($where, $extraMap);
         }
         $orderby = 'distant ASC';
         $res = $this->field($fields)->where($where)->order($orderby)
-            // ->fetchSql()
             ->limit($limit)
             ->select();
+        $res = $res ? $res->toArray() : [];
         return $res;
     }
 
@@ -323,6 +348,4 @@ class Address extends BaseModel
         $redis = $this->redis();
         $redis->del($cacheKey);
     }
-
-
 }
