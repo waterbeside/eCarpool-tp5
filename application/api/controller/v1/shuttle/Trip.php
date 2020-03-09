@@ -3,11 +3,10 @@
 namespace app\api\controller\v1\shuttle;
 
 use app\api\controller\ApiBase;
-use app\carpool\model\ShuttleLine as ShuttleLineModel;
-use app\carpool\model\ShuttleLineDepartment;
 use app\carpool\model\ShuttleTrip;
 use app\carpool\model\ShuttleTripGps;
 use app\carpool\model\ShuttleTripPartner;
+use app\carpool\model\ShuttleTripWaypoint;
 use app\carpool\model\User;
 use app\carpool\service\shuttle\Trip as ShuttleTripService;
 use app\carpool\service\shuttle\Partner as ShuttlePartnerService;
@@ -565,14 +564,18 @@ class Trip extends ApiBase
         try {
             // 入库
             $addRes = $ShuttleTripService->addTrip($rqData, $userData);
+            $tripData = [
+                'id' => $addRes,
+                'uid' => $userData['uid'],
+                'line_type' => $rqData['line_data']['type'],
+                'time' => date('Y-m-d H:i:s', $rqData['time'])
+            ];
+            // 处理途经点
+            if (isset($rqData['line_data']['waypoints']) && is_array($rqData['line_data']['waypoints'])) {
+                $waypoinRes = (new ShuttleTripWaypoint())->insertPoints($rqData['line_data']['waypoints'], $tripData);
+            }
             // 如果是约车需求，并有同行者，处理同行者
             if ($rqData['create_type'] == 'requests' && isset($partners) && count($partners) > 0) {
-                $tripData = [
-                    'id' => $addRes,
-                    'uid' => $userData['uid'],
-                    'line_type' => $rqData['line_data']['type'],
-                    'time' => date('Y-m-d H:i:s', $rqData['time'])
-                ];
                 $addPartnerRes = $PartnerServ->insertPartners($partners, $tripData);
             }
             // 提交事务

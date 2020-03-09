@@ -346,6 +346,7 @@ class Trip extends Service
                 $createAddress = [
                     'start' => $rqData['start'],
                     'end' => $rqData['end'],
+                    'waypoints' => $rqData['waypoints'],
                 ];
                 $start_id = $createAddress['start']['addressid'] ?? 0;
                 $start_id = $start_id > 0 ? $start_id : 0;
@@ -376,6 +377,7 @@ class Trip extends Service
                 'end_latitude' => $createAddress['end']['latitude'],
                 'end_type' => $createAddress['end']['address_type'],
                 'map_type' => $rqData['map_type'] ?? 0,
+                'waypoints' => $createAddress['waypoints'] ?? [],
                 'type' => $lineType,
             ];
             $emptyStart = empty($returnData['start_name']) || (empty($returnData['start_longitude']) && empty($returnData['start_latitude'])) ? true : false;
