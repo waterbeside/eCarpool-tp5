@@ -295,6 +295,7 @@ class Trip extends ApiBase
                 return $this->jsonReturn(20009, lang('The network is busy, please try again later'));
             }
             $fields = $ShuttleTrip->getListField('t'); // 行程相关字段
+            $fields .= ', u.carcolor as u_carcolor';
             $betweenTimeBase = $ShuttleTrip->getBaseTimeBetween($time, 'default', 'Y-m-d H:i:s');
             $betweenTimeArray = $ShuttleTrip->getBaseTimeBetween($time, [60 * 5, 0]);
             // where
