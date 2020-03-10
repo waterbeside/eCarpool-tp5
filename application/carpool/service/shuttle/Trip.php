@@ -403,7 +403,7 @@ class Trip extends Service
      * @param array $tripFields 要读出的行程字段
      * @param integer $show_line 是否显示路线信息
      */
-    public function getUserTripDetail($id = 0, $userFields = [], $tripFields = [], $show_line = 1)
+    public function getUserTripDetail($id = 0, $userFields = [], $tripFields = [], $show_line = 1, $lineFields = [])
     {
         if (!$id) {
             return $this->error(992, lang('Error Param'));
@@ -418,15 +418,19 @@ class Trip extends Service
         }
         $uid = $itemData['uid'];
 
-        $extraInfo = Utils::getInstance()->json2Array($itemData['extra_info']);
         $itemData = $this->formatTimeFields($itemData, 'item', ['time','create_time']);
         $tripFields = $tripFields ?: [
             'id', 'time', 'time_offset', 'create_time', 'status', 'user_type', 'comefrom', 'trip_id',
             'seat_count', 'line_type', 'plate',
         ];
         if ($show_line) {
-            $lineFields = ['start_id', 'start_name', 'start_longitude', 'start_latitude','end_id', 'end_name', 'end_longitude', 'end_latitude', 'map_type'];
-            $itemData['map_type'] = $extraInfo['line_data']['map_type'] ?? 0;
+            $lineFields = $lineFields ?: [
+                'start_id', 'start_name', 'start_longitude', 'start_latitude',
+                'end_id', 'end_name', 'end_longitude', 'end_latitude',
+                'map_type', 'waypoints',
+            ];
+            $lineData = $ShuttleTripModel->getCommonLineData($itemData, null, ['addressid','name','longitude','latitude']) ?: [];
+            $itemData= array_merge($itemData, $lineData);
             $tripFields = array_merge($tripFields, $lineFields);
         }
 
