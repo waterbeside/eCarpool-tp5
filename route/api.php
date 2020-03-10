@@ -70,6 +70,7 @@ Route::group([], function () {
     Route::rule('api/:version/shuttle/line$', 'api/:version.shuttle.line/index', 'GET'); // 路线列表
     Route::rule('api/:version/shuttle/time$', 'api/:version.shuttle.time/index', 'GET'); // 时刻列表
     Route::rule('api/:version/shuttle/trip/cars$', 'api/:version.shuttle.trip/cars', 'GET'); // 班车空座位列表
+    Route::rule('api/:version/shuttle/trip/map_cars$', 'api/:version.shuttle.trip/map_cars', 'GET'); // 地图上的空座位列表
     Route::rule('api/:version/shuttle/trip/requests$', 'api/:version.shuttle.trip/requests', 'GET'); // 班车需求列表
     Route::rule('api/:version/shuttle/trip/my$', 'api/:version.shuttle.trip/my', 'GET'); // 历史行程
     Route::rule('api/:version/shuttle/trip/history$', 'api/:version.shuttle.trip/history', 'GET'); // 我的行程

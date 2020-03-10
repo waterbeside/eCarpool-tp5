@@ -63,15 +63,15 @@ class Trip extends ApiBase
         $TripsMixed = new TripsMixed();
 
         $returnData = null;
+        $geohash = !empty($lnglat) ? $redis->getGeohash($lnglat) : null;
+        $geohash_n = !empty($geohash) ? substr($geohash, 0, 7) : null;
         
         // 缓存处理
         $ex = (!empty($lnglat) && $line_id == 0) || !empty($keyword) ? 10 : 60;
-        $cacheUid = !empty($lnglat) && $line_id == 0 ? $userData['uid'] : null;
-        $cacheKey  = $ShuttleTrip->getListCacheKeyByLineId($line_id, $rqType, $cacheUid);
-        
+        $cacheKey  = $ShuttleTrip->getListCacheKeyByLineId($line_id, $rqType);
         $rowCacheKey = "pz_{$pagesize},page_$page,type_$type,comid_$comid,orderby_$orderby,keyword_$keyword";
         $rowCacheKey .= ",uCompanyId_{$userData['company_id']}";
-        $rowCacheKey .= !empty($lnglat) && $line_id == 0 ? ",lnglat_{$lnglat[0]},{$lnglat[1]}" : '';
+        $rowCacheKey .= !empty($geohash_n) && $line_id == 0 ? ",geohash_{$geohash_n}" : '';
         $rowCacheKey .= !empty($city)  && $city == 'all' ? ",city_{$city}" : '';
         
         $returnData = $redis->hCache($cacheKey, $rowCacheKey);
@@ -127,7 +127,7 @@ class Trip extends ApiBase
                 ['t.is_delete', '=', Db::raw(0)],
                 ['t.status', 'in', [0,1]],
                 ['t.trip_id', '=', Db::raw(0)],
-                ['', 'exp', Db::raw(" (UNIX_TIMESTAMP(t.time) - time_offset) < {$betweenTimeArray[1]} AND (UNIX_TIMESTAMP(t.time) + time_offset) > {$betweenTimeArray[0]}")]
+                ['', 'exp', $ShuttleTrip->whereTime2Str($betweenTimeArray[0], $betweenTimeArray[1], true)]
             ];
             // 筛司机乘客
             if (isset($userType)) {
@@ -204,7 +204,6 @@ class Trip extends ApiBase
                 }
                 return $returnType ? $this->jsonReturn(20002, lang('No data')) : [20002, null, lang('No data')];
             }
-
             // $returnData['lineData'] = $lineData;
             if (!$keyword) {
                 $redis->hCache($cacheKey, $rowCacheKey, $returnData, $ex);
@@ -266,6 +265,85 @@ class Trip extends ApiBase
         return $this->jsonReturn($res[0], $res[1], $res[2]);
     }
 
+    /**
+     * 地图上的墙上空座位
+     */
+    public function map_cars()
+    {
+        $TripsService = new TripsService();
+        $ShuttleTrip = new ShuttleTrip();
+        $ShuttleTripService = new ShuttleTripService();
+        $redis = new RedisData();
+
+        $type = input('get.type/d', -1);
+        $userData = $this->getUserData(1);
+
+        $time = time();
+        
+         // 缓存处理
+        $ex = 60;
+        $cacheKey  = $ShuttleTrip->getListCacheKeyByLineId(0, 'cars');
+        $rowCacheKey = "map_cars,type_$type";
+        $rowCacheKey .= ",uCompanyId_{$userData['company_id']}";
+        
+        $returnData = $redis->hCache($cacheKey, $rowCacheKey);
+        if (is_array($returnData) && empty($returnData)) {
+            return $this->jsonReturn(20002, $returnData, lang('No data'));
+        }
+        if (!$returnData) {
+            if (!$this->lockAction()) { // 添加并发锁
+                return $this->jsonReturn(20009, lang('The network is busy, please try again later'));
+            }
+            $fields = $ShuttleTrip->getListField('t'); // 行程相关字段
+            $betweenTimeBase = $ShuttleTrip->getBaseTimeBetween($time, 'default', 'Y-m-d H:i:s');
+            $betweenTimeArray = $ShuttleTrip->getBaseTimeBetween($time, [60 * 5, 0]);
+            // where
+            $map  = [
+                ['t.time', 'between', $betweenTimeBase],
+                ['t.is_delete', '=', Db::raw(0)],
+                ['t.status', 'in', [0,1]],
+                ['t.trip_id', '=', Db::raw(0)],
+                ['', 'exp', $ShuttleTrip->whereTime2Str($betweenTimeArray[0], $betweenTimeArray[1], true)]
+            ];
+            $map[] = $TripsService->buildCompanyMap($userData, 'u');
+            if (is_numeric($type)) {
+                if ($type > -1) {
+                    $map[] = ['t.line_type', '=', $type];
+                } elseif ($type == -2) {
+                    $map[] = ['t.line_type', 'in', [1,2]];
+                }
+            }
+            // join
+            $join = [
+                ["user u", "t.uid = u.uid", 'left'],
+                // ["t_shuttle_line l", "t.line_id = l.id", 'left'],
+            ];
+            $lists = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map)->select();
+            
+            if ($lists) {
+                $lists = $lists->toArray();
+            }
+            $returnData = [
+                'lists' => $lists,
+            ];
+            $redis->hCache($cacheKey, $rowCacheKey, $returnData, $ex);
+        }
+        if ($returnData === false) {
+            $this->unlockAction();
+            return $this->jsonReturn(20002, lang('No data'));
+        }
+        foreach ($returnData['lists'] as $key => $value) {
+            $value = $ShuttleTripService->formatTimeFields($value, 'item', ['time','create_time']);
+            $value = $ShuttleTrip->packLineDataFromTripData($value, [
+                'start_name', 'start_longitude', 'start_latitude',
+                'end_name', 'end_longitude', 'end_latitude',
+                'map_type'], []);
+            unset($value['extra_info']);
+            $returnData['lists'][$key] = $value;
+        }
+        $this->unlockAction();
+        $this->jsonReturn(0, $returnData, "success");
+    }
 
     /**
      * 我的行程
