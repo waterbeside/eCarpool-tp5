@@ -733,19 +733,16 @@ class ShuttleTrip extends BaseModel
         $Utils = new Utils();
         $tripData = $this->getDataByIdOrData($idOrData);
         $extraLineData = $this->getExtraInfo($tripData, 'line_data');
-        $lineDataField = $lineDataField ?: [
+        $defaultLineField = [
             'start_id', 'start_name', 'start_longitude', 'start_latitude',
             'end_id', 'end_name', 'end_longitude', 'end_latitude',
             'map_type','waypoints'
         ];
+        $lineDataField = $lineDataField ?: $defaultLineField;
         $tripData['map_type'] = $extraLineData['map_type'] ?? 0;
         $tripData['waypoints'] = isset($extraLineData['waypoints']) ? $this->formatExtraInfoWaypointField($extraLineData['waypoints'], $waypointField) : [];
         $tripData = $Utils->packFieldsToField($tripData, [
-            'line_data' => [
-                'start_id', 'start_name', 'start_longitude', 'start_latitude',
-                'end_id', 'end_name', 'end_longitude', 'end_latitude',
-                'map_type','waypoints'
-            ],
+            'line_data' => $defaultLineField,
         ]);
         $tripData['line_data'] = $Utils->filterDataFields($tripData['line_data'], $lineDataField);
         return $tripData;
@@ -757,12 +754,12 @@ class ShuttleTrip extends BaseModel
      * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
      * @param array $lineDataField 要筛选的line_data字段
      * @param array $waypointField 要筛选的waypoint字段
-     * @return void
+     * @return array
      */
     public function getCommonLineData($idOrData, $lineDataField = null, $waypointField = null)
     {
         $tripData = $this->packLineDataFromTripData($idOrData, $lineDataField, $waypointField);
-        $lineData = $tripData['line_data'] ?? null;
+        $lineData = $tripData['line_data'] ?? [];
         return $lineData;
     }
 
@@ -782,7 +779,7 @@ class ShuttleTrip extends BaseModel
         foreach ($waypoints as $key => $value) {
             $value['name'] = $value['name'] ?? $value['addressname'];
             unset($value['addressname']);
-            $value = $Utils->filterDataFields($value, $fields);
+            $value = $fields === null ? $value : $Utils->filterDataFields($value, $fields);
             $waypoints[$key] = $value;
         }
         return $waypoints;
