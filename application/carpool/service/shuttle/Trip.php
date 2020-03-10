@@ -548,6 +548,8 @@ class Trip extends Service
             }
             if (!empty($lineSortWhen)) {
                 $fieldsStr .= ", (CASE $lineSortWhen ELSE 0 END) AS line_sort ";
+            } else {
+                $fieldsStr .= ", 0 AS line_sort";
             }
             $startRangeSql = $Utils->buildCoordRangeWhereSql('t.start_longitude', 't.start_latitude', $startLng, $startLat, $radius);
             $endRangeSql = $Utils->buildCoordRangeWhereSql('t.end_longitude', 't.end_latitude', $endLng, $endLat, $radius);
