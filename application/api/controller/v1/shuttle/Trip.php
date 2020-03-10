@@ -63,14 +63,6 @@ class Trip extends ApiBase
         $TripsMixed = new TripsMixed();
 
         $returnData = null;
-        // 先查出路线数据
-        // $lineFields = [
-        //     'id','type','start_name','start_longitude','start_latitude','end_name','end_longitude','end_latitude','status','map_type'
-        // ];
-        // $lineData = $ShuttleLineModel->getItem($line_id, $lineFields);
-        // if (!$lineData) {
-        //     return $returnType ? $this->jsonReturn(20002, $returnData, lang('No data')) : [992, $returnData, lang('No data')];
-        // }
         
         // 缓存处理
         $ex = (!empty($lnglat) && $line_id == 0) || !empty($keyword) ? 10 : 60;
@@ -181,10 +173,27 @@ class Trip extends ApiBase
                 $map[] = ["a.city", '=', $city];
             }
             // 关键字搜索
-            if ($keyword) {
-                $map[] = ["t.start_name|t.end_name{$userAlias}.name|{$userAlias}.nativename", 'like', "%$keyword%"];
+            $waypointTripIds = [];
+            if ($keyword && $userType == 1) { // 查询途经点
+                $mapWaypoint = [
+                    ["name", 'like', "%$keyword%"],
+                    ['time', 'between', $betweenTimeBase],
+                ];
+                $waypointTripIds = ShuttleTripWaypoint::where($mapWaypoint)->cache(5)->column('trip_id');
             }
-            $ctor = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map)->order($order);
+            $ctor = $ShuttleTrip->alias('t')->field($fields)->join($join)->where($map)->where(function ($query) use ($keyword, $waypointTripIds, $userAlias) {
+                if (!empty($keyword)) {
+                    $mapKeyword= [
+                        ["t.start_name|t.end_name|{$userAlias}.name|{$userAlias}.nativename", 'like', "%$keyword%"]
+                    ];
+                    $query->where($mapKeyword);
+                    if (!empty($waypointTripIds) && is_array($waypointTripIds)) {
+                        $query->whereOr([
+                            ['id', 'in', $waypointTripIds]
+                        ]);
+                    }
+                }
+            })->order($order);
             if ($dev) {
                 return $this->jsonReturn(0, $ctor->fetchSql()->select());
             }
