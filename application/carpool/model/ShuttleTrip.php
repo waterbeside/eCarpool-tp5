@@ -125,6 +125,20 @@ class ShuttleTrip extends BaseModel
     }
 
     /**
+     * 返回用于查询出发时间范围的sql string
+     *
+     * @param string $startTime 格式化过的起始时间
+     * @param string $endTime 格式化过的结束时间
+     * @param boolean $returnDb 是否以Db::raw()的形式返回，默认false
+     * @return mixed
+     */
+    public function whereTime2Str($startTime, $endTime, $returnDb = false)
+    {
+        $str = " (UNIX_TIMESTAMP(t.time) - time_offset) < {$endTime} AND (UNIX_TIMESTAMP(t.time) + time_offset) > {$startTime}";
+        return $returnDb ? Db::raw($str) : $str;
+    }
+
+    /**
      * 取得行程数据
      *
      * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
