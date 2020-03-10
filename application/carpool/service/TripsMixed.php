@@ -330,8 +330,7 @@ class TripsMixed extends Service
         
         if (in_array($type, [-3, -1, -2 ,0, 1, 2])) {
             $ShuttleTripListService = new ShuttleTripListService();
-            $lineType = $type < 0 ? -2 : $type;
-            $list_shuttle = $ShuttleTripListService->lists($user_type, $userData, $lineType, $extData);
+            $list_shuttle = $ShuttleTripListService->lists($user_type, $userData, $type, $extData);
         }
         // 普通行程
         $list_nm = [
