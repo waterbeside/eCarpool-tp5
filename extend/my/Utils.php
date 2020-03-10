@@ -264,6 +264,7 @@ class Utils
             $pageData = $this->getPageData($results);
         } elseif ($pagesize > 0 && !$usePaginate) {
             $page = input('param.page/d', 1);
+            $page = $page ?: 1;
             $resData = $ctor->page($page, $pagesize)->select();
             $resData = is_object($resData) ? $resData->toArray() : ($resData ?: []);
             $pageData = [
