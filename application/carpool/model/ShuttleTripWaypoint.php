@@ -72,7 +72,7 @@ class ShuttleTripWaypoint extends BaseModel
                 'uid' => $tripData['uid'],
                 'time' => $tripData['time'],
                 'type' => 0,
-                'map_type' => $value['map_type'] ?? 0,
+                'map_type' => $value['map_type'] ?? ($tripData['map_type'] ?? 0),
             ];
             $upData[] = $itemUpData;
         }

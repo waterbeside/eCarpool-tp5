@@ -542,7 +542,8 @@ class Trip extends ApiBase
                 'id' => $addRes,
                 'uid' => $userData['uid'],
                 'line_type' => $rqData['line_data']['type'],
-                'time' => date('Y-m-d H:i:s', $rqData['time'])
+                'time' => date('Y-m-d H:i:s', $rqData['time']),
+                'map_type' => $rqData['map_type'],
             ];
             // 处理途经点
             if (isset($rqData['line_data']['waypoints']) && is_array($rqData['line_data']['waypoints'])) {

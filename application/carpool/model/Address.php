@@ -111,6 +111,11 @@ class Address extends BaseModel
     public function createTripAddress($datas, $userData, $radius = 50)
     {
         $createAddress = [];
+        $mapType = $datas['map_type'] ?? null;
+        if ($mapType !== null) {
+            $datas['start']['map_type'] = $mapType;
+            $datas['end']['map_type'] = $mapType;
+        }
         //处理起点
         $startRes = $this->createAnAddressOrGetItem($datas['start'], $userData, $radius);
         if (!$startRes) {
@@ -132,6 +137,9 @@ class Address extends BaseModel
             Db::connect('database_carpool')->startTrans();
             try {
                 foreach ($waypoints as $key => $value) {
+                    if ($mapType !== null) {
+                        $value['map_type'] = $mapType;
+                    }
                     $pointRes = $this->createAnAddressOrGetItem($value, $userData, $radius);
                     $createAddress['waypoints'][] = $pointRes;
                 }
@@ -242,6 +250,7 @@ class Address extends BaseModel
             'company_id'   => isset($data['company_id']) ? intval($data['company_id']) : 0,
             'gis'  =>  $this->geomfromtextPoint($data['longitude'], $data['latitude'], true),
             'city'       => $city ? $city : '--',
+            'map_type'       => $data['map_type'] ?? 0,
         ];
         if (isset($data['create_uid'])) {
             $inputData['create_uid'] = $data['create_uid'];
