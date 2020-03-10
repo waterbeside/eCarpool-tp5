@@ -8,6 +8,7 @@ use think\Response;
 use think\exception\HttpResponseException;
 use think\facade\Cache;
 use think\facade\Hook;
+use my\RedisData;
 
 /**
  * 后台公用基础控制器
@@ -278,5 +279,58 @@ class Base extends Controller
         }
         $target = $target && is_array($target) ? $target : [];
         return $target[$key] ?? $default;
+    }
+
+
+    /**
+     * 取得当前module,controller,action
+     *
+     * @param string $sp 如果有值，则以此为分格符拼成字符串返回
+     * @return mixed
+     */
+    public function getMCA($sp = false)
+    {
+        $module     = strtolower($this->request->module());
+        $controller = strtolower($this->request->controller());
+        $action     = strtolower($this->request->action());
+        $mca = [$module, $controller, $action];
+        if (is_string($sp)) {
+            return implode($sp, $mca);
+        }
+        return $mca;
+    }
+
+    /**
+     * 锁定操作
+     *
+     * @param array $setting 设置
+     * @return boolean
+     */
+    public function lockAction($setting = [])
+    {
+        $cacheKey = $this->getMCA(':');
+        $defaultSetting = [
+            'cacheKey' => $cacheKey,
+            'ex' => 8, // cacheKey过期时间
+            'runCount' => 100, // 等待次数
+            'sleep' => 20 * 1000, //微秒为单位，每次等待时间
+        ];
+        $setting = is_array($setting) ? array_merge($defaultSetting, $setting) : $defaultSetting;
+        $redis = RedisData::getInstance();
+        return $redis->lock($setting['cacheKey'], $setting['ex'], $setting['runCount'], $setting['sleep']);
+    }
+
+    /**
+     * 解锁操作
+     */
+    public function unlockAction($setting = [])
+    {
+        $cacheKey = $this->getMCA(':');
+        $defaultSetting = [
+            'cacheKey' => $cacheKey,
+        ];
+        $setting = is_array($setting) ? array_merge($defaultSetting, $setting) : $defaultSetting;
+        $redis = RedisData::getInstance();
+        return $redis->unlock($setting['cacheKey']);
     }
 }
