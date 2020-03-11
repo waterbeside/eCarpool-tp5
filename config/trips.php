@@ -14,5 +14,6 @@ return [
   ],
   'gps_interval' => '30',
   'shuttle_trip_launch_date' => '2020-03-02 00:00:00',
-  'trip_matching_radius' => 200 // 行程匹配半径
+  'trip_matching_radius' => 500, // 行程匹配半径(米为单位)
+  'trip_max_timeoffset' => 3600 // 行程可选的最大偏移值(值为单位)
 ];
