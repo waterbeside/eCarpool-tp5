@@ -105,7 +105,7 @@ class TripAddress extends ApiBase
             return $this->jsonReturn(20002, $returnList, lang('No data'));
         }
         if (!$returnList) {
-            $fieldsAddress = 'a.addressid, a.addressname, a.address_type, a.longtitude as longitude, a.latitude, a.city, a.status, a.address, a.district, a.map_type';
+            $fieldsAddress = 'a.addressid, a.addressname, a.address_type, X(gis) as longitude, Y(gis) as latitude, a.city, a.status, a.address, a.district, a.map_type';
 
             // 从行程取站点
             $joinShuttle = [
@@ -170,5 +170,59 @@ class TripAddress extends ApiBase
         );
         $this->jsonReturn(0, $returnData, "success");
         // $this->success('加载成功','',$returnData);
+    }
+
+    /**
+     * 查找我可选的路线公司
+     *
+     */
+    public function companys($usage = null)
+    {
+        $addressModel = new AddressModel();
+        $redis = new RedisData();
+        $DepartmentModel = new DepartmentModel();
+
+        $userData = $this->getUserData(1);
+        $departmentId = $userData['department_id'];
+        $cacheKey = "carpool:shuttle:address:companys:dptId_$departmentId";
+        $cacheKey .= !empty($usage) ? ",usage_$usage" : '';
+        
+        $res = $redis->cache($cacheKey);
+        if (is_array($res) && empty($res)) {
+            $this->jsonReturn(20002, 'No data');
+        }
+
+        if (empty($res) || true) {
+            // field
+            $fieldsAddress = 'a.addressid as id, a.addressname as name, X(gis) as longitude, Y(gis) as latitude';
+            // $fieldsAddress .= ',a.address_type,a.city, a.status, a.address, a.district, a.map_type';
+            // where
+            $mapOffical = [
+                ['a.status', '>', 0],
+                ['a.address_type', '=', 3],
+                ['a.is_delete', '=', Db::raw(0)],
+            ];
+            // where department
+            $departmentData =  $DepartmentModel->getItem($departmentId);
+            if (!$departmentData) {
+                return $this->jsonReturn(20002, lang('No data'));
+            }
+            $departmentPath = $departmentData['path'].','.$departmentId;
+            $mapOffical[] = ['a.department_id', 'in', $departmentPath];
+
+            $res = $addressModel->alias('a')->field($fieldsAddress)
+                ->where($mapOffical)->order('address_type ASC, create_time DESC')->select();
+            if (!$res) {
+                $redis->cache($cacheKey, [], 20);
+                return $this->jsonReturn(20002, 'No data');
+            }
+
+            $res = $res->toArray();
+            $redis->cache($cacheKey, $res, 60);
+        }
+        $returnData = [
+            'lists' => $res,
+        ];
+        return $this->jsonReturn(0, $returnData, 'Successful');
     }
 }

@@ -66,7 +66,7 @@ Route::group([], function () {
 
     //班车行程相关
     Route::rule('api/:version/shuttle/line/common$', 'api/:version.shuttle.line/common', 'GET'); // 常用路线列表
-    Route::rule('api/:version/shuttle/line/companys$', 'api/:version.shuttle.line/companys', 'GET'); // 路线公司列表
+    // Route::rule('api/:version/shuttle/line/companys$', 'api/:version.shuttle.line/companys', 'GET'); // 路线公司列表    
     Route::rule('api/:version/shuttle/line$', 'api/:version.shuttle.line/index', 'GET'); // 路线列表
     Route::rule('api/:version/shuttle/time$', 'api/:version.shuttle.time/index', 'GET'); // 时刻列表
     Route::rule('api/:version/shuttle/trip/cars$', 'api/:version.shuttle.trip/cars', 'GET'); // 班车空座位列表
@@ -106,6 +106,7 @@ Route::group([], function () {
     Route::rule('api/:version/address', 'api/:version.address/save', 'POST');
     Route::rule('api/:version/trip_address/citys$', 'api/:version.shuttle.trip_address/citys', 'GET');
     Route::rule('api/:version/trip_address/my$', 'api/:version.shuttle.trip_address/my', 'GET');
+    Route::rule('api/:version/trip_address/companys$', 'api/:version.shuttle.trip_address/companys', 'GET');
 
 
     Route::rule('api/:version/grade$', 'api/:version.grade/index', 'GET');
