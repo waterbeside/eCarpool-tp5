@@ -268,6 +268,8 @@ class MixTrip extends ApiBase
         $type = input('param.type', -1);
         $lineId = input('param.line_id');
         $lnglat = input('param.lnglat');
+        $start_lnglat = input('param.start_lnglat');
+        $end_lnglat = input('param.end_lnglat');
         $showPassenger = input('param.show_passenger', 0);
 
         $userData = $this->getUserData(1);
