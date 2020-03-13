@@ -631,4 +631,53 @@ class Utils
         }
         return $aLen;
     }
+
+    /**
+     * 通过两个时间范围查时间交集
+     *
+     * @param array $timeRange1 [start timestamp, end timestamp]
+     * @param array $timeRange2 [start timestamp, end timestamp]
+     * @return mixed [timestamp, timestamp] or null
+     */
+    public function getTimeIntersect($timeRange1, $timeRange2)
+    {
+        if (!is_array($timeRange1) && !is_array($timeRange2)) {
+            return $timeRange1 == $timeRange2 ? [$timeRange1, $timeRange1] : null;
+        }
+        if (!is_array($timeRange1) && is_array($timeRange2)) {
+            return $timeRange1 >= $timeRange2[0] && $timeRange1 <= $timeRange2[1] ? [$timeRange1, $timeRange1] : null;
+        }
+        if (is_array($timeRange1) && !is_array($timeRange2)) {
+            return $this->getTimeIntersect($timeRange2, $timeRange1);
+        }
+        if (is_array($timeRange1) && is_array($timeRange2)) {
+            if ($timeRange1[0] < $timeRange2[1] && $timeRange2[0] < $timeRange1[1]) {
+                //各结束时间都同时大于另一个要比较的起点时间，即有交集
+                $time1 = $timeRange1[0] > $timeRange2[0] ? $timeRange1[0] : $timeRange2[0];
+                $time2 = $timeRange1[1] < $timeRange2[1] ? $timeRange1[1] : $timeRange2[1];
+                return [$time1, $time2];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 通过两个“时间和时间偏移”查时间交集
+     *
+     * @param integer $time1 timestamp
+     * @param integer $offset1 时间偏移，秒为单位
+     * @param integer $time2 timestamp
+     * @param integer $offset2 时间偏移，秒为单位
+     * @return mixed [timestamp, timestamp] or null
+     */
+    public function getTimeIntersectByTimeOffset($time1, $offset1, $time2, $offset2)
+    {
+        $getTimeRange = function ($time, $offset) {
+            $offset =  is_array($offset) ? [$offset[0], $offset[1] ?? $offset[0]]: [$offset, $offset];
+            return [$time - $offset[0], $time + $offset[1]];
+        };
+        $timeRange1 = $getTimeRange($time1, $offset1);
+        $timeRange2 = $getTimeRange($time2, $offset2);
+        return $this->getTimeIntersect($timeRange1, $timeRange2);
+    }
 }
