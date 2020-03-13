@@ -425,9 +425,15 @@ class TripsMixed extends Service
             'u_uid', 'u_sex', 'u_company_id', 'u_department_id',
         ];
         $value = json_decode(json_encode($value), true);
+        $timeFieldArray = ['time','create_time','update_time','operate_time'];
         foreach ($value as $key => $v) {
             if (in_array($key, $int_field_array)) {
                 $value_format[$key] = intval($v);
+            }
+            if (in_array($key, $timeFieldArray)) {
+                if (!is_numeric($v)) {
+                    $value_format[$key] = strtotime($v);
+                }
             }
             if (!empty($unset) && in_array($key, $unset)) {
                 unset($value_format[$key]);
