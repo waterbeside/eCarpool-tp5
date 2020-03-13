@@ -192,7 +192,7 @@ class TripAddress extends ApiBase
             $this->jsonReturn(20002, 'No data');
         }
 
-        if (empty($res) || true) {
+        if (empty($res)) {
             // field
             $fieldsAddress = 'a.addressid as id, a.addressname as name, X(gis) as longitude, Y(gis) as latitude';
             // $fieldsAddress .= ',a.address_type,a.city, a.status, a.address, a.district, a.map_type';
