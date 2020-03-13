@@ -62,7 +62,7 @@ class TripList extends Service
                 $map[] = $TripsService->buildCompanyMap($userData, 'u');
 
                 $fields = $TripsService->buildQueryFields('wall_list_tz', 't', ['d'=>'u'], false, 1);
-                $fields.= ", 'wall' as `from`, 0 as line_id, 0 as line_sort, 1 as user_type , 0 as time_offset";
+                $fields.= ", 'wall' as `from`, 0 as line_type, 0 as line_sort, 1 as user_type , 0 as time_offset";
                 $fields .=  ',' .$TripsService->buildUserFields('u', $userDefaultFields);
                 $join = $TripsService->buildTripJoins("s, e, d", 't', ['d'=>'u']);
                 $ctor = $WallModel->alias('t')->field($fields)->join($join)->where($map)->order('t.time ASC');
