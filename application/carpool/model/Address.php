@@ -288,15 +288,15 @@ class Address extends BaseModel
      */
     public function getNear($lnglat, $radius, $extraMap = null, $extraFields = null, $limit = 10)
     {
-        $distantSql = "ST_Distance_Sphere(POINT({$lnglat[0]}, {$lnglat[1]}), gis)";
+        $distanceSql = "ST_Distance_Sphere(POINT({$lnglat[0]}, {$lnglat[1]}), gis, 6371000)";
         $fields = $this->getCommonFields($extraFields);
-        $fields .= ",$distantSql as distant";
+        $fields .= ",$distanceSql as distance";
         $redis = $this->redis();
         $geohash = $lnglat[2] ?? $redis->getGeohash($lnglat);
         $geohashLen = Utils::getInstance()->getGeohashLengthByRadius($radius);
         $subHash = substr($geohash, 0, $geohashLen);
         $where = [
-            ['', 'EXP', Db::raw("$distantSql < $radius")]
+            ['', 'EXP', Db::raw("$distanceSql < $radius")]
         ];
         if ($geohash) {
             $where[] =  ['', 'EXP', Db::raw("geohash like '{$subHash}%' ")];
@@ -304,7 +304,7 @@ class Address extends BaseModel
         if (!empty($extraMap)) {
             $where = array_merge($where, $extraMap);
         }
-        $orderby = 'distant ASC';
+        $orderby = 'distance ASC';
         $res = $this->field($fields)->where($where)->order($orderby)
             ->limit($limit)
             ->select();
