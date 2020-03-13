@@ -88,6 +88,9 @@ class RedisData extends Redis
                         $this->expire($cacheKey, $ex);
                     }
                 }
+                if ($exType > 0) {
+                    $this->expire($cacheKey, $exType);
+                }
                 $this->exec();
             } catch (\Exception $e) {
                 $errorMsg = $e->getMessage();
