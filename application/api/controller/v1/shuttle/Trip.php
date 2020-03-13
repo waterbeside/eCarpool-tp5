@@ -212,7 +212,6 @@ class Trip extends ApiBase
         // $returnData['lists'] = $ShuttleTripService->formatTimeFields($returnData['lists'], 'list', ['time','create_time']);
 
         foreach ($returnData['lists'] as $key => $value) {
-            $value = $ShuttleTripService->formatTimeFields($value, 'item', ['time','create_time']);
             $value = $TripsMixed->formatResultValue($value);
             $value = $ShuttleTrip->packLineDataFromTripData($value, null, ['name', 'longitude', 'latitude']);
             unset($value['extra_info']);
@@ -304,6 +303,8 @@ class Trip extends ApiBase
                 ['t.is_delete', '=', Db::raw(0)],
                 ['t.status', 'in', [0,1]],
                 ['t.trip_id', '=', Db::raw(0)],
+                ['t.user_type', '=', 1],
+                ['t.comefrom', '=', 1],
                 ['', 'exp', $ShuttleTrip->whereTime2Str($betweenTimeArray[0], $betweenTimeArray[1], true)]
             ];
             $map[] = $TripsService->buildCompanyMap($userData, 'u');
@@ -949,42 +950,37 @@ class Trip extends ApiBase
      */
     public function matching($id, $timeoffset = 60 * 15)
     {
+        $returnData = [];
         $ShuttleTripService = new ShuttleTripService();
         $ShuttleTripModel = new ShuttleTrip();
         $userData = $this->getUserData(1);
         $uid = intval($userData['uid']);
 
-        $tripData = $ShuttleTripModel->getItem($id);
+        // trip data
+        $fields = $ShuttleTripModel->getListField(null, null, true);
+        $tripData = $ShuttleTripModel->getItem($id, $fields);
         if (!$tripData) {
             return $this->jsonReturn(20002, lang('The route does not exist'));
         }
-        // $line_id = $tripData['line_id'];
         
-        $time = strtotime($tripData['time']);
-        $timeoffset = is_numeric($timeoffset) ? [$timeoffset, $timeoffset] :
-            (
-                is_string($timeoffset) ? array_map('intval', explode(',', $timeoffset)) : $timeoffset
-            );
-        if (!is_array($timeoffset) || empty($timeoffset)) {
-            return $this->jsonReturn(992, 'Error timeoffset');
+        $tripData = $ShuttleTripModel->packLineDataFromTripData($tripData, null, ['name', 'longitude', 'latitude']);
+        $tripData = TripsMixed::getInstance()->formatResultValue($tripData, ['extra_info']);
+        $returnData['detail'] = $tripData;
+        $returnData['lists'] = [];
+        if (!$this->lockAction(['ex'=>5, 'runCount'=>150, 'sleep'=>40 * 1000])) { // 添加并发锁
+            return $this->jsonReturn(20009, $returnData, lang('The network is busy, please try again later'));
         }
-        $timeoffset = count($timeoffset) > 1 ? $timeoffset : [$timeoffset[0], $timeoffset[0]];
-
+        // matching list
         $matchingUserType = $tripData['user_type'] == 1 ? 0 : 1;
-        $list = $ShuttleTripService->getSimilarTrips($tripData, $time, $matchingUserType, -1*$uid, $timeoffset);
-        if (!$list) {
-            return $this->jsonReturn(20002, lang('No data'));
-        }
-
+        // $list = $ShuttleTripService->getSimilarTrips_old($tripData, $time, $matchingUserType, -1*$uid, $timeoffset);
+        $list = $ShuttleTripService->getSimilarTrips($tripData, -1*$uid, null, 0, 1) ?: [];
         foreach ($list as $key => $value) {
             if ($matchingUserType == 1) {
                 $list[$key]['took_count'] = $ShuttleTripModel->countPassengers($value['id']);
             }
         }
-        $returnData = [
-            'lists' => $list,
-            // 'lineData' => $ShuttleTripService->getExtraInfoLineData($line_id, 0) ?: null,
-        ];
+        $returnData['lists'] = $list;
+        $this->unlockAction();
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
 

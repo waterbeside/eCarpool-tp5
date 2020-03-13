@@ -217,9 +217,11 @@ class ShuttleTrip extends BaseModel
      * 取得接口列表需要的字段
      *
      * @param string $alias 创建sql时，表的别名
-     * @return string
+     * @param array $fieldArray 指定的字段数组
+     * @param boolean $returnArray 是否返回数组，否则返回字符串
+     * @return mixed
      */
-    public function getListField($alias = '', $fieldArray = null)
+    public function getListField($alias = '', $fieldArray = null, $returnArray = false)
     {
         $fieldArray = empty($fieldArray) ?
             [
@@ -227,11 +229,15 @@ class ShuttleTrip extends BaseModel
                 'line_type', 'start_id', 'start_name', 'start_longitude', 'start_latitude', 'end_id', 'end_name', 'end_longitude', 'end_latitude', 'extra_info'
             ] : $fieldArray;
         $newFieldArray = [];
-        foreach ($fieldArray as $key => $value) {
-            $newField = $alias ? $alias.'.'.$value : $value;
-            $newFieldArray[] = $newField;
+        if (!empty($alias)) {
+            foreach ($fieldArray as $key => $value) {
+                $newField = $alias ? $alias.'.'.$value : $value;
+                $newFieldArray[] = $newField;
+            }
+        } else {
+            $newFieldArray = $fieldArray;
         }
-        return implode(',', $newFieldArray);
+        return $returnArray ? $newFieldArray : implode(',', $newFieldArray);
     }
 
     /**
@@ -772,7 +778,11 @@ class ShuttleTrip extends BaseModel
      */
     public function getCommonLineData($idOrData, $lineDataField = null, $waypointField = null)
     {
-        $tripData = $this->packLineDataFromTripData($idOrData, $lineDataField, $waypointField);
+        $tripData = $this->getDataByIdOrData($idOrData);
+        if (isset($tripData['line_data'])) {
+            return $tripData['line_data'];
+        }
+        $tripData = $this->packLineDataFromTripData($tripData, $lineDataField, $waypointField);
         $lineData = $tripData['line_data'] ?? [];
         return $lineData;
     }
@@ -797,5 +807,198 @@ class ShuttleTrip extends BaseModel
             $waypoints[$key] = $value;
         }
         return $waypoints;
+    }
+
+
+    /**
+     * 
+     */
+    public function getSimilarByLnglat($lnglat, $timeRange, $userType = null, $matchType = 0, $radius = null, $extData = null, $buildSql = false)
+    {
+        $returnData = [];
+        $Utils = Utils::getInstance();
+        $lng = $lnglat[0];
+        $lat = $lnglat[1];
+        $startTime = $timeRange[0];
+        $endTime = $timeRange[1];
+        $fieldAfter = "$matchType as match_type";
+        if (in_array($matchType, [1,5])) { // ***** 匹配起点
+            $fieldAfter .= $matchType == 5 && isset($extData['name']) ? ", '{$extData['name']}' as match_name" : ', t.start_name as match_name';
+            $fieldAfter .=  ',' . $Utils->getDistanceFieldSql('t.start_longitude', 't.start_latitude', $lng, $lat, 'distance');
+            $addressRangeSql = $Utils->buildCoordRangeWhereSql('t.start_longitude', 't.start_latitude', $lng, $lat, $radius);
+        } elseif (in_array($matchType, [2,6])) { // ***** 匹配终点
+            $fieldAfter .= $matchType == 6 && isset($extData['name']) ? ", '{$extData['name']}' as match_name" : ', t.end_name as match_name';
+            $fieldAfter .=  ',' . $Utils->getDistanceFieldSql('t.end_longitude', 't.end_latitude', $lng, $lat, 'distance');
+            $addressRangeSql = $Utils->buildCoordRangeWhereSql('t.end_longitude', 't.end_latitude', $lng, $lat, $radius);
+        } elseif (in_array($matchType, [3,4])) { // 用自己的行程起终点匹配对方行程的途经点
+            $fieldAfter .= ', NULL as match_name';
+            $fieldAfter .= ', NULL as distance';
+            $WaypointModel = app()->model('\app\carpool\model\ShuttleTripWaypoint');
+            $extraMap = [
+                ['time', 'between', [date('Y-m-d H:i:s', $startTime), date('Y-m-d H:i:s', $endTime)]],
+            ];
+            $tripIds = null;
+            $waypoints = $WaypointModel->getNear([$lng, $lat], $radius, $extraMap, null);
+
+            $idDistance = [];
+            $idName = [];
+            $tripIds = [];
+            foreach ($waypoints as $key => $value) { // 查出id和distance关系
+                $distance = $value['distance'];
+                $distanceOld = $idDistance[$value['trip_id']] ?? $distance;
+                $idDistance[$value['trip_id']] = $distanceOld < $distance ? $distanceOld : $distance;
+                $idName[$value['trip_id']] = $distanceOld < $distance ? ($idName[$value['trip_id']] ?? $value['name']) : $value['name'];
+                if (!in_array($value['trip_id'], $tripIds)) {
+                    $tripIds[] = $value['trip_id'];
+                }
+            }
+            $returnData['extra'] = [
+                'waypoints' => $waypoints,
+                'idDistance' => $idDistance,
+                'idName' => $idName,
+            ];
+            if (empty($tripIds)) {
+                $returnData['data'] = null;
+                return $returnData;
+            }
+            
+            $idRangeMap = ['id','in', $tripIds];
+        }
+
+        // fields
+        $tripFields = ['id', 'time', 'time_offset', 'create_time', 'status', 'user_type', 'comefrom', 'seat_count', 'extra_info'];
+        $lineFields = ['start_id','start_name','start_longitude', 'start_latitude','end_id','end_name','end_longitude', 'end_latitude'];
+        $fields = array_merge($tripFields, $lineFields);
+        $fieldsStr = implode(',', $Utils->arrayAddString($fields, 't.') ?: []);
+        $userFields =[
+            'uid','loginname','name','nativename','phone','mobile','Department',
+            'sex','company_id','department_id','imgpath','carcolor', 'im_id'
+        ];
+        $UserModel = app()->model('\app\carpool\model\User');
+        $userFieldsStr = $UserModel->buildSelectFields('u', $userFields);
+        // join
+        $join = [
+            ['user u', 'u.uid = t.uid', 'left'],
+        ];
+        // where
+        $map = [
+            ['t.status', 'in', [0,1]],
+            ['t.time', 'between', [date('Y-m-d H:i:s', $startTime), date('Y-m-d H:i:s', $endTime)]],
+        ];
+        // where  司机或乘客行程
+        if ($userType === 0) {
+            $map[] = ['t.user_type', '=', 1];
+            $map[] = ['t.comefrom', '=', 1];
+        } elseif ($userType === 1) {
+            $map[] = ['t.user_type', '=', 0];
+            $map[] = ['t.comefrom', '=', 2];
+            $map[] = ['t.trip_id', '=', 0];
+        } else {
+            $map[] = ['t.trip_id', '=', 0];
+            $map[] = ['t.comefrom', 'between', [1,2]];
+        }
+        if (isset($addressRangeSql)) { // 匹配起终点的筛选
+            $map[] = ['', 'EXP', Db::raw("$addressRangeSql")];
+        }
+        if (isset($idRangeMap)) { // 匹配途经点的筛选
+            $map[] = $idRangeMap;
+        }
+
+        $fieldsStr .= ",$userFieldsStr ,$fieldAfter";
+        $ctor = $this->alias('t')->field($fieldsStr)->where($map)->join($join)->order('t.time ASC');
+        
+        if ($buildSql) {
+            $returnData['data'] = $ctor->buildSql();
+        } else {
+            $list = $ctor->select();
+            $returnData['data'] = $list ? $list->toArray() : [];
+        }
+        return $returnData;
+    }
+
+
+    /** **********************************
+     * 查找相似行程
+     */
+    public function getSimilar($tripData, $matchType = 0, $radius = null, $buildSql = false)
+    {
+        $Utils = Utils::getInstance();
+        $defautlTimeOffset = 5 * 60;
+        
+        $radius = $radius ?: (config('trips.trip_matching_radius') ?? 200);
+        $time = is_numeric($tripData['time']) ? $tripData['time'] : strtotime($tripData['time']);
+        $timeOffset = $tripData['time_offset'] ?: $defautlTimeOffset;
+        $userType = $tripData['user_type'];
+        $tlineData = $this->getCommonLineData($tripData);
+        $tWaypoints = $tlineData['waypoints'] ?? [];
+        $startLng = $tlineData['start_longitude'] ?? 0;
+        $startLat = $tlineData['start_latitude'] ?? 0;
+        $endLng = $tlineData['end_longitude'] ?? 0;
+        $endLat = $tlineData['end_latitude'] ?? 0;
+        // $userData =  app()->model('\app\carpool\model\User')->getItem($tripData['uid']);
+
+        $maxTimeoffset = config('trips.trip_max_timeoffset') ?? 60 * 60;
+        $startTime = $time - $maxTimeoffset - $timeOffset;
+        $endTime = $time + $maxTimeoffset + $timeOffset;
+        if (in_array($matchType, [1,3])) { // ***** 匹配起点 (起点匹配起点、起点匹配途经点)
+            $res = $this->getSimilarByLnglat([$startLng, $startLat], [$startTime, $endTime], $userType, $matchType, $radius, null, true);
+            $sql = $res['data'] ?? '';
+        } elseif (in_array($matchType, [2,4])) { // ***** 匹配终点 (终点匹配起点、终点匹配途经点)
+            $res = $this->getSimilarByLnglat([$endLng, $endLat], [$startTime, $endTime], $userType, $matchType, $radius, null, true);
+            $sql = $res['data'] ?? '';
+        } elseif (in_array($matchType, [5,6])) { // 用自己的行程途经点匹配对方行程的起终点
+            if (empty($tWaypoints)) {
+                return null;
+            }
+            $sql = '';
+            foreach ($tWaypoints as $key => $value) {
+                $pLng = $value['longitude'];
+                $pLat = $value['latitude'];
+                $pName = $value['name'];
+                $res = $this->getSimilarByLnglat([$pLng, $pLat], [$startTime, $endTime], $userType, $matchType, $radius, ['name'=>$pName], true);
+                $resSql = $res['data'] ?? '';
+                $sp = empty($sql) ? '' : ' union ';
+                $sql .= !empty($resSql) ? $sp.$resSql : '';
+            }
+        }
+        if (empty($sql)) {
+            return [];
+        }
+        if (in_array($matchType, [3,4])) { // 如果是匹配途经点，取得
+            $resExtra = $res['extra'];
+            $idDistance = $resExtra['idDistance'];
+            $idName = $resExtra['idName'];
+        }
+
+        $list = $this->query($sql);
+        // var_dump($res); return [];
+        $newList = [];
+
+        foreach ($list as $key => $value) {
+            $vTime = strtotime($value['time']);
+            $vTimeOffset = $value['time_offset'] ?: $defautlTimeOffset;
+            $timeIntersect = $Utils->getTimeIntersectByTimeOffset($time, $timeOffset, $vTime, $vTimeOffset);
+            if (empty($timeIntersect)) {
+                continue;
+            }
+            if (in_array($matchType, [1, 2])) {
+                // if ($matchType == 1) {
+                //     $value['distance'] = $Utils->getDistance($value['start_longitude'], $value['start_latitude'], $startLng, $startLat);
+                // }
+                // if ($matchType == 2) {
+                //     $value['distance'] = $Utils->getDistance($value['end_longitude'], $value['end_latitude'], $endLng, $endLat);
+                // }
+                
+                if ($value['distance'] > $radius) {
+                    continue;
+                }
+            }
+            if (in_array($matchType, [3,4])) {
+                $value['match_name'] = $idName[$value['id']] ?? null;
+                $value['distance'] = $idDistance[$value['id']] ?? null;
+            }
+            $newList[] = $value;
+        }
+        return $newList;
     }
 }

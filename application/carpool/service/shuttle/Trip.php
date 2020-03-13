@@ -13,6 +13,7 @@ use app\carpool\service\shuttle\Partner as PartnerService;
 use app\carpool\service\TripsPushMsg;
 use app\carpool\model\ShuttleLineRelation;
 use app\carpool\model\ShuttleTripPartner;
+use app\carpool\model\ShuttleTripWaypoint;
 use app\user\model\Department;
 use my\RedisData;
 use my\Utils;
@@ -491,6 +492,128 @@ class Trip extends Service
 
     /**
      * 取得相似行程
+     */
+    public function getSimilarTrips($tripData, $uid = 0, $radius = null, $matchType = 0, $md = 0)
+    {
+        
+        $radius = $radius ?: (config('trips.trip_matching_radius') ?? 200);
+        $matchType = empty($matchType) ? [1,2,3,4,5,6] : (is_array($matchType) ? $matchType : explode(',', $matchType));
+        $ShuttleTripModel = new ShuttleTripModel();
+        $tlineData = $ShuttleTripModel->getCommonLineData($tripData);
+        $tWaypoints = $tlineData['waypoints'] ?? [];
+        $startLng = $tlineData['start_longitude'] ?? 0;
+        $startLat = $tlineData['start_latitude'] ?? 0;
+        $endLng = $tlineData['end_longitude'] ?? 0;
+        $endLat = $tlineData['end_latitude'] ?? 0;
+
+        $lists1 = in_array(1, $matchType) ? ($ShuttleTripModel->getSimilar($tripData, 1, $radius) ?: []) : [];
+        $lists2 = in_array(2, $matchType) ? ($ShuttleTripModel->getSimilar($tripData, 2, $radius) ?: []) : [];
+        if ($tripData['user_type'] == 0) { // 如果用乘客行程匹配司机行程
+            $lists3 = in_array(3, $matchType) ? ($ShuttleTripModel->getSimilar($tripData, 3, $radius) ?: []) : [];
+            $lists4 = in_array(4, $matchType) ? ($ShuttleTripModel->getSimilar($tripData, 4, $radius) ?: []) : [];
+        } else { // 如果用司机行程匹配乘客行程
+            $lists3 = in_array(5, $matchType) ? ($ShuttleTripModel->getSimilar($tripData, 5, $radius) ?: []) : [];
+            $lists4 = in_array(6, $matchType) ? ($ShuttleTripModel->getSimilar($tripData, 6, $radius) ?: []) : [];
+        }
+        
+        $list = array_merge($lists1, $lists2, $lists3, $lists4);
+        if (empty($list)) {
+            return [];
+        }
+        $TripsMixedService = new TripsMixedService();
+        $Utils = new Utils();
+        $tripIdMatchTypes = []; // 记录行程id与mathType关系
+        $tripIdMatchName = []; // 记录行程id与mathType matchName关系
+        $tripIdDistance = []; // 记录行程id与distance关系
+        
+        foreach ($list as $key => $value) {
+            $id = $value['id'];
+            $matchType = $value['match_type'];
+            $matchName = $value['match_name'];
+            // 生成行程id与matchType关系字典数组
+            $tripIdMatchTypes[$id] = $tripIdMatchTypes[$id] ?? [];
+            $tripIdMatchTypes[$id][] = $matchType;
+            $tripIdMatchName[$id] = $tripIdMatchName[$id] ?? [];
+            $tripIdMatchName[$id][] = $matchName;
+            
+             // 遍历添加line_data
+            $value = $this->formatTimeFields($value, 'item', ['time','create_time']);
+            $value = $ShuttleTripModel->packLineDataFromTripData($value, null, ['name', 'longitude', 'latitude']);
+            $lineData = $value['line_data'];
+            $value = $TripsMixedService->formatResultValue($value, ['extra_info']);
+
+            // 排序除定范围外 (理论上sql已筛好, 为保险再筛一次，以保证合拼接口不因为范围问题而拒绝)
+            $tripIdDistance[$id] = $tripIdDistance[$id] ?? [];
+            $startDistance = $Utils->getDistance($lineData['start_longitude'], $lineData['start_latitude'], $startLng, $startLat);
+            $endDistance = $Utils->getDistance($lineData['end_longitude'], $lineData['end_latitude'], $endLng, $endLat);
+
+            $sPointDistance = in_array($matchType, [3,5]) ? $value['distance'] : null;
+            $ePointDistance = in_array($matchType, [4,6]) ? $value['distance'] : null;
+            $tripIdDistance[$id]['ss'] =  $tripIdDistance[$id]['ss'] ?? $startDistance;
+            $tripIdDistance[$id]['ee'] =  $tripIdDistance[$id]['ee'] ?? $endDistance;
+            $tripIdDistance[$id]['sw'] =  is_numeric($sPointDistance) ? $sPointDistance : ($tripIdDistance[$id]['sw'] ?? $sPointDistance);
+            $tripIdDistance[$id]['ew'] =  is_numeric($ePointDistance) ? $ePointDistance : ($tripIdDistance[$id]['ew'] ?? $ePointDistance);
+            $list[$key] = $value;
+        }
+
+        $WaypointModel = new ShuttleTripWaypoint();
+        $newList = []; // 合拼相同id后以及排除多余后的新列表。
+        $newListIds = []; // 记录已经存有的行程id以去除重复的
+        foreach ($list as $key => $value) {
+            $id = $value['id'];
+            if (in_array($id, $newListIds)) {
+                continue;
+            }
+            if ($uid > 0 && $value['u_uid'] != $uid) {
+                continue;
+            }
+            // if ($uid < 0 && $value['u_uid'] == -1*$uid) {
+            //     continue;
+            // }
+            $newListIds[] = $id;
+            $matchTypeData = $tripIdMatchTypes[$id] ?? null;
+            $matchNameData = $tripIdMatchName[$id] ?? [];
+            if (empty($matchTypeData)) {
+                continue;
+            }
+            $value['match_type'] = $matchTypeData;
+            $value['match_sort'] = 10;
+            $lineData = $value['line_data'];
+            $waypoints = $lineData['waypoints'];
+            if ($lineData['map_type'] != ($tripData['line_data)']['map_type'] ?? 0)) {
+                continue;
+            }
+            $distanceData = $tripIdDistance[$id];
+            $value['distance_start'] = !empty(array_intersect([3,5], $matchTypeData)) ? ($distanceData['sw'] ?? 999) : $distanceData['ss'];
+            if (in_array(1, $matchTypeData) && in_array(2, $matchTypeData)) { // 起终点都匹配
+                $value['match_sort'] = 1000;
+                $value['distance'] =  ($distanceData['ss'] ?? 999) + ($distanceData['ee'] ?? 999);
+            } elseif (!empty(array_intersect([3,5], $matchTypeData)) && in_array(2, $matchTypeData)) { // 起点与途经点匹配，终点与终点匹配
+                $value['match_sort'] = 600;
+                $value['distance'] =  ($distanceData['sw'] ?? 999) + ($distanceData['ee'] ?? 999);
+            } elseif (in_array(1, $matchTypeData) && !empty(array_intersect([4,6], $matchTypeData))) { // 起点与起点匹配，终点与途经点匹配
+                $value['match_sort'] = 500;
+                $value['distance'] =  ($distanceData['ss'] ?? 999) + ($distanceData['ew'] ?? 999);
+            } elseif (!empty(array_intersect([3,5], $matchTypeData)) && !empty(array_intersect([4,6], $matchTypeData))) { // 起点与途经点匹，终点与途经点匹配
+                $waypointsX = in_array(3, $matchTypeData) ? $waypoints : $tWaypoints;
+                if ($WaypointModel->checkPointSortByName($matchNameData, $waypointsX, $matchTypeData)) { // 检查顺序
+                    $value['match_sort'] = 300;
+                }
+                $value['distance'] =  ($distanceData['sw'] ?? 999) + ($distanceData['ew'] ?? 999);
+            } else {
+                if ($md > 0) {
+                    continue;
+                }
+            }
+            unset($value['match_type'], $value['match_name']);
+            $newList[] = $value;
+        }
+        $newList = $Utils->listSort($newList, ['match_sort'=>'DESC','distance'=>'ASC','distance_start'=>'ASC', 'time'=>'ASC']);
+        return $newList;
+    }
+
+    /**
+     * 取得相似行程
      *
      * @param mixed $tripData 行程数据
      * @param integer $time 时间
@@ -500,7 +623,7 @@ class Trip extends Service
      * @param integer $radius  起终点半径距离范围
      * @return array
      */
-    public function getSimilarTrips($tripData, $time = 0, $userType = false, $uid = 0, $timeOffset = [60*10, 60*10], $radius = null)
+    public function getSimilarTrips_Old($tripData, $time = 0, $userType = false, $uid = 0, $timeOffset = [60*10, 60*10], $radius = null)
     {
         $lineId = $tripData['line_id'] ?? 0;
         $startId = $tripData['start_id'] ?? 0;
@@ -509,26 +632,31 @@ class Trip extends Service
         $startLat = $tripData['start_latitude'] ?? 0;
         $endLng = $tripData['end_longitude'] ?? 0;
         $endLat = $tripData['end_latitude'] ?? 0;
-        $radius = $radius ?: (config('trips.trip_matching_radius') ?? 200);
+        $radius = $radius ?: (config('trips.trip_matching_radius') ?? 500);
+        $radius = 1000;
         $Utils = new Utils();
         if (empty($lineId) && (!$startLng && !$startLat && !$endLng && !$endLat)) {
             return [];
         }
         $tripFields = ['id', 'time', 'time_offset', 'create_time', 'status', 'user_type', 'comefrom','line_id', 'seat_count', 'extra_info'];
+        $lineFields = ['start_id','start_name','start_longitude', 'start_latitude','end_id','end_name','end_longitude', 'end_latitude'];
+        $fields = array_merge($tripFields, $lineFields);
         $userFields =[
             'uid','loginname','name','nativename','phone','mobile','Department',
             'sex','company_id','department_id','imgpath','carcolor', 'im_id'
         ];
-        $fieldsStr = implode(',', $Utils->arrayAddString($tripFields, 't.') ?: []);
+        $fieldsStr = implode(',', $Utils->arrayAddString($fields, 't.') ?: []);
+        // TODO: $fieldsStr .= getDistanceFieldSql 
         // 设置查询时间范围
         $time = $time ?: time();
         if (is_numeric($timeOffset)) {
             $timeOffset = [$timeOffset, $timeOffset];
         }
+        $maxTimeoffset = config('trips.trip_max_timeoffset') ?? 60 * 60;
         // $start_time = $time - $timeOffset[0];
         // $end_time = $time + $timeOffset[1];
-        $start_time = $time - 60 * 60;
-        $end_time = $time + 60 * 60;
+        $start_time = $time - $maxTimeoffset;
+        $end_time = $time + $maxTimeoffset;
         // 查询有没有关系路线，有的话也把这些路线作为条件查询
         
         if ($lineId > 0) {
@@ -546,13 +674,16 @@ class Trip extends Service
             if ($endId > 0) {
                 $lineSortWhen .= " WHEN t.end_id = $endId THEN 5 ";
             }
+            // TODO: 以座标距离生成line_sort
             if (!empty($lineSortWhen)) {
                 $fieldsStr .= ", (CASE $lineSortWhen ELSE 0 END) AS line_sort ";
             } else {
                 $fieldsStr .= ", 0 AS line_sort";
             }
-            $startRangeSql = $Utils->buildCoordRangeWhereSql('t.start_longitude', 't.start_latitude', $startLng, $startLat, $radius);
-            $endRangeSql = $Utils->buildCoordRangeWhereSql('t.end_longitude', 't.end_latitude', $endLng, $endLat, $radius);
+            if ($radius > 0) {
+                $startRangeSql = $Utils->buildCoordRangeWhereSql('t.start_longitude', 't.start_latitude', $startLng, $startLat, $radius);
+                $endRangeSql = $Utils->buildCoordRangeWhereSql('t.end_longitude', 't.end_latitude', $endLng, $endLat, $radius);
+            }
         }
         
         // 构建查询map
@@ -594,7 +725,10 @@ class Trip extends Service
         }
         $ShuttleTripModel = new ShuttleTripModel();
         $TripsMixedService = new TripsMixedService();
-        $list = $ShuttleTripModel->alias('t')->field($fieldsStr)->where($map)->join($join)->order('t.time ASC, line_sort DESC')->select();
+        $list = $ShuttleTripModel->alias('t')->field($fieldsStr)->where($map)->join($join)->order('t.time ASC, line_sort DESC')
+        // ->fetchSql()
+        ->select();
+        // dump($list);exit;
         if (!$list) {
             return [];
         }
@@ -613,17 +747,8 @@ class Trip extends Service
         foreach ($list as $key => $value) {
             // 遍历添加line_data
             $value = $this->formatTimeFields($value, 'item', ['time','create_time']);
-            $itemlineData =  $this->getExtraInfoLineData($value, 2);
-            $lineData = [
-                'start_name' => $itemlineData['start_name'],
-                'start_longitude' => $itemlineData['start_longitude'],
-                'start_latitude' => $itemlineData['start_latitude'],
-                'end_name' => $itemlineData['end_name'],
-                'end_longitude' => $itemlineData['end_longitude'],
-                'end_latitude' => $itemlineData['end_latitude'],
-                'map_type' => $itemlineData['map_type'] ?? 0,
-            ];
-            $value['line_data'] = $lineData;
+            $value = $ShuttleTripModel->packLineDataFromTripData($value, null, ['name', 'longitude', 'latitude']);
+            $lineData = $value['line_data'];
             $value = $TripsMixedService->formatResultValue($value, ['extra_info']);
 
             // 根据time_offset排除个别行
@@ -631,9 +756,10 @@ class Trip extends Service
             if (!($value['time'] > $time - $vTimeOffset[0] &&  $value['time'] < $time + $vTimeOffset[1])) {
                 continue;
             }
-            // 排序指定范围外 (理论上sql已筛好, 为保险再筛一次，以保证合拼接口不因为范围问题而拒绝)
+            // 排序除定范围外 (理论上sql已筛好, 为保险再筛一次，以保证合拼接口不因为范围问题而拒绝)
             $startDistance = $Utils->getDistance($lineData['start_longitude'], $lineData['start_latitude'], $startLng, $startLat);
             $endDistance = $Utils->getDistance($lineData['end_longitude'], $lineData['end_latitude'], $endLng, $endLat);
+
             if ($startDistance > $radius || $endDistance > $radius) {
                 continue;
             }
@@ -641,6 +767,7 @@ class Trip extends Service
         }
         return $newList;
     }
+
 
 
     /**
