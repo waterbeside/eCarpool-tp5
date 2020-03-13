@@ -237,7 +237,7 @@ class Trip extends Base
         // }
         // 检查两起点是否相差太远
         $Utils = new Utils();
-        $radius = config('trips.trip_matching_radius') ?? 200;
+        $radius = config('trips.trip_matching_radius') ?? 500;
         $startDistance = $Utils->getDistance($tripData['start_longitude'], $tripData['start_latitude'], $targetTripData['start_longitude'], $targetTripData['start_latitude']);
         $endDistance = $Utils->getDistance($tripData['end_longitude'], $tripData['end_latitude'], $targetTripData['end_longitude'], $targetTripData['end_latitude']);
         if ($startDistance > $radius || $endDistance > $radius) {
