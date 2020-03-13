@@ -470,4 +470,30 @@ class User extends BaseModel
         }
         return $count;
     }
+
+    /**
+     * 创件要select的用户字段
+     *
+     * @param mixed $a 别名
+     * @param array $fields 要显示的字段
+     * @param integer $returnType  返回类型 0 处理为小写后拼接字符串，1数组，2不处理为小写的字符中。
+     * @return mixed
+     */
+    public function buildSelectFields($a = "u", $fields = [], $returnType = 0)
+    {
+        $format_array = [];
+        $fields = $fields ?: ['uid', 'loginname', 'name','nativename', 'phone', 'mobile', 'Department', 'sex', 'company_id', 'department_id', 'companyname', 'imgpath', 'carnumber', 'carcolor', 'im_id'];
+        if (is_array($a)) {
+            $aa = $a;
+            $a = $aa[0];
+            $pf = isset($aa[1]) ? $aa[1].'_' : '';
+        } else {
+            $pf = $a ? $a.'_' : '';
+        }
+        foreach ($fields as $key => $value) {
+            $endStr = in_array($returnType, [0, 1]) ? " as " . $pf . mb_strtolower($value) : '';
+            $format_array[$key] =  $a . "." . $value . $endStr;
+        }
+        return in_array($returnType, [0, 2]) ? join(",", $format_array) : $format_array;
+    }
 }
