@@ -16,6 +16,7 @@ return [
     'The network is busy, please try again later' => 'The network is busy, please try again later.',
 
     //jwt 验证
+    'Permission denied' => 'Permission denied',
     'You are not logged in' => 'You are not logged in',
     'Login status expired, please login again' => 'Login status expired, please login again',
 

@@ -16,6 +16,7 @@ return [
     'The network is busy, please try again later' => 'Mạng đang bận, vui lòng thử lại sau.',
 
     //jwt 验证
+    'Permission denied' => 'Quyền bị từ chối',
     'You are not logged in' => 'Bạn chưa đăng nhập',
     'Login status expired, please login again' => 'Tình trạng đăng nhập đã hết hạn, vui lòng đăng nhập lại',
 
