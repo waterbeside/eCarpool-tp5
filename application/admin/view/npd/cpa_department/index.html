@@ -1,0 +1,167 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body P-user-list">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+        <ul class="amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/npd.cpaDepartment/index')}"  >Carpool授权部门管理</a></li>
+            <li class="btn-item btn-item-right">
+                <a class="layui-btn layui-btn-sm layui-btn-success " href="{:url('admin/npd.cpaDepartment/add')}"  data-title="添加授权Carpool账户"  data-trigger="modal" data-width="90%">
+                <i class="fa fa-plus"></i> 添加部门</a>
+            </li>
+        </ul>
+
+
+        <div class="layui-tab-content">
+            <form class="layui-form layui-form-pane" action="{:url('admin/npd.cpaDepartment/index')}" method="get">
+            <div class="layui-inline">
+                <label class="layui-form-label">检索</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="关键词" class="layui-input" style="width:140px" >
+                </div>
+                <div class="layui-input-inline">
+                    <select name="filter[status]">
+                        <option value="" <?php if(!isset($filter['status']) || !is_numeric('status') ){ echo 'selected="selected"';  } ?> > 是否禁用：不限</option>
+                        <option value="0" <?php if(isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 0 ){ echo 'selected="selected"'; } ?> > 禁用</option>
+                        <option value="1" <?php if(isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 1  ){ echo 'selected="selected"'; } ?> > 正常</option>
+                    </select>
+                </div>
+                <!-- <div class="layui-input-inline">
+                    <select name="filter[is_delete]">
+                        <option value="0" <?php if(isset($filter['is_delete']) && is_numeric($filter['is_delete']) && $filter['is_delete'] == 0 ){ echo 'selected="selected"'; } ?> > 有效部门</option>
+                        <option value="1" <?php if(isset($filter['is_delete']) && is_numeric($filter['is_delete']) && $filter['is_delete'] == 1  ){ echo 'selected="selected"'; } ?> > 已删部门</option>
+                    </select>
+                </div> -->
+            </div>
+            <div class="layui-inline">
+                <input type="hidden" name="export" value="0">
+                <button class="layui-btn"><i class="fa fa-search"></i></button>
+            </div>
+            </form>
+            <hr>
+
+            <table lay-filter="listtable" class="layui-table">
+            <thead>
+                <tr>
+                    <th lay-data="{field:'id', width:100 }" >ID</th>
+                    <th lay-data="{field:'department_fullname'}">部门</th>
+                    <th lay-data="{field:'path'}">PATH</th>
+                    <th lay-data="{field:'status', width:100}">状态</th>
+                    <th lay-data="{field:'create_time', width:160}">授权时间</th>
+                    <th lay-data="{field:'options', width:100}">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            {foreach name="lists" item="vo"}
+            <tr>
+                <td>
+                    <div <?php echo  ($vo['is_delete']  ? 'class="is_delete"' : ''); ?>>
+                        {$vo.id}
+                    </div>
+                </td>
+                <td>
+                    {$vo.fullname}
+                </td>
+                <td>
+                    {$vo.path}
+                </td>
+                
+                <td>
+                    <!-- {$vo.status > 0 ? '正常': '禁用'}  -->
+                    <?php if(!$vo['is_delete']) { ?> 
+                        <input type="checkbox" name="status[{$vo.id}]" lay-filter="status" lay-skin="switch" value="{$vo.id}" lay-text="正常|禁用" <?php echo $vo['status'] > 0 ? 'checked' :'' ?> ></td>
+                    <?php }else{ ?>
+                        -
+                    <?php } ?>
+                <td>{$vo.create_time}</td>
+                <td>
+                    <?php if(!$vo['is_delete']) { ?> 
+                        <a href="{:url('admin/npd.cpaDepartment/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除" ><i class="layui-icon">&#xe640;</i></a>
+                    <?php }else{ ?>
+                        -
+                    <?php } ?>
+
+                </td>
+            </tr>
+            {/foreach}
+            </tbody>
+            </table>
+            <!--分页-->
+            {$lists|raw}
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+PAGE_EXEC = {
+    init: function(){
+        initLayuiTable({ limit: {$pagesize} })
+        var $tableWrapper = $(".P-user-list [lay-filter=LAY-table-1] .layui-table-box");
+        var $tableWrapper_main = $tableWrapper.find(".layui-table-main");
+        var $tr = $tableWrapper_main.find('tr');
+        var $tableWrapper_l = $tableWrapper.find(".layui-table-fixed .layui-table-body");
+        $tr.each(function(index, el) {
+        if($(el).find("[data-field=uid]").find('.is_delete').length > 0){
+            $(el).addClass('delete');
+            $(el).find('.ajax-delete').hide();
+            $tableWrapper_l.find('tr').eq(index).addClass('delete')
+        }
+        });
+        form.on('switch(status)', function(data){
+            var $input = $(data.elem);
+            var status = data.elem.checked;
+            var id = data.value;
+            var isLoading = $input.attr('data-loading');
+            console.log(status);
+            console.log(isLoading);
+
+
+            if (isLoading == 1) {
+                layer.msg('提交中，请不要重复操作');
+                $input.prop('checked', !status);
+                form.render();
+                return false;
+            }
+            $input.attr('data-loading', 1);
+            // form.render();
+
+            // $(data.othis).hide();
+            setTimeout(function() {
+                ajaxSubmit({
+                    loadingLock:false,
+                    type:'get',
+                    url:"{:url('change_status')}",
+                    data:{id:id, status: (status ? 1 : 0)},
+                    unrefresh: true,
+                    success:function(res) {
+                        if (res.code !== 0) {
+                            $input.prop('checked', !status);
+                        }
+                        $input.attr('data-loading', 0);
+                        form.render();
+
+                    },
+                    error: function(err) {
+                        $input.prop('checked', !status);
+                        form.render();
+                        $input.attr('data-loading', 0);
+                    }
+
+                })
+            }, 300);
+            
+            setTimeout(function() {
+                $input.attr('data-loading', 0);
+            }, 3000);
+
+            console.log(data.othis); //得到美化后的DOM对象
+        });  
+    }
+}
+PAGE_EXEC.init()
+
+</script>
+{/block}

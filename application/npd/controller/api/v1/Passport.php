@@ -4,6 +4,8 @@ namespace app\npd\controller\api\v1;
 
 use app\npd\controller\api\NpdApiBase;
 use app\carpool\model\User as CarpoolUser;
+use app\npd\model\CpaUser;
+use app\npd\model\CpaDepartment;
 use app\npd\model\User as NpdUser;
 use app\user\model\Department as DepartmentModel;
 use app\user\model\JwtToken;
@@ -130,6 +132,7 @@ class Passport extends NpdApiBase
             if (isset($data['name']) && $data['name'] != $userData['nativename']) {
                 $this->jsonReturn(10001, lang('Name error'));
             }
+
             //验证用户是否离职
             $checkActiveRes = $CarpoolUser->checkDimission($userData['loginname'], 1);
             if (!$checkActiveRes) {
@@ -142,7 +145,32 @@ class Passport extends NpdApiBase
             }
             $iss = 'carpool';
             $userData['nickname'] = $userData['name'];
+            // 检查该用户是否授权登入NPD网站
+            
+            $carpoolUserAccess = config('npd.carpool_user_access') ?? 0;
+            
+            if ($carpoolUserAccess != 1) {
+                if ($carpoolUserAccess == 0) {
+                    return $this->jsonReturn(10005, lang('Permission denied'));
+                }
+                $CpaUser  = new CpaUser();
+                $userCheckRes = $CpaUser->checkAccess($userData['uid']);
+
+                if (!$userCheckRes) {
+                    $CpaDepartment  = new CpaDepartment();
+                    $DepartmentModel = new DepartmentModel();
+                    $departmentData = $DepartmentModel->getItem($userData['department_id']);
+                    if (empty($departmentData)) {
+                        return $this->jsonReturn(10005, lang('Permission denied'));
+                    }
+                    $path = "{$departmentData['path']},{$userData['department_id']}";
+                    if (!$CpaDepartment->checkAccess($path)) {
+                        return $this->jsonReturn(10005, lang('Permission denied'));
+                    }
+                }
+            }
         }
+        
         $jwtPaylod = ['uid' => $userData['uid'], 'loginname' => $userData['loginname'], 'client' => $data['client']];
         $jwt = $this->createPassportJwt($jwtPaylod, 3600*24, $iss);
 

@@ -1,0 +1,145 @@
+<div class="amain-form-wrapper p-cpaUser-form">
+    <!-- 第一步，查找可添加的工号 -->
+    <div class="j-step-0">
+
+        <form class="layui-form form-container" action="{:url('admin/npd.cpaUser/add',['step'=>0])}" method="post">
+            <div class="layui-form-item">
+                <label class="layui-form-label">工号</label>
+                <div class="layui-input-block">
+                    <textarea type="text" name="loginname" placeholder="工号,工号,工号..." lay-verify="required" class="layui-textarea" style="height: 200px;" ></textarea>
+                    <div class="layui-form-mid layui-word-aux"> 请添加工号，多个工号用“,”相隔，如“GET0101111,GET0110334,GET0212211”</div>
+
+                </div>
+            </div>
+            <div class="blank20"></div>
+            <div class="layui-btn-container layui-row">
+                <button class="layui-btn layui-btn-lg pull-right" lay-submit lay-filter="*check"><i class="fa fa-plus"></i> 确定</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 第二步，添加 -->
+    <div class="j-step-1" style="display: none;">
+        <table lay-filter="listtable" class="layui-table">
+            <thead>
+                <tr>
+                    <th lay-data="{field:'id', width:90 }" >uid</th>
+                    <th lay-data="{field:'account'}">用户名</th>
+                    <th lay-data="{field:'nativename', width:140}">姓名</th>
+                    <th lay-data="{field:'department', width:140}">部门</th>
+                    <th lay-data="{field:'status_str', width:140}">...</th>
+                </tr>
+            </thead>
+            <tbody class='j-userList'> </tbody>
+        </table>
+        <div class="layui-form-mid layui-word-aux"> 将会添加以上“可添加”的工号</div>
+
+        <form class="layui-form form-container" action="{:url('admin/npd.cpaUser/add',['step'=>1])}" method="post">
+            <input type="hidden"  name="loginname"  class="j-allow-account"  ></input>
+            <div class="layui-btn-container layui-row">
+                <button class="layui-btn layui-btn-lg pull-right btn-submit" lay-submit lay-filter="*" style="display: none;"><i class="fa fa-save"></i> 确认保存</button>
+                <button class="layui-btn layui-btn-lg pull-right btn-unsubmit" disabled  style="display: none;"><i class="fa fa-save"></i> 没有可保存的数据</button>
+                <a class="layui-btn layui-btn-lg layui-btn-primary pull-right" onclick="FORM_PAGE_EXEC.step(0)">返回</a>
+                
+                
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<script id="j-userlist-tpl" type="text/html">
+    {{#  layui.each(d, function(index, item){ }}
+    <tr>
+        
+        <td>{{ item.uid }}</td>
+        <td>{{ item.loginname }}</td>
+        <td>{{ item.nativename }}</td>
+        <td>{{ item.department_fullname }}</td>
+        <td>
+            {{#  if(item.can_be_add){ }}
+                <div style="color:green"><i class="fa fa-check-circle"></i>{{ item.status_str }}</div>
+                
+            {{#  } else { }} 
+                <div style="color:red"><i class="fa fa-times-circle"></i>{{ item.status_str }}</div>
+            {{#  } }} 
+
+            
+        </td>
+    </tr>
+    {{#  }); }}
+    {{#  if(d.length === 0){ }}
+        <li class="no-data"> 无数据 </li>
+    {{#  } }} 
+</script>
+
+<script>
+FORM_PAGE_EXEC = {
+    init: function() {
+        var _this = this;
+        form.render();
+        element.init();
+        /**
+         * 通用表单提交(AJAX方式)
+         */
+        form.on('submit(*check)', function (data) {
+            var $form = $(data.form);
+            
+
+            ajaxSubmit({
+                url: data.form.action,
+                dataType:'json',
+                type: data.form.method,
+                data: $form.serialize(),
+                unrefresh: true,
+                success: function(res) {
+                    if (res.code === 0) {
+                        var getTpl = $('#j-userlist-tpl').html();
+                        var userList = res.data.list;
+                        var allowAccount = res.data.allowAccount;
+                        if (allowAccount.length > 0) {
+                            _this.showSubmitBtn();
+                        } else {
+                            _this.showSubmitBtn(1);
+                        }
+                        layui.laytpl(getTpl).render(userList, function(html){
+                            $('.p-cpaUser-form .j-userList').html(html)
+                            $('.p-cpaUser-form .j-allow-account').val(allowAccount.join(','));
+                        });
+                        _this.step(1);
+                    } else {
+                        layer.msg(res.desc);
+                    }
+                    console.log(res);
+                }
+            });
+            return false;
+        });
+    },
+
+    step: function(step) {
+        if (step) {
+            $('.p-cpaUser-form .j-step-1').show();
+            $('.p-cpaUser-form .j-step-0').hide();
+        } else {
+            $('.p-cpaUser-form .j-step-1').hide();
+            $('.p-cpaUser-form .j-step-0').show();
+        }
+    },
+
+    showSubmitBtn: function(hide) {
+        hide = hide || 0;
+        if (hide)  {
+            $('.p-cpaUser-form .btn-submit').hide();
+            $('.p-cpaUser-form .btn-unsubmit').show();
+        } else {
+            $('.p-cpaUser-form .btn-submit').show();
+            $('.p-cpaUser-form .btn-unsubmit').hide();
+        }
+    }
+    
+};
+FORM_PAGE_EXEC.init();
+
+ 
+</script>
