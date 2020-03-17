@@ -656,22 +656,35 @@ class ShuttleTrip extends BaseModel
      * 检查是否在行程 （是否参与乘客）
      *
      * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
-     * @param integer $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
-     * @return void
+     * @param integer $uid 用户的uid;
+     * @param mixed $byPassengerList 是否通过乘客列表查询，如果是array则直接为乘客列表，如果为1,则查一次乘客列表，如果是0，不使用乘客列表;
+     * @return mixed array or false or null
      */
-    public function checkInTrip($idOrData, $uid)
+    public function checkInTrip($idOrData, $uid, $byPassengerList = null)
     {
         $tripData = $this->getDataByIdOrData($idOrData);
         $id = $tripData['id'];
         if (empty($tripData)) {
             return $this->setError(20002, lang('The trip does not exist'), $tripData);
         }
-        $map = [
-            ['status', '>', 0],
-            ['uid', '=', $uid],
-            ['trip_id', '=', $id],
-        ];
-        $res = $this->where($map)->find();
+        if (!empty($byPassengerList)) {
+            $passengersList = is_array($byPassengerList) ? $byPassengerList :
+                ($byPassengerList == 2 ? $this->passengers($id) :  $this->passengers($id, 0));
+            $res = null;
+            foreach ($passengersList as $key => $value) {
+                if ($value['uid'] == $uid) {
+                    $res = $value;
+                    break;
+                }
+            }
+        } else {
+            $map = [
+                ['status', '>', 0],
+                ['uid', '=', $uid],
+                ['trip_id', '=', $id],
+            ];
+            $res = $this->where($map)->find();
+        }
         return $res;
     }
 
@@ -704,7 +717,7 @@ class ShuttleTrip extends BaseModel
      * @param integer $id 行程id
      * @return mixed
      */
-    public function passengers($id)
+    public function passengers($id, $ex = 60)
     {
         $cacheKey = $this->getPassengersCacheKey($id);
         $redis = $this->redis();
@@ -716,11 +729,14 @@ class ShuttleTrip extends BaseModel
                 ['t.status', 'between', [0,5]],
             ];
             $res = $this->alias('t')->where($map)->order('t.create_time ASC')->select();
-            if (!$res) {
-                $redis->cache($cacheKey, [], 5);
+            $res = !empty($res) ? $res->toArray() : [];
+            if ($ex > 0) {
+                if (!$res) {
+                    $redis->cache($cacheKey, [], 5);
+                } else {
+                    $redis->cache($cacheKey, $res, $ex);
+                }
             }
-            $res =  $res->toArray();
-            $redis->cache($cacheKey, $res, 60);
         }
         return $res;
     }
