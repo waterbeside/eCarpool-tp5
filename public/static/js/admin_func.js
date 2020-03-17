@@ -291,20 +291,24 @@ function openParentLayer(url,opt){
 
 
 function ajaxSubmit(setting){
-  if(GV.lockForm){
-    layer.msg(myLang.r('a form is being submitted, please try again later'));
-    return false;
-  }
-  GV.lockForm = true;
-  var loading = layer.load(2,{ shade: [0.2,'#fff']});
   var defaults = {
     dataType:"json",
     type:"post",
     jump:"",
     unrefresh:false,
     jumpWin:null,
+    loadingLock:true,
   }
   var opt = $.extend({}, defaults, setting);
+  if(opt.loadingLock && GV.lockForm){
+    layer.msg(myLang.r('a form is being submitted, please try again later'));
+    return false;
+  }
+  if (opt.loadingLock) {
+    GV.lockForm = true;
+  }
+  var loading = layer.load(2,{ shade: [0.2,'#fff']});
+  
   $.ajax({
       url: opt.url,
       dataType:opt.dataType,
@@ -312,8 +316,10 @@ function ajaxSubmit(setting){
       data: opt.data,
       success: function (res) {
         if(typeof(res)=='undefined'){
+          if (opt.loadingLock) {
+            GV.lockForm = false;
+          }
           layer.msg(myLang.r('network error, please try again later'));
-          GV.lockForm = false;
           return false;
         }
         if (res.code === 0) {
@@ -345,7 +351,9 @@ function ajaxSubmit(setting){
       complete:function(){
         layer.close(loading);
         setTimeout(function(){
-          GV.lockForm = false;
+          if (opt.loadingLock) {
+            GV.lockForm = false;
+          }
         },1000)
         if(typeof(opt.complete)=="function"){
           opt.complete();
