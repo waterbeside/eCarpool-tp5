@@ -47,7 +47,7 @@ class AdminBase extends Base
     protected function initialize()
     {
         parent::initialize();
-        $this->loadLanguagePack();
+        $this->loadAdminLanguagePack();
         $this->getTimezoneOffset();
 
         $module     = strtolower($this->request->module());
@@ -505,11 +505,8 @@ class AdminBase extends Base
      * @param  string  $language   语言，当不设时，自动选择
      * @param  integer $formCommon 语言包路径位置。
      */
-    public function loadLanguagePack($language = null, $formCommon = 0)
+    public function loadAdminLanguagePack($language = null)
     {
-        $path = $formCommon ?
-            Env::get('root_path') . 'application/common/lang/' : Env::get('root_path') . 'application/admin/lang/';
-
         $lang_s = input('request._language') ?: (input('post._language') ?: input('get._language'));
         $lang_s = $lang_s ?: (input('request.lang') ?: (input('post.lang') ?: input('get.lang')));
 
@@ -528,6 +525,6 @@ class AdminBase extends Base
         $lang = isset($langs_list[$lang]) ? $lang : config('default_lang');
         $this->activeLang = $lang;
         $this->assign('active_lang', $lang);
-        return Lang::load($path . $lang . '.php');
+        return $this->loadLanguagePack('admin');
     }
 }
