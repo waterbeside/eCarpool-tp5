@@ -171,6 +171,20 @@ class BaseModel extends Model
         }
         return $returnData;
     }
+
+    /**
+     * 改变status
+     *
+     * @return void
+     */
+    public function changeStatus($id, $status, $fieldName = null)
+    {
+        $fieldName = $fieldName ?: 'id';
+        $update = [
+            'status' => $status,
+        ];
+        return $this->where([[$fieldName, '=', $id]])->update($update);
+    }
     
     /**
      * 删除单项数据缓存
