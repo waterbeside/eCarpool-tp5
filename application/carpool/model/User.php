@@ -72,19 +72,12 @@ class User extends BaseModel
         $field = "u.*, c.company_name, d.name as department_name , d.path, d.fullname as department_fullname ";
         $map = [
             ['loginname', '=', $account],
-            ['is_delete', '=', Db::raw(0)],
         ];
         $carpoolUser_jion =  [
             ['company c', 'u.company_id = c.company_id', 'left'],
             ['t_department d', 'u.department_id = d.id', 'left'],
         ];
-        $res = $this->alias('u')->field($field)->join($carpoolUser_jion)->where($map)->find();
-        if (!$res) {
-            $map = [
-                ['loginname', '=', $account],
-            ];
-            $res = $this->alias('u')->field($field)->join($carpoolUser_jion)->where($map)->find();
-        }
+        $res = $this->alias('u')->field($field)->join($carpoolUser_jion)->where($map)->order('is_delete DESC, uid DESC')->find();
 
         if ($res) {
             $res = $res->toArray();
@@ -105,7 +98,7 @@ class User extends BaseModel
     {
         $cacheKey = $byID ? "carpool:user:detail:uid_" . $account : "carpool:user:detail:ac_" . strtolower($account);
         $redis = new RedisData();
-        $redis->delete($cacheKey);
+        $redis->del($cacheKey);
     }
 
     /**
