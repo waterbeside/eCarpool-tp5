@@ -15,6 +15,7 @@ class NpdApiBase extends ApiBase
     {
         // config('default_lang', 'zh-cn');
         parent::initialize();
+        $this->loadLanguagePack('npd');
     }
 
 
