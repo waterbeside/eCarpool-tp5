@@ -27,7 +27,7 @@ class ApiBase extends Base
     {
         // config('default_lang', 'zh-cn');
         parent::initialize();
-        $this->loadLanguagePack();
+        $this->loadLanguagePack('api');
     }
 
 
@@ -161,17 +161,6 @@ class ApiBase extends Base
         return $jwt;
     }
 
-    /**
-     * 加载语言包
-     * @param  string  $language   语言，当不设时，自动选择
-     * @param  integer $formCommon 语言包路径位置。
-     */
-    public function loadLanguagePack($language = null, $formCommon = 0)
-    {
-        $path = $formCommon ? Env::get('root_path') . 'application/common/lang/' : Env::get('root_path') . 'application/api/lang/';
-        $lang = $language ? $language  : $this->language;
-        Lang::load($path . $lang . '.php');
-    }
 
     /**
      * 取得登录用户的信息

@@ -9,6 +9,8 @@ use think\exception\HttpResponseException;
 use think\facade\Cache;
 use think\facade\Hook;
 use my\RedisData;
+use think\facade\Env;
+use think\facade\Lang;
 
 /**
  * 后台公用基础控制器
@@ -28,6 +30,7 @@ class Base extends Controller
         $this->getLang();
         $this->systemConfig = $this->getSystemConfigs();
         parent::initialize();
+        $this->loadLanguagePack('common');
     }
 
     /**
@@ -51,6 +54,20 @@ class Base extends Controller
         return $getLangRes;
     }
 
+
+    /**
+     * 加载语言包
+     * @param  string $formCommon 模块, 当为空时，为当前模块
+     * @param  string  $language   语言，当不设时，自动选择
+     */
+    public function loadLanguagePack($module = null, $language = null)
+    {
+        $module = $module ?: strtolower($this->request->module());
+
+        $path =  Env::get('root_path') . "application/$module/lang/";
+        $lang = $language ? $language  : $this->language;
+        return Lang::load($path . $lang . '.php');
+    }
 
 
 
