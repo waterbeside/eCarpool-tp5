@@ -3,6 +3,7 @@
 namespace app\admin\controller\npd;
 
 use app\npd\model\User as UserModel;
+use app\carpool\model\User as CarpoolUserModel;
 use app\npd\validate\User as UserValidate;
 use app\admin\controller\AdminBase;
 use think\Db;
@@ -68,6 +69,12 @@ class User extends AdminBase
             $data['password'] = $passwordData['password'];
             $data['salt'] = $passwordData['salt'];
 
+            // 查询该账号名是否和Carpool账号名冲突
+            $resCpUser = CarpoolUserModel::where('loginname', $data['account'])->find();
+            if (!empty($resCpUser)) {
+                return $this->jsonReturn(-1, '请不要用Carpool用户名作为自定义授权名');
+            }
+
             if ($user->allowField(true)->save($data)) {
                 $uid_n = $user->id; //插入成功后取得id
                 $this->log('新加NPD用户成功，id=' . $uid_n, 0);
@@ -106,6 +113,11 @@ class User extends AdminBase
                     return $this->jsonReturn(-1, $validate->getError());
                 }
                 unset($data['password']);
+            }
+            // 查询该账号名是否和Carpool账号名冲突
+            $resCpUser = CarpoolUserModel::where('loginname', $data['account'])->find();
+            if (!empty($resCpUser)) {
+                return $this->jsonReturn(-1, '请不要用Carpool用户名作为自定义授权名');
             }
 
             $user = $user->find($id);
