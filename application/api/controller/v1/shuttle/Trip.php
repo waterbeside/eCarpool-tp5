@@ -352,10 +352,11 @@ class Trip extends ApiBase
      *
      * @param integer $page 页码
      * @param integer $show_member 是否显示成员
-     * @param integer $pagesize 每页多少条;
      */
-    public function my($show_member = 1, $type = -1, $page = 1, $pagesize = 0)
+    public function my($show_member = 1, $type = -1)
     {
+        $page = 1;
+        $pagesize = 0;
         $isShowMember = $show_member;
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
@@ -364,6 +365,7 @@ class Trip extends ApiBase
         $TripsService = new TripsService();
         $ShuttleTrip = new ShuttleTrip();
         $ShuttleTripService = new ShuttleTripService();
+        $TripsMixed = new TripsMixed();
         $cacheKey = $ShuttleTrip->getMyListCacheKey($uid, 'my');
         $rowCacheKey = "pz_{$pagesize},page_$page,type_$type";
         $returnData = $redis->hCache($cacheKey, $rowCacheKey);
@@ -412,30 +414,38 @@ class Trip extends ApiBase
         }
         $lists = $returnData['lists'] ?? [];
         $lists = $ShuttleTripService->formatTimeFields($lists, 'list', ['time','create_time']);
-        $lists_new = [];
+        $newList = [];
         foreach ($lists as $key => $value) {
-            if ($value['user_type'] == 0 && $value['trip_id'] == 0 && $value['time'] < time()) { // 如果已出发，且是乘客而无司机的，跳过这些行程
-                continue;
-            }
-            if (is_array($lists) && $isShowMember) {
-                if ($value['user_type'] == 1 && in_array($value['comefrom'], [1])) {
+            $value['have_started'] = $TripsMixed->haveStartedCode($value['time'], $value['time_offset']);
+            if ($value['user_type'] == 1) { // 如果是司机行程
+                if ($isShowMember) {
                     $resPassengers = $ShuttleTripService->passengers($value['id'], $userFields, ['id','status'], 0);
                     $value['passengers'] = $resPassengers ?: [];
                     $value['took_count'] = count($value['passengers']);
-                    // $lists[$key]['took_count'] = $ShuttleTrip->countPassengers($value['id']);
+                } else {
+                    $value['took_count'] = $ShuttleTrip->countPassengers($value['id']);
                 }
-                if ($value['user_type'] == 0 && $value['trip_id'] > 0) {
+                // 如果行程已出发，而且无乘客，跳过这些行程
+                if (empty($value['took_count']) && $value['have_started'] > 2) {
+                    continue;
+                }
+            } else { // 如果是乘客行程
+                // 如果行程已出发，且无司机，跳过这些行程
+                if ($value['trip_id'] == 0 && $value['have_started'] > 2) {
+                    continue;
+                }
+                if ($isShowMember) {
                     $tripFields = ['id','status','user_type','comefrom', 'plate', 'seat_count'];
-                    $resDriver =  $ShuttleTripService->getUserTripDetail($value['trip_id'], $userFields, $tripFields, 0);
-                    $value['driver'] = $resDriver ?: [];
+                    $value['driver'] = $value['trip_id'] > 0 ? ($ShuttleTripService->getUserTripDetail($value['trip_id'], $userFields, $tripFields, 0) ?: null) : null;
                 }
             }
+
             // 组合路线字段
             $value = $ShuttleTrip->packLineDataFromTripData($value, null, ['name', 'longitude', 'latitude']);
             unset($value['extra_info']);
-            $lists_new[] = $value;
+            $newList[] = $value;
         }
-        $returnData['lists'] = $lists_new;
+        $returnData['lists'] = $newList;
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
 
@@ -948,7 +958,7 @@ class Trip extends ApiBase
     /**
      * 通过行程id匹配行程列表
      */
-    public function matching($id, $timeoffset = 60 * 15)
+    public function matching($id)
     {
         $returnData = [];
         $ShuttleTripService = new ShuttleTripService();
@@ -957,29 +967,48 @@ class Trip extends ApiBase
         $uid = intval($userData['uid']);
 
         // trip data
-        $fields = $ShuttleTripModel->getListField(null, null, true);
-        $tripData = $ShuttleTripModel->getItem($id, $fields);
+        $tripData = $ShuttleTripModel->getItem($id);
         if (!$tripData) {
             return $this->jsonReturn(20002, lang('The route does not exist'));
         }
         
         $tripData = $ShuttleTripModel->packLineDataFromTripData($tripData, null, ['name', 'longitude', 'latitude']);
         $tripData = TripsMixed::getInstance()->formatResultValue($tripData, ['extra_info']);
-        $returnData['detail'] = $tripData;
+        if ($tripData['user_type'] == 1) { // 如果是司机行程，查出乘客
+            $passengers = $ShuttleTripModel->passengers($id);
+            $tripData['took_count'] = count($passengers) ?: 0;
+        } else { // 如果乘客行程，取UID
+            $passengerUid = $tripData['uid'];
+        }
+        $fields = [
+            'id', 'user_type', 'trip_id', 'line_type', 'uid', 'time', 'time_offset', 'status', 'comefrom',  'plate',
+            'seat_count', 'took_count', 'line_data'
+        ];
+        $returnData['detail'] = Utils::getInstance()->filterDataFields($tripData, $fields);
         $returnData['lists'] = [];
         if (!$this->lockAction(['ex'=>5, 'runCount'=>150, 'sleep'=>40 * 1000])) { // 添加并发锁
             return $this->jsonReturn(20009, $returnData, lang('The network is busy, please try again later'));
         }
-        // matching list
-        $matchingUserType = $tripData['user_type'] == 1 ? 0 : 1;
-        // $list = $ShuttleTripService->getSimilarTrips_old($tripData, $time, $matchingUserType, -1*$uid, $timeoffset);
+
         $list = $ShuttleTripService->getSimilarTrips($tripData, -1*$uid, null, 0, 1) ?: [];
+        
+        $newList = [];
         foreach ($list as $key => $value) {
-            if ($matchingUserType == 1) {
-                $list[$key]['took_count'] = $ShuttleTripModel->countPassengers($value['id']);
+            if ($value['user_type'] == 1) { // 如果对方行程是司机行程
+                $passengers = $ShuttleTripModel->passengers($id);
+                $value['took_count'] = count($passengers) ?: 0;
+                // $value['took_count'] = $ShuttleTripModel->countPassengers($value['id']);
+            } else {
+                $passengerUid = $value['u_uid'];
             }
+            // 检查如果乘客已经是司机行程的成员之一，排除这些行程
+            $inPassRes = $ShuttleTripModel->inPassengers($passengerUid, $passengers);
+            if ($inPassRes) {
+                continue;
+            }
+            $newList[] = $value;
         }
-        $returnData['lists'] = $list;
+        $returnData['lists'] = $newList;
         $this->unlockAction();
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
