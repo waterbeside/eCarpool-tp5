@@ -127,7 +127,8 @@ class MixTrip extends ApiBase
             // 先取上下班行程数据
             $list_1 = $ShuttleTripModel->getListByTimeOffset(time(), $uid, $offsetTime, $pz);
             // 先查普通行程數據
-            $list_2 = $TripsServ->getUnionListByTimeOffset(time(), $uid, $offsetTime, $pz);
+            // $list_2 = $TripsServ->getUnionListByTimeOffset(time(), $uid, $offsetTime, $pz);
+            $list_2 = [];
             
             $listData = array_merge($list_1 ?: [], $list_2 ?: []);
             if ($listData) {
