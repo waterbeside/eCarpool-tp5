@@ -615,6 +615,7 @@ class Trips extends Service
                     'd_uid' => $value['carownid'],
                     'p_uid' => 0,
                     'time'=>strtotime($value['time'] . '00'),
+                    'time_offset' => 0,
                     'seat_count' => $value['seat_count'],
                     'user_type' => 1,
                     'comefrom' => 1,
