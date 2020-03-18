@@ -31,6 +31,33 @@ class ShuttleTrip extends BaseModel
     {
         return "carpool:shuttle:trip:$id";
     }
+    
+    /**
+     * 清除空座位和约车需求列表缓存
+     *
+     * @param integer $line_id 路线id
+     * @param string $type 'cars' or 'requests' or 'my' or 'history'
+     * @param integer $uid 用户id
+     * @return void
+     */
+    public function delListCache($line_id, $type = null, $uid = null)
+    {
+        if (in_array($type, ['my', 'history'])) {
+            $this->delMyListCache($line_id, $type);
+        }
+        $redis = $this->redis();
+        if (!$type) {
+            $this->delListCache($line_id, 'cars', $uid);
+            $this->delListCache($line_id, 'requests', $uid);
+        } else {
+            if (!$line_id > 0) {
+                $cacheKey_0 = $this->getListCacheKeyByLineId(0, $type);
+                $redis->del($cacheKey_0);
+            }
+            $cacheKey = $this->getListCacheKeyByLineId($line_id, $type, $uid);
+            $redis->del($cacheKey);
+        }
+    }
 
     /**
      * 取得列表cacheKey;
@@ -61,6 +88,19 @@ class ShuttleTrip extends BaseModel
     }
 
     /**
+     * 清除乘客列表缓存
+     *
+     * @param integer $id 行程id
+     * @return void
+     */
+    public function delPassengersCache($id)
+    {
+        $cacheKey = $this->getPassengersCacheKey($id);
+        $redis = $this->redis();
+        return $redis->del($cacheKey);
+    }
+
+    /**
      * 取得乘客数cacheKey;
      *
      * @param integer $trip_id 行程id
@@ -69,6 +109,15 @@ class ShuttleTrip extends BaseModel
     public function getTookCountCacheKey($trip_id)
     {
         return "carpool:shuttle:trip:passengersCount:tripId_{$trip_id}";
+    }
+
+    /**
+     * 删除乘客数缓存
+     */
+    public function delTookCountCache($id)
+    {
+        $cacheKey = $this->getTookCountCacheKey($id);
+        return $this->redis()->del($cacheKey);
     }
 
     /**
@@ -82,6 +131,19 @@ class ShuttleTrip extends BaseModel
     {
         return "carpool:shuttle:trip:{$type}:{$uid}";
     }
+    
+    /**
+     * 清除我的行程或历史行程缓存
+     *
+     * @param integer $uid 用户uid
+     * @param string $type 'my' or 'history'
+     * @return void
+     */
+    public function delMyListCache($uid, $type = 'my')
+    {
+        $cacheKey = $this->getMyListCacheKey($uid, $type);
+        return $this->redis()->del($cacheKey);
+    }
 
     /**
      * 取得行程城市数组cacheKey
@@ -93,6 +155,41 @@ class ShuttleTrip extends BaseModel
     public function getCitysCacheKey($companyId, $listType)
     {
         return "carpool:shuttle:trip:citys:$companyId,$listType";
+    }
+
+    /**
+     * 删除行程城市数组缓存
+     *
+     * @param integer $companyId 公司id
+     * @param string $listType 类型，['cars', 'requests'] 是空座位还是约车需求
+     */
+    public function delCitysCacheKey($companyId, $listType)
+    {
+        $cacheKey = $this->getCitysCacheKey($companyId, $listType);
+        return $this->redis()->del($cacheKey);
+    }
+    
+
+    /**
+     * 取得相似行程的cacheKey
+     *
+     * @param integer $id 行程id
+     * @return string
+     */
+    public function getSimilarCacheKey($id)
+    {
+        return "carpool:shuttle:similarTrips:$id";
+    }
+
+    /**
+     * 清除相似行程的缓存
+     *
+     * @param integer $id 行程id
+     */
+    public function delSimilarCache($id)
+    {
+        $cacheKey = $this->getSimilarCacheKey($id);
+        return $this->redis()->del($cacheKey);
     }
 
 
@@ -337,79 +434,6 @@ class ShuttleTrip extends BaseModel
         }
     }
 
-    /**
-     * 清除乘客列表缓存
-     *
-     * @param integer $id 行程id
-     * @return void
-     */
-    public function delPassengersCache($id)
-    {
-        $cacheKey = $this->getPassengersCacheKey($id);
-        $redis = $this->redis();
-        return $redis->del($cacheKey);
-    }
-
-    /**
-     * 删除乘客数缓存
-     */
-    public function delTookCountCache($id)
-    {
-        $cacheKey = $this->getTookCountCacheKey($id);
-        return $this->redis()->del($cacheKey);
-    }
-
-    /**
-     * 清除我的行程或历史行程缓存
-     *
-     * @param integer $uid 用户uid
-     * @param string $type 'my' or 'history'
-     * @return void
-     */
-    public function delMyListCache($uid, $type = 'my')
-    {
-        $cacheKey = $this->getMyListCacheKey($uid, $type);
-        return $this->redis()->del($cacheKey);
-    }
-
-    /**
-     * 清除空座位和约车需求列表缓存
-     *
-     * @param integer $line_id 路线id
-     * @param string $type 'cars' or 'requests' or 'my' or 'history'
-     * @param integer $uid 用户id
-     * @return void
-     */
-    public function delListCache($line_id, $type = null, $uid = null)
-    {
-        if (in_array($type, ['my', 'history'])) {
-            $this->delMyListCache($line_id, $type);
-        }
-        $redis = $this->redis();
-        if (!$type) {
-            $this->delListCache($line_id, 'cars', $uid);
-            $this->delListCache($line_id, 'requests', $uid);
-        } else {
-            if (!$line_id > 0) {
-                $cacheKey_0 = $this->getListCacheKeyByLineId(0, $type);
-                $redis->del($cacheKey_0);
-            }
-            $cacheKey = $this->getListCacheKeyByLineId($line_id, $type, $uid);
-            $redis->del($cacheKey);
-        }
-    }
-
-    /**
-     * 删除行程城市数组缓存
-     *
-     * @param integer $companyId 公司id
-     * @param string $listType 类型，['cars', 'requests'] 是空座位还是约车需求
-     */
-    public function delCitysCacheKey($companyId, $listType)
-    {
-        $cacheKey = $this->getCitysCacheKey($companyId, $listType);
-        return $this->redis()->del($cacheKey);
-    }
 
     /**
      * 计算乘客个数
@@ -655,12 +679,12 @@ class ShuttleTrip extends BaseModel
     /**
      * 检查是否在行程 （是否参与乘客）
      *
-     * @param mixed $idOrData 当为数字时，为行程id；当为array时，为该行程的data;
      * @param integer $uid 用户的uid;
+     * @param mixed $idOrData 当为数字时，为行程id；当为array时，为司机的行程的data;
      * @param mixed $byPassengerList 是否通过乘客列表查询，如果是array则直接为乘客列表，如果为1,则查一次乘客列表，如果是0，不使用乘客列表;
      * @return mixed array or false or null
      */
-    public function checkInTrip($idOrData, $uid, $byPassengerList = null)
+    public function inTrip($uid, $idOrData, $byPassengerList = null)
     {
         $tripData = $this->getDataByIdOrData($idOrData);
         $id = $tripData['id'];
@@ -670,13 +694,7 @@ class ShuttleTrip extends BaseModel
         if (!empty($byPassengerList)) {
             $passengersList = is_array($byPassengerList) ? $byPassengerList :
                 ($byPassengerList == 2 ? $this->passengers($id) :  $this->passengers($id, 0));
-            $res = null;
-            foreach ($passengersList as $key => $value) {
-                if ($value['uid'] == $uid) {
-                    $res = $value;
-                    break;
-                }
-            }
+            $res = $this->inPassengers($uid, $passengersList);
         } else {
             $map = [
                 ['status', '>', 0],
@@ -684,6 +702,25 @@ class ShuttleTrip extends BaseModel
                 ['trip_id', '=', $id],
             ];
             $res = $this->where($map)->find();
+        }
+        return $res;
+    }
+
+    /**
+     * 检查用户是否在乘客列表中
+     *
+     * @param integer $uid 用户id
+     * @param array $passengers 乘客列表
+     * @return mixed array or null 如果有，则返回用户在乘客列表中的行程
+     */
+    public function inPassengers($uid, $passengers)
+    {
+        $res = null;
+        foreach ($passengers as $key => $value) {
+            if ($value['uid'] == $uid) {
+                $res = $value;
+                break;
+            }
         }
         return $res;
     }
@@ -726,7 +763,7 @@ class ShuttleTrip extends BaseModel
             $map = [
                 ['t.user_type', '=', Db::raw(0)],
                 ['t.trip_id', '=', $id],
-                ['t.status', 'between', [0,5]],
+                ['t.status', 'in', [0,1,2,3,4,5]],
             ];
             $res = $this->alias('t')->where($map)->order('t.create_time ASC')->select();
             $res = !empty($res) ? $res->toArray() : [];
@@ -825,9 +862,17 @@ class ShuttleTrip extends BaseModel
         return $waypoints;
     }
 
-
     /**
-     * 
+     * 通过座标取得相似行程
+     *
+     * @param array $lnglat 座标点 [lng,lat]
+     * @param array $timeRange 时间范围[timeStart,timeEnd]
+     * @param integer $userType 用户类型 0乘客，1司机
+     * @param integer $matchType 匹配类型 1 起点-起点，2 终点-终点，3 起点-途经点，4 终点-途经点，5途经点-起点，6途经点终点
+     * @param integer $radius 半径（单位：米）
+     * @param array $extData 扩展数据
+     * @param boolean $buildSql 是否返回sql语句
+     * @return mixed
      */
     public function getSimilarByLnglat($lnglat, $timeRange, $userType = null, $matchType = 0, $radius = null, $extData = null, $buildSql = false)
     {
@@ -933,8 +978,14 @@ class ShuttleTrip extends BaseModel
     }
 
 
-    /** **********************************
+    /**
      * 查找相似行程
+     *
+     * @param array $tripData 行程数据
+     * @param integer $matchType 匹配类型 1 起点-起点，2 终点-终点，3 起点-途经点，4 终点-途经点，5途经点-起点，6途经点终点
+     * @param integer $radius 半径（单位：米）
+     * @param boolean $buildSql 是否返回sql语句
+     * @return mixed 行程列表或sql
      */
     public function getSimilar($tripData, $matchType = 0, $radius = null, $buildSql = false)
     {
@@ -984,6 +1035,9 @@ class ShuttleTrip extends BaseModel
             $resExtra = $res['extra'];
             $idDistance = $resExtra['idDistance'];
             $idName = $resExtra['idName'];
+        }
+        if ($buildSql) {
+            return $sql;
         }
 
         $list = $this->query($sql);

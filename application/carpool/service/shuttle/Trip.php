@@ -505,7 +505,20 @@ class Trip extends Service
         $startLat = $tlineData['start_latitude'] ?? 0;
         $endLng = $tlineData['end_longitude'] ?? 0;
         $endLat = $tlineData['end_latitude'] ?? 0;
+        if (empty($tripData) || !isset($tripData['id'])) {
+            return [];
+        }
 
+        // cache 缓存
+        $cacheKey = $ShuttleTripModel->getSimilarCacheKey($tripData['id']);
+        $matchTypeStr = '[' . implode(',', $matchType) . ']';
+        $rowKey = "u_$uid,r_$radius,mt_$matchTypeStr,md_$md";
+        $cacheList = $this->redis()->hCache($cacheKey, $rowKey);
+        if ($cacheList !== false) {
+            return $cacheList;
+        }
+
+        // 如果没有缓存
         $lists1 = in_array(1, $matchType) ? ($ShuttleTripModel->getSimilar($tripData, 1, $radius) ?: []) : [];
         $lists2 = in_array(2, $matchType) ? ($ShuttleTripModel->getSimilar($tripData, 2, $radius) ?: []) : [];
         if ($tripData['user_type'] == 0) { // 如果用乘客行程匹配司机行程
@@ -515,9 +528,10 @@ class Trip extends Service
             $lists3 = in_array(5, $matchType) ? ($ShuttleTripModel->getSimilar($tripData, 5, $radius) ?: []) : [];
             $lists4 = in_array(6, $matchType) ? ($ShuttleTripModel->getSimilar($tripData, 6, $radius) ?: []) : [];
         }
-        
+
         $list = array_merge($lists1, $lists2, $lists3, $lists4);
         if (empty($list)) {
+            $this->redis()->hCache($cacheKey, $rowKey, [], 3, 60);
             return [];
         }
         $TripsMixedService = new TripsMixedService();
@@ -564,12 +578,14 @@ class Trip extends Service
             if (in_array($id, $newListIds)) {
                 continue;
             }
+            // 当$uid > 0，只显示该uid的
             if ($uid > 0 && $value['u_uid'] != $uid) {
                 continue;
             }
-            // if ($uid < 0 && $value['u_uid'] == -1*$uid) {
-            //     continue;
-            // }
+            // 当$uid < 0 , 排除该uid的
+            if ($uid < 0 && $value['u_uid'] == -1*$uid) {
+                continue;
+            }
             $newListIds[] = $id;
             $matchTypeData = $tripIdMatchTypes[$id] ?? null;
             $matchNameData = $tripIdMatchName[$id] ?? [];
@@ -608,7 +624,12 @@ class Trip extends Service
             unset($value['match_type'], $value['match_name']);
             $newList[] = $value;
         }
+        if (empty($newList)) {
+            $this->redis()->hCache($cacheKey, $rowKey, [], 3, 60);
+            return [];
+        }
         $newList = $Utils->listSort($newList, ['match_sort'=>'DESC','distance'=>'ASC','distance_start'=>'ASC', 'time'=>'ASC']);
+        $this->redis()->hCache($cacheKey, $rowKey, $newList, 5, 60);
         return $newList;
     }
 
@@ -646,7 +667,6 @@ class Trip extends Service
             'sex','company_id','department_id','imgpath','carcolor', 'im_id'
         ];
         $fieldsStr = implode(',', $Utils->arrayAddString($fields, 't.') ?: []);
-        // TODO: $fieldsStr .= getDistanceFieldSql 
         // 设置查询时间范围
         $time = $time ?: time();
         if (is_numeric($timeOffset)) {
