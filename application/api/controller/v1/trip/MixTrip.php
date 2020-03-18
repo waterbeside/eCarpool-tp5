@@ -123,7 +123,6 @@ class MixTrip extends ApiBase
         }
         $TripsServ = new TripsService();
         $ShuttleTripModel = new ShuttleTripModel();
-        $InfoModel = new InfoModel();
         if (!$listData) {
             // 先取上下班行程数据
             $list_1 = $ShuttleTripModel->getListByTimeOffset(time(), $uid, $offsetTime, $pz);
@@ -140,17 +139,12 @@ class MixTrip extends ApiBase
             return $this->jsonReturn(20002, $returnData, lang('No data'));
         }
         $redis->hCache($cacheKey, $rowKey, $listData, 60 * 2);
-        $newListData = [];
-        $now = time();
+        $newList = [];
         foreach ($listData as $key => $value) {
-            if ($value['user_type'] == 0 && $value['trip_id'] == 0 && $value['time'] <= $now) {
-                // 如果是乘客行程，且没司机接，并车过了出发时间 则不显示
-                continue;
-            }
-            // 如果是司机行程，则计算有多少乘客
+            $value['have_started'] = $TripsMixedService->haveStartedCode($value['time'], $value['time_offset']);
             $value['took_count'] = 0;
-            if ($value['user_type'] == 1) {
-                $value['took_count'] = $TripsMixedService->countPassengers($value['id'], $value['from']);
+            if ($value['user_type'] == 1) { // 如果是司机行程
+                $value['took_count'] = $TripsMixedService->countPassengers($value['id'], $value['from']) ?: 0;
                 // if ($value['from'] == 'shuttle_trip') {
                 //     $value['took_count'] = $ShuttleTripModel->countPassengers($value['id']);
                 // } elseif ($value['from'] == 'wall') {
@@ -158,10 +152,19 @@ class MixTrip extends ApiBase
                 // } elseif ($value['from'] == 'info') {
                 //     $value['took_count'] = 1;
                 // }
+                // 如果行程已出发，而且无乘客，跳过这些行程
+                if (empty($value['took_count']) && $value['have_started'] > 2) {
+                    continue;
+                }
+            } else { // 如果是乘客行程
+                // 如果行程已出发，且无司机，跳过这些行程
+                if ($value['trip_id'] == 0 && $value['have_started'] > 2) {
+                    continue;
+                }
             }
-            $newListData[] = $value;
+            $newList[] = $value;
         }
-        $returnData['lists'] = $newListData;
+        $returnData['lists'] = $newList;
         return $this->jsonReturn(0, $returnData, 'Success');
     }
 
