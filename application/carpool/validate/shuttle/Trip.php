@@ -108,7 +108,7 @@ class Trip extends Base
         }
         // 检查是否已经是乘客成员之一
         $ShuttleTrip = new ShuttleTrip();
-        $checkInTripRes = $ShuttleTrip->checkInTrip($tripData, $userData['uid']);
+        $checkInTripRes = $ShuttleTrip->inTrip($userData['uid'], $tripData);
         if ($checkInTripRes) {
             return $this->setError(50006, lang('You have joined the trip'), $checkInTripRes);
         }
@@ -198,7 +198,7 @@ class Trip extends Base
      *
      * @param array $tripData 自己的行程数据
      * @param array $targetTripData 对方的行程数据
-     * @param array $userData 乘客用户信息
+     * @param array $userData 操作人的用户信息
      */
     public function checkMerge($tripData, $targetTripData, $userData)
     {
@@ -209,12 +209,12 @@ class Trip extends Base
             return $this->setError(30001, lang('You can not operate someone else`s trip'));
         }
         if (in_array($tripData['status'], [-1, 3, 4, 5])) {
-            return $this->setError(30001, lang('The trip has been completed or cancelled. Operation is not allowed'));
+            return $this->setError(50015, lang('The trip has been completed or cancelled. Operation is not allowed'));
         }
         $TripsMixed = new TripsMixed();
         // 检查出发时间
         $haveStarted = $TripsMixed->haveStartedCode(strtotime($tripData['time']));
-        if ($haveStarted > 1) {
+        if ($haveStarted > 2) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
         // 检查对方行程是否存在
@@ -223,28 +223,28 @@ class Trip extends Base
         }
         // 检查对方行程状态
         if (in_array($targetTripData['status'], [-1, 3, 4, 5])) {
-            return $this->setError(30001, lang('The trip has been completed or cancelled. Operation is not allowed'));
+            return $this->setError(50005, lang('The trip has been completed or cancelled. Operation is not allowed'));
         }
 
         // 检查对方行程出发时间
         $haveStarted2 = $TripsMixed->haveStartedCode(strtotime($targetTripData['time']));
-        if ($haveStarted2 > 1) {
+        if ($haveStarted2 > 2) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
-        // 检查双方路线是否匹配
-        // if ($tripData['line_id'] != $targetTripData['line_id']) {
+        
+        // 检查两起点是否相差太远
+        // $Utils = new Utils();
+        // $radius = config('trips.trip_matching_radius') ?? 500;
+        // $startDistance = $Utils->getDistance($tripData['start_longitude'], $tripData['start_latitude'], $targetTripData['start_longitude'], $targetTripData['start_latitude']);
+        // $endDistance = $Utils->getDistance($tripData['end_longitude'], $tripData['end_latitude'], $targetTripData['end_longitude'], $targetTripData['end_latitude']);
+        // if ($startDistance > $radius || $endDistance > $radius) {
         //     return $this->setError(50011, lang('The route of trip is different from yours'));
         // }
-        // 检查两起点是否相差太远
-        $Utils = new Utils();
-        $radius = config('trips.trip_matching_radius') ?? 500;
-        $startDistance = $Utils->getDistance($tripData['start_longitude'], $tripData['start_latitude'], $targetTripData['start_longitude'], $targetTripData['start_latitude']);
-        $endDistance = $Utils->getDistance($tripData['end_longitude'], $tripData['end_latitude'], $targetTripData['end_longitude'], $targetTripData['end_latitude']);
-        if ($startDistance > $radius || $endDistance > $radius) {
-            return $this->setError(50011, lang('The route of trip is different from yours'));
-        }
 
         $ShuttleTrip = new ShuttleTrip();
+        // 区分司机程客行程
+        $driverTripData = $tripData['user_type'] == 1 ? $tripData : $targetTripData;
+        $passengerTripData = $tripData['user_type'] == 1 ?  $targetTripData : $tripData;
         
         // 检查是否司机和乘客问的匹配
         if ($tripData['user_type'] == 1) { // 如果自己是司机
@@ -252,17 +252,32 @@ class Trip extends Base
                 return $this->setError(992, 'This trip is not a passenger`s trip, and cannot merge');
             }
             if ($targetTripData['trip_id'] > 0) { // 检查对方是否已被司机搭了
-                return $this->setError(-1, lang('You are too slow, the passenger was snatched by another driver'));
+                return $this->setError(50010, lang('You are too slow, the passenger was snatched by another driver'));
             }
-        } else { // 如果是乘客
-            if ($targetTripData['user_type'] != 1) { // 检查对方是否司机
+        } else { // 如果自己是乘客
+            if ($driverTripData['user_type'] != 1) { // 检查对方是否司机
                 return $this->setError(992, 'This trip is not a driver`s trip, and cannot merge');
+            }
+            // 检查自己是否已有司机搭了
+            if ($tripData['trip_id'] > 0) {
+                if ($tripData['trip_id'] == $driverTripData['id']) {
+                    return $this->setError(50013, lang('You have already taken this trip'));
+                } else {
+                    return  $this->setError(50013, lang('You have been picked up by another trip'));
+                }
+            }
+        }
+        // 检查乘客UID是否已经搭上过司机行程
+        $checkInTripRes = $ShuttleTrip->inTrip($passengerTripData['uid'], $driverTripData);
+        if ($checkInTripRes) {
+            if ($tripData['user_type'] == 1) { // 如果我是司机
+                return $this->setError(50016, lang('This user is already on the passenger list for your current trip'), $checkInTripRes);
+            } else {
+                return $this->setError(50016, lang('You are already a passenger on this trip'), $checkInTripRes);
             }
         }
 
-        // 区分司机程客行程
-        $driverTripData = $tripData['user_type'] == 1 ? $tripData : $targetTripData;
-        $passengerTripData = $tripData['user_type'] == 1 ?  $targetTripData : $tripData;
+        
         // 检查座位是否已满
         $took_count = $ShuttleTrip->countPassengers($driverTripData['id'], false); //计算已坐车乘客数
         if ($took_count >= $driverTripData['seat_count'] || $took_count + $passengerTripData['seat_count'] > $driverTripData['seat_count']) {
@@ -272,6 +287,8 @@ class Trip extends Base
             ];
             return $this->setError(50003, $returnData, lang('Not enough seats'));
         }
+
+
 
         if ($passengerTripData['seat_count'] > 1) {
             $ShuttleTripPartner = new ShuttleTripPartner();
