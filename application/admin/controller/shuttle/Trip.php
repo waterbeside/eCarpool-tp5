@@ -211,7 +211,7 @@ class Trip extends AdminBase
             $data['driver'] = $ShuttleTripServ->getUserTripDetail($trip_id, [], [], 0) ?: null;
         }
         $TripsMixed = new TripsMixed();
-        $data['have_started'] = $TripsMixed->haveStartedCode($data['time']);
+        $data['have_started'] = $TripsMixed->haveStartedCode($data['time'], $data['time_offset']);
         unset($data['trip_id']);
         $returnData = [
             'data' => $data,

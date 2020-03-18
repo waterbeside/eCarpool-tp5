@@ -44,7 +44,7 @@ class Trip extends Base
         //检查出发时间是否已经过了
         $TripsMixed = new TripsMixed();
         $time = strtotime($tripData['time']);
-        $haveStarted = $TripsMixed->haveStartedCode($time);
+        $haveStarted = $TripsMixed->haveStartedCode($time, $tripData['time_offset']);
         if ($haveStarted > 1) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
@@ -102,7 +102,7 @@ class Trip extends Base
         //检查出发时间是否已经过了
         $time = strtotime($tripData['time']);
         $TripsMixed = new TripsMixed();
-        $haveStarted = $TripsMixed->haveStartedCode($time);
+        $haveStarted = $TripsMixed->haveStartedCode($time, $tripData['time_offset']);
         if ($haveStarted > 1) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
@@ -145,7 +145,7 @@ class Trip extends Base
             return $this->setError(992, lang('Only the driver can change the number of seats'));
         }
         $TripsMixed = new TripsMixed();
-        $haveStarted = $TripsMixed->haveStartedCode(strtotime($tripData['time']));
+        $haveStarted = $TripsMixed->haveStartedCode(strtotime($tripData['time']), $tripData['time_offset']);
         if ($haveStarted > 1) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
@@ -181,7 +181,7 @@ class Trip extends Base
             return $this->setError(992, lang('Only the driver can change the number of seats'));
         }
         $TripsMixed = new TripsMixed();
-        $haveStarted = $TripsMixed->haveStartedCode(strtotime($tripData['time']));
+        $haveStarted = $TripsMixed->haveStartedCode(strtotime($tripData['time']), $tripData['time_offset']);
         if ($haveStarted > 1) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
@@ -213,7 +213,7 @@ class Trip extends Base
         }
         $TripsMixed = new TripsMixed();
         // 检查出发时间
-        $haveStarted = $TripsMixed->haveStartedCode(strtotime($tripData['time']));
+        $haveStarted = $TripsMixed->haveStartedCode(strtotime($tripData['time']), $tripData['time_offset']);
         if ($haveStarted > 2) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
@@ -227,7 +227,7 @@ class Trip extends Base
         }
 
         // 检查对方行程出发时间
-        $haveStarted2 = $TripsMixed->haveStartedCode(strtotime($targetTripData['time']));
+        $haveStarted2 = $TripsMixed->haveStartedCode(strtotime($targetTripData['time']), $tripData['time_offset']);
         if ($haveStarted2 > 2) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }

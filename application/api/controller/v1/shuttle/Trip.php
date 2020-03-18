@@ -560,7 +560,7 @@ class Trip extends ApiBase
         if ($show_member) {
             if ($data['user_type'] == 1) {
                 if ($show_member == 2) {
-                    $tripFields = ['id', 'time', 'create_time', 'status', 'comefrom', 'user_type'];
+                    $tripFields = ['id', 'time', 'time_offset', 'create_time', 'status', 'comefrom', 'user_type'];
                     $data['passengers'] = $ShuttleTripServ->passengers($id, [], $tripFields) ?: [];
                     $data['took_count'] = count($data['passengers']);
                 } else {
@@ -579,7 +579,7 @@ class Trip extends ApiBase
         }
 
         $TripsMixed = new TripsMixed();
-        $data['have_started'] = $TripsMixed->haveStartedCode($data['time']);
+        $data['have_started'] = $TripsMixed->haveStartedCode($data['time'], $data['time_offset']);
 
         unset($data['trip_id']);
         return $this->jsonReturn(0, $data, 'Successful');
