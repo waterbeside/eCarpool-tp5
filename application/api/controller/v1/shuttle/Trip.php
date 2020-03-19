@@ -16,6 +16,7 @@ use app\carpool\service\TripsPushMsg;
 use app\carpool\validate\shuttle\Trip as ShuttleTripVali;
 use app\carpool\validate\shuttle\Partner as ShuttlePartnerVali;
 use my\RedisData;
+use my\Queue;
 use my\Utils;
 
 use think\Db;
@@ -417,6 +418,9 @@ class Trip extends ApiBase
         $newList = [];
         foreach ($lists as $key => $value) {
             $value['have_started'] = $TripsMixed->haveStartedCode($value['time'], $value['time_offset']);
+            if ($value['have_started'] > 2) { // 跳过已经出发30分钟的行程
+                continue;
+            }
             if ($value['user_type'] == 1) { // 如果是司机行程
                 if ($isShowMember) {
                     $resPassengers = $ShuttleTripService->passengers($value['id'], $userFields, ['id','status'], 0);
@@ -426,12 +430,12 @@ class Trip extends ApiBase
                     $value['took_count'] = $ShuttleTrip->countPassengers($value['id']);
                 }
                 // 如果行程已出发，而且无乘客，跳过这些行程
-                if (empty($value['took_count']) && $value['have_started'] > 2) {
+                if (empty($value['took_count']) && $value['have_started'] > 1) {
                     continue;
                 }
             } else { // 如果是乘客行程
                 // 如果行程已出发，且无司机，跳过这些行程
-                if ($value['trip_id'] == 0 && $value['have_started'] > 2) {
+                if ($value['trip_id'] == 0 && $value['have_started'] > 1) {
                     continue;
                 }
                 if ($isShowMember) {
@@ -499,6 +503,10 @@ class Trip extends ApiBase
         $returnData['lists'] = $ShuttleTripService->formatTimeFields($returnData['lists'], 'list', ['time','create_time','update_time']);
         foreach ($returnData['lists'] as $key => $value) {
             $returnData['lists'][$key]['have_started'] = $TripsMixed->haveStartedCode($value['time'], $value['time_offset']);
+            // 排除出发未到30分钟，而状态还未结束的行程
+            if ($value['have_started'] < 3 && $value['status'] < 3) {
+                continue;
+            }
             // 组合路线字段
             $value = $ShuttleTrip->packLineDataFromTripData($value, null, ['name', 'longitude', 'latitude']);
             unset($value['extra_info']);
@@ -668,6 +676,11 @@ class Trip extends ApiBase
         if (isset($addPartnerRes) && is_array($addPartnerRes)) {
             $PartnerServ->doAfterAddPartners($addPartnerRes, $tripData, $userData);
         }
+        // 把新插入的id加入队列。以便其它异步操作
+        $addedQueue = new Queue('carpool:shuttleTrip:added');
+        $addedQueue->push(['id'=>$addRes, 'create_time'=>time()]);
+        RedisData::getInstance()->hCache('carpool:shuttleTrip:added', $addRes, time());
+        // return
         return $this->jsonReturn(0, ['id'=>$addRes], 'Successful');
     }
     
@@ -971,6 +984,7 @@ class Trip extends ApiBase
         $ShuttleTripModel = new ShuttleTrip();
         $userData = $this->getUserData(1);
         $uid = intval($userData['uid']);
+        $affteradding = input('get.affteradding');
 
         // trip data
         $tripData = $ShuttleTripModel->getItem($id);
