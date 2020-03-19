@@ -24,7 +24,7 @@ class Queue
         $setting = array_merge($this->setting, $setting);
         $keyPrefix = isset($setting['keyPrefix']) ? $setting['keyPrefix'] : $this->keyPrefix;
         $this->queueKey = $keyPrefix.$key;
-        $this->redis = RedisData::getInstance();
+        $this->redis = new RedisData();
         $this->redis->select($setting['db']);
     }
 
