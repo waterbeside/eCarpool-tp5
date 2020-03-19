@@ -55,7 +55,7 @@ class Queue
     public function push($val, $type = 1)
     {
         $key = $this->queueKey;
-        $value = json_encode($val);
+        $value = $this->redis->formatValue($val);
         return $type > 0 ? $this->redis->rPush($key, $value) : $this->redis->lPush($key, $value);
     }
 
@@ -92,7 +92,7 @@ class Queue
     {
         $key = $this->queueKey;
         $val = $this->redis->lPop($key);
-        $value = json_decode($val, true);
+        $value = $this->redis->formatRes($val);
         return $value;
     }
 
