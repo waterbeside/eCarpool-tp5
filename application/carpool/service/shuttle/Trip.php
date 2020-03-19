@@ -907,6 +907,7 @@ class Trip extends Service
         $doPush = false;
         $ShuttleTripModel->delMyListCache($uid); //清除自己的“我的行程”列表缓存
         $ShuttleTripModel->delItemCache($id); // 清乘客单项行程缓存
+        $ShuttleTripModel->delSimilarCache($id); // 删除该行程的匹配的相似行程项
         $TripsMixedService->delMyListCache($uid); // 清除我将要发生的行程缓存
         $TripsMixedService->delUpGpsInfoidCache($uid); // 清除是否要上传GPS接口缓存
 
@@ -993,6 +994,9 @@ class Trip extends Service
         $ShuttleTripModel->delMyListCache($dvTripData['uid'], 'my');
         $ShuttleTripModel->delMyListCache($psTripData['uid'], 'my');
         $TripsMixedService->delUpGpsInfoidCache([$dvTripData['uid'], $psTripData['uid']]); // 清除是否要上传GPS接口缓存
+        // 清除匹配相似行程列表缓存
+        $ShuttleTripModel->delSimilarCache($dvTripData['id']); // 删除司机行程的匹配的相似行程项
+        $ShuttleTripModel->delSimilarCache($psTripData['id']); // 删除乘客行程的匹配的相似行程项
         // 清除行情明细缓存
         $ShuttleTripModel->delItemCache($dvTripData['id']);
         $ShuttleTripModel->delItemCache($psTripData['id']);

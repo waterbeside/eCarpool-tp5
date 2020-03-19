@@ -749,6 +749,9 @@ class Trip extends ApiBase
         }
         // 清缓存
         $TripsMixed->delUpGpsInfoidCache([$userData['uid'], $tripData['uid']]); // 清除是否要上传GPS接口缓存
+        // 清除匹配相似行程列表缓存
+        $ShuttleTripModel->delSimilarCache($tripData['id']); // 删除司机行程的匹配的相似行程项
+        $ShuttleTripModel->delSimilarCache($addRes); // 删除乘客行程的匹配的相似行程项
         // 推消息
         $TripsPushMsg = new TripsPushMsg();
         $pushMsgData = [
@@ -861,6 +864,9 @@ class Trip extends ApiBase
         $ShuttleTripModel->delItemCache($id); // 消单项行程缓存
         $ShuttleTripModel->delListCache($rqData['line_id']); // 取消该路线的空座位和约车需求列表
         $TripsMixed->delUpGpsInfoidCache([$userData['uid'], $tripData['uid']]); // 清除是否要上传GPS接口缓存
+        // 清除匹配相似行程列表缓存
+        $ShuttleTripModel->delSimilarCache($driverTripId); // 删除司机行程的匹配的相似行程项
+        $ShuttleTripModel->delSimilarCache($id); // 删除乘客行程的匹配的相似行程项
         // 推消息
         $TripsPushMsg = new TripsPushMsg();
         $pushMsgData = [
