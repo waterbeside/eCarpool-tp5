@@ -277,7 +277,6 @@ class Trip extends Base
             }
         }
 
-        
         // 检查座位是否已满
         $took_count = $ShuttleTrip->countPassengers($driverTripData['id'], false); //计算已坐车乘客数
         if ($took_count >= $driverTripData['seat_count'] || $took_count + $passengerTripData['seat_count'] > $driverTripData['seat_count']) {
@@ -287,8 +286,6 @@ class Trip extends Base
             ];
             return $this->setError(50003, $returnData, lang('Not enough seats'));
         }
-
-
 
         if ($passengerTripData['seat_count'] > 1) {
             $ShuttleTripPartner = new ShuttleTripPartner();
@@ -323,7 +320,7 @@ class Trip extends Base
         if (in_array($driver_uid, $partnerIds)) {
             $msg = $uid == $driver_uid ? lang('You are among this passenger`s partner, so you cannot add yourself as a passenger')
                 : lang('The driver is on your list of travel partners, so the driver cannot add himself as a passenger');
-            return $this->setError(-1, $msg);
+            return $this->setError(50017, $msg);
         }
         return $partnerIds;
     }
