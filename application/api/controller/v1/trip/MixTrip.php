@@ -154,12 +154,12 @@ class MixTrip extends ApiBase
                 //     $value['took_count'] = 1;
                 // }
                 // 如果行程已出发，而且无乘客，跳过这些行程
-                if (empty($value['took_count']) && $value['have_started'] > 2) {
+                if (empty($value['took_count']) && $value['have_started'] > 1) {
                     continue;
                 }
             } else { // 如果是乘客行程
                 // 如果行程已出发，且无司机，跳过这些行程
-                if ($value['trip_id'] == 0 && $value['have_started'] > 2) {
+                if ($value['trip_id'] == 0 && $value['have_started'] > 1) {
                     continue;
                 }
             }
@@ -212,10 +212,10 @@ class MixTrip extends ApiBase
                 $value = $ShuttleTripService->formatTimeFields($value, 'item', ['time','create_time']);
                 $value['have_started'] = $TripsMixed->haveStartedCode($value['time'], $value['time_offset']);
                 // 排除出发未到30分钟，而状态还未结束的行程
-                if ($value['time'] + $value['time_offset'] - $now > -1800 && $value['status'] < 3) {
+                if ($value['have_started'] < 3 && $value['status'] < 3) {
                     continue;
                 }
-                $ex = $value['have_started'] > 2 ? 60 * 30 : 10;
+                $ex = $value['have_started'] > 1 ? 60 * 30 : 10;
                 $value['took_count'] = 0;
                 if ($value['user_type'] == 1) {
                     $value['took_count'] =  in_array($value['from'], ['shuttle_trip', 'wall']) ?  $TripsMixed->countPassengers($value['id'], $value['from'], $ex) : 1;

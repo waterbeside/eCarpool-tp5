@@ -214,7 +214,7 @@ class Trip extends Base
         $TripsMixed = new TripsMixed();
         // 检查出发时间
         $haveStarted = $TripsMixed->haveStartedCode(strtotime($tripData['time']), $tripData['time_offset']);
-        if ($haveStarted > 2) {
+        if ($haveStarted > 1) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
         // 检查对方行程是否存在
@@ -228,7 +228,7 @@ class Trip extends Base
 
         // 检查对方行程出发时间
         $haveStarted2 = $TripsMixed->haveStartedCode(strtotime($targetTripData['time']), $tripData['time_offset']);
-        if ($haveStarted2 > 2) {
+        if ($haveStarted2 > 1) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
         
