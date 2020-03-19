@@ -678,8 +678,9 @@ class Trip extends ApiBase
         }
         // 把新插入的id加入队列。以便其它异步操作
         $addedQueue = new Queue('carpool:shuttleTrip:added');
-        $addedQueue->push(['id'=>$addRes, 'create_time'=>time()]);
-        RedisData::getInstance()->hCache('carpool:shuttleTrip:added', $addRes, time());
+        $qValue = ['id'=>$addRes, 'create_time'=>time()];
+        $addedQueue->push($qValue);
+        RedisData::getInstance()->hCache('carpool:shuttleTrip:added', $addRes, $qValue);
         // return
         return $this->jsonReturn(0, ['id'=>$addRes], 'Successful');
     }
@@ -1010,7 +1011,7 @@ class Trip extends ApiBase
             return $this->jsonReturn(20009, $returnData, lang('The network is busy, please try again later'));
         }
 
-        $list = $ShuttleTripService->getSimilarTrips($tripData, -1*$uid, null, 0, 1) ?: [];
+        $list = $ShuttleTripService->getSimilarTrips($tripData, -1*$tripData['uid'], null, 0, 1) ?: [];
         
         $newList = [];
         foreach ($list as $key => $value) {
@@ -1030,6 +1031,11 @@ class Trip extends ApiBase
         }
         $returnData['lists'] = $newList;
         $this->unlockAction();
+        // 为匹配到的行程用户推送消息
+        if ($affteradding && !empty($newList)) {
+            $pushMQ = new Queue('carpool:shuttleTrip:matching:pushMsg');
+            $pushMQ->push($returnData);
+        }
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
 
