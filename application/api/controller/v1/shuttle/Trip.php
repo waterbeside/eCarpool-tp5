@@ -985,7 +985,7 @@ class Trip extends ApiBase
         $ShuttleTripModel = new ShuttleTrip();
         $userData = $this->getUserData(1);
         $uid = intval($userData['uid']);
-        $affteradding = input('get.affteradding');
+        $afteradding = input('get.afteradding');
 
         // trip data
         $tripData = $ShuttleTripModel->getItem($id);
@@ -1032,7 +1032,7 @@ class Trip extends ApiBase
         $returnData['lists'] = $newList;
         $this->unlockAction();
         // 为匹配到的行程用户推送消息
-        if ($affteradding && !empty($newList)) {
+        if ($afteradding && !empty($newList)) {
             $pushMQ = new Queue('carpool:shuttleTrip:matching:pushMsg');
             $pushMQ->push($returnData);
         }
