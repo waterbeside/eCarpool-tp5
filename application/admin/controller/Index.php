@@ -37,7 +37,7 @@ class Index extends AdminBase
         } catch (\Exception $e) {
         }
 
-        $domains = ['cm.gitsite.net', 'h5.gitsite.net', 'esqueler.com', 'm.carpool.gitsite.net'];
+        $domains = ['cm.gitsite.net', 'h5.gitsite.net', 'esqueler.com', 'm.carpool.gitsite.net', 'gitsite.net'];
         // $res = $Server->getCertInfo('cm.gitsite.net');
         $domainsValidity = [];
         $cacheKey_domains = 'carpool_admin:domains_validity';
