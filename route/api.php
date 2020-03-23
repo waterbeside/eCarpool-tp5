@@ -83,6 +83,7 @@ Route::group([], function () {
     Route::rule('api/:version/shuttle/trip/:id/partners$', 'api/:version.shuttle.partner/list?from=shuttle_trip', 'GET')->pattern(['id' => '\d+']); // 我行程的同行者
     Route::rule('api/:version/shuttle/trip/:id', 'api/:version.shuttle.trip/show', 'GET')->pattern(['id' => '\d+']); //行程明细
     Route::rule('api/:version/shuttle/trip/:id', 'api/:version.shuttle.trip/change', 'PATCH')->pattern(['id' => '\d+']); // 变更行程（修改座位数，取消，完结）
+    Route::rule('api/:version/shuttle/trip/remind_close$', 'api/:version.shuttle.trip/remind_close', 'POST'); // 提醒关闭行程订单
     
     // 同行者相关
     Route::rule('api/:version/shuttle/partner/my$', 'api/:version.shuttle.partner/my', 'GET'); // 我的常选同行者

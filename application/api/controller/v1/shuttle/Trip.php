@@ -366,7 +366,6 @@ class Trip extends ApiBase
         $TripsService = new TripsService();
         $ShuttleTrip = new ShuttleTrip();
         $ShuttleTripService = new ShuttleTripService();
-        $TripsMixed = new TripsMixed();
         $cacheKey = $ShuttleTrip->getMyListCacheKey($uid, 'my');
         $rowCacheKey = "pz_{$pagesize},page_$page,type_$type";
         $returnData = $redis->hCache($cacheKey, $rowCacheKey);
@@ -417,7 +416,7 @@ class Trip extends ApiBase
         $lists = $ShuttleTripService->formatTimeFields($lists, 'list', ['time','create_time']);
         $newList = [];
         foreach ($lists as $key => $value) {
-            $value['have_started'] = $TripsMixed->haveStartedCode($value['time'], $value['time_offset']);
+            $value['have_started'] = $ShuttleTrip->haveStartedCode($value['time'], $value['time_offset']);
             if ($value['have_started'] > 2) { // 跳过已经出发30分钟的行程
                 continue;
             }
@@ -469,7 +468,6 @@ class Trip extends ApiBase
         $redis = new RedisData();
         $ShuttleTrip = new ShuttleTrip();
         $ShuttleTripService = new ShuttleTripService();
-        $TripsMixed = new TripsMixed();
         $cacheKey = $ShuttleTrip->getMyListCacheKey($uid, 'history');
         $rowCacheKey = "pz_{$pagesize},page_$page";
         $returnData = $redis->hCache($cacheKey, $rowCacheKey);
@@ -502,7 +500,7 @@ class Trip extends ApiBase
         }
         $returnData['lists'] = $ShuttleTripService->formatTimeFields($returnData['lists'], 'list', ['time','create_time','update_time']);
         foreach ($returnData['lists'] as $key => $value) {
-            $returnData['lists'][$key]['have_started'] = $TripsMixed->haveStartedCode($value['time'], $value['time_offset']);
+            $returnData['lists'][$key]['have_started'] = $ShuttleTrip->haveStartedCode($value['time'], $value['time_offset']);
             // 排除出发未到30分钟，而状态还未结束的行程
             if ($value['have_started'] < 3 && $value['status'] < 3) {
                 continue;
@@ -552,6 +550,7 @@ class Trip extends ApiBase
             return $this->jsonReturn(992, lang('Error Param'));
         }
         $ShuttleTripServ = new ShuttleTripService();
+        $ShuttleTrip = new ShuttleTrip();
         
         $data  = $ShuttleTripServ->getUserTripDetail($id, [], [], $show_line);
         if (!$data) {
@@ -572,7 +571,6 @@ class Trip extends ApiBase
                     $data['passengers'] = $ShuttleTripServ->passengers($id, [], $tripFields) ?: [];
                     $data['took_count'] = count($data['passengers']);
                 } else {
-                    $ShuttleTrip = new ShuttleTrip();
                     $data['took_count'] = $ShuttleTrip->countPassengers($id);
                 }
             } else {
@@ -586,8 +584,7 @@ class Trip extends ApiBase
             }
         }
 
-        $TripsMixed = new TripsMixed();
-        $data['have_started'] = $TripsMixed->haveStartedCode($data['time'], $data['time_offset']);
+        $data['have_started'] = $ShuttleTrip->haveStartedCode($data['time'], $data['time_offset']);
 
         unset($data['trip_id']);
         return $this->jsonReturn(0, $data, 'Successful');
@@ -1012,7 +1009,6 @@ class Trip extends ApiBase
         }
 
         $list = $ShuttleTripService->getSimilarTrips($tripData, -1*$tripData['uid'], null, 0, 1) ?: [];
-        
         $newList = [];
         foreach ($list as $key => $value) {
             if ($value['user_type'] == 1) { // 如果对方行程是司机行程
@@ -1109,6 +1105,46 @@ class Trip extends ApiBase
             $runType = $tripData['user_type'] == 1 ? 'pickup' : 'hitchhiking';
             $ShuttlePartnerServ->doAfterGetOnCar($partners, $driverTripData, $driverUserData, $runType);
         }
+        return $this->jsonReturn(0, 'Successful');
+    }
+
+
+    // 提醒完结订单
+    public function remind_close($id = null)
+    {
+        $id = $id ?? input('post.id/d', 0); // 自己的行程id
+        if (empty($id)) {
+            return $this->jsonReturn(992, 'Id empty');
+        }
+        $userData = $this->getUserData(1);
+        $ShuttleTrip = new ShuttleTrip();
+        $tripData = $ShuttleTrip->getItem($id);
+        if (empty($tripData)) {
+            return $this->jsonReturn(20002, 'No data');
+        }
+        if ($tripData['user_type'] != 0) {
+            return $this->jsonReturn(992, 'Not passenger`s trip');
+        }
+
+        if (empty($tripData['trip_id'])) {
+            return $this->jsonReturn(992, 'No driver`s data');
+        }
+        $driverTripData = $ShuttleTrip->getItem($tripData['trip_id']);
+        if (empty($driverTripData)) {
+            return $this->jsonReturn(992, 'No driver`s data');
+        }
+        if ($driverTripData['uid'] != $userData['uid']) {
+            return $this->jsonReturn(992, 'You are not the driver');
+        }
+        $haveStarted = $ShuttleTrip->haveStartedCode($tripData['time'], $tripData['time_offset']);
+        
+        if (!in_array($tripData['status'], [0,1,2]) || $haveStarted < 2) {
+            return $this->jsonReturn(50005, 'The trip is not operational at this time or state');
+        }
+        // 把新插入的id加入队列。以便其它异步操作
+        $queue = new Queue('carpool:shuttleTrip:remindCloseOrder');
+        $qValue = Utils::getInstance()->filterDataFields($tripData, ['id', 'trip_id', 'uid', 'start_name', 'end_name', 'time']);
+        $queue->push($qValue);
         return $this->jsonReturn(0, 'Successful');
     }
 }
