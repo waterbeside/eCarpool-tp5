@@ -66,7 +66,7 @@ class RedisData extends Redis
      *
      * @param string $cacheKey Cache key
      * @param string $rowKey Row key
-     * @param mixed $value 插入期
+     * @param mixed $value 插入值
      * @param integer $ex 过期时间
      * @param integer $exType 0:参数$ex为基于key的过期时间，其它:$ex为行的过期时间(当$exType>0时，$exType为key的过期时间，当为-1时，key不过期，当为-2时，不设置key的过期时间
      * @return void
