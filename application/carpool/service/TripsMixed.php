@@ -453,20 +453,8 @@ class TripsMixed extends Service
      */
     public function haveStartedCode($time, $time_offset = 0)
     {
-        $haveStart = 0;
-        $timePass = time() - ($time + $time_offset);
-        if ($timePass > 60 * 60 * 24 * 3) {
-            $haveStart = 10;
-        } elseif ($timePass > 60 * 60 * 24) {
-            $haveStart = 4;
-        } elseif ($timePass > 30 * 60) {
-            $haveStart = 3;
-        } elseif ($timePass > 5 * 60) {
-            $haveStart = 2;
-        } elseif ($timePass >= 0) {
-            $haveStart = 1;
-        }
-        return $haveStart;
+        $ShuttleTrip = new ShuttleTripModel();
+        return $ShuttleTrip->haveStartedCode($time, $time_offset);
     }
 
     /**

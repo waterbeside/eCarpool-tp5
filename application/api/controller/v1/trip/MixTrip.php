@@ -121,7 +121,6 @@ class MixTrip extends ApiBase
         if (is_array($listData) && empty($listData)) {
             return $this->jsonReturn(20002, $returnData, lang('No data'));
         }
-        $TripsServ = new TripsService();
         $ShuttleTripModel = new ShuttleTripModel();
         if (!$listData) {
             // 先取上下班行程数据
@@ -142,7 +141,7 @@ class MixTrip extends ApiBase
         $redis->hCache($cacheKey, $rowKey, $listData, 60 * 2);
         $newList = [];
         foreach ($listData as $key => $value) {
-            $value['have_started'] = $TripsMixedService->haveStartedCode($value['time'], $value['time_offset']);
+            $value['have_started'] = $ShuttleTripModel->haveStartedCode($value['time'], $value['time_offset']);
             $value['took_count'] = 0;
             if ($value['user_type'] == 1) { // 如果是司机行程
                 $value['took_count'] = $TripsMixedService->countPassengers($value['id'], $value['from']) ?: 0;
@@ -210,7 +209,7 @@ class MixTrip extends ApiBase
             $newList = [];
             foreach ($returnData['lists'] as $key => $value) {
                 $value = $ShuttleTripService->formatTimeFields($value, 'item', ['time','create_time']);
-                $value['have_started'] = $TripsMixed->haveStartedCode($value['time'], $value['time_offset']);
+                $value['have_started'] = $ShuttleTrip->haveStartedCode($value['time'], $value['time_offset']);
                 // 排除出发未到30分钟，而状态还未结束的行程
                 if ($value['have_started'] < 3 && $value['status'] < 3) {
                     continue;

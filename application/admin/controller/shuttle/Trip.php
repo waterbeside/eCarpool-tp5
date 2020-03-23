@@ -2,18 +2,12 @@
 
 namespace app\admin\controller\shuttle;
 
-use app\carpool\model\User as UserModel;
-use app\user\model\Department;
-use app\carpool\model\ShuttleLine as ShuttleLineModel;
 use app\carpool\model\ShuttleTrip as ShuttleTripModel;
-use app\carpool\model\ShuttleLineDepartment;
 use app\carpool\model\ShuttleTripPartner as ShuttleTripPartner;
 use app\carpool\service\shuttle\Trip as ShuttleTripServ;
 use app\carpool\service\Trips as TripsService;
-use app\carpool\service\TripsMixed;
 use app\admin\controller\AdminBase;
 use my\Utils;
-use think\facade\Validate;
 use think\Db;
 
 /**
@@ -210,8 +204,8 @@ class Trip extends AdminBase
             $data['partners'] = $ShuttleTripPartner->getPartners($id, null) ?? [];
             $data['driver'] = $ShuttleTripServ->getUserTripDetail($trip_id, [], [], 0) ?: null;
         }
-        $TripsMixed = new TripsMixed();
-        $data['have_started'] = $TripsMixed->haveStartedCode($data['time'], $data['time_offset']);
+        $ShuttleTripModel = new ShuttleTripModel();
+        $data['have_started'] = $ShuttleTripModel->haveStartedCode($data['time'], $data['time_offset']);
         unset($data['trip_id']);
         $returnData = [
             'data' => $data,

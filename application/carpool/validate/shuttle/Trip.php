@@ -42,9 +42,9 @@ class Trip extends Base
             return $this->setError(50010, lang('You are too slow, the passenger was snatched by another driver'));
         }
         //检查出发时间是否已经过了
-        $TripsMixed = new TripsMixed();
+        $ShuttleTrip = new ShuttleTrip();
         $time = strtotime($tripData['time']);
-        $haveStarted = $TripsMixed->haveStartedCode($time, $tripData['time_offset']);
+        $haveStarted = $ShuttleTrip->haveStartedCode($time, $tripData['time_offset']);
         if ($haveStarted > 1) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
@@ -100,14 +100,13 @@ class Trip extends Base
             return $this->setError(-1, lang('You can`t take your own'));
         }
         //检查出发时间是否已经过了
+        $ShuttleTrip = new ShuttleTrip();
         $time = strtotime($tripData['time']);
-        $TripsMixed = new TripsMixed();
-        $haveStarted = $TripsMixed->haveStartedCode($time, $tripData['time_offset']);
+        $haveStarted = $ShuttleTrip->haveStartedCode($time, $tripData['time_offset']);
         if ($haveStarted > 1) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
         // 检查是否已经是乘客成员之一
-        $ShuttleTrip = new ShuttleTrip();
         $checkInTripRes = $ShuttleTrip->inTrip($userData['uid'], $tripData);
         if ($checkInTripRes) {
             return $this->setError(50006, lang('You have joined the trip'), $checkInTripRes);
@@ -144,15 +143,14 @@ class Trip extends Base
         if ($tripData['user_type'] != 1) {
             return $this->setError(992, lang('Only the driver can change the number of seats'));
         }
-        $TripsMixed = new TripsMixed();
-        $haveStarted = $TripsMixed->haveStartedCode(strtotime($tripData['time']), $tripData['time_offset']);
+        $ShuttleTrip = new ShuttleTrip();
+        $haveStarted = $ShuttleTrip->haveStartedCode(strtotime($tripData['time']), $tripData['time_offset']);
         if ($haveStarted > 1) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
         if ($rqData['seat_count'] < 1) {
             return $this->setError(992, lang('The number of empty seats cannot be empty'));
         }
-        $ShuttleTrip = new ShuttleTrip();
         $took_count = $ShuttleTrip->countPassengers($rqData['id'], false); //计算已坐车乘客数
         if ($rqData['seat_count'] < $took_count) {
             return $this->setError(992, lang('The number of seats you set cannot be less than the number of passengers on your trip'));
@@ -180,8 +178,8 @@ class Trip extends Base
         if ($tripData['user_type'] != 1) {
             return $this->setError(992, lang('Only the driver can change the number of seats'));
         }
-        $TripsMixed = new TripsMixed();
-        $haveStarted = $TripsMixed->haveStartedCode(strtotime($tripData['time']), $tripData['time_offset']);
+        $ShuttleTrip = new ShuttleTrip();
+        $haveStarted = $ShuttleTrip->haveStartedCode(strtotime($tripData['time']), $tripData['time_offset']);
         if ($haveStarted > 1) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
@@ -211,9 +209,9 @@ class Trip extends Base
         if (in_array($tripData['status'], [-1, 3, 4, 5])) {
             return $this->setError(50015, lang('The trip has been completed or cancelled. Operation is not allowed'));
         }
-        $TripsMixed = new TripsMixed();
+        $ShuttleTrip = new ShuttleTrip();
         // 检查出发时间
-        $haveStarted = $TripsMixed->haveStartedCode(strtotime($tripData['time']), $tripData['time_offset']);
+        $haveStarted = $ShuttleTrip->haveStartedCode(strtotime($tripData['time']), $tripData['time_offset']);
         if ($haveStarted > 1) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
@@ -227,7 +225,7 @@ class Trip extends Base
         }
 
         // 检查对方行程出发时间
-        $haveStarted2 = $TripsMixed->haveStartedCode(strtotime($targetTripData['time']), $tripData['time_offset']);
+        $haveStarted2 = $ShuttleTrip->haveStartedCode(strtotime($targetTripData['time']), $tripData['time_offset']);
         if ($haveStarted2 > 1) {
             return $this->setError(30007, lang('The trip has been going on for a while. Operation is not allowed'));
         }
@@ -241,7 +239,6 @@ class Trip extends Base
         //     return $this->setError(50011, lang('The route of trip is different from yours'));
         // }
 
-        $ShuttleTrip = new ShuttleTrip();
         // 区分司机程客行程
         $driverTripData = $tripData['user_type'] == 1 ? $tripData : $targetTripData;
         $passengerTripData = $tripData['user_type'] == 1 ?  $targetTripData : $tripData;
