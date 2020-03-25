@@ -314,7 +314,7 @@ class Trips extends Service
      */
     public function pushMsg($uid, $message, $content = null)
     {
-        if (!$uid || !$message) {
+        if (empty($uid) || $uid < 1 ||  !$message) {
             return false;
         }
         $PushMessage = new PushMessage();

@@ -20,7 +20,7 @@ class TripsPushMsg extends Service
         $userData = $data['userData'] ?? null;
         $tripData = $data['tripData'] ?? null;
         $id = $id ?: ($tripData && $tripData['id'] ? $tripData['id'] : 0);
-        if (empty($id)) {
+        if (empty($id) || $id < 1) {
             return false;
         }
         $content = [
