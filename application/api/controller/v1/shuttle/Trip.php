@@ -585,7 +585,7 @@ class Trip extends ApiBase
         }
 
         $data['have_started'] = $ShuttleTrip->haveStartedCode($data['time'], $data['time_offset']);
-        $data['show_finish'] = $ShuttleTrip->showFinish($data['time']);
+        $data['show_finish'] = $ShuttleTrip->showFinishBtn($data['time']);
 
         unset($data['trip_id']);
         return $this->jsonReturn(0, $data, 'Successful');
