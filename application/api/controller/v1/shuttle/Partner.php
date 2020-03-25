@@ -57,10 +57,17 @@ class Partner extends ApiBase
             $listData = $listData->toArray();
             $redis->cache($cacheKey, $listData, $ex);
         }
-        $list = ShuttleTripService::getInstance()->formatTimeFields($listData, 'list', ['create_time']);
-        $list = Utils::getInstance()->filterListFields($list, ['create_time', 'use_count'], true);
+        $UserModel = new UserModel();
+        $Utils = new Utils();
+        $userFields = ['uid', 'name', 'loginname', 'Department', 'imgpath', 'im_id'];
+        foreach ($listData as $key => $value) {
+            $userData = $UserModel->getItem($value['uid'], $userFields);
+            $value = array_merge($value, $userData);
+            $value = $Utils->filterDataFields($value, ['create_time', 'use_count'], true, '', -1);
+            $listData[$key] = $value;
+        }
         $returnData = [
-            'lists' => $list
+            'lists' => $listData
         ];
         return $this->jsonReturn(0, $returnData, 'Successful');
     }
@@ -77,7 +84,7 @@ class Partner extends ApiBase
             $this->jsonReturn(992, lang('Error Param'));
         }
 
-        $from = input('param.from');
+        $from = input('param.from', 'shuttle_trip');
         if (in_array($from, ['info'])) {
             $from_type = -3;
         } elseif ($from == 'shuttle_trip') {
