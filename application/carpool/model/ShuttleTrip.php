@@ -1097,4 +1097,21 @@ class ShuttleTrip extends BaseModel
         }
         return $haveStart;
     }
+
+    /**
+     * 是否显示完结按钮
+     *
+     * @param integer $time 行程出发时间
+     * @return integer 0 or 1
+     */
+    public function showFinishBtn($time)
+    {
+        $showFinish = 0;
+        $time = is_numeric($time) ? $time : strtotime($time);
+        $timePass = time() - $time;
+        if ($timePass > 5 * 60) {
+            $showFinish = 1;
+        }
+        return $showFinish;
+    }
 }
