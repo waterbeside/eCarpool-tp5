@@ -618,7 +618,7 @@ class Trip extends ApiBase
             return $this->jsonReturn($errorData['code'] ?? -1, $errorData['data'] ?? [], $errorData['msg'] ?? 'Error check');
         }
 
-        $rqData['line_data'] = $ShuttleTripService->getLineDataByRq($rqData);
+        $rqData['line_data'] = $ShuttleTripService->getLineDataByRq($rqData, $userData);
         if (!$rqData['line_data']) {
             $ShuttleTripModel->unlockItem(0, $lockKeyFill); // 解锁
             $errorData = $ShuttleTripService->getError();
