@@ -64,7 +64,7 @@ class User extends BaseModel
             return false;
         }
         $cacheKey = "carpool:user:detail:ac_" . strtolower($account);
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheData = $redis->cache($cacheKey);
         if ($cacheData) {
             return $cacheData;
@@ -97,7 +97,7 @@ class User extends BaseModel
     public function deleteDetailCache($account = "", $byID = false)
     {
         $cacheKey = $byID ? "carpool:user:detail:uid_" . $account : "carpool:user:detail:ac_" . strtolower($account);
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $redis->del($cacheKey);
     }
 
@@ -424,7 +424,7 @@ class User extends BaseModel
     {
         $time = time();
         $cacheKey = "carpool:department:member_count:type_$type";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $count = false;
         if (!$recache) {
             $cacheData = $redis->hGet($cacheKey, $department_id);

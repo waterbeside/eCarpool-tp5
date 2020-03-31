@@ -23,14 +23,13 @@ class TripActive extends ApiBase
     public function gps($infoid = 0, $role = "driver")
     {
 
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $role  =   strtolower($role);
         if (!is_numeric($infoid) || !$infoid || !in_array($role, ['driver', 'passenger'])) {
             return $this->jsonReturn(992, '参数错误');
         }
 
         $cacheKey = "carpool:tripGps:v1:{$infoid}:{$role}";
-        $redis = new RedisData();
         $cacheData = $redis->cache($cacheKey);
         if ($cacheData !== false) {
             $code = empty($cacheData) ? 20002 : 0;

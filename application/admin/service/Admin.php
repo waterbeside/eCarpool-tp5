@@ -164,8 +164,7 @@ class Admin extends Service
             'login_time' => $refresh && isset($data['login_time']) ?   $data['login_time'] : time(),
             'refresh_time' => time(),
         ];
-
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $redis->cache($cackeKey, $setData, $exp);
     }
 
@@ -212,7 +211,7 @@ class Admin extends Service
             return $this->error(10004, lang('You are not logged in'));
         }
         $cackeKey  = "carpool_admin:online_admin:$uid";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheData = $redis->cache($cackeKey);
         if (!$cacheData) {
             $this->logout();

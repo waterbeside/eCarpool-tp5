@@ -33,7 +33,7 @@ class TripAddress extends ApiBase
         if (!in_array($listType, ['cars', 'requests'])) {
             return $this->jsonReturn(992, 'Error list_type');
         }
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $ShuttleTripModel = new ShuttleTripModel();
 
         $cacheKey = $ShuttleTripModel->getCitysCacheKey($companyId, $listType);
@@ -94,7 +94,7 @@ class TripAddress extends ApiBase
 
 
         $addressModel = new AddressModel();
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $ShuttleTripModel = new ShuttleTripModel();
         $DepartmentModel = new DepartmentModel();
 
@@ -179,7 +179,7 @@ class TripAddress extends ApiBase
     public function companys($usage = null)
     {
         $addressModel = new AddressModel();
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $DepartmentModel = new DepartmentModel();
 
         $userData = $this->getUserData(1);

@@ -37,7 +37,7 @@ class Trips extends ApiBase
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
 
-        $redis            = new RedisData();
+        $redis = RedisData::getInstance();
         $TripsListService = new TripsListService();
         $TripsService = new TripsService();
 
@@ -87,7 +87,7 @@ class Trips extends ApiBase
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
 
-        $redis            = new RedisData();
+        $redis = RedisData::getInstance();
         $TripsListService = new TripsListService();
 
         // 查缓存
@@ -157,7 +157,7 @@ class Trips extends ApiBase
             $map[] = ['t.map_type', '=', $map_type];
         }
 
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheKey = $WallModel->getListCacheKey($company_id);
         $rowCacheKey = "pz{$pagesize}_p{$page}_mapType_{$map_type}_city_{$city}";
         $returnData = false;
@@ -264,7 +264,7 @@ class Trips extends ApiBase
         //     $cacheKey = $InfoModel->getPassengersCacheKey($id);
         //     $randExp = getRandValFromArray([2, 4, 6]);
         //     $exp = $exp < 60 ? $exp + $randExp * 3 : $exp + $randExp * 5;
-        //     $redis = new RedisData();
+        //      $redis = RedisData::getInstance();
         //     $res = $redis->cache($cacheKey);
         // }
         
@@ -309,7 +309,7 @@ class Trips extends ApiBase
         $time_e = strtotime("+20 day");
         $time_s = strtotime("-1 hour");
 
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheKey = $WallModel->getMapCarsCacheKey($company_id);
         $rowCacheKey = "mapType_{$map_type}";
         $returnData = $redis->hCache($cacheKey, $rowCacheKey);

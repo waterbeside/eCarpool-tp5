@@ -65,7 +65,7 @@ class User extends Model
             return false;
         }
         $cacheKey = "npd_site:user:detail:uid_" . $uid;
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheData = $redis->cache($cacheKey);
         if ($cacheData) {
             return $cacheData;
@@ -90,7 +90,7 @@ class User extends Model
     public function deleteDetailCache($account = "", $byID = false)
     {
         $cacheKey = $byID ? "npd_site:user:detail:uid_" . $account : "npd_site:user:detail:ac_" . strtolower($account);
-        $redis = new RedisData();
-        $redis->delete($cacheKey);
+        $redis = RedisData::getInstance();
+        $redis->del($cacheKey);
     }
 }

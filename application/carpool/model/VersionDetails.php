@@ -29,7 +29,7 @@ class VersionDetails extends Model
     public function findByVer($ver, $platform, $lang, $exp = 60 * 10)
     {
         $cacheKey = "carpool:update_version_detail:{$ver}:{$platform}:{$lang}";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheData = $redis->cache($cacheKey);
         if ($cacheData) {
             return $cacheData;
@@ -59,7 +59,7 @@ class VersionDetails extends Model
     public function DeleteCacheByVer($ver, $platform, $lang)
     {
         $cacheKey = "carpool:update_version_detail:{$ver}:{$platform}:{$lang}";
-        $redis = new RedisData();
-        $cacheData = $redis->delete($cacheKey);
+        $redis = RedisData::getInstance();
+        $cacheData = $redis->del($cacheKey);
     }
 }

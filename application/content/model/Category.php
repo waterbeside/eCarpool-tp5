@@ -58,7 +58,7 @@ class Category extends Model
     public function getList($recache = 0)
     {
         $rKey = "carpool:category:list";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $data = json_decode($redis->get($rKey), true);
 
         if (!$data || $recache) {
@@ -71,7 +71,7 @@ class Category extends Model
 
     public function deleteListCache()
     {
-        $redis = new RedisData();
-        $redis->delete("carpool:category:list");
+        $redis = RedisData::getInstance();
+        $redis->del("carpool:category:list");
     }
 }

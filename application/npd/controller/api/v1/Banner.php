@@ -32,7 +32,7 @@ class Banner extends NpdApiBase
 
         $cacheKey  = "npd:banner:type_$type:lang_$lang";
 
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $res = $redis->cache($cacheKey);
         if (!$res) {
             $map  = [];

@@ -31,7 +31,7 @@ class MixTrip extends ApiBase
     {
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $TripsMixedService = new TripsMixedService();
         $cacheKey =  $TripsMixedService->getMyListCacheKey($uid);
         $rowKey = "coming";
@@ -100,7 +100,7 @@ class MixTrip extends ApiBase
     {
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $TripsMixedService = new TripsMixedService();
         
         $cacheKey =  $TripsMixedService->getMyListCacheKey($uid);
@@ -180,7 +180,7 @@ class MixTrip extends ApiBase
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
         $pagesize =  is_numeric($pagesize) &&  $pagesize > 0 ? $pagesize : 20;
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $ShuttleTrip = new ShuttleTripModel();
         $ShuttleTripService = new ShuttleTripService();
         $TripsMixed = new TripsMixedService();
@@ -262,7 +262,7 @@ class MixTrip extends ApiBase
      */
     public function rclist($userType = null)
     {
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $lockKey = 'carpool:mixTrip:rclist';
         if (!$redis->lock($lockKey, 10, 200, 20 * 1000)) { // 添加并发锁
             return $this->jsonReturn(20009, lang('The network is busy, please try again later'));

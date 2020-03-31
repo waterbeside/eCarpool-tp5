@@ -125,7 +125,7 @@ class Address extends ApiBase
         $type = $type == 'wall' ? 1 : ($type == 'info' ? 2 : $type);
         $AddressModel = new AddressModel();
         $cacheKey = $AddressModel->getCitysCacheKey($company_id, $type);
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $res =  $redis->cache($cacheKey);
         // $res = Cache::get($cacheKey);
         if (!$res) {

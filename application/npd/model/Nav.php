@@ -50,7 +50,7 @@ class Nav extends Model
     public function getList($exp = 3600 * 2)
     {
         $rKey = "NPD:nav:list";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $data = json_decode($redis->get($rKey), true);
         if (!$data || $exp === -1) {
             $data  = $this->where([['is_delete', '=', Db::raw(0)]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
@@ -62,7 +62,7 @@ class Nav extends Model
 
     public function deleteListCache()
     {
-        $redis = new RedisData();
-        $redis->delete("NPD:nav:list");
+        $redis = RedisData::getInstance();
+        $redis->del("NPD:nav:list");
     }
 }

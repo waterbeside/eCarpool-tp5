@@ -330,7 +330,7 @@ class AdminBase extends Base
     public function redis()
     {
         if (!$this->redisObj) {
-            $this->redisObj = new RedisData();
+            $this->redisObj = RedisData::getInstance();
         }
         return $this->redisObj;
     }

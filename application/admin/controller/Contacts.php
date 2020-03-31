@@ -115,7 +115,7 @@ class Contacts extends AdminBase
      */
     public function block_list()
     {
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $res = $redis->cache($this->block_list_cackeKey);
         $userlist = $res;
         // dump($res);
@@ -146,7 +146,7 @@ class Contacts extends AdminBase
         if ($res === false) {
             return $this->jsonReturn(-1, '删除失败');
         }
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $userlist = $redis->cache($this->block_list_cackeKey);
         // $userlist = json_decode($res, true);
         $userList_new = [];

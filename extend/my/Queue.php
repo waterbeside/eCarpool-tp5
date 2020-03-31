@@ -3,7 +3,6 @@
 namespace my;
 
 use my\RedisData;
-use function GuzzleHttp\json_encode;
 
 /**
  * Redis数据
@@ -24,7 +23,7 @@ class Queue
         $setting = array_merge($this->setting, $setting);
         $keyPrefix = isset($setting['keyPrefix']) ? $setting['keyPrefix'] : $this->keyPrefix;
         $this->queueKey = $keyPrefix.$key;
-        $this->redis = new RedisData();
+        $this->redis = RedisData::getInstance('queue');
         $this->redis->select($setting['db']);
     }
 
@@ -135,6 +134,6 @@ class Queue
     public function delete()
     {
         $key = $this->queueKey;
-        $this->redis->delete($key);
+        $this->redis->del($key);
     }
 }

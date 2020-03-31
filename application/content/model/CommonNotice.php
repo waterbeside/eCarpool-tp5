@@ -4,6 +4,7 @@ namespace app\content\model;
 
 use think\Db;
 use think\Model;
+use my\RedisData;
 
 class CommonNotice extends Model
 {
@@ -39,7 +40,7 @@ class CommonNotice extends Model
     public function getList($recache = 0)
     {
         $rKey = "common:notice:list";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $data = json_decode($redis->get($rKey), true);
 
         if (!$data || $recache) {
@@ -52,7 +53,7 @@ class CommonNotice extends Model
 
     public function deleteListCache()
     {
-        $redis = new RedisData();
-        $redis->delete("common:notice:list");
+        $redis = RedisData::getInstance();
+        $redis->del("common:notice:list");
     }
 }

@@ -20,7 +20,7 @@ class Time extends ApiBase
 
     public function index($type = -1)
     {
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $ShuttleTimeModel = new ShuttleTimeModel();
 
         $ex = 60 * 30;

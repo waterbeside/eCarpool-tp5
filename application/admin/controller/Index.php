@@ -27,7 +27,7 @@ class Index extends AdminBase
     public function main()
     {
 // phpinfo();
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $version = Db::query('SELECT VERSION() AS ver');
         $Server = new Server();
         try {

@@ -96,7 +96,7 @@ class Category extends Model
      */
     public function getCateChildrenIds($pid, $model, $exp = 3600 * 24)
     {
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheKey = "NPD:category:children_id,id:model_$model:pid_{$pid}";
         $cacheData = $redis->cache($cacheKey);
         if ($cacheData) {
@@ -125,7 +125,7 @@ class Category extends Model
     public function getList($exp = 3600 * 2)
     {
         $rKey = "NPD:category:list";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $data = json_decode($redis->get($rKey), true);
         if ($exp === -2) {
             return $data;
@@ -140,8 +140,8 @@ class Category extends Model
 
     public function deleteListCache()
     {
-        $redis = new RedisData();
-        $redis->delete("NPD:category:list");
+        $redis = RedisData::getInstance();
+        $redis->del("NPD:category:list");
     }
 
 
@@ -167,7 +167,7 @@ class Category extends Model
      */
     public function getDetail($cid, $exp = 3600 * 24)
     {
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheKey = "NPD:category:detail:$cid";
         $cacheData = $redis->cache($cacheKey);
         if ($cacheData) {

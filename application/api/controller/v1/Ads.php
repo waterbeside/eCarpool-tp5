@@ -44,8 +44,7 @@ class Ads extends ApiBase
 
         $keyOfDataVersion  = "carpool:ads:version:" . $app_id . "_" . $type . '_' . $department_id . '_' . $lang;
 
-
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $lastVeison = $redis->get($keyOfDataVersion);
 
         if ($ver > 0 && $lastVeison && $ver >= intval($lastVeison)) {

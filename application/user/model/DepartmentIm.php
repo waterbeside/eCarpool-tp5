@@ -91,7 +91,7 @@ class DepartmentIm extends BaseModel
     public function getDepartmentIm($department_id, $ex = 60)
     {
         $cacheKey = "carpool:department_im:did_{$department_id}";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $data = $redis->cache($cacheKey);
         if (!$data) {
             $map = [

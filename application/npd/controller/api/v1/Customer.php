@@ -29,7 +29,7 @@ class Customer extends NpdApiBase
     {
         $page = input('param.page', 1);
         $cacheKey = "NPD:customer:list:g_{$group}_re_{$is_recommend}_page_{$page}_pz_{$pagesize}";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $returnData= $redis->cache($cacheKey);
         if ($returnData) {
             $this->jsonReturn(0, $returnData, 'Successful');

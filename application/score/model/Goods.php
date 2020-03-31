@@ -38,7 +38,7 @@ class Goods extends BaseModel
      */
     public function getFromRedis($id, $type = 0)
     {
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheKey = $type ? "score:goods:" . $id : "carpool_management:score:goods:" . $id;
         $good = json_decode($redis->get($cacheKey), true);
         if (!$good) {

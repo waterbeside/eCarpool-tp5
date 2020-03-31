@@ -32,7 +32,7 @@ class DeptAuth
         if (isset($groups[$uid])) {
             return $groups[$uid];
         }
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheKey = "carpool_management:deptGroup:adminUser:$uid";
         $user_groups = $redis->cache($cacheKey);
         if ($user_groups) {

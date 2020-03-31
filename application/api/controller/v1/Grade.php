@@ -150,8 +150,8 @@ class Grade extends ApiBase
             $returnData['id'] = $res;
             $returnData['create_time'] = strtotime($setData['create_time']) ? strtotime($setData['create_time']) : 0;
             if (in_array($type, [0, 1])) {
-                $redis = new RedisData();
-                $redis->delete("carpool:trips:check_my_status:not_rated:" . $uid);
+                $redis = RedisData::getInstance();
+                $redis->del("carpool:trips:check_my_status:not_rated:" . $uid);
             }
             $this->jsonReturn(0, $returnData, lang("Successfully"));
         }

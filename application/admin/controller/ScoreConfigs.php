@@ -144,8 +144,8 @@ class ScoreConfigs extends AdminBase
             // $res = ScoreConfigsModel::where($map)->setField('value', $value);
 
             if ($res !== false) {
-                $redis = new RedisData();
-                $redis->delete("score:configs:awards:" . $region_id);
+                $redis = RedisData::getInstance();
+                $redis->del("score:configs:awards:" . $region_id);
                 // $redis->set("score:configs:awards",$value_public); 不由后台生成
                 $this->log('更新转盘抽奖奖项成功', 0);
                 $this->success("更新成功");

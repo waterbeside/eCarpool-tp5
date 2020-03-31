@@ -33,7 +33,7 @@ class Line extends ApiBase
     {
         $userData = $this->getUserData(0);
         $uid = $userData['uid'] ?? 0;
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $departmentModel = new Department();
         $shuttleLineModel = new ShuttleLineModel();
         $shuttleTrip = new ShuttleTrip();
@@ -160,7 +160,7 @@ class Line extends ApiBase
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
         $shuttleLineModel = new ShuttleLineModel();
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $ex = 60 * 60;
         $cacheKey  = $shuttleLineModel->getCommonListCacheKey($uid, $type);
         $listData = $redis->cache($cacheKey);
@@ -212,7 +212,7 @@ class Line extends ApiBase
         $uid = $userData['uid'];
         $departmentId = $userData['department_id'];
         $cacheKey = "carpool:shuttle:line:companys:dptId_$departmentId";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $list = $redis->cache($cacheKey);
         if (is_array($list) && empty($list)) {
             $this->jsonReturn(20002, 'No data');

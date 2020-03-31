@@ -40,7 +40,7 @@ class Label extends Model
     public function getList($recache = 0)
     {
         $rKey = "carpool:label:list";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $data = json_decode($redis->get($rKey), true);
 
         if (!$data || $recache) {
@@ -53,7 +53,7 @@ class Label extends Model
 
     public function deleteListCache()
     {
-        $redis = new RedisData();
-        $redis->delete("carpool:label:list");
+        $redis = RedisData::getInstance();
+        $redis->del("carpool:label:list");
     }
 }

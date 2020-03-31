@@ -40,7 +40,7 @@ class ShuttleTime extends BaseModel
     public function delListCache($type)
     {
         $cacheKey = $this->getListCacheKey($type);
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         return $redis->del($cacheKey);
     }
 }

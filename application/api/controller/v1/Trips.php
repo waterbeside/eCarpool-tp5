@@ -39,7 +39,7 @@ class Trips extends ApiBase
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
 
-        $redis            = new RedisData();
+        $redis = RedisData::getInstance();
         $TripsListService = new TripsListService();
         $TripsService = new TripsService();
         if (!$type) {
@@ -77,7 +77,7 @@ class Trips extends ApiBase
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
 
-        $redis            = new RedisData();
+        $redis = RedisData::getInstance();
         $TripsListService = new TripsListService();
 
         // 查缓存
@@ -682,7 +682,7 @@ class Trips extends ApiBase
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
         $TripsService = new TripsService();
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $exp = "30";   //缓存过期时间
         $cacheKey = [];
         $cacheKey['not_rated'] = "carpool:trips:check_my_status:not_rated:" . $uid;
@@ -865,7 +865,7 @@ class Trips extends ApiBase
     {
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $TripsService = new TripsService();
         $cacheKey =  $TripsService->getMyInfosCacheKey($uid);
         $res = $redis->cache($cacheKey);

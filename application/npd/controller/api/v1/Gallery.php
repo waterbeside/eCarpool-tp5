@@ -19,7 +19,7 @@ class Gallery extends NpdApiBase
         if (!$model) {
             return $this->jsonReturn(992, 'Param error');
         }
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheKey = "NPD:gallery:m_{$model}_aid_{$aid}";
         $list = $redis->cache($cacheKey);
         if (!$list) {

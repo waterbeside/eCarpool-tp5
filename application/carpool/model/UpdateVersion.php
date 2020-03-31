@@ -27,7 +27,7 @@ class UpdateVersion extends Model
     public function findByPlatform($platform, $exp = 60 * 10)
     {
         $cacheKey = "carpool:update_version:{$platform}";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheData = $redis->cache($cacheKey);
         if ($cacheData) {
             return $cacheData;
@@ -57,7 +57,7 @@ class UpdateVersion extends Model
     {
         $cacheKey = "carpool:update_version:{$platform}";
         $cacheKey2 = "carpool:update_version:{$platform}:white_list";
-        $redis = new RedisData();
-        $redis->delete($cacheKey, $cacheKey2);
+        $redis = RedisData::getInstance();
+        $redis->del($cacheKey, $cacheKey2);
     }
 }

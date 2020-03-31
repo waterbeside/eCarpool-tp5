@@ -62,7 +62,7 @@ class Sms extends ApiBase
      */
     protected function codeCache($usage, $phone, $code = false, $msg = "", $exp = 900)
     {
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $key = "common:sms_code:" . $usage . ":" . $phone;
         if ($code) {
             $data = [
@@ -85,7 +85,7 @@ class Sms extends ApiBase
         }
         if ($code === null) {
             // Cache::tag('public')->rm($key);
-            $res = $redis->delete($key);
+            $res = $redis->del($key);
             return true;
         }
     }

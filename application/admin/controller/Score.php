@@ -266,8 +266,8 @@ class Score extends AdminBase
                 return $this->jsonReturn(-1, '更新失败');
             }
 
-            $redis = new RedisData();
-            $redis->delete("CONFIG_SETTING:" . $region_id);
+            $redis = RedisData::getInstance();
+            $redis->del("CONFIG_SETTING:" . $region_id);
 
 
             $this->log('修改积分配置成功', 0);

@@ -57,7 +57,7 @@ class Trip extends ApiBase
         // }
 
         $Utils = new Utils();
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $ShuttleTrip = new ShuttleTrip();
         $TripsService = new TripsService();
         $ShuttleTripService = new ShuttleTripService();
@@ -273,7 +273,7 @@ class Trip extends ApiBase
         $TripsService = new TripsService();
         $ShuttleTrip = new ShuttleTrip();
         $ShuttleTripService = new ShuttleTripService();
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
 
         $type = input('get.type/d', -1);
         $userData = $this->getUserData(1);
@@ -362,7 +362,7 @@ class Trip extends ApiBase
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
         $Utils = new Utils();
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $TripsService = new TripsService();
         $ShuttleTrip = new ShuttleTrip();
         $ShuttleTripService = new ShuttleTripService();
@@ -465,7 +465,7 @@ class Trip extends ApiBase
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
         $Utils = new Utils();
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $ShuttleTrip = new ShuttleTrip();
         $ShuttleTripService = new ShuttleTripService();
         $cacheKey = $ShuttleTrip->getMyListCacheKey($uid, 'history');

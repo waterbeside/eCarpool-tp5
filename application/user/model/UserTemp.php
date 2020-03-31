@@ -25,7 +25,7 @@ class UserTemp extends Model
     public function getLastExecuteTime()
     {
         $lastExecuteTimeKey = "carpool:user:sync_hr:lastExecuteTime";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         return $redis->get($lastExecuteTimeKey);
     }
 
@@ -45,7 +45,7 @@ class UserTemp extends Model
     public function pullListFromHr($date = '')
     {
         $executeTime  = time();
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $isloadingKey = "carpool:user:sync_hr:isloading";
         $lastExecuteTimeKey = "carpool:user:sync_hr:lastExecuteTime";
         $cacheKey = "carpool:user:sync_hr:$date";
@@ -72,16 +72,16 @@ class UserTemp extends Model
             return false;
         }
         /*$cacheData = json_decode($redis->get($cacheKey),true);
-    if($cacheData){
-      $this->errorMsg ='该日期数据已经同步过';
-      return false;
-    }*/
+        if($cacheData){
+        $this->errorMsg ='该日期数据已经同步过';
+        return false;
+        }*/
         $redis->setex($isloadingKey, 60 * 5, 1);
         $dataArray = $this->clientRequest(config('secret.HR_api.getUserlist'), ['modiftytime' => $date]);
         // dump($dataArray);
         if (!$dataArray) {
             $this->errorMsg = '无新数据';
-            $isLoading = $redis->delete($isloadingKey);
+            $isLoading = $redis->del($isloadingKey);
             return false;
         }
         // $redis->set($cacheKey,json_encode($dataArray));
@@ -96,7 +96,7 @@ class UserTemp extends Model
         }
         $redis->set($lastExecuteTimeKey, $executeTime);
 
-        $isLoading = $redis->delete($isloadingKey);
+        $isLoading = $redis->del($isloadingKey);
         return $returnData;
     }
 

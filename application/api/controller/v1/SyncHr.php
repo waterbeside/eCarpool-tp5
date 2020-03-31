@@ -123,7 +123,7 @@ class SyncHr extends ApiBase
         }
         $DepartmentModel = new Department();
         $userTempModel = new UserTemp();
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheKey = null;
         if ($code) {
             $tid = 0;
@@ -201,7 +201,7 @@ class SyncHr extends ApiBase
             $msg = isset($data[2]) ? $data[2] : null;
         }
         if ($cacheKey) {
-            $redis = new RedisData();
+            $redis = RedisData::getInstance();
             $randExp = getRandValFromArray([2, 4, 6, 8, 10, 12, 14, 16, 18]);
             $redis->setex($cacheKey, 3600 * $randExp, json_encode([$code, $resData, $msg]));
         }

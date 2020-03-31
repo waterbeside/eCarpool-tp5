@@ -32,7 +32,7 @@ class Partner extends ApiBase
         $userData = $this->getUserData(1);
         $uid = $userData['uid'];
 
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $ex = 60 * 2;
         $cacheKey  = $PartnerModel->getCommonListCacheKey($uid);
         $listData = $redis->cache($cacheKey);

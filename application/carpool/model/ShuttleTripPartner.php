@@ -89,7 +89,7 @@ class ShuttleTripPartner extends BaseModel
     public function getPartners($trip_id, $from_type = null, $ex = 60)
     {
         $cacheKey = $this->getPartnersCacheKey($trip_id, $from_type);
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $res = $redis->cache($cacheKey);
         if ($res === false) {
             $map = [

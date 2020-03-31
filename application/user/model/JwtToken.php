@@ -68,7 +68,7 @@ class JwtToken extends BaseModel
     public function getActiveToken($uid, $recache = 0)
     {
         $cacheKey = $this->activeTokenCacheKey;
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheData = $redis->hGet($cacheKey, $uid);
         if ($cacheData && !$recache) {
             return $cacheData;
@@ -197,7 +197,7 @@ class JwtToken extends BaseModel
         }
         $res = $this->where($map)->update($updata);
         if ($res !== false) {
-            $redis = new RedisData();
+            $redis = RedisData::getInstance();
             $cacheKey = $this->activeTokenCacheKey;
             $redis->hDel($cacheKey, $data['uid']);
         }

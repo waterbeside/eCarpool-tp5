@@ -24,7 +24,7 @@ class Configs extends AdminBase
     public function ios_audit_switch()
     {
         $appid =  $this->request->param('app_id', 1);
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheKey = "AUDIT_SETTING:" . $appid;
         $data = json_decode($redis->get($cacheKey), true);
         if ($this->request->isPost()) {

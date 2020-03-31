@@ -54,7 +54,7 @@ class ImGroup extends ApiBase
             $this->jsonReturn(992, 'Error params');
         }
         $now       = time();
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheKey = "carpool:im_group:invitation:$link_code";
         $cacheData = $redis->cache($cacheKey);
         if ($cacheData) {
