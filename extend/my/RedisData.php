@@ -10,28 +10,35 @@ use \Redis;
  ***/
 class RedisData extends Redis
 {
-    protected $redisConfig = null;
+    protected $redisConfig = [];
     protected static $instance;
 
     public function __construct()
     {
         $ConfigsModel = new Configs();
-        $configs = $ConfigsModel->getConfigs();
-        $this->connect($configs['redis_host'], $configs['redis_port']);
-        // $this->connect("127.0.0.1", $configs['redis_port']);
-        if ($configs['redis_auth']) {
-            $this->auth($configs['redis_auth']);
+        // $configs = $ConfigsModel->getConfigs();
+        $configs = config('secret.redis');
+        $this->connect($configs['host'], $configs['port']);
+        if ($configs['auth']) {
+            $this->auth($configs['auth']);
         }
         $this->redisConfig = $configs;
     }
 
 
-    public static function getInstance()
+    /**
+     * 静态方法取得实例
+     *
+     * @param mixed $id 设置实例id
+     * @return object
+     */
+    public static function getInstance($id = 0)
     {
-        if (is_null(static::$instance)) {
-            static::$instance = new static;
+        $md5Id = md5($id);
+        if (empty(static::$instance[$md5Id])) {
+            static::$instance[$md5Id] = new static;
         }
-        return static::$instance;
+        return static::$instance[$md5Id];
     }
 
     /**
