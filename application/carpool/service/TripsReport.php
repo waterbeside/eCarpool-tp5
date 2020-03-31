@@ -77,4 +77,20 @@ class TripsReport extends Service
         ];
         return $returnData;
     }
+
+
+    /**
+     * 是否进行新表统计
+     *
+     * @return boolean
+     */
+    public function isGetShuttleStatis()
+    {
+        $isGetSh = true;
+        $shuttleTripLaunchDate = config('trips.shuttle_trip_launch_date') ?? null;
+        if (!empty($shuttleTripLaunchDate) && time() < strtotime($shuttleTripLaunchDate)) {
+            $isGetSh = false;
+        }
+        return $isGetSh;
+    }
 }

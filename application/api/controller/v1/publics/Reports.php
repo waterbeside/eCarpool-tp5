@@ -46,8 +46,12 @@ class Reports extends ApiBase
             $InfoModel = new InfoModel();
             $sumTrip_nm = $InfoModel->countJoint();
             // $sumTrip_nm = 282901;
+            
+            $TripsReport = new TripsReportService();
+            $isGetSh = $TripsReport->isGetShuttleStatis();
+            
             $ShuttleTripModel = new ShuttleTripModel();
-            $sumTrip_sh = $ShuttleTripModel->countJoint();
+            $sumTrip_sh = $isGetSh ? $ShuttleTripModel->countJoint() : 0;
             $returnData = [
                 'sumtrip' => $sumTrip_nm + $sumTrip_sh,
             ];
@@ -91,9 +95,11 @@ class Reports extends ApiBase
                     'show_type' => $filter['show_type'],
                     'month' => $value,
                 ];
+                $isGetSh = $TripsReport->isGetShuttleStatis();
+
                 // $nmRes = $TripsReport->getMonthSum($paramData) ?: 0;
                 $nmRes = $NmTRS->getMonthSum($paramData) ?: 0;
-                $shRes = $ShTRS->getMonthSum($paramData) ?: 0;
+                $shRes = $isGetSh ? ($ShTRS->getMonthSum($paramData) ?: 0) : 0;
                 $listData[$value][$did] = $nmRes + $shRes;
             }
             $listData[$value]['month'] = $value;
