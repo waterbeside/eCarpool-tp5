@@ -58,12 +58,12 @@ class Trips extends ApiBase
             $returnData = $TripsListService->myList($userData, $pagesize, $type);
             if ($returnData === false) {
                 if (!$type) {
-                    $redis->hCache($cacheKey, $cacheField, -1, 5);
+                    $redis->hCache($cacheKey, $cacheField, -1, 5, 10);
                 }
                 return $this->jsonReturn(20002, lang('No data'));
             }
             if (!$type) {
-                $redis->hCache($cacheKey, $cacheField, $returnData, $cacheExp);
+                $redis->hCache($cacheKey, $cacheField, $returnData, $cacheExp, $cacheExp);
             }
         }
         

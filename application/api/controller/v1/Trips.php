@@ -63,7 +63,7 @@ class Trips extends ApiBase
             return $this->jsonReturn(20002, lang('No data'));
         }
         if (!$type) {
-            $redis->hCache($cacheKey, $cacheField, $returnData, $cacheExp);
+            $redis->hCache($cacheKey, $cacheField, $returnData, $cacheExp, $cacheExp);
         }
         $this->jsonReturn(0, $returnData, "success");
     }
