@@ -21,7 +21,7 @@ class Trips extends Service
      */
     public function getMyListCacheKey($uid)
     {
-        return "carpool:nm_trip:my:{$uid}";
+        return "carpool:nmTrip:my:{$uid}";
     }
 
     /**
@@ -38,7 +38,7 @@ class Trips extends Service
      */
     public function getMyInfosCacheKey($uid)
     {
-        return "carpool:nm_trip:my_info:{$uid}";
+        return "carpool:nmTrip:my_info:{$uid}";
     }
 
     /**

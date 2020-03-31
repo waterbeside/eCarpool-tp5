@@ -73,7 +73,7 @@ class Wall extends BaseModel
         $TripsServ = new TripsServ();
         $company_ids = $TripsServ->getCompanyIds($company_id);
         $company_ids = is_array($company_ids) ? implode(',', $company_ids) : $company_ids;
-        return "carpool:nm_trip:wall_list:companyId_{$company_ids}";
+        return "carpool:nmTrip:wall_list:companyId_{$company_ids}";
     }
 
     /**
@@ -99,7 +99,7 @@ class Wall extends BaseModel
         $TripsServ = new TripsServ();
         $company_ids = $TripsServ->getCompanyIds($company_id);
         $company_ids = is_array($company_ids) ? implode(',', $company_ids) : $company_ids;
-        return "carpool:nm_trip:mapCars_list:companyId_{$company_ids}";
+        return "carpool:nmTrip:mapCars_list:companyId_{$company_ids}";
     }
 
     /**

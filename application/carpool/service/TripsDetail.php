@@ -18,9 +18,9 @@ class TripsDetail
     public function getDetailCacheKey($from, $id)
     {
         if ($from == 'wall') {
-            $cacheKey = "carpool:nm_trip:wall_detail:{$id}";
+            $cacheKey = "carpool:nmTrip:wall_detail:{$id}";
         } else {
-            $cacheKey = "carpool:nm_trip:info_detail:{$id}";
+            $cacheKey = "carpool:nmTrip:info_detail:{$id}";
         }
         return $cacheKey;
     }
@@ -58,7 +58,7 @@ class TripsDetail
         $TripsService = new TripsService();
 
         // 查缓存
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $cacheKey = $this->getDetailCacheKey($from, $id);
         $cacheExp = 30;
         $cacheData = $redis->cache($cacheKey);
