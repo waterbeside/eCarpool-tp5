@@ -199,7 +199,7 @@ class Department extends BaseModel
      * 取子部门id
      * @param  integer  $pid  父ID
      * @param  integer $cache_time 0时，从path字段截取，1时历遍取.
-     * @return string        "id,id,id"
+     * @return array        [id,id,id]
      */
     public function getChildrenIds($pid, $cache_time = 3600 * 12)
     {
