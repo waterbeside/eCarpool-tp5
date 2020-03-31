@@ -31,7 +31,7 @@ class TripReport extends Service
         $rowKey = "month_{$month},department_{$department_id},showType_{$show_type}";
         $redis = $this->redis();
         $itemData = $redis->hCache($cacheKey, $rowKey);
-        if ($itemData === false || true) {
+        if ($itemData === false) {
             $c = false;
             $cacheExp = 3600 * 24 * 30;
             if ($yearMonth_current ==  str_replace('.', '-', $month)) {
