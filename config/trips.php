@@ -13,7 +13,7 @@ return [
     ],
   ],
   'gps_interval' => '30',
-  'shuttle_trip_launch_date' => '2020-03-02 00:00:00',
+  'shuttle_trip_launch_date' => '2020-05-02 00:00:00',
   'trip_matching_radius' => 300, // 行程匹配半径(米为单位)
   'trip_max_timeoffset' => 3600, // 行程可选的最大偏移值(值为单位)
   'matching_degree_der' => 20000 // 计算行程匹配度的分母距离(米为单位) 20 * 1000 米
