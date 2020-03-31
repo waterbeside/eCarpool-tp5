@@ -4,8 +4,10 @@ namespace app\api\controller\v1\publics;
 
 use think\Db;
 use app\api\controller\ApiBase;
-use app\carpool\service\Trips as TripsService;
 use app\carpool\service\TripsReport as TripsReportService;
+use app\carpool\service\shuttle\TripReport as ShTRS;
+use app\carpool\service\nmtrip\TripReport as NmTRS;
+use app\carpool\model\ShuttleTrip as ShuttleTripModel;
 use app\carpool\model\Info as InfoModel;
 use app\carpool\model\Wall as WallModel;
 use my\RedisData;
@@ -30,15 +32,25 @@ class Reports extends ApiBase
     public function trips_summary()
     {
         $cacheKey = "carpool:reports:trips_summary";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $returnData = $redis->cache($cacheKey);
         if (!$returnData) {
-            $sql = "select sum(sumqty) as sumtrip,sum(1) as sumdriver from carpool.reputation";
-            $res  =  Db::connect('database_carpool')->query($sql);
-            if (!$res) {
-                return $this->jsonReturn(20002, 'No data');
-            }
-            $returnData = $res[0];
+            // $sql = "select sum(sumqty) as sumtrip,sum(1) as sumdriver from carpool.reputation";
+            // $res  =  Db::connect('database_carpool')->query($sql);
+            // if (!$res) {
+            //     return $this->jsonReturn(20002, 'No data');
+            // }
+            // 282969
+            // $sumTrip_nm = intval($res[0]['sumtrip']);
+
+            $InfoModel = new InfoModel();
+            $sumTrip_nm = $InfoModel->countJoint();
+            // $sumTrip_nm = 282901;
+            $ShuttleTripModel = new ShuttleTripModel();
+            $sumTrip_sh = $ShuttleTripModel->countJoint();
+            $returnData = [
+                'sumtrip' => $sumTrip_nm + $sumTrip_sh,
+            ];
             $redis->cache($cacheKey, $returnData, 3600 * 12);
         }
         $this->jsonReturn(0, $returnData, 'success');
@@ -56,8 +68,6 @@ class Reports extends ApiBase
         $filter['start']    = $filter['start'] ? $filter['start'] : date('Y-m', strtotime('-11 month', time()));
         $filter['show_type']    = input('param.show_type');
         $filter['department']    = input('param.department');
-        $start =  date('Ym010000', strtotime($filter['start'] . '-01'));
-        $end =  date('Ym010000', strtotime("+1 month", strtotime(str_replace('.', '-', $filter['end']) . '-01')));
 
         // $show_type = explode(',', $filter['show_type']);
         $department = explode(',', $filter['department']);
@@ -68,25 +78,23 @@ class Reports extends ApiBase
 
 
         $TripsReport = new TripsReportService();
-        $TripsService = new TripsService();
-
+        $ShTRS = new ShTRS(); // shuttle\TripReport
+        $NmTRS = new NmTRS(); // nmtrip\TripReport
+        
         $monthArray = $TripsReport->getMonthArray($filter['start'], $filter['end'], 'Y-m'); //取得所有月分作为x轴;
-        $monthNum = count($monthArray);
-
         $listData = [];
 
-
-        $listData = [];
-
-        $redis = new RedisData();
         foreach ($monthArray as $key => $value) {
             foreach ($department as $k => $did) {
                 $paramData = [
-                    'department' => $did,
+                    'department_id' => $did,
                     'show_type' => $filter['show_type'],
                     'month' => $value,
                 ];
-                $listData[$value][$did] =  $TripsReport->getMonthSum($paramData);
+                // $nmRes = $TripsReport->getMonthSum($paramData) ?: 0;
+                $nmRes = $NmTRS->getMonthSum($paramData) ?: 0;
+                $shRes = $ShTRS->getMonthSum($paramData) ?: 0;
+                $listData[$value][$did] = $nmRes + $shRes;
             }
             $listData[$value]['month'] = $value;
         }
@@ -110,7 +118,7 @@ class Reports extends ApiBase
         $yearMonth   = empty($month) ? date("Y-m", strtotime("$month_current -1 month")) : $month;
         $period = $this->getMonthPeriod($yearMonth . '-01', "YmdHi");
 
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
 
         $cacheKey   = "carpool:reports:month_ranking:{$type}_{$yearMonth}";
         $cacheExp = 60 * 60 * 24;
@@ -170,9 +178,7 @@ class Reports extends ApiBase
         $tomorrow = date("Y-m-d", strtotime("$today +1 day"));
         $period = array(date("Ymd0000", strtotime($today)), date("Ymd0000", strtotime($tomorrow)));
 
-
-
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
 
         $cacheKey   = "carpool:reports:today_info";
         $cacheExp = 60 ;
@@ -224,7 +230,7 @@ class Reports extends ApiBase
         $userData = $this->getUserData(1);
         $uid =  $userData['uid'];
         $cacheKey = "carpool:reports:user_carpool_statis:$uid";
-        $redis = new RedisData();
+        $redis = RedisData::getInstance();
         $returnData = $redis->cache($cacheKey);
         if (!$returnData) {
             $result = Db::connect('database_carpool')->query("call load_userinfo_by_uid(:uid)", [
