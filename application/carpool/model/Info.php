@@ -87,7 +87,7 @@ class Info extends BaseModel
         $TripsServ = new TripsServ();
         $company_ids = $TripsServ->getCompanyIds($company_id);
         $company_ids = is_array($company_ids) ? implode(',', $company_ids) : $company_ids;
-        return "carpool:nm_trip:request_list:companyId_{$company_ids}";
+        return "carpool:nmTrip:request_list:companyId_{$company_ids}";
     }
 
     /**
@@ -403,5 +403,28 @@ class Info extends BaseModel
         }
         $cacheKey =  "carpool:info_id:{$uid}";
         return $this->redis()->del($cacheKey);
+    }
+
+    /**
+     * 统计非取消再有司机乘客配对的行程数;
+     *
+     * @param array $timeBetween 时间范围 [start_time, end_time], 当为null时，不以时间筛选
+     * @return integer
+     */
+    public function countJoint($timeBetween = null, $extWhere = [])
+    {
+        $where = [
+            ['status', 'in', [1, 3, 4]],
+            ['carownid', '>', 0],
+        ];
+        if (is_array($timeBetween) && count($timeBetween) > 1) {
+            $where[] = ['time', 'between', [$timeBetween[0], $timeBetween[1]]];
+        }
+        if (!empty($extWhere) && is_array($extWhere)) {
+            $where = array_merge($where, $extWhere);
+        }
+        $fields = "startpid, endpid, start_latlng, end_latlng, time, carownid, passengerid";
+        $res = $this->table($this->distinct(true)->field($fields)->where($where)->buildSql())->alias('t')->count();
+        return $res ?: 0;
     }
 }

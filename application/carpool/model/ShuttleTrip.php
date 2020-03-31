@@ -1114,4 +1114,28 @@ class ShuttleTrip extends BaseModel
         }
         return $showFinish;
     }
+
+    /**
+     * 统计非取消再有司机乘客配对的行程数;
+     *
+     * @param array $timeBetween 时间范围 [start_time, end_time], 当为null时，不以时间筛选
+     * @return integer
+     */
+    public function countJoint($timeBetween = null, $extWhere = [])
+    {
+        $where = [
+            ['trip_id', '>', 0],
+            ['user_type', '=', 0],
+            ['status', 'in', [0, 1, 2, 3, 5]],
+            ['is_delete', '=', 0],
+        ];
+        if (is_array($timeBetween) && count($timeBetween) > 1) {
+            $where[] = ['time', 'between', [$timeBetween[0], $timeBetween[1]]];
+        }
+        if (!empty($extWhere) && is_array($extWhere)) {
+            $where = array_merge($where, $extWhere);
+        }
+        $res = $this->where($where)->count();
+        return $res ?: 0;
+    }
 }
