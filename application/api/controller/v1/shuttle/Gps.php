@@ -23,7 +23,6 @@ class Gps extends ApiBase
         if (!is_numeric($trip_id) || !is_numeric($uid) || !$trip_id < 1 || !$uid < 1) {
             return $this->jsonReturn(992, 'Successful');
         }
-        $redis = new RedisData();
         $ShuttleTripGps = new ShuttleTripGps();
         $res = $ShuttleTripGps->getGpsByTripAndUid($trip_id, $uid);
         return $this->jsonReturn(0, $res, 'Successful');
