@@ -72,4 +72,72 @@ class TripReport extends Service
         }
         return $itemData;
     }
+
+    /**
+     * 取得用户排名列表
+     *
+     * @return array
+     */
+    public function getUserRanking($timeBetween = null, $userType = null, $limit = 50, $returnSql = false)
+    {
+        if (empty($timeBetween) || !is_array($timeBetween) || count($timeBetween) < 2) {
+            return false;
+        }
+        if (!in_array($userType, [0, 1])) {
+            return false;
+        }
+        $whereBase = [
+            ['is_delete', '=', Db::raw(0)],
+            ['status', 'in', [0,1,2,3,4,5]],
+            ['user_type', '=', 0],
+            ['trip_id', '>', 0],
+            ['time', 'between', [$timeBetween[0], $timeBetween[1]]]
+        ];
+        $fieldBase = 'id, trip_id, uid, status, time';
+        $ShuttleTripModel = new ShuttleTripModel();
+        $baseSql = $ShuttleTripModel->field($fieldBase)->where($whereBase)->buildSql(); // 查出所有有司机的乘客行程。
+        $resFields = "u.uid, u.loginname, u.nativename, u.name, u.Department as department, u.companyname, count(u.uid) as num";
+        if ($userType === 1) { // 查询司机排名
+            $join = [
+                ['t_shuttle_trip b', 'b.id = a.trip_id', 'left'],
+                ['user u', 'u.uid = b.uid', 'left'],
+            ];
+        } else { // 查询乘客排名
+            $join = [
+                ['user u', 'u.uid = a.uid', 'left'],
+            ];
+        }
+        $ctor = Db::connect('database_carpool')->table($baseSql)->alias('a')->field($resFields)->join($join)->group('u.uid')->order('num DESC');
+        if ($limit === true) {
+            $returnSql = true;
+        } else {
+            $limit = is_numeric($limit) ? $limit : 50;
+        }
+        return $returnSql ? $ctor->buildSql() : $ctor->limit($limit)->select();
+    }
+
+
+    /**
+     * 取得今天有司机乘客组合的行程
+     *
+     * @return array
+     */
+    public function getTodayJoint()
+    {
+        $ShuttleTripModel = new ShuttleTripModel();
+
+        $timeBetween = [date('Y-m-d 00:00:00'), date('Y-m-d 23:59:59')];
+        $where =  $ShuttleTripModel->buildJointWhere($timeBetween, [], 't');
+        $field = "t.id, t.trip_id, 'shuttle_trip' as `from`, t.time, tt.plate,
+                d.uid as d_uid, d.name as d_name, d.companyname as d_companyname, d.Department as d_department,
+                p.uid as p_uid, p.name as p_name, p.companyname as p_companyname, p.Department as p_department
+            ";
+        $join = [
+            ['t_shuttle_trip tt', 'tt.id = t.trip_id', 'left'],
+            ['user d', 'd.uid = tt.uid', 'left'],
+            ['user p', 'p.uid = t.uid', 'left'],
+        ];
+        $res = $ShuttleTripModel->alias('t')->field($field)->join($join)->where($where)->order('d.Department, t.trip_id, d.uid, t.time')->select();
+        return $res ? $res->toArray() : [];
+    }
 }

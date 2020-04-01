@@ -1115,6 +1115,31 @@ class ShuttleTrip extends BaseModel
         return $showFinish;
     }
 
+
+    /**
+     * 创建"非取消再有司机乘客配对的行程"where;
+     *
+     * @param array $timeBetween 时间范围 [start_time, end_time], 当为null时，不以时间筛选
+     * @param array $extWhere 额外的筛选
+     * @return array
+     */
+    public function buildJointWhere($timeBetween = null, $extWhere = [], $as = '')
+    {
+        $where = [
+            ["$as.trip_id", '>', 0],
+            ["$as.user_type", '=', 0],
+            ["$as.status", 'in', [0, 1, 2, 3, 5]],
+            ["$as.is_delete", '=', 0],
+        ];
+        if (is_array($timeBetween) && count($timeBetween) > 1) {
+            $where[] = ["$as.time", 'between', [$timeBetween[0], $timeBetween[1]]];
+        }
+        if (!empty($extWhere) && is_array($extWhere)) {
+            $where = array_merge($where, $extWhere);
+        }
+        return $where;
+    }
+
     /**
      * 统计非取消再有司机乘客配对的行程数;
      *
@@ -1123,18 +1148,7 @@ class ShuttleTrip extends BaseModel
      */
     public function countJoint($timeBetween = null, $extWhere = [])
     {
-        $where = [
-            ['trip_id', '>', 0],
-            ['user_type', '=', 0],
-            ['status', 'in', [0, 1, 2, 3, 5]],
-            ['is_delete', '=', 0],
-        ];
-        if (is_array($timeBetween) && count($timeBetween) > 1) {
-            $where[] = ['time', 'between', [$timeBetween[0], $timeBetween[1]]];
-        }
-        if (!empty($extWhere) && is_array($extWhere)) {
-            $where = array_merge($where, $extWhere);
-        }
+        $where = $this->buildJointWhere($timeBetween, $extWhere);
         $res = $this->where($where)->count();
         return $res ?: 0;
     }

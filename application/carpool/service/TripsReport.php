@@ -12,11 +12,12 @@ class TripsReport extends Service
     /**
      * 计算期间
      */
-    public function getMonthPeriod($date, $format = 'Y-m-d')
+    public function getMonthPeriod($date, $format = 'Y-m-d', $isBetween = false)
     {
         $date = str_replace('.', '-', $date);
-        $firstday = date("Y-m-01", strtotime($date));
-        $lastday = date("Y-m-d", strtotime("$firstday +1 month"));
+        $time = strtotime($date);
+        $firstday = date('Y-m-d', strtotime('first day of this month', $time));
+        $lastday = $isBetween ? date('Y-m-d 23:59:59', strtotime('last day of this month', $time)) : date('Y-m-d', strtotime('first day of next month', $time));
         return array(date($format, strtotime($firstday)), date($format, strtotime($lastday)));
     }
 
@@ -84,13 +85,26 @@ class TripsReport extends Service
      *
      * @return boolean
      */
-    public function isGetShuttleStatis()
+    public function isGetShuttleStatis($type = null)
     {
-        $isGetSh = true;
+        $isGetSh = 2;
         $shuttleTripLaunchDate = config('trips.shuttle_trip_launch_date') ?? null;
-        if (!empty($shuttleTripLaunchDate) && time() < strtotime($shuttleTripLaunchDate)) {
-            $isGetSh = false;
+
+        if (!empty($shuttleTripLaunchDate)) {
+            $nowTime = time();
+            $shTime = strtotime($shuttleTripLaunchDate);
+            if (in_array($type, ['m', 'month'])) {
+                $shTime = strtotime('first day of this month', $shTime);
+                $nowTime = strtotime('first day of this month', $nowTime);
+            }
+            if ($nowTime < $shTime) {
+                $isGetSh = 0;
+            } elseif ($nowTime == $shTime) {
+                $isGetSh = 1;
+            }
         }
         return $isGetSh;
     }
+
+    
 }

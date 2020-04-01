@@ -9,7 +9,7 @@ use app\carpool\service\shuttle\TripReport as ShTRS;
 use app\carpool\service\nmtrip\TripReport as NmTRS;
 use app\carpool\model\ShuttleTrip as ShuttleTripModel;
 use app\carpool\model\Info as InfoModel;
-use app\carpool\model\Wall as WallModel;
+use my\Utils;
 use my\RedisData;
 
 /**
@@ -116,61 +116,48 @@ class Reports extends ApiBase
     /**
      * 取得月排名
      */
-    public function month_ranking($type = -1, $month = '', $recache = 0)
+    public function month_ranking($user_type = -1, $month = '', $recache = 0)
     {
+
+        $TripsReport = new TripsReportService();
 
         $month_current   = date("Y-m");
 
         $yearMonth   = empty($month) ? date("Y-m", strtotime("$month_current -1 month")) : $month;
-        $period = $this->getMonthPeriod($yearMonth . '-01', "YmdHi");
+        $nmPeriod = $TripsReport->getMonthPeriod($yearMonth . '-01', "YmdHi", true);
+        $shPeriod = $TripsReport->getMonthPeriod($yearMonth . '-01', "Y-m-d H:i:s", true);
 
         $redis = RedisData::getInstance();
 
-        $cacheKey   = "carpool:reports:month_ranking:{$type}_{$yearMonth}";
+        $cacheKey   = "carpool:reports:monthRanking:ut_{$user_type},{$yearMonth}";
         $cacheExp = 60 * 60 * 24;
         $cacheDatas = $redis->cache($cacheKey);
-
         if ($cacheDatas) {
             return $this->jsonReturn(0, $cacheDatas, "Successful");
         }
-
-        switch ($type) {
-            case 0:  //取得司机排名。
-                $where = " t.status <> 2 AND carownid IS NOT NULL AND carownid > 0 AND t.time >=  " . $period[0] . " AND t.time < " . $period[1] . "";
-                $tableAll = " SELECT carownid, passengerid ,time , MAX(infoid) as infoid FROM info as t WHERE $where GROUP BY carownid , time, passengerid "; //取得当月所有，去除拼同司机同时间同乘客的数据。
-                $limit = " LIMIT 50 ";
-                $sql = "SELECT u.uid, u.nativename as name, u.loginname , u.companyname , count(ta.passengerid) as num 
-                    FROM ( $tableAll ) as ta LEFT JOIN user as u on ta.carownid =  u.uid  
-                    GROUP BY  carownid   
-                    ORDER BY num DESC $limit";
-                $datas  =  Db::connect('database_carpool')->query($sql);
-                $returnData = array(
-                    "lists" => $datas,
-                    "month" => $yearMonth
-                );
-                $redis->cache($cacheKey, $returnData, $cacheExp);
-                return $this->jsonReturn(0, $returnData, "Successful");
-                break;
-            case 1: //取得乘客排名
-                $where = " t.status <> 2 AND carownid IS NOT NULL AND carownid > 0 AND t.time >=  " . $period[0] . " AND t.time < " . $period[1] . "";
-                $tableAll = " SELECT   passengerid ,time , MAX(infoid) as infoid , MAX(carownid) as carownid FROM info as t WHERE $where GROUP BY   time, passengerid "; //取得当月所有，去除拼同司机同时间同乘客的数据。
-                $limit = " LIMIT 50 ";
-                $sql = "SELECT u.uid,  u.loginname , u.nativename as name,  u.companyname , count(ta.infoid) as num  FROM ( $tableAll ) as ta 
-                        LEFT JOIN user as u on ta.passengerid =  u.uid  
-                        GROUP BY  passengerid   ORDER BY num DESC $limit";
-                $datas  =  Db::connect('database_carpool')->query($sql);
-                $returnData = array(
-                    "lists" => $datas,
-                    "month" => $yearMonth
-                );
-                $redis->cache($cacheKey, $returnData, $cacheExp);
-                return $this->jsonReturn(0, $returnData, "Successful");
-                break;
-
-            default:
-                return $this->jsonReturn(992, null, "Error params");
-                break;
+        $TripsReport = new TripsReportService();
+        $isGetShM = $TripsReport->isGetShuttleStatis('m');
+        $ShTRS = new ShTRS(); // shuttle\TripReport
+        $NmTRS = new NmTRS(); // nmtrip\TripReport
+        $shSqlRes = $ShTRS->getUserRanking($shPeriod, $user_type, true);
+        $nmSqlRes = $NmTRS->getUserRanking($nmPeriod, $user_type, true);
+        // $nmResOld = $NmTRS->getUserRankingOld($nmPeriod, 1);
+        if ($isGetShM > 1) {
+            $usql = $shSqlRes;
+        } elseif ($isGetShM == 1) {
+            $uField = 'uid, loginname, nativename, name, department, companyname';
+            $usql = "(SELECT  $uField , sum(num) as num from ($shSqlRes UNION All $nmSqlRes ) un GROUP BY $uField)";
+        } else {
+            $usql = $nmSqlRes;
         }
+        $res = Db::connect('database_carpool')->table($usql)->alias('t')->order('num DESC')->limit(50)->select();
+
+        $returnData = array(
+            "lists" => $res,
+            "month" => $yearMonth
+        );
+        $redis->cache($cacheKey, $returnData, $cacheExp);
+        $this->jsonReturn(0, $returnData, 'Successful');
     }
 
 
@@ -190,44 +177,33 @@ class Reports extends ApiBase
         $cacheExp = 60 ;
         $cacheDatas = $redis->cache($cacheKey);
 
-        if ($cacheDatas) {
-            return $this->jsonReturn(0, $cacheDatas, "Successful");
-        }
+        // if ($cacheDatas) {
+        //     return $this->jsonReturn(0, $cacheDatas, "Successful");
+        // }
 
-
-        $where = " i.status <> 2 AND carownid IS NOT NULL AND carownid > 0 AND i.time >=  " . $period[0] . " AND i.time < " . $period[1] . "";
-        $whereIds = "SELECT MIN(ii.infoid) FROM  (select * from info as i where $where ) as ii GROUP BY ii.passengerid , ii.time    ";
-
-        $sql = "SELECT i.infoid, i.carownid, i.passengerid, c.nativename as d_name, c.Department as d_department,c.carnumber, 
-                p.nativename as p_name, p.Department as p_department, i.time
-                FROM info as i
-                LEFT JOIN user AS c ON c.uid = i.carownid
-                LEFT JOIN user AS p ON p.uid = i.passengerid
-                WHERE   i.infoid in($whereIds) 
-                ORDER BY c.Department DESC,i.carownid DESC
-            ";
-        $datas  =  Db::connect('database_carpool')->query($sql);
-        if ($datas !== false) {
-            foreach ($datas as $key => $value) {
-                $datas[$key]['time'] = strtotime($value['time']);
-                $datas[$key]['date_time'] = date("Y-m-d H:i", strtotime($value['time']));
+        $TripsReport = new TripsReportService();
+        $isGetShM = $TripsReport->isGetShuttleStatis();
+        
+        $ShTRS = new ShTRS(); // shuttle\TripReport
+        $NmTRS = new NmTRS(); // nmtrip\TripReport
+        $shRes = $isGetShM ? $ShTRS->getTodayJoint() : [];
+        $NmTRS = $isGetShM ? [] : $NmTRS->getTodayJoint();
+        
+        $list = array_merge($shRes, $NmTRS);
+        if ($list !== false) {
+            foreach ($list as $key => $value) {
+                $list[$key]['time'] = strtotime($value['time']);
             }
+            $Utils = new Utils();
+            $list = $Utils->listSort($list, ['d_department'=>'ASC','d_uid'=>'ASC','trip_id'=>'ASC','time'=>'ASC']);
             $returnData = array(
-                "lists" => $datas,
+                "lists" => $list,
             );
             $redis->cache($cacheKey, $returnData, $cacheExp);
             return $this->jsonReturn(0, $returnData, "success");
         } else {
             return $this->jsonReturn(-1, [], "fail");
         }
-    }
-
-    /*计算期间*/
-    public function getMonthPeriod($date, $format = 'Y-m-d')
-    {
-        $firstday = date("Y-m-01", strtotime($date));
-        $lastday = date("Y-m-d", strtotime("$firstday +1 month"));
-        return array(date($format, strtotime($firstday)), date($format, strtotime($lastday)));
     }
 
     /*计算期间*/
