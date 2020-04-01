@@ -131,7 +131,7 @@ class AppInitiate extends ApiBase
             $returnVersionData['desc'] = $versionDescription['description'] ? $versionDescription['description'] : "";
             if ($versionData['is_new']) {
                 $isInWhiteList = in_array($version, explode(',', $versionData['white_list']));
-                if (!$isInWhiteList && $version != $versionData['current_versioncode']) {
+                if (!$isInWhiteList && $version < $versionData['current_versioncode']) {
                     $returnVersionData['is_update'] = 2;
                 } elseif ($version < $versionData['current_versioncode']) {
                     $returnVersionData['is_update'] = 1;
