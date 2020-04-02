@@ -22,6 +22,7 @@ Route::group([], function () {
     Route::rule('api/:version/attachment/:type', 'api/:version.attachment/save', 'POST');
     Route::rule('api/:version/attachment/:id', 'api/:version.attachment/delete', 'DELETE')->pattern(['id' => '\S+']);
     Route::rule('api/:version/attachment', 'api/:version.attachment/delete', 'DELETE');
+    Route::rule('api/:version/inner/attachment/:module/:type', 'api/:version.inner.attachment/save', 'POST');
 
     //发送短信相关
     Route::rule('api/:version/sms/send', 'api/:version.sms/send');
