@@ -16,6 +16,7 @@ Route::group([], function () {
     Route::resource('api/:version/passport', 'api/:version.passport');
     Route::rule('api/:version/passport', 'api/:version.passport/delete', 'DELETE');
     Route::rule('api/:version/passport/:field', 'api/:version.passport/update_field', 'PATCH');
+    Route::rule('api/:version/passport/quick_info$', 'api/:version.passport/quick_info', 'POSt');
 
     //附件相关
     Route::resource('api/:version/attachment', 'api/:version.attachment');

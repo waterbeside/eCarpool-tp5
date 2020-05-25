@@ -6,7 +6,7 @@ use app\api\controller\ApiBase;
 use app\carpool\model\User as UserModel_o;
 use app\carpool\model\Department as DepartmentModel_o;
 use app\user\model\Department as DepartmentModel;
-use app\user\model\User as UserModel;
+use app\score\model\AccountMix;
 use app\user\model\JwtToken;
 use com\nim\Nim as NimServer;
 use app\carpool\model\Address;
@@ -70,11 +70,64 @@ class Passport extends ApiBase
             $userInfo['full_department'] = DepartmentModel::where("id", $userInfo['department_id'])->value('fullname');
         }
 
-
         return $this->jsonReturn(0, $userInfo, "success");
     }
 
+    /**
+     * 通过loginname账号取得用户信息并注册积分账号
+     *
+     */
+    public function quick_info()
+    {
+        $type = request()->post('type', 0, 'intval');
+        $account = request()->post('account', '', 'trim');
+        if ($type === 1 && empty($account)) {
+            return $this->jsonReturn(-1, '请输入工号');
+        } elseif (!$type) {
+            $userData = $this->getUserData(0);
+            if (!$account && !$userData) {
+                return $this->jsonReturn(-1, 'Error account');
+            }
+            $account = $account ?: $userData['loginname'];
+        }
+        if (!$account) {
+            return $this->jsonReturn(-1, 'Error account');
+        }
 
+        $UserModel = new UserModel_o();
+        $userDetail = $UserModel->getDetail($account);
+        if (!$userDetail) {
+            return $this->jsonReturn(20002, '用户不存在');
+        }
+        $userDetail['avatar'] = $userDetail['imgpath'];
+        $userDetail['department'] = $userDetail['Department'];
+        $userDetail['full_department'] = $userDetail['department_fullname'];
+        
+        $fields = [
+            'uid', 'loginname', 'name', 'nativename',
+            'department', 'company_id', 'department_id',
+            'avatar', 'full_department'
+        ];
+        $userDetail = $this->filtFields($userDetail, $fields);
+        if (isset($userDetail['sex'])) {
+            $userDetail['sex'] = intval($userDetail['sex']);
+        }
+        if (isset($userDetail['company_id'])) {
+            $userDetail['company_id'] = intval($userDetail['company_id']);
+        }
+
+        // 注册积分账号
+        $AccountMix = new AccountMix();
+        $checkScoreAccount = $AccountMix->registerAccount($userDetail['loginname']);
+        if (!$checkScoreAccount || (isset($checkScoreAccount['code']) && $checkScoreAccount['code'] !== 0)) {
+            return $this->jsonReturn(-1, null, lang('Failed'), ['debug'=>'查询或注册工号的积分账号失败']);
+        }
+        $returnData = [
+            'userData' => $userDetail,
+            'scoreAccount' => $checkScoreAccount,
+        ];
+        return $this->jsonReturn(0, $returnData, "success");
+    }
 
     /**
      * 登入，并生成jwt反回
@@ -82,9 +135,7 @@ class Passport extends ApiBase
      */
     public function save()
     {
-
         $data = $this->request->post();
-
         if (empty($data['username'])) {
             $this->jsonReturn(-10002, lang('Please enter user name'));
         }
