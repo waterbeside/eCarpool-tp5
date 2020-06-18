@@ -132,7 +132,8 @@ Route::group([], function () {
     Route::rule('api/:version/im_group/kick_placeholder', 'api/:version.im_group/kick_placeholder', 'DELETE');
     Route::rule('api/:version/im_group/signin_invitation', 'api/:version.im_group/signin_invitation', 'POST');
 
-
+    // 二手市场
+    Route::rule('api/:version/content/category', 'api/:version.content/category', 'GET');
 
     //*********公开的
     Route::resource('api/:version/publics/idle', 'api/:version.publics.idle');
