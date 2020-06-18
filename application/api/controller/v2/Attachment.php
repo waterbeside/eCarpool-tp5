@@ -35,7 +35,12 @@ class Attachment extends ApiBase
     {
         $systemConfig = $this->systemConfig;
 
-        $this->checkPassport(1);
+        $rType = input('param.r_type/d', 0);
+
+        if (!$this->checkPassport()) {
+            $passportError = $this->passportError;
+            return $rType == 2 ? json(['desc'=>$passportError[1]], 401) : $this->jsonReturn($passportError[0], $passportError[1]);
+        }
 
         $is_image = 0;
         $returnData = [];
@@ -74,14 +79,16 @@ class Attachment extends ApiBase
         switch ($type) {
             case 'image':
                 if (strpos($upInfo['type'], 'image') === false) {
-                    $this->jsonReturn(-1, ['type'=>$upInfo['type']], lang('Not image file format'));
+                    $msg = lang('Not image file format');
+                    return $rType == 2 ? json(['desc'=>$msg], 400) : $this->jsonReturn(-1, ['type'=>$upInfo['type']], $msg);
                 }
 
                 // if($upInfo['size'] > 819200){
                 //   $this->jsonReturn(-1,lang('Images cannot be larger than 800K'));
                 // }
                 if ($upInfo['size'] > 2048000) {
-                    $this->jsonReturn(-1, lang('Images cannot be larger than {:size}', ["size" => "2M"]));
+                    $msg = lang('Images cannot be larger than {:size}', ["size" => "2M"]);
+                    return $rType == 2 ? json(['desc'=>$msg], 400) : $this->jsonReturn(992, $msg);
                 }
                 $image = \think\Image::open(request()->file('file'));
                 $extra = [
@@ -97,7 +104,8 @@ class Attachment extends ApiBase
                 break;
 
             default:
-                $this->jsonReturn(992, lang('Wrong format'));
+                $msg = lang('Wrong format');
+                return $rType == 2 ? json(['desc'=>$msg], 400) : $this->jsonReturn(992, $msg);
                 break;
         }
 
@@ -141,7 +149,8 @@ class Attachment extends ApiBase
                 $imgpath =  str_replace(config('secret.avatarUploadPath') . DIRECTORY_SEPARATOR, '', $fileInfo['filepath']);
                 $upAvatarRes = $this->upDataAvatar($imgpath); //更新用户头像字段
                 if (!$upAvatarRes) {
-                    return $this->jsonReturn(-1, lang('Failed'));
+                    $msg = lang('Failed');
+                    return $rType == 2 ? json(['desc'=>$msg], 400) : $this->jsonReturn(-1, $msg);
                 }
             }
             AttachmentModel::where(['md5_code' => $md5, 'sha1_code' => $sha1])->update([
@@ -150,7 +159,8 @@ class Attachment extends ApiBase
                 'last_userid'    => $uid,
                 'last_time'   => $returnData['last_time'],
             ]);
-            return $this->jsonReturn(0, $returnData, lang('upload successful'));
+            $msg = lang('upload successful');
+            return $rType == 2 ? json(['desc'=>$msg, 'data'=>$returnData], 200) : $this->jsonReturn(0, $returnData, $msg);
         }
 
 
@@ -166,7 +176,8 @@ class Attachment extends ApiBase
             $filepath_o = $imgpath;
             $upAvatarRes = $this->upDataAvatar($imgpath); //更新用户头像字段
             if (!$upAvatarRes) {
-                return $this->jsonReturn(-1, lang('Failed'));
+                $msg = lang('Failed');
+                return $rType == 2 ? json(['desc'=>$msg], 400) : $this->jsonReturn(-1, $msg);
             }
             $title = $this->userBaseInfo['loginname'];
         } else {
@@ -204,10 +215,11 @@ class Attachment extends ApiBase
                 'extra_info' => $extra,
                 'filepath_o' => isset($filepath_o) ?  $filepath_o : '',
             ];
-
-            $this->jsonReturn(0, $returnData, lang('upload successful'));
+            $msg = lang('upload successful');
+            return $rType == 2 ? json(['desc'=>$msg, 'data'=>$returnData], 200) : $this->jsonReturn(0, $returnData, $msg);
         } else {
-            $this->jsonReturn(-1, lang('Attachment information failed to be written'));
+            $msg = lang('Attachment information failed to be written');
+            return $rType == 2 ? json(['desc'=>$msg], 400) : $this->jsonReturn(-1, $msg);
         }
     }
 
