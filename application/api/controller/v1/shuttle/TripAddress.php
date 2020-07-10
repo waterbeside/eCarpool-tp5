@@ -134,10 +134,13 @@ class TripAddress extends ApiBase
                 ['a.address_type', 'in', [3, 4]],
                 ['a.is_delete', '=', Db::raw(0)],
             ];
-            $departmentRes = $DepartmentModel->getItem($userData['department_id']);
-            if ($departmentRes) {
-                $mapOffical[] = ['a.department_id', 'in', $departmentRes['path']];
+            if ($userData['company_id'] != 20) { //班车公司可最得所有官方路线, 其它则根据部门地区过滤
+                $departmentRes = $DepartmentModel->getItem($userData['department_id']);
+                if ($departmentRes) {
+                    $mapOffical[] = ['a.department_id', 'in', $departmentRes['path']];
+                }
             }
+            
             $officalRes = $addressModel->alias('a')->field("$fieldsAddress , create_time as time, 0 as used_count")
                     ->where($mapOffical)->order('address_type ASC, create_time DESC')->select();
             $officalRes = $officalRes ? $officalRes->toArray() : [];
