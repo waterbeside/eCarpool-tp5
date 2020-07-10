@@ -502,7 +502,7 @@ class Trips extends Service
     public function buildCompanyMap($userData, $prefix = 't')
     {
         $company_id = is_numeric($userData) ? $userData : $userData['company_id'];
-        $company_id = $this->getCompanyIds($company_id);
+        $company_id = $this->getCompanyIds($company_id) ?: 0;
         if (is_array($company_id)) {
             return [$prefix . '.company_id', 'in', $company_id];
         }

@@ -130,7 +130,7 @@ class Trips extends ApiBase
         $TripsListService = new TripsListService();
         $WallModel = new WallModel();
         $userData = $this->getUserData(1);
-        $company_id = $userData['company_id'];
+        $company_id = $userData['company_id'] ?: 0;
         $time_e = strtotime("+20 day");
         $time_s = strtotime("-1 hour");
         $page = input('get.page', 1);

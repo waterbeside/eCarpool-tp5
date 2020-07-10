@@ -162,6 +162,8 @@ class TripsList
         } else {
             $results = WallModel::alias('t')->field($fields)->join($join)->where($map)->order(' time ASC, t.love_wall_ID ASC ')
             ->paginate($pagesize, false, ['query' => request()->param()])->toArray();
+            // ->fetchSql()->select();
+            // dump($results);
             if (!$results['data']) {
                 return false;
             }
