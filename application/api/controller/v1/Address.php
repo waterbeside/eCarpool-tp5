@@ -172,7 +172,8 @@ class Address extends ApiBase
         if ($res) {
             $this->jsonReturn(0, $res, lang('Successfully'));
         } else {
-            $this->jsonReturn(20002, $res, lang('No data'));
+            // $this->jsonReturn(20002, $res, lang('No data'));
+            $this->jsonReturn(0, [], lang('Successfully'), [], false);
         }
     }
 }
