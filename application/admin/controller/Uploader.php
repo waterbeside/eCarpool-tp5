@@ -21,6 +21,9 @@ class Uploader extends AdminBase
             $admin_id = $this->userBaseInfo['uid'];
             //接收参数
             $images = $this->request->file('file');
+            if (!$images) {
+                $this->jsonReturn(-1, lang('Please upload attachments'));
+            }
             //计算md5和sha1散列值，TODO::作用避免文件重复上传
             $md5 = $images->hash('md5');
             $sha1 = $images->hash('sha1');
