@@ -78,13 +78,17 @@ class Base extends Controller
      * @param  string $message [描述]
      * @param  array  $extra   [其它]
      */
-    public function jsonReturn($code, $data, $message = '', $extra = array())
+    public function jsonReturn($code, $data, $message = '', $extra = array(), $isObject = true)
     {
         if (is_string($data)) {
             $message = $data;
             $data = [];
         }
-        $data = empty($data) ? (object) array() : $data;
+        if ($isObject) {
+            $data = empty($data) ? (object) array() : $data;
+        } else {
+            $data = empty($data) ? array() : $data;
+        }
         $extra = empty($extra) ? (object) array() : $extra;
         $data = array(
             'code' => $code,
