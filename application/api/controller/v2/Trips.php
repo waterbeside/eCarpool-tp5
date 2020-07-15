@@ -148,9 +148,12 @@ class Trips extends ApiBase
         if ($keyword) {
             $map[] = ['d.name|s.addressname|e.addressname|t.startname|t.endname', 'like', "%{$keyword}%"];
         }
+        
 
-        if ($city) {
+        if ($city && !in_array(trim($city), ['Fail', 'Fail', '获取失败', 'Thất bại', '获取城市中', 'All', 'all', '全部'])) {
             $map[] = ['s.city', '=', $city];
+        } else {
+            $city = '';
         }
 
         if (is_numeric($map_type) && $map_type > -1) {
