@@ -10,12 +10,16 @@
         <tbody>
             {if isset($accountInfo['id'])}
             <tr>
-            <td class="td-label" width="100">{:lang('Point account')}</td>
-            <td>{$accountInfo.account&& trim($accountInfo.account)!=''?$accountInfo.account:'-'}</td>
+                <td class="td-label" width="100">{:lang('Point account')}</td>
+                <td>{$accountInfo.account&& trim($accountInfo.account)!=''?$accountInfo.account:'-'}</td>
             </tr>
             <tr>
-            <td class="td-label">{:lang('Points')}</td>
-            <td><b class="text-red">{$accountInfo.balance}</b></td>
+                <td class="td-label">{:lang('Points')}</td>
+                <td><b class="text-red">{$accountInfo.balance}</b></td>
+            </tr>
+            <tr>
+                <td class="td-label">{:lang('Points')} 2</td>
+                <td><b class="text-red">{$accountInfo.effective_point}</b>  &nbsp;&nbsp;({:lang('Reasonable suggestions')})</td>
             </tr>
             {/if}
             {if $accountInfo['carpool']}
