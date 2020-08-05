@@ -146,7 +146,7 @@ class ApiBase extends Base
      */
     public function createPassportJwt($data, $ex = null, $iss = 'carpool')
     {
-        $ex = $ex && is_numeric($ex) ? $ex : (in_array(strtolower($data['client']), ['ios', 'android']) ?  36 * 30 * 86400 : 48 * 3600);
+        $ex = $ex && is_numeric($ex) ? $ex : (in_array(strtolower($data['client']), ['ios', 'android']) ?  36 * 30 * 86400 : 30 * 24 * 3600);
         $exp = time() + $ex;
         $jwtData  = array(
             'exp' => $exp, //过期时间
@@ -238,6 +238,10 @@ class ApiBase extends Base
     {
         $Department = new Department();
         $deptData = $Department->getItem($userDid);
+        if (!$deptData) {
+            return false;
+        }
+        // dump($deptData);
         $dataRid = explode(',', $dataRid);
         $arrayIts = array_intersect($dataRid, explode(',', ($deptData['path'] . ',' . $userDid)));
         if (!empty($arrayIts)) {
