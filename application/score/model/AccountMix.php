@@ -154,14 +154,30 @@ class AccountMix extends AccountModel
                     'id' => $accountDetial['id'],
                     'update_time' => $accountDetial['update_time']
                 ];
+                // 加分
                 if ($data['reason'] > 0) {
                     $data['result']    = intval($accountDetial['balance']) +  $data['operand'];
-                    $upAccountStatus = $this->where($updateAccountMap)->setInc('balance', $data['operand']);
+                    $upAccountData = [
+                        'balance' => Db::raw('balance + '.$data['operand']),
+                    ];
+                    if ($data['reason'] == 305) {
+                        $upAccountData['effective_point'] = Db::raw('effective_point + '.$data['operand']);
+                    }
+                    // $upAccountStatus = $this->where($updateAccountMap)->setInc('balance', $data['operand']);
                 }
+                // 减分
                 if ($data['reason'] < 0) {
                     $data['result']    = intval($accountDetial['balance']) -  $data['operand'];
-                    $upAccountStatus = $this->where($updateAccountMap)->setDec('balance', $data['operand']);
+                    $upAccountData = [
+                        'balance' => Db::raw('balance - '.$data['operand']),
+                    ];
+                    if ($data['reason'] == -305) {
+                        $upAccountData['effective_point'] = Db::raw('effective_point - '.$data['operand']);
+                    }
+                    // $upAccountStatus = $this->where($updateAccountMap)->setDec('balance', $data['operand']);
                 }
+                $upAccountStatus = $this->where($updateAccountMap)->update($upAccountData);
+
                 if (!$upAccountStatus) {
                     throw new \Exception("更新分数失败,1");
                 }
