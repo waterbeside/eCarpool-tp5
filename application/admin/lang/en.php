@@ -210,6 +210,7 @@ return [
   'The user has not opened a credit account' => 'The user has not opened a credit account',
   'View points history' => 'View points history',
   'Operational points' => 'Operational points',
+  'Reasonable suggestions' => 'Reasonable suggestions',
 
   //用户详情页
   'Account' => 'Account',
@@ -359,6 +360,7 @@ return [
   'sl:拼车不合法的有限放行操作' => 'Unlimited legal release of carpooling',
   'sl:取消商品兑换' => 'Cancel product redemption',
   'sl:积分抽奖' => 'Points draw',
+  'sl:合理化建议加减' => 'Rationalization proposals plus or minus',
 
   'sl:europe' => 'Europe',
   'sl:asia' => 'Asia',

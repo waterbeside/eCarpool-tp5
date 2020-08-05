@@ -208,8 +208,10 @@ return [
   'Balance' => 'Số dư',
   'Remaining points' => 'Điểm còn lại',
   'The user has not opened a credit account' => 'Người dùng chưa mở tài khoản tín dụng',
-  'View points history' => '查看积分历史',
+  'View points history' => 'View points history',
   'Operational points' => 'Điểm hoạt động',
+  'Reasonable suggestions' => 'Reasonable suggestions',
+
 
   //用户详情页
   'Account' => 'Số tài khoản',
@@ -359,6 +361,8 @@ return [
   'sl:拼车不合法的有限放行操作' => 'Unlimited legal release of carpooling',
   'sl:取消商品兑换' => 'Cancel product redemption',
   'sl:积分抽奖' => 'Points draw',
+  'sl:合理化建议加减' => 'Rationalization proposals plus or minus',
+
 
 
   'sl:europe' => 'Europe',

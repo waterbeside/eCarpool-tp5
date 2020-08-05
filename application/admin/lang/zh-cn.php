@@ -209,6 +209,7 @@ return [
   'The user has not opened a credit account' => '该用户未开通积分账号',
   'View points history' => '查看积分历史',
   'Operational points' => '操作分数',
+  'Reasonable suggestions' => '合理化建议',
 
   //用户详情页
   'Account' => '账号',
@@ -359,6 +360,7 @@ return [
   'sl:拼车不合法的有限放行操作' => '拼车不合法的有限放行操作',
   'sl:取消商品兑换' => '取消商品兑换',
   'sl:积分抽奖' => '积分抽奖',
+  'sl:合理化建议加减' => '合理化建议加减',
 
   'sl:europe' => '欧洲',
   'sl:asia' => '亚洲',
