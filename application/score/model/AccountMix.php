@@ -108,8 +108,10 @@ class AccountMix extends AccountModel
     /**
      * 更新积分
      * @param  array $params  $params = []
+     * @param  bool $setEffectivePoint 是否同时更新 effective_point字段；
+     * @return bool
      */
-    public function updateScore($params)
+    public function updateScore($params, $setEffectivePoint = false)
     {
         $account_id   = isset($params['account_id']) ? $params['account_id'] : null;
         $account  = null;
@@ -160,7 +162,7 @@ class AccountMix extends AccountModel
                     $upAccountData = [
                         'balance' => Db::raw('balance + '.$data['operand']),
                     ];
-                    if ($data['reason'] == 305) {
+                    if ($data['reason'] == 305 || $setEffectivePoint) {
                         $upAccountData['effective_point'] = Db::raw('effective_point + '.$data['operand']);
                     }
                     // $upAccountStatus = $this->where($updateAccountMap)->setInc('balance', $data['operand']);
@@ -171,7 +173,7 @@ class AccountMix extends AccountModel
                     $upAccountData = [
                         'balance' => Db::raw('balance - '.$data['operand']),
                     ];
-                    if ($data['reason'] == -305) {
+                    if ($data['reason'] == -305 || $setEffectivePoint) {
                         $upAccountData['effective_point'] = Db::raw('effective_point - '.$data['operand']);
                     }
                     // $upAccountStatus = $this->where($updateAccountMap)->setDec('balance', $data['operand']);
