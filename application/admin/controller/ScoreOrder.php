@@ -558,17 +558,20 @@ class ScoreOrder extends AdminBase
         }
         Db::connect('database_score')->startTrans();
         try {
+            $orderData = OrderModel::where('id', $id)->find();
             $upDataOrderRes = OrderModel::where('id', $id)->update(['status' => -1, "handler" => -1 * intval($admin_id)]); //取消订单状态
             if (!$upDataOrderRes) {
                 throw new \Exception(lang('Unsuccessful cancellation'));
             }
+            $platform = $orderData['platform'] ?? 0;
+            $isFromRP = $platform == 3; // 是否来源合理化建议，暂定来自h5的都是合理化建议
             $upScoredata = [
                 'reason' => 200,
                 'operand' => $orderData['total'],
                 'account_id' => $orderData['creator'],
             ];
             $AccountModel = new AccountMixModel();
-            $upScoreRes = $AccountModel->updateScore($upScoredata);  //更新订单分数
+            $upScoreRes = $AccountModel->updateScore($upScoredata, $isFromRP);  //更新订单分数
             if (!$upScoreRes) {
                 throw new \Exception($AccountModel->errorMsg);
             }
