@@ -134,6 +134,14 @@ Route::group([], function () {
 
     // 二手市场
     Route::rule('api/:version/content/category$', 'api/:version.content.category/index', 'GET');
+    Route::rule('api/:version/content/idle/my$', 'api/:version.content.idle/my', 'GET'); //我的发布
+    Route::rule('api/:version/content/idle$', 'api/:version.content.idle/save', 'POST'); //发布
+    Route::rule('api/:version/content/idle/collections$', 'api/:version.content.idle/collections', 'GET'); //我的收藏
+    Route::rule('api/:version/content/idle/:id/collect$', 'api/:version.content.idle/collect', 'POST'); //取消或添加收藏
+    Route::rule('api/:version/content/idle/:id/like$', 'api/:version.content.idle/like', 'POST'); //赞
+    Route::rule('api/:version/content/idle/:id/related$', 'api/:version.content.idle/related', 'GET');
+    Route::rule('api/:version/content/idle/:id', 'api/:version.content.idle/change', 'PATCH')->pattern(['id' => '\d+']); //更新状态
+    Route::rule('api/:version/content/idle/:id', 'api/:version.content.idle/read', 'GET')->pattern(['id' => '\d+']); //取得详情
 
     //*********公开的
     Route::resource('api/:version/publics/idle', 'api/:version.publics.idle');

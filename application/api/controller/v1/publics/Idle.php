@@ -35,7 +35,7 @@ class Idle extends ApiBase
         $filter['end_time']  = input('param.end_time');
         $filter['cateid']  = input('param.cateid');
 
-        $fields = "t.id,t.user_id,t.title,t.desc,t.images,t.location,t.price,t.status,t.is_seller,t.post_time,u.name,u.phone,u.loginname";
+        $fields = "t.id,t.user_id,t.title,t.desc,t.images,t.location,t.price,t.status,t.is_seller,t.post_time,t.polish_time,u.name,u.phone,u.loginname";
         $map = [
             ["t.is_delete", "=", Db::raw(0)],
             ["u.loginname", "exp", Db::raw("IS NOT NULL")],
@@ -73,7 +73,7 @@ class Idle extends ApiBase
             ['user u', 'u.uid = t.user_id', 'left'],
             ['(select max(category_id) as category_id ,idle_id from t_idle_category group by idle_id) ic', 'ic.idle_id = t.id', 'left']
         ];
-        $orderby = "t.status DESC, post_time DESC";
+        $orderby = "t.status DESC, polish_time DESC, post_time DESC";
         $results = IdleModel::alias('t')->field($fields)->json(['images'])->where($map)->join($join)->order($orderby)->paginate($pagesize, false, ['query' => request()->param()])->toArray();
 
         $datas = $results['data'];
@@ -117,7 +117,6 @@ class Idle extends ApiBase
         $join = [
             ['user u', 'u.uid = t.user_id', 'left']
         ];
-        $orderby = "t.status DESC, post_time DESC";
         $datas = IdleModel::alias('t')->field($fields)->json(['images'])->where($map)->join($join)->find();
         if (!$datas || $datas['is_delete'] == 1) {
             $this->jsonReturn(20002, [], 'No Data');
