@@ -29,9 +29,21 @@
                 </div>
             </div>
             <div class="layui-form-item">
+                <label class="layui-form-label">邮箱</label>
+                <div class="layui-input-block">
+                    <input type="text" name="email" value="{$data.email}" placeholder="邮箱"  class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">部门</label>
+                <div class="layui-input-block">
+                    <input type="text" name="dept" value="{$data.dept}" placeholder="部门"  class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
                 <label class="layui-form-label">备注</label>
                 <div class="layui-input-block">
-                    <textarea type="text" name="remark" placeholder="备注" lay-verify="required" class="layui-textarea" >{$data.remark}</textarea>
+                    <textarea type="text" name="remark" placeholder="备注" class="layui-textarea" >{$data.remark}</textarea>
                 </div>
             </div>
             <div class="layui-form-item">

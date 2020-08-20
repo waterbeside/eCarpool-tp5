@@ -20,6 +20,9 @@
                     <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="关键词" class="layui-input" style="width:140px" >
                 </div>
                 <div class="layui-input-inline">
+                    <input type="text" name="filter[email]" value="{$filter['email'] ? $filter['email'] :''}" placeholder="邮箱关键词" class="layui-input" style="width:140px" >
+                </div>
+                <div class="layui-input-inline">
                     <select name="filter[status]">
                         <option value="" <?php if(!isset($filter['status']) || !is_numeric('status') ){ echo 'selected="selected"';  } ?> > 是否禁用：不限</option>
                         <option value="0" <?php if(isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 0 ){ echo 'selected="selected"'; } ?> > 禁用</option>
@@ -46,8 +49,10 @@
                     <th lay-data="{field:'id', width:100 }" >ID</th>
                     <th lay-data="{field:'account'}">用户名</th>
                     <th lay-data="{field:'nickname', width:140}">暱稱</th>
-                    <th lay-data="{field:'status', width:100}">状态</th>
+                    <th lay-data="{field:'email', width:140}">邮箱</th>
+                    <th lay-data="{field:'status', width:80}">状态</th>
                     <th lay-data="{field:'create_time', width:160}">创建时间</th>
+                    <th lay-data="{field:'dept'}">部门</th>
                     <th lay-data="{field:'remark'}">备注</th>
                     <th lay-data="{field:'options', width:100}">操作</th>
                 </tr>
@@ -56,9 +61,9 @@
             {foreach name="lists" item="vo"}
             <tr>
                 <td>
-                <div <?php echo  ($vo['is_delete']  ? 'class="is_delete"' : ''); ?>>
-                    {$vo.id}
-                </div>
+                    <div <?php echo  ($vo['is_delete']  ? 'class="is_delete"' : ''); ?>>
+                        {$vo.id}
+                    </div>
                 </td>
                 <td>
                     <a href="{:url('admin/npd.user/public_detail',['id'=>$vo['id']])}"   data-title="用户详情"  data-trigger="modal" title="用户详情">
@@ -67,9 +72,11 @@
                 </td>
                 
                 <td>{$vo.nickname}</td>
+                <td>{$vo.email}</td>
 
                 <td>{php}echo $vo['status']==1 && $vo['is_delete']===0 ? '正常' : ($vo['is_delete']==1 ? '<i class="fa fa-times"></i> 已删' : '禁用');{/php}</td>
                 <td>{$vo.create_time}</td>
+                <td>{$vo.dept}</td>
                 <td>{$vo.remark}</td>
                 <td>
                 <!-- <a href="{:url('admin/nim/im_user',['uid'=>$vo['id']])}"  class="layui-btn   layui-btn-xs " data-title="云信账号"  data-trigger="modal" title="編輯云帐号">IM</a> -->
