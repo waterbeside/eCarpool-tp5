@@ -95,7 +95,7 @@ class RedisData extends Redis
                         $this->expire($cacheKey, $ex);
                     }
                 }
-                if ($exType > 0) {
+                if ($exType > 0 || $exType == -1) {
                     $this->expire($cacheKey, $exType);
                 }
                 $this->exec();
@@ -123,6 +123,18 @@ class RedisData extends Redis
             }
             return $redData;
         }
+    }
+
+    /**
+     * hDel 删除hCache生成的缓存，包含时间行
+     *
+     * @param string $cacheKey Cache key
+     * @param string $rowKey Row key
+     */
+    public function hCacheDel($cacheKey, $rowKey)
+    {
+        $rowExpKey = "_Expire:$rowKey";
+        return $this->hDel($cacheKey, $rowKey, $rowExpKey);
     }
 
     /**
