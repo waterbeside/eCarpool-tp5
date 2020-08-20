@@ -28,6 +28,11 @@ class User extends AdminBase
         if (isset($filter['keyword']) && $filter['keyword']) {
             $map[] = ['account', 'like', "%{$filter['keyword']}%"];
         }
+
+        //筛选用户邮箱信息
+        if (isset($filter['email']) && $filter['email']) {
+            $map[] = ['email', 'like', "%{$filter['email']}%"];
+        }
         
         //筛选是否被删的用户
         $is_delete = isset($filter['is_delete']) && $filter['is_delete'] ? Db::raw(1) : Db::raw(0);
@@ -70,10 +75,10 @@ class User extends AdminBase
             $data['salt'] = $passwordData['salt'];
 
             // 查询该账号名是否和Carpool账号名冲突
-            $resCpUser = CarpoolUserModel::where('loginname', $data['account'])->find();
-            if (!empty($resCpUser)) {
-                return $this->jsonReturn(-1, '请不要用Carpool用户名作为自定义授权名');
-            }
+            // $resCpUser = CarpoolUserModel::where('loginname', $data['account'])->find();
+            // if (!empty($resCpUser)) {
+            //     return $this->jsonReturn(-1, '请不要用Carpool用户名作为自定义授权名');
+            // }
 
             if ($user->allowField(true)->save($data)) {
                 $uid_n = $user->id; //插入成功后取得id
@@ -115,10 +120,10 @@ class User extends AdminBase
                 unset($data['password']);
             }
             // 查询该账号名是否和Carpool账号名冲突
-            $resCpUser = CarpoolUserModel::where('loginname', $data['account'])->find();
-            if (!empty($resCpUser)) {
-                return $this->jsonReturn(-1, '请不要用Carpool用户名作为自定义授权名');
-            }
+            // $resCpUser = CarpoolUserModel::where('loginname', $data['account'])->find();
+            // if (!empty($resCpUser)) {
+            //     return $this->jsonReturn(-1, '请不要用Carpool用户名作为自定义授权名');
+            // }
 
             $user = $user->find($id);
 
