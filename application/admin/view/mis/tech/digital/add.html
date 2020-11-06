@@ -1,0 +1,121 @@
+{extend name="base" /}
+{block name="body"}
+<div class="layui-tab-content P-misTechDigital-detail-form">
+
+    <form class="layui-form " action="{:url('admin/mis.tech.digital/add')}" method="post" id="editForm" data-jump-target="parent">
+        <div class="layui-row">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">时间</label>
+                <div class="layui-input-block">
+                <input type="text" name="order_date" placeholder="请输入时间" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">缸号</label>
+                <div class="layui-input-block">
+                <input type="text" name="batch_no"  placeholder="请输入缸号" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">订单号</label>
+                <div class="layui-input-block">
+                <input type="text" name="order_id"  placeholder="请输入订单号" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">印花编号</label>
+                <div class="layui-input-block">
+                <input type="text" name="digital_id"  placeholder="请输入印花编号" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">客户名称</label>
+                <div class="layui-input-block">
+                <input type="text" name="customer_name"  placeholder="请输入客户名称" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">款号</label>
+                <div class="layui-input-block">
+                <input type="text" name="model_no"  placeholder="请输入款号" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">花型</label>
+                <div class="layui-input-block">
+                <input type="text" name="pattern"  placeholder="请输入花型" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">生产进度</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea" name="progress"></textarea>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">品名</label>
+                <div class="layui-input-block">
+                <input type="text" name="name"  placeholder="请输入品名" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">底色布色名</label>
+                <div class="layui-input-block">
+                <input type="text" name="cloth_color"  placeholder="请输入底色布色名" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">整理方式</label>
+                <div class="layui-input-block">
+                <input type="text" name="finishing_mode"  placeholder="请输入整理方式" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">备注</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea" name="remark"></textarea>
+                </div>
+            </div>
+        
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">缩略图</label>
+                <div class="layui-input-block j-upload-thumb" data-default="" >  </div>
+            </div>
+            
+
+
+        </div>
+        <div class="blank50"></div>
+        
+        <div class="am-bottom-tool-bar am-bottom-tool-bar-form" style="z-index: 10000">
+            <div class="btns-wrapper" >
+                <a class="layui-btn btn" lay-submit lay-filter="*digital_from">保存</a>
+                <!-- <button style="display: none">cancel</button> -->
+            </div>
+        </div>
+    </form>
+
+</div>
+{/block}
+{block name="css"}
+
+{/block}
+{block name="js"}
+{/block}
+{block name="script"}
+    {include file="/mis/tech/digital/_form_js" /}
+
+{/block}

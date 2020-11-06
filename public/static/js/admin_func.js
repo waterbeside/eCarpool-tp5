@@ -130,6 +130,9 @@ function cRenderUploadBtn(setting){
     inputName:'thumb',
     text_uploadBtn :'上传图片',
     defaultImg:'',
+    relative: false, //是否使用相对路径
+    baseUrl: '', //使用相对路径时，用于显示图片的图片路径
+    inputReadOnly: false,
 
   }
   var opt = $.extend({},defautls,setting);
@@ -137,11 +140,16 @@ function cRenderUploadBtn(setting){
   var wrapper = opt.wrapper;
   var $wrapper = $(wrapper);
   var defaultImg = opt.defaultImg
-  defaultImg = defaultImg ? defaultImg : $wrapper.data('default')
-  defaultImg = defaultImg ? defaultImg : '';
-  var html_input = '<input type="text" name="'+opt.inputName+'" value="'+defaultImg+'" class="layui-input j-upload-input">'
+  var showDefaultImg = opt.showDefaultImg
+  defaultImg = $.trim((defaultImg || $wrapper.data('default')) || '');
+  showDefaultImg = (showDefaultImg || $wrapper.data('show-default')) || '';
+  
+  var showDefaultImg = showDefaultImg || (!opt.relative || defaultImg.indexOf('http') === 0 ? defaultImg : opt.baseUrl + defaultImg );
+
+  var isReadOnly_html = opt.inputReadOnly ? 'readonly="readonly"' : '';
+  var html_input = '<input type="text" name="'+opt.inputName+'" value="'+defaultImg+'" '+ isReadOnly_html +' class="layui-input j-upload-input">'
   var html_btn = '<a  class="amain-uploadImgBtn j-upload-btn" id="">\
-      <img class="layui-upload-img j-upload-img" src="'+defaultImg+'" >\
+      <img class="layui-upload-img j-upload-img" src="'+showDefaultImg+'" >\
       <div class="text">\
         <i class="fa fa-upload"></i>'+opt.text_uploadBtn+'\
       </div>\
@@ -181,7 +189,10 @@ function cRenderUploadBtn(setting){
       if(res.code===0){
         layer.msg(myLang.r('Upload successfully'));
         $preViewImg.attr('src', res.data.img_url); //图片链接（base64）
-        $thumbInput.val(res.data.img_url);
+        var inputVal = opt.relative ? res.data.filepath : res.data.img_url;
+        $thumbInput.val(inputVal);
+        $tipsTextBox.html('');
+
       }else{
         layer.msg(res.desc);
       }

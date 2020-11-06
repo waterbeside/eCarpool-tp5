@@ -1,0 +1,65 @@
+<script>
+
+FORM_PAGE_EXEC = {
+    upload : layui.upload,
+    
+    init: function(){
+        var _this = this;
+        var url="{:url('/api/ueditor')}";
+
+        
+
+        /** thumb upload **/
+        var $thumbInput =  cRenderUploadBtn({
+            wrapper:'.j-upload-thumb',
+            inputName:'thumb_data',
+            url: "{:url('admin/Uploader/images')}",
+            data: {"module":"admin/Mis/tech"},
+            relative: true,
+            baseUrl: 'https://gitsite.net/assets/uploads/images/gek_tech/digital/',
+            inputReadOnly: true
+        })
+
+        form.render();
+
+        /**
+         * 提交
+         */
+        form.on('submit(*digital_from)', function (data) {
+            _this.submitData(data);
+        });
+
+    },
+
+    /**
+    *提效数据
+    */
+    submitData:function(data){
+        console.log('submitData');
+        console.log(data);
+        var fieldData = data.field;
+        var upData = $.extend({},data.field);
+        var merchandizingData = [];
+        
+        let merchData = MyDynItem.getData("#merch-list",['merch.ppo_no','merch.desc', 'merch.remark', 'merch.remark_en'],'.');
+        let patentData = MyDynItem.getData("#patent-list",['patent.cty_name','patent.cty_name_en','patent.sn','patent.type_name'],'.');
+        upData.merchandizing = merchData;
+        upData.patent = patentData;
+        
+        ajaxSubmit({
+            url: data.form.action,
+            dataType:'json',
+            type: data.form.method,
+            data: upData,
+            unrefresh: $(data.form).data('unrefresh') ? $(data.form).data('unrefresh') : false,
+            jump : $(data.form).data('jump') ? $(data.form).data('jump') : "" ,
+            jumpWin: $(data.form).data('jump-target') == "parent" ? parent : null
+        });
+        return false;
+    },
+
+}
+$(function(){
+    FORM_PAGE_EXEC.init();
+})
+</script>

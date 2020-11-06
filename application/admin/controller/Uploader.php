@@ -43,14 +43,29 @@ class Uploader extends AdminBase
             ];
 
             $systemConfig = $this->systemConfig;
-            $site_domain  = trim($systemConfig['site_upload_domain']) ? trim($systemConfig['site_upload_domain']) : $this->request->root(true);
-            $upload_path  = trim($systemConfig['site_upload_path']) . "/images";
+            $deptPath = "";
+
+
+            $module = strtolower(input('param.module', 'admin')); // 取得图片所用模块
+            if ($module == 'admin/mis/tech') {
+                $site_domain  = trim($systemConfig['public_upload_url']) ?: $this->request->root(true);
+                $upload_path  = trim($systemConfig['public_upload_server_path']) . "/images";
+                $deptPath = "gek_tech";
+            } else {
+                $site_domain  = trim($systemConfig['site_upload_domain']) ?: $this->request->root(true);
+                $upload_path  = trim($systemConfig['site_upload_path']) . "/images";
+            }
+
+            
             //判断图片文件是否已经上传
             $checkHasMap = [
                 ['md5_code', '=', $md5],
                 ['sha1_code', '=', $sha1],
                 ['module', '<>', 'user/avatar'],
             ];
+            if (in_array($module, ['admin/mis/tech'])) {
+                $checkHasMap[] = ['module', '=', $module];
+            }
             $img = Attachment::where($checkHasMap)->find(); //我这里是将图片存入数据库，防止重复上传
 
 
@@ -62,14 +77,31 @@ class Uploader extends AdminBase
                     'last_userid'    => $admin_id,
                     'last_time'   => time(),
                 ]);
-                $this->jsonReturn(0, ['img_id' => $img['id'], 'img_url' => $site_domain . $img['filepath']], lang('upload successful'));
-            } else {
-                $module = input('param.module', 'admin');
+                $returnData = [
+                    'img_id' => $img['id'],
+                    'img_url' => $site_domain . $img['filepath'],
+                    'filepath' => $img['filepath'],
+                ];
+                $this->jsonReturn(0, $returnData, lang('upload successful'));
+            } else { // 直正上传
                 $request = request();
+                $now = date('Ymd');
+
                 $DS = DIRECTORY_SEPARATOR;
-                $imgPath = 'public' . $upload_path;
-                $info = $images->move(Env::get('root_path') . $imgPath);
-                $path = $upload_path . $DS . date('Ymd', time()) . $DS . $info->getFilename();
+                // $info = $images->move(Env::get('root_path') . $imgPath);
+                // $path = $upload_path . $DS . date('Ymd', time()) . $DS . $info->getFilename();
+
+                $fullUploadPath = Env::get('root_path') . 'public' . $upload_path;
+                
+                if ($module == "admin/mis/tech") {
+                    $fullUploadPath = ($upload_path . $DS . $deptPath ) ?: $fullUploadPath;
+                    $info = $images->move($fullUploadPath);
+                    $imgpath =  $now . DIRECTORY_SEPARATOR . $info->getFilename();
+                    $path = $deptPath . DIRECTORY_SEPARATOR . $imgpath;
+                } else {
+                    $info = $images->move($fullUploadPath);
+                    $path = $upload_path . DIRECTORY_SEPARATOR . $now . DIRECTORY_SEPARATOR . $info->getFilename();
+                }
                 $data = [
                     'module' => $module,
                     'filesize' => $upInfo['size'],
@@ -90,7 +122,12 @@ class Uploader extends AdminBase
                 ];
 
                 if ($img_id = Attachment::insertGetId($data)) {
-                    $this->jsonReturn(0, ['img_id' => $img_id, 'img_url' => $site_domain . $path], lang('upload successful'));
+                    $returnData = [
+                        'img_id' => $img_id,
+                        'img_url' => $site_domain . $path,
+                        'filepath' => $path,
+                    ];
+                    $this->jsonReturn(0, $returnData, lang('upload successful'));
                 } else {
                     $this->jsonReturn(-1, lang('Attachment information failed to be written'));
                 }
