@@ -105,6 +105,4 @@ class TripsReport extends Service
         }
         return $isGetSh;
     }
-
-    
 }
