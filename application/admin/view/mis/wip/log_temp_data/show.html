@@ -1,0 +1,42 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief" style="padding: 12px;">
+        <h1>{$data.sql_name}</h1>
+        <h4>{$data.time}</h4>
+        <table class="layui-table">
+            <thead>
+                <tr>
+                    <?php foreach($fields as $k => $field) { ?>
+                        <td><?php echo $field; ?></td>
+                    <?php } ?>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach($data['jsonData'] as $key => $row) { ?>
+                    <tr>
+                        <?php foreach($fields as $k => $field) { ?>
+                            <td><?php echo $row[$field]; ?></td>
+                        <?php } ?>
+                    </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+        
+        
+    </div>
+</div>
+<style>
+    .mis-digital-list__wrapper .layui-table-cell {
+        /* height: 60px; */
+        /* white-space: nowrap; */
+    }
+</style>
+{/block}
+{block name="script"}
+<script>
+
+
+</script>
+{/block}
