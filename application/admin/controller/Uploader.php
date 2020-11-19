@@ -47,10 +47,12 @@ class Uploader extends AdminBase
 
 
             $module = strtolower(input('param.module', 'admin')); // 取得图片所用模块
+            $fixedUrlPath = '';
             if ($module == 'admin/mis/tech') {
                 $site_domain  = trim($systemConfig['public_upload_url']) ?: $this->request->root(true);
                 $upload_path  = trim($systemConfig['public_upload_server_path']) . "/images";
                 $deptPath = "gek_tech";
+                $fixedUrlPath = 'images';
             } else {
                 $site_domain  = trim($systemConfig['site_upload_domain']) ?: $this->request->root(true);
                 $upload_path  = trim($systemConfig['site_upload_path']) . "/images";
@@ -97,7 +99,7 @@ class Uploader extends AdminBase
                     $fullUploadPath = ($upload_path . $DS . $deptPath ) ?: $fullUploadPath;
                     $info = $images->move($fullUploadPath);
                     $imgpath =  $now . DIRECTORY_SEPARATOR . $info->getFilename();
-                    $path = $deptPath . DIRECTORY_SEPARATOR . $imgpath;
+                    $path = $fixedUrlPath . DIRECTORY_SEPARATOR . $deptPath . DIRECTORY_SEPARATOR . $imgpath;
                 } else {
                     $info = $images->move($fullUploadPath);
                     $path = $upload_path . DIRECTORY_SEPARATOR . $now . DIRECTORY_SEPARATOR . $info->getFilename();
