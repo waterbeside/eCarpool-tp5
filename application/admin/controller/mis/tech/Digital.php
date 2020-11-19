@@ -3,7 +3,7 @@
 namespace app\admin\controller\mis\tech;
 
 use app\mis\model\Digital as DigitalModel;
-
+use app\mis\model\LogSync;
 use app\admin\controller\AdminBase;
 use think\Db;
 
@@ -41,6 +41,10 @@ class Digital extends AdminBase
             $map[] = ['batch_no', '=', $filter['batch_no']];
         }
 
+        if (isset($filter['bulk_sample']) && $filter['bulk_sample']) {
+            $map[] = ['bulk_sample', '=', $filter['bulk_sample']];
+        }
+
 
         if (isset($filter['status'])  && is_numeric($filter['status'])) {
             $map[] = ['status', '=', $filter['status']];
@@ -56,11 +60,15 @@ class Digital extends AdminBase
             }
         }
 
+        $syncModel = new LogSync();
+        $lastSyncTime = $syncModel->getLastTime('mis:sync:digitalList');
+
         $returnData = [
             'lists' => $lists,
             'cid' => $cid,
             'filter' => $filter,
             'pagesize' => $pagesize,
+            'lastSyncTime' => $lastSyncTime,
         ];
 
 
@@ -81,6 +89,8 @@ class Digital extends AdminBase
             // if ($validate_result !== true) {
             //     $this->jsonReturn(-1, $validate_result);
             // }
+            $data['creater_id'] = $this->userBaseInfo['uid'] ?: 0;
+
             Db::connect('database_mis')->startTrans();
             try {
                 /******** 处理主表 ********/
@@ -119,6 +129,7 @@ class Digital extends AdminBase
         $dataDetail     = $DigitalModel->find($id);
         if ($this->request->isPost()) {
             $data            = $this->request->param();
+            $data['modifier_id'] = $this->userBaseInfo['uid'] ?: 0;
             // dump($data);
             Db::connect('database_mis')->startTrans();
             try {
