@@ -22,7 +22,7 @@ class Digital extends Model
         if (strpos($thumbPath, '/') === false) {
             return $urlPath . 'images/gek_tech/digital/' . $thumbPath;
         } else {
-            return $urlPath . 'images/' . $thumbPath;
+            return $urlPath .  $thumbPath;
         }
     }
 }
