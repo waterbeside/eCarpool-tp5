@@ -48,7 +48,7 @@ class User extends AdminBase
         }
         //筛选用户信息
         if (isset($filter['keyword']) && $filter['keyword']) {
-            $map[] = ['u.uid|u.loginname|u.phone|u.name|u.nativename', 'like', "%{$filter['keyword']}%"];
+            $map[] = ['u.uid|u.loginname|u.phone|u.name|u.nativename|u.mail', 'like', "%{$filter['keyword']}%"];
         }
         //筛选部门
         if (isset($filter['keyword_dept']) && $filter['keyword_dept']) {
@@ -103,7 +103,7 @@ class User extends AdminBase
         }
         //筛选用户信息
         if (isset($filter['keyword']) && $filter['keyword']) {
-            $map[] = ['u.loginname|u.phone|u.name', 'like', "%{$filter['keyword']}%"];
+            $map[] = ['u.loginname|u.phone|u.name|u.nativename|u.mail', 'like', "%{$filter['keyword']}%"];
         }
         //筛选部门
         if (isset($filter['keyword_dept']) && $filter['keyword_dept']) {
