@@ -4,7 +4,7 @@ namespace app\admin\controller\npd;
 
 use app\user\model\Department as Department;
 use app\npd\model\CpaDepartment as CpaDepartmentModel;
-use app\admin\controller\AdminBase;
+use app\admin\controller\npd\NpdAdminBase;
 use think\Db;
 
 /**
@@ -13,7 +13,7 @@ use think\Db;
  * @package app\admin\controller
  */
 
-class CpaDepartment extends AdminBase
+class CpaDepartment extends NpdAdminBase
 {
 
     public function index($filter = [], $page = 1, $pagesize = 15)

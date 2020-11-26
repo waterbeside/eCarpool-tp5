@@ -4,7 +4,7 @@ namespace app\admin\controller\npd;
 
 use app\npd\model\Article as ArticleModel;
 use app\npd\model\Category as CategoryModel;
-use app\admin\controller\AdminBase;
+use app\admin\controller\npd\NpdAdminBase;
 use think\Db;
 
 /**
@@ -12,7 +12,7 @@ use think\Db;
  * Class Article
  * @package app\admin\controller
  */
-class Article extends AdminBase
+class Article extends NpdAdminBase
 {
 
 

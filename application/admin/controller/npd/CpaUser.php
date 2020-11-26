@@ -4,7 +4,7 @@ namespace app\admin\controller\npd;
 
 use app\carpool\model\User as CarpoolUser;
 use app\npd\model\CpaUser as CpaUserModel;
-use app\admin\controller\AdminBase;
+use app\admin\controller\npd\NpdAdminBase;
 use think\Db;
 
 /**
@@ -13,7 +13,7 @@ use think\Db;
  * @package app\admin\controller
  */
 
-class CpaUser extends AdminBase
+class CpaUser extends NpdAdminBase
 {
 
     public function index($filter = [], $page = 1, $pagesize = 15)

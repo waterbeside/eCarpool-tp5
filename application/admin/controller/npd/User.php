@@ -5,7 +5,8 @@ namespace app\admin\controller\npd;
 use app\npd\model\User as UserModel;
 use app\carpool\model\User as CarpoolUserModel;
 use app\npd\validate\User as UserValidate;
-use app\admin\controller\AdminBase;
+
+use app\admin\controller\npd\NpdAdminBase;
 use think\Db;
 
 /**
@@ -14,7 +15,7 @@ use think\Db;
  * @package app\admin\controller
  */
 
-class User extends AdminBase
+class User extends NpdAdminBase
 {
 
     public function index($filter = [], $page = 1, $pagesize = 15)

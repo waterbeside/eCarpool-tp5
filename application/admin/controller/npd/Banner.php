@@ -3,7 +3,7 @@
 namespace app\admin\controller\npd;
 
 use app\npd\model\Banner as BannerModel;
-use app\admin\controller\AdminBase;
+use app\admin\controller\npd\NpdAdminBase;
 use app\user\model\Department;
 use think\Db;
 
@@ -14,7 +14,7 @@ use think\Db;
  * Class Banner
  * @package app\admin\controller
  */
-class Banner extends AdminBase
+class Banner extends NpdAdminBase
 {
 
     protected function initialize()

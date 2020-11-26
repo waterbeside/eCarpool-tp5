@@ -5,7 +5,7 @@ namespace app\admin\controller\npd;
 use app\npd\model\Product as ProductModel;
 use app\npd\model\ProductRecommend;
 
-use app\admin\controller\AdminBase;
+use app\admin\controller\npd\NpdAdminBase;
 use think\Db;
 
 /**
@@ -14,7 +14,7 @@ use think\Db;
  * @package app\admin\controller
  */
 
-class ProductRcm extends AdminBase
+class ProductRcm extends NpdAdminBase
 {
 
 

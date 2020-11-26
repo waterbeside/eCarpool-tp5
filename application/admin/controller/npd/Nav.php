@@ -3,7 +3,7 @@
 namespace app\admin\controller\npd;
 
 use app\npd\model\Nav as NavModel;
-use app\admin\controller\AdminBase;
+use app\admin\controller\npd\NpdAdminBase;
 use think\Db;
 use my\Tree;
 
@@ -13,7 +13,7 @@ use my\Tree;
  * @package app\admin\controller
  */
 
-class Nav extends AdminBase
+class Nav extends NpdAdminBase
 {
 
     protected $nav_model;

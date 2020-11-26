@@ -3,7 +3,7 @@
 namespace app\admin\controller\npd;
 
 use app\npd\model\Category as CategoryModel;
-use app\admin\controller\AdminBase;
+use app\admin\controller\npd\NpdAdminBase;
 use think\Db;
 use my\Tree;
 
@@ -12,7 +12,7 @@ use my\Tree;
  * Class Category
  * @package app\admin\controller
  */
-class Category extends AdminBase
+class Category extends NpdAdminBase
 {
 
     protected $category_model;

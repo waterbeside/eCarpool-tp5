@@ -28,5 +28,8 @@ return [
 
     'check_dept_auth' => [
         'app\\admin\\behavior\\CheckDeptAuth',
+    ],
+    'check_npd_site_auth' => [
+        'app\\admin\\behavior\\CheckNpdSiteAuth',
     ]
 ];

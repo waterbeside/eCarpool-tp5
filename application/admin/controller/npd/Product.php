@@ -7,9 +7,9 @@ use app\npd\model\ProductData as ProductDataModel;
 use app\npd\model\ProductMerchandizing;
 use app\npd\model\ProductPatent;
 use app\npd\model\Customer;
-
 use app\npd\model\Category as CategoryModel;
-use app\admin\controller\AdminBase;
+
+use app\admin\controller\npd\NpdAdminBase;
 use think\Db;
 
 /**
@@ -18,7 +18,7 @@ use think\Db;
  * @package app\admin\controller
  */
 
-class Product extends AdminBase
+class Product extends NpdAdminBase
 {
 
     /**

@@ -2,7 +2,7 @@
 namespace app\admin\controller\npd;
 
 use app\npd\model\Customer as CustomerModel;
-use app\admin\controller\AdminBase;
+use app\admin\controller\npd\NpdAdminBase;
 use app\user\model\Department;
 use think\Db;
 use my\RedisData;
@@ -13,7 +13,7 @@ use my\RedisData;
  * @package app\admin\controller\NpdCustomer
  */
 
-class Customer extends AdminBase
+class Customer extends NpdAdminBase
 {
     protected function initialize()
     {
