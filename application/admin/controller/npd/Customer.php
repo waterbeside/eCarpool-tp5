@@ -10,7 +10,7 @@ use my\RedisData;
 /**
  * 客户管理
  * Class Customer
- * @package app\admin\controller\NpdCustomer
+ * @package app\admin\controller\npd
  */
 
 class Customer extends NpdAdminBase

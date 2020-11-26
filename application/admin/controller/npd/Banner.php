@@ -12,7 +12,7 @@ use think\Db;
 /**
  * Npd Banner管理
  * Class Banner
- * @package app\admin\controller
+ * @package app\admin\controller\npd
  */
 class Banner extends NpdAdminBase
 {

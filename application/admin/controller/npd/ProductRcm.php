@@ -11,7 +11,7 @@ use think\Db;
 /**
  * 产品推荐
  * Class ProductRcm
- * @package app\admin\controller
+ * @package app\admin\controller\npd
  */
 
 class ProductRcm extends NpdAdminBase

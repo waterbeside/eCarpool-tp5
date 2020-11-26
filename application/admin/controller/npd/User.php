@@ -12,7 +12,7 @@ use think\Db;
 /**
  * User NPD自定义用户管理
  * Class User
- * @package app\admin\controller
+ * @package app\admin\controller\npd
  */
 
 class User extends NpdAdminBase

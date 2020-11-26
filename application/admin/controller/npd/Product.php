@@ -15,7 +15,7 @@ use think\Db;
 /**
  * 产品管理
  * Class NpdProduct
- * @package app\admin\controller
+ * @package app\admin\controller\npd
  */
 
 class Product extends NpdAdminBase

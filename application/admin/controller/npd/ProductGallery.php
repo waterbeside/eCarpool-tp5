@@ -11,7 +11,7 @@ use think\Db;
 /**
  * 产品图册管理
  * Class ProductGallery
- * @package app\admin\controller
+ * @package app\admin\controller\npd
  */
 
 class ProductGallery extends NpdAdminBase

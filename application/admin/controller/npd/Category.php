@@ -10,7 +10,7 @@ use my\Tree;
 /**
  * 栏目管理
  * Class Category
- * @package app\admin\controller
+ * @package app\admin\controller\npd
  */
 class Category extends NpdAdminBase
 {

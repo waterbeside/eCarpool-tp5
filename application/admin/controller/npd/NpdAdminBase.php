@@ -8,9 +8,9 @@ use think\facade\Hook;
 use think\Db;
 
 /**
- * 拼车站点管理
- * Class Address
- * @package app\admin\controller
+ * NPD后台管理基础类
+ * Class NpdAdminBase
+ * @package app\admin\controller\npd
  */
 class NpdAdminBase extends AdminBase
 {

@@ -11,7 +11,7 @@ use think\Db;
 /**
  * Single 单页文章管理
  * Class Single
- * @package app\admin\controller
+ * @package app\admin\controller\npd
  */
 
 class Single extends NpdAdminBase

@@ -10,7 +10,7 @@ use my\Tree;
 /**
  * 导航栏管理
  * Class Nav
- * @package app\admin\controller
+ * @package app\admin\controller\npd
  */
 
 class Nav extends NpdAdminBase

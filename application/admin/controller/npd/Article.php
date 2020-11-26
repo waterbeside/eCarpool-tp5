@@ -10,7 +10,7 @@ use think\Db;
 /**
  * Npd文章管理
  * Class Article
- * @package app\admin\controller
+ * @package app\admin\controller\npd
  */
 class Article extends NpdAdminBase
 {

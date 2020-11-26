@@ -10,7 +10,7 @@ use think\Db;
 /**
  * CpaUser NPD允许登入的Carpool账号管理
  * Class CpaUser
- * @package app\admin\controller
+ * @package app\admin\controller\npd
  */
 
 class CpaUser extends NpdAdminBase
