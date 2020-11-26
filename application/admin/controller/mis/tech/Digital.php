@@ -172,4 +172,25 @@ class Digital extends AdminBase
             $this->jsonReturn(-1, '删除失败');
         }
     }
+
+    /**
+     * 改变状态
+     *
+     * @return void
+     */
+    public function change_status($id)
+    {
+        $oldData = DigitalModel::where('id', $id)->find();
+        if (empty($oldData)) {
+            $this->jsonReturn(-1, '找不到数据，修改失败');
+        }
+        $upData = [
+            'status' => $oldData['status'] == 1 ? 0 : 1,
+        ];
+        if (DigitalModel::where('id', $id)->update($upData)) {
+            $this->jsonReturn(0, ['status'=>$upData['status']], '状态修改成功');
+        } else {
+            $this->jsonReturn(-1, '状态修改失败');
+        }
+    }
 }

@@ -70,28 +70,31 @@
 
         <form action="" method="post" class="ajax-form">
             <div class="layui-tab-item layui-show mis-digital-list__wrapper">
-            <table class="layui-table" lay-filter="listtable">
+            <table class="layui-table" lay-filter="listtable" >
+                <!-- <table class="layui-table" lay-filter="listtable" lay-data="{height: 'full-180'}"> -->
                 <thead>
                 <tr>
                     <th lay-data="{field:'id', width:80, fixed:'left'}" >ID</th>
                     <th lay-data="{field:'thumb_data', width:100, fixed:'left'}" >缩图</th>
                     <th lay-data="{field:'order_date', width:160}">季度</th>
                     <th lay-data="{field:'batch_no', width:160}">缸号</th>
+                    <th lay-data="{field:'model_no', width:160}">款号</th>
                     <th lay-data="{field:'remark', width:260}">备注</th>
                     <th lay-data="{field:'progress', width:240}">进度</th>
-                    <th lay-data="{field:'name', width:160}">品名</th>
-                    <th lay-data="{field:'order_id', width:160}">订单号</th>
-                    <th lay-data="{field:'model_no', width:160}">款号</th>
-                    <th lay-data="{field:'customer_name', width:160}">客户</th>
                     <th lay-data="{field:'digital_id', width:160}">印花编号</th>
+                    <th lay-data="{field:'order_id', width:160}">订单号</th>
                     <th lay-data="{field:'pattern', width:160}">花型</th>
+                    <th lay-data="{field:'name', width:160}">品名</th>
+                    <th lay-data="{field:'customer_name', width:160}">客户</th>
                     <th lay-data="{field:'bulk_sample', width:160}">大货样板</th>
                     <th lay-data="{field:'print_mode', width:160}">打印模式</th>
                     <th lay-data="{field:'print_param', width:160}">打印参数</th>
                     <th lay-data="{field:'print_ink', width:160}">墨水用量</th>
+                    <th lay-data="{field:'finishing_mode', width:160}">整理方式</th>
                     
                     <th lay-data="{field:'batch_status', width:120}">缸状态</th>
                     <th lay-data="{field:'image_src', width:120}">图稿路径</th>
+                    <th lay-data="{field:'status', width:90, fixed: 'right'}">是否关闭</th>
                     <th lay-data="{field:'options', width:100, fixed: 'right'}">操作</th>
                 </tr>
                 </thead>
@@ -111,24 +114,36 @@
                     </td>
                     <td>{$vo.order_date}</td>
                     <td>{$vo.batch_no}</td>
+                    <td>{$vo.model_no}</td>
                     <td>{$vo.remark}</td>
                     <td>{$vo.progress}</td>
-                    <td>{$vo.name}</td>
-                    <td>{$vo.order_id}</td>
-                    <td>{$vo.model_no}</td>
-                    <td>{$vo.customer_name}</td>
                     <td>{$vo.digital_id}</td>
+                    <td>{$vo.order_id}</td>
                     <td>{$vo.pattern}</td>
+                    <td>{$vo.name}</td>
+                    <td>{$vo.customer_name}</td>
                     <td>{$vo.bulk_sample}</td>
                     <td>{$vo.print_mode}</td>
                     <td>{$vo.print_param}</td>
                     <td>{$vo.print_ink}</td>
+                    <td>{$vo.finishing_mode}</td>
                     
-                    <!-- <td>{php}echo $vo['status']==1 ? '完结' : '进行中';{/php}</td> -->
                     <td>{$vo.batch_status}</td>
                     <td>{$vo.image_src}</td>
+                    <td><a href="javascript:void(0);" 
+                        id="change-status__btn__{$vo.id}" 
+                        class="digital-status__btn status-{$vo.status}" 
+                        onclick="PAGE_EXEC.chageStatus('{$vo.id}')"
+                        title="点击{php}echo $vo['status']==1 ? '开启' : '关闭';{/php}"
+                    >
+                        <span class="loading-text"><i class="fa fa-spin fa-spinner"></i> ...</span>
+                        <span class="text">{php}echo $vo['status']==1 ? '关闭' : '开启';{/php}</span>
+                    </a></td>
                     <td>
-                    <a onclick="openLayer('{:url('admin/mis.tech.digital/edit',['id'=>$vo['id']])}',{area: ['96%', '90%'], title:'编辑数据 #{$vo.id}'});" href="javascript:void(0);" class="layui-btn layui-btn-xs " title="编辑">
+                    <a onclick="openLayer('{:url('admin/mis.tech.digital/edit',['id'=>$vo['id']])}',{area: ['96%', '90%'], title:'编辑数据 #{$vo.id}'});" 
+                        href="javascript:void(0);" 
+                        class="layui-btn layui-btn-xs " 
+                        title="编辑">
                         <i class="layui-icon">&#xe642;</i>
                     </a>
                     <a href="{:url('admin/mis.tech.digital/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除">
@@ -151,6 +166,35 @@
         /* height: 60px; */
         /* white-space: nowrap; */
     }
+    .digital-status__btn {
+        display:inline-block;
+        padding: 0 12px;
+        border: 1px solid #DDD;
+        border-radius: 10px;
+        font-size: 12px;
+        line-height: 20px;
+        box-shadow: inset 4px 4px 6px rgba(0,0,0,.1);
+    }
+    .digital-status__btn .loading-text {
+        display: none;
+    }
+    .digital-status__btn.loading .loading-text {
+        display: inline;
+    }
+    .digital-status__btn.loading .text {
+        display: none;
+    }
+    .digital-status__btn.status-1 {
+        background: #EEE;
+        color: #888;
+    }
+    .digital-status__btn.status-0 {
+        background: #009688;
+        color: #fff;
+        box-shadow: inset 0 0 6px rgba(0,0,0,.1);
+
+    }
+
 </style>
 {/block}
 {block name="script"}
@@ -193,9 +237,60 @@ PAGE_EXEC = {
             complete: function() {
                 layer.close(loading);
                 $btn.data('loading', false);
+            }
+        })
+    },
+    chageStatus: function(id) {
+        var _this = this;
+        var $btn = jQuery('#change-status__btn__'+id);
+        var isLoading = $btn.data('loading');
+        if (isLoading) {
+            layer.msg('请忽过频点击');
+            return false;
+        }
+        $btn.data('loading', true);
+        console.log($btn.data('loading'));
+        $btn.addClass('loading');
+        // var btnDom = document.querySelector('#change-status__btn__'+id);
+        // btnDom.classList.add('loading');
+        this.init();
+        // console.log(btnDom);
+
+        $.ajax({
+            url: "{:url('change_status')}",
+            method: 'post',
+            dataType: 'json',
+            data: {id: id},
+            success: function (res) {
+                var code = res.code;
+                if (code === 0 ) {
+                    var newStatue = res.data.status;
+                    var oldStatus = newStatue == 1 ? 0 : 1;
+                    var text = newStatue == 1 ? '关闭' : '开启';
+                    var reText = newStatue == 1 ? '开启' : '关闭';
+                    layer.msg('修改状态成功');
+                    
+                    $btn.removeClass('status-'+oldStatus).addClass('status-'+newStatue);
+                    $btn.attr('title', '点击'+reText).find('.text').text(text);
+                } else {
+                    layer.msg(res.desc);
+
+                }
+            },
+            error: function (error) {
+                layer.msg('网络不通，请注意只能在公司内网进行同步');
+            },
+            complete: function() {
+                // btnDom.classList.remove('loading');        
+                $btn.removeClass('loading');
+                $btn.data('loading', false);
+                _this.init();
 
             }
         })
+    },
+    text: function() {
+
     }
 }
 PAGE_EXEC.init()
