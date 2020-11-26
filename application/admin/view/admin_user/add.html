@@ -73,6 +73,23 @@
                 </div>
             </div>
             <div class="layui-form-item">
+                <label class="layui-form-label">NPD<br/>站点权限</label>
+                <div class="layui-input-block" id="npd-site-list">
+                    <?php foreach($npd_site_list as $item) {
+                        $name = $item['name'];
+                        $siteid = $item['id'];
+                        echo "<input type=\"checkbox\" name=\"npd_site_ids[]\" title=\"$name\" value=\"$siteid\"  lay-skin=\"primary\">";
+                    } ?>
+                    <div class="layui-form-mid layui-word-aux" >不是NPD管理员，则请忽略本项
+                    <div class="btn-box">
+                        <a href="javascript:void(0);" onclick="DETAIL_PAGE_EXEC.selectAllNpdSite(true)" class="layui-btn layui-btn-radius layui-btn-xs layui-btn-primary" >全选</a>
+                        <a href="javascript:void(0);" onclick="DETAIL_PAGE_EXEC.selectAllNpdSite(false)" class="layui-btn layui-btn-radius layui-btn-xs layui-btn-primary" >全不选</a>
+                    </div>
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="layui-form-item">
                 <div class="layui-input-block">
                     <button class="layui-btn" lay-submit lay-filter="*">保存</button>
                     <button type="reset" class="layui-btn layui-btn-primary">重置</button>
@@ -81,8 +98,37 @@
         </form>
     </div>
 </div>
+<style>
+    #npd-site-list {
+        border:1px solid #ddd;
+        padding:10px 12px 0;
+        overflow: hidden;
+    }
+    #npd-site-list .layui-word-aux {
+        display: block;
+        clear:both;
+    }
+    #npd-site-list .layui-btn {
+        /* margin-top: 10px; */
+    }
+    #npd-site-list .btn-box {
+        display: inline-block; 
+        padding-left: 20px;
+    }
+</style>
 <script>
-    form.render();
+    var DETAIL_PAGE_EXEC = {
+        init: function() {
+            form.render();
+        },
+        selectAllNpdSite: function (isAll) {
+            isAll = isAll || false;
+            $('#npd-site-list').find('input[name="npd_site_ids[]"]').prop('checked',isAll);
+            form.render();
+        }
+    }
+
+    DETAIL_PAGE_EXEC.init()
 
     // var laydate = layui.laydate;
     function select_user(data) {

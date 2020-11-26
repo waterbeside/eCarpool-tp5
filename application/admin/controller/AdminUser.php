@@ -6,6 +6,7 @@ use app\common\model\AdminUser as AdminUserModel;
 use app\common\model\AuthGroup as AuthGroupModel;
 use app\common\model\AuthGroupAccess as AuthGroupAccessModel;
 use app\common\model\DeptGroup as DeptGroupModel;
+use app\admin\service\AuthNpdsite;
 use app\admin\controller\AdminBase;
 use think\facade\Config;
 use think\Db;
@@ -51,13 +52,25 @@ class AdminUser extends AdminBase
         if (isset($filter['keyword']) && $filter['keyword']) {
             $map[] = ['u.username|real_name|nickname', 'like', "%{$filter['keyword']}%"];
         }
+        $authNpdsite = new AuthNpdsite();
         $lists = $this->admin_user_model->alias('u')->where($map)
             ->order('id ASC')
             ->paginate($pagesize, false, ['query' => request()->param()])
-            ->each(function ($item, $key) {
+            ->each(function ($item, $key) use ($authNpdsite) {
                 $groupData = $this->auth_group_access_model->where('uid', $item->id)->find();
                 $item->group_id = $groupData['group_id'];
                 $item->dept_group_id =  $groupData['dept_group_id'];
+                $mySites = $authNpdsite->getUserNpdSite($item->id) ?: [];
+                $item->npdSite = $mySites;
+                if (empty($mySites)) {
+                    $item->npdSiteNameStr = '-';
+                } else {
+                    $nameStr = '';
+                    foreach ($mySites as $key => $siteItem) {
+                        $nameStr .= $nameStr ? ','.$siteItem['name'] : $siteItem['name'];
+                    }
+                    $item->npdSiteNameStr = $nameStr;
+                }
             });
         $returnData = [
             'lists' => $lists,
@@ -74,6 +87,7 @@ class AdminUser extends AdminBase
      */
     public function add()
     {
+        $authNpdsite = new AuthNpdsite();
         if ($this->request->isPost()) {
             $data            = $this->request->param();
             $validate_result = $this->validate($data, 'AdminUser');
@@ -88,6 +102,7 @@ class AdminUser extends AdminBase
                     $auth_group_access['group_id'] = $data['group_id'];
                     $auth_group_access['dept_group_id'] = $data['dept_group_id'];
                     $this->auth_group_access_model->save($auth_group_access);
+                    $authNpdsite->updataAuth($this->admin_user_model->id, $data['npd_site_ids']);
                     $pk = $this->admin_user_model->id; //插入成功后取得id
                     $this->log('添加后台用户成功，id=' . $pk, 0);
                     $this->jsonReturn(0, '保存成功');
@@ -99,7 +114,12 @@ class AdminUser extends AdminBase
         } else {
             $auth_group_list = $this->auth_group_model->select();
             $dept_group_list = DeptGroupModel::select();
-            return $this->fetch('add', ['auth_group_list' => $auth_group_list, 'dept_group_list' => $dept_group_list]);
+            $npd_site_list      = $authNpdsite->getSiteList();
+            return $this->fetch('add', [
+                'auth_group_list' => $auth_group_list,
+                'dept_group_list' => $dept_group_list,
+                'npd_site_list' => $npd_site_list
+            ]);
         }
     }
 
@@ -112,6 +132,7 @@ class AdminUser extends AdminBase
      */
     public function edit($id)
     {
+        $authNpdsite = new AuthNpdsite();
         if ($this->request->isPost()) {
             $data            = $this->request->param();
             $validate_result = $this->validate($data, 'AdminUser');
@@ -142,6 +163,9 @@ class AdminUser extends AdminBase
                     $auth_group_access['group_id'] = $data['group_id'];
                     $auth_group_access['dept_group_id'] = $data['dept_group_id'];
                     $this->auth_group_access_model->where('uid', $id)->update($auth_group_access);
+                    // 更新NPD site权限
+                    $npdSiteIds = !empty($data['npd_site_ids']) && is_array($data['npd_site_ids']) ? $data['npd_site_ids'] : [];
+                    $authNpdsite->updataAuth($id, $npdSiteIds);
                     $this->log('更新后台用户成功，id=' . $id, 0);
                     $this->jsonReturn(0, '更新成功');
                 } else {
@@ -152,14 +176,20 @@ class AdminUser extends AdminBase
         } else {
             $data                   = $this->admin_user_model->find($id);
             $auth_group_list        = $this->auth_group_model->select();
+            $auth_group_list        = $this->auth_group_model->select();
             $auth_group_access      = $this->auth_group_access_model->where('uid', $id)->find();
+            $npd_site_list      = $authNpdsite->getSiteList();
+
             $data['group_id'] = $auth_group_access['group_id'];
             $data['dept_group_id'] = $auth_group_access['dept_group_id'];
+            $data['user_npdsite_ids'] = $authNpdsite->getUserSiteIds($this->userBaseInfo['uid'], false);
+
             $dept_group_list = DeptGroupModel::select();
             $returnData = [
                 'data' => $data,
                 'auth_group_list' => $auth_group_list,
-                'dept_group_list' => $dept_group_list
+                'dept_group_list' => $dept_group_list,
+                'npd_site_list' => $npd_site_list
             ];
             return $this->fetch('edit', $returnData);
         }

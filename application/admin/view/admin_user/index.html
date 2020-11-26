@@ -22,6 +22,7 @@
                         <th lay-data="{field:'status', width:90}">状态</th>
                         <th lay-data="{field:'group_id', width:120}">菜单组</th>
                         <th lay-data="{field:'dept_group_id', width:120}">区域组</th>
+                        <th lay-data="{field:'npd_site', width:120}">NPD站点</th>
                         <th lay-data="{field:'create_time', width:120}">创建时间</th>
                         <th lay-data="{field:'last_login_time', width:150}">最后登录时间</th>
                         <th lay-data="{field:'last_login_ip', width:140}">最后登录IP</th>
@@ -42,6 +43,17 @@
                         <td>{php}echo $vo['status']==1 ? '启用' : '禁用';{/php}</td>
                         <td><?php echo isset($groups[$vo['group_id']]) ? $groups[$vo['group_id']]['title'] : $vo['group_id']; ?></td>
                         <td><?php echo isset($dept_groups[$vo['dept_group_id']]) ? $dept_groups[$vo['dept_group_id']]['title'] : $vo['dept_group_id']; ?></td>
+                        <td><?php
+                            if (empty($vo['npdSite'])) {
+                                echo '-';
+                            } else {
+                                $nameStr = '';
+                                foreach($vo['npdSite'] as $key => $siteItem) {
+                                    $nameStr .= $nameStr ? ','.$siteItem['name'] : $siteItem['name'];
+                                }
+                                echo $nameStr;
+                            }
+                            ?></td>
                         <td>{$vo.create_time|date="Y-m-d"}</td>
                         <td>{$vo.last_login_time|date="Y-m-d H:i"}</td>
                         <td>{$vo.last_login_ip}</td>
