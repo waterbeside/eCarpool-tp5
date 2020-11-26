@@ -1,5 +1,4 @@
 <?php
-
 namespace app\admin\controller;
 
 use org\Auth;
@@ -316,7 +315,7 @@ class AdminBase extends Base
      */
     public function updateDataVersion($cacheVersionKey)
     {
-        $redisObj = $this->redis();
+        $redisObj = RedisData::getInstance();
         $cacheVersion = $redisObj->get($cacheVersionKey);
         $newVersion = $cacheVersion ? intval($cacheVersion) + 1 : 1;
         $redisObj->set($cacheVersionKey, $newVersion);
