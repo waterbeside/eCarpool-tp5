@@ -18,7 +18,7 @@ class Customer extends Model
      */
     public function getList($recache = 0)
     {
-        $cacheKey = 'NPD:customer:list';
+        $cacheKey = 'npd:customer:list';
 
         $redis = RedisData::getInstance();
         $lists = json_decode($redis->get($cacheKey), true);
@@ -34,6 +34,6 @@ class Customer extends Model
     public function deleteListCache()
     {
         $redis = RedisData::getInstance();
-        $redis->del("NPD:customer:list");
+        $redis->del("npd:customer:list");
     }
 }

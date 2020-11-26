@@ -97,7 +97,7 @@ class Category extends Model
     public function getCateChildrenIds($pid, $model, $exp = 3600 * 24)
     {
         $redis = RedisData::getInstance();
-        $cacheKey = "NPD:category:children_id,id:model_$model:pid_{$pid}";
+        $cacheKey = "npd:category:children_id,id:model_$model:pid_{$pid}";
         $cacheData = $redis->cache($cacheKey);
         if ($cacheData) {
             return $cacheData;
@@ -124,7 +124,7 @@ class Category extends Model
      */
     public function getList($exp = 3600 * 2)
     {
-        $rKey = "NPD:category:list";
+        $rKey = "npd:category:list";
         $redis = RedisData::getInstance();
         $data = json_decode($redis->get($rKey), true);
         if ($exp === -2) {
@@ -141,16 +141,28 @@ class Category extends Model
     public function deleteListCache()
     {
         $redis = RedisData::getInstance();
-        $redis->del("NPD:category:list");
+        $redis->del("npd:category:list");
     }
 
 
-    public function getListByModel($model = '', $status = false)
+
+    /**
+     * 取得指定model字段下的分类数据
+     *
+     * @param string $model model
+     * @param boolean,integer $siteId 站点id, 为false时显示所有站点
+     * @param boolean,integer $status 状态, 为false时显示所有状态
+     * @return array
+     */
+    public function getListByModel($model = '', $siteId = false, $status = false)
     {
         $res = $this->getList();
         $returnList = [];
         foreach ($res as $key => $value) {
-            if (($model === '' || $value['model'] == $model) && ($status === false || $value['status'] == $status)) {
+            $isHitModel = $model === '' || $value['model'] == $model;
+            $isHitStatus = $status === false || $value['status'] == $status;
+            $isHitSiteId = $siteId === false || $value['site_id'] == $siteId;
+            if ($isHitModel && $isHitStatus && $isHitSiteId) {
                 $returnList[] = $value;
             }
         }
@@ -168,7 +180,7 @@ class Category extends Model
     public function getDetail($cid, $exp = 3600 * 24)
     {
         $redis = RedisData::getInstance();
-        $cacheKey = "NPD:category:detail:$cid";
+        $cacheKey = "npd:category:detail:$cid";
         $cacheData = $redis->cache($cacheKey);
         if ($cacheData) {
             return $cacheData;
