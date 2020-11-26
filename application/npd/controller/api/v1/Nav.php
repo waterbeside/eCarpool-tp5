@@ -30,7 +30,7 @@ class Nav extends NpdApiBase
     public function index()
     {
         $NavModel = new NavModel();
-        $res = $NavModel->getList();
+        $res = $NavModel->getList($this->siteId);
         $list = [];
         if ($res) {
             foreach ($res as $key => $value) {

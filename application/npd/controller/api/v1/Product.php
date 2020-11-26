@@ -34,6 +34,7 @@ class Product extends NpdApiBase
         $map = [
             ['is_delete', '=', Db::raw(0)],
             ['status', '=', 1],
+            ['site_id', '=', $this->siteId]
         ];
         $cate_data = null;
         $breadcrumd = null;
@@ -101,7 +102,12 @@ class Product extends NpdApiBase
         $breadcrumd  = $ProductService->getCateBreadcrumb($cate_data);
 
         $customerListOrder = Db::raw("find_in_set( id, '{$data["customers"]}' )");
-        $customer_list = CustomerModel::where([['id', 'in', $data['customers']], ['is_delete', '=', 0]])->order($customerListOrder)->select();
+        $where = [
+            ['id', 'in', $data['customers']],
+            ['is_delete', '=', 0],
+            ['site_id', '=', $this->siteId],
+        ];
+        $customer_list = CustomerModel::where($where)->order($customerListOrder)->select();
         $data['thumb'] = $this->replaceAttachmentDomain($data['thumb']);
         $returnData = [
             'data' => $data,

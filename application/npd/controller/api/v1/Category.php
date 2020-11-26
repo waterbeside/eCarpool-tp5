@@ -29,7 +29,9 @@ class Category extends NpdApiBase
     public function index($model = "", $cid = 0)
     {
         $CateModel = new CateModel();
-        $res = $CateModel->getListByModel($model, 1);
+        $siteId = $this->siteId;
+        $res = $CateModel->getListByModel($model, $siteId, 1);
+
         $list = [];
         if ($res) {
             foreach ($res as $key => $value) {

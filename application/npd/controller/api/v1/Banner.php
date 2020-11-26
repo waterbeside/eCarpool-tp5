@@ -29,16 +29,19 @@ class Banner extends NpdApiBase
     {
         $lang = (new I18nLangModel())->formatLangCode($this->language);
         $lang = $lang ? $lang : "en";
+        $siteId = $this->siteId;
 
-        $cacheKey  = "npd:banner:type_$type:lang_$lang";
+        $cacheKey  = "npd:site_$siteId:banner:type_$type:lang_$lang";
 
         $redis = RedisData::getInstance();
         $res = $redis->cache($cacheKey);
+
         if (!$res) {
             $map  = [];
             $map[] = ['status', '=', 1];
-            $map[]  = ['is_delete', "=", Db::raw(0)];
+            $map[] = ['is_delete', "=", Db::raw(0)];
             $map[] = ['type', '=', $type];
+            $map[] = ['site_id', '=', $this->siteId];
 
             $whereExp = '';
             $whereExp .= " (lang = '$lang' OR lang = '')";

@@ -11,11 +11,17 @@ use think\Db;
 class NpdApiBase extends ApiBase
 {
 
+    public $siteId = 0;
+
     protected function initialize()
     {
         // config('default_lang', 'zh-cn');
         parent::initialize();
         $this->loadLanguagePack('npd');
+        $siteId = $this->getSiteId();
+        // if (!$siteId) {
+        //     return $this->jsonReturn(993, 'site id 请求参数错误');
+        // }
     }
 
 
@@ -88,5 +94,24 @@ class NpdApiBase extends ApiBase
             }
         }
         return $data;
+    }
+
+
+    /**
+     * 取得SiteId
+     *
+     * @return string
+     */
+    public function getSiteId()
+    {
+        if ($this->siteId) {
+            return $this->siteId;
+        }
+        $siteId = input('request.x-site-id') ?: (input('post.x-site-id') ?: input('get.x-site-id'));
+        $siteId = $siteId ? $siteId : request()->header('X-Site-Id');
+        $siteId = $siteId ? $siteId : cookie('x-site-id');
+
+        $this->siteId = $siteId;
+        return $siteId;
     }
 }

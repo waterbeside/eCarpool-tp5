@@ -29,6 +29,7 @@ class Single extends NpdApiBase
         $map = [
             ['is_delete', '=', Db::raw(0)],
             ['status', '=', 1],
+            ['site_id', '=', $this->siteId],
         ];
         $cate_data = null;
         $breadcrumd = null;

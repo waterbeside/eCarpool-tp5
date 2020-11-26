@@ -29,6 +29,7 @@ class Article extends NpdApiBase
         $map = [
             ['is_delete', '=', Db::raw(0)],
             ['status', '=', 1],
+            ['site_id', '=', $this->siteId]
         ];
         $cate_data = null;
         $breadcrumd = null;
@@ -79,6 +80,7 @@ class Article extends NpdApiBase
         $map = [
             ['status', '=', 1],
             ['is_delete', '=', Db::raw(0)],
+            ['site_id', '=', $this->siteId],
         ];
         if (is_numeric($id)) {
             $map[] = ['t.id', '=', $id];

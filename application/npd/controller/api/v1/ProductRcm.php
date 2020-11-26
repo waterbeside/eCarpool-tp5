@@ -28,6 +28,7 @@ class ProductRcm extends NpdApiBase
         $where = [
             ['is_delete','=', Db::raw(0)],
             ['status', '=', 1],
+            ['site_id', '=', $this->siteId],
         ];
         $list = ProductRecommend::where($where)->order('sort DESC, id DESC')->select()->toArray();
         foreach ($list as $key => $value) {

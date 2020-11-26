@@ -28,7 +28,8 @@ class Customer extends NpdApiBase
     public function index($group = '', $is_recommend = 0, $pagesize = 24)
     {
         $page = input('param.page', 1);
-        $cacheKey = "NPD:customer:list:g_{$group}_re_{$is_recommend}_page_{$page}_pz_{$pagesize}";
+        $siteId = $this->siteId;
+        $cacheKey = "npd:site_$siteId:customer:list:g_{$group}_re_{$is_recommend}_page_{$page}_pz_{$pagesize}";
         $redis = RedisData::getInstance();
         $returnData= $redis->cache($cacheKey);
         if ($returnData) {

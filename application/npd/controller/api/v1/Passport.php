@@ -65,6 +65,7 @@ class Passport extends NpdApiBase
     {
         $bodyData = $this->request->post();
         $ciphertext = $bodyData['data'];
+        $siteId = $this->siteId;
 
         $decrypttext = openssl_decrypt($ciphertext, 'aes-256-cbc', config('secret.api_hash.aes.key'), false, config('secret.api_hash.aes.iv'));
         $data = json_decode($decrypttext, true);
@@ -89,6 +90,7 @@ class Passport extends NpdApiBase
             $NpdUser = new NpdUser();
             $where = [
                 ['account', '=', $data['username']],
+                ['site_id', '=', $siteId]
             ];
             $userData = $NpdUser->where($where)->where([['is_delete','=',Db::raw(0)]])->find();
             if (!$userData) {
@@ -171,7 +173,7 @@ class Passport extends NpdApiBase
             }
         }
         
-        $jwtPaylod = ['uid' => $userData['uid'], 'loginname' => $userData['loginname'], 'client' => $data['client']];
+        $jwtPaylod = ['uid' => $userData['uid'], 'loginname' => $userData['loginname'], 'client' => $data['client'], 'site_id'=>$siteId];
         $jwt = $this->createPassportJwt($jwtPaylod, 3600*24, $iss);
 
         $returnData = array(
@@ -180,6 +182,7 @@ class Passport extends NpdApiBase
                 'loginname' => $userData['loginname'],
                 'nickname' => $userData['nickname'],
                 'avatar' => $userData['imgpath'],
+                'site_id' => $siteId,
                 'usertype'=> $iss,
             ),
             'token'    => $jwt
