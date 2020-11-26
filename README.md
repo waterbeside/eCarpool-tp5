@@ -1,5 +1,5 @@
 ## Introduce
-用于管理carpool后台数据， 后端框架为 THINKPHP5, 后台前端UI为LayUI.
+用于管理carpool、NPD后台数据， 后端框架为 THINKPHP5, 后台前端UI为LayUI.
 ## Installation
 1.  克隆项目到本地
 2. 重命名 application/extra.back 文件夹为 application/extra， 配置相关的第三方服务帐号及capool数据库连接。
