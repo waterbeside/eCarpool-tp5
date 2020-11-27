@@ -13,7 +13,7 @@ class Utils
     public static function getInstance()
     {
         if (is_null(static::$instance)) {
-            static::$instance = new static;
+            static::$instance = new static();
         }
 
         return static::$instance;
@@ -38,6 +38,22 @@ class Utils
         return $array;
     }
 
+    /**
+     * 列表以指定定字段作为key转为字典
+     *
+     * @param array $list 多字段列表
+     * @param string $keyField 字段名
+     * @return array 返回以$keyField字段的典作为key的字典
+     */
+    public function list2Map($list, $keyField)
+    {
+        $map = [];
+        foreach ($list as $item) {
+            $key = $item[$keyField] ?: '';
+            $map[$key] = $item;
+        }
+        return $map;
+    }
 
     /**
      * 筛选数据字类
