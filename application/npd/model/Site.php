@@ -31,6 +31,7 @@ class Site extends Model
         $data = $redis->cache($rKey);
         if (!$data || $exp < 1) {
             $data  = $this->where([['is_delete', '=', Db::raw(0)]])->order(['id' => 'ASC'])->select()->toArray();
+            $exp = empty($exp) || $exp < 1 ? 60 * 60 : $exp;
             $redis->cache($rKey, $data, $exp);
         }
         return $data;
