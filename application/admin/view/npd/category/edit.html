@@ -35,39 +35,47 @@
 
             </div>
             <div class="layui-col-md4">
-            <div class="layui-form-item">
-                <label class="layui-form-label">上级栏目</label>
-                <div class="layui-input-block">
-                <select name="parent_id" lay-verify="required">
-                    <option value="0">根栏目</option>
-                    {foreach name="category_level_list" item="vo"}
-                    <option value="{$vo.id}" {if condition="$data.id==$vo.id"} disabled="disabled"{/if} {if condition="$data.parent_id==$vo.id"} selected="selected"{/if}>{neq name="vo.level" value="1"}|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----';}{/php}{/neq} {$vo.name}</option>
-                    {/foreach}
-                </select>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">所属站点</label>
+                    <div class="layui-input-block">
+                        {include file="/npd/_components/select_npdSiteId" layVerify="require" props="disabled"/}
+                    </div>
                 </div>
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">所属模型</label>
-                <div class="layui-input-block">
-                    <select name="model">
-                    {foreach name="category_model_list" item="vo" }
-                    <option value="{$vo.value}" {if condition="$data.model==$vo.value"} selected="selected"{/if}> {$vo.name}</option>
-                    {/foreach}
-                    </select>
-                </div>
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">缩略图</label>
-                <div class="layui-input-block j-upload-thumb" data-default="{$data.thumb}">  </div>
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">排序</label>
-                <div class="layui-input-block">
-                <input type="number" name="sort" value="{$data.sort}" placeholder="排序，越大越前" class="layui-input">
-                <div class="layui-form-mid layui-word-aux"> 数字越大，排序越前</div>
-                </div>
-            </div>
+                
 
+                <div class="layui-form-item">
+                    <label class="layui-form-label">上级栏目</label>
+                    <div class="layui-input-block">
+                    <select name="parent_id" lay-verify="required">
+                        <option value="0">根栏目</option>
+                        {foreach name="category_level_list" item="vo"}
+                        <option value="{$vo.id}" {if condition="$data.id==$vo.id"} disabled="disabled"{/if} {if condition="$data.parent_id==$vo.id"} selected="selected"{/if}>{neq name="vo.level" value="1"}|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----';}{/php}{/neq} {$vo.name} - {$vo.site_name}
+                        </option>
+                        {/foreach}
+                    </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">所属模型</label>
+                    <div class="layui-input-block">
+                        <select name="model">
+                        {foreach name="category_model_list" item="vo" }
+                        <option value="{$vo.value}" {if condition="$data.model==$vo.value"} selected="selected"{/if}> {$vo.name}</option>
+                        {/foreach}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">缩略图</label>
+                    <div class="layui-input-block j-upload-thumb" data-default="{$data.thumb}">  </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">排序</label>
+                    <div class="layui-input-block">
+                    <input type="number" name="sort" value="{$data.sort}" placeholder="排序，越大越前" class="layui-input">
+                    <div class="layui-form-mid layui-word-aux"> 数字越大，排序越前</div>
+                    </div>
+                </div>
             </div>
 
 

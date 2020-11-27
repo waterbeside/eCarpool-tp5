@@ -39,42 +39,47 @@
         </div>
 
         <div class="layui-col-md4">
+            <div class="layui-form-item">
+                <label class="layui-form-label">所属站点</label>
+                <div class="layui-input-block">
+                    {include file="/npd/_components/select_npdSiteId" layVerify="require" /}
+                </div>
+            </div>
 
             <div class="layui-form-item">
-            <label class="layui-form-label">上级栏目</label>
-            <div class="layui-input-block">
-                <select name="parent_id" lay-verify="required">
-                <option value="0">根栏目</option>
-                {foreach name="category_level_list" item="vo"}
-                <option value="{$vo.id}" {if condition="$pid==$vo.id" } selected="selected" {/if}>
-                    {neq name="vo.level" value="1" }|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----' ;}{/php}{/neq} {$vo.name}
-                </option>
-                {/foreach} 
-                </select> 
-            </div> 
+                <label class="layui-form-label">上级栏目</label>
+                <div class="layui-input-block">
+                    <select name="parent_id" lay-verify="required">
+                    <option value="0">根栏目</option>
+                    {foreach name="category_level_list" item="vo"}
+                    <option value="{$vo.id}" {if condition="$pid==$vo.id" } selected="selected" {/if}>{neq name="vo.level" value="1" }|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----' ;}{/php}{/neq} {$vo.name} - {$vo.site_name}
+                    </option>
+                    {/foreach} 
+                    </select> 
+                </div> 
             </div> 
             <div class="layui-form-item">
-            <label class="layui-form-label">所属模型</label>
-            <div class="layui-input-block">
-                <select name="model">
-                {foreach name="category_model_list" item="vo" }
-                <option value="{$vo.value}" > {$vo.name}</option>
-                {/foreach}
-                </select>
-            </div>
-            </div>
-            <div class="layui-form-item">
-            <label class="layui-form-label">缩略图</label>
-            <div class="layui-input-block j-upload-thumb">
-                <!-- <input type="text" name="thumb" value="" class="layui-input">
-                <a  class="amain-uploadImgBtn" id="upload-btn">
-                <img class="layui-upload-img" id="item-thumb" src="" >
-                <div class="text">
-                    <i class="fa fa-upload"></i>{:lang('Upload image')}
+                <label class="layui-form-label">所属模型</label>
+                <div class="layui-input-block">
+                    <select name="model">
+                    {foreach name="category_model_list" item="vo" }
+                    <option value="{$vo.value}" > {$vo.name}</option>
+                    {/foreach}
+                    </select>
                 </div>
-                </a>
-                <p id="uploadText"></p> -->
             </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">缩略图</label>
+                <div class="layui-input-block j-upload-thumb">
+                    <!-- <input type="text" name="thumb" value="" class="layui-input">
+                    <a  class="amain-uploadImgBtn" id="upload-btn">
+                    <img class="layui-upload-img" id="item-thumb" src="" >
+                    <div class="text">
+                        <i class="fa fa-upload"></i>{:lang('Upload image')}
+                    </div>
+                    </a>
+                    <p id="uploadText"></p> -->
+                </div>
             </div>
             <div class="layui-form-item">
             <label class="layui-form-label">排序</label>

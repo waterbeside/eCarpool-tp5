@@ -1,0 +1,17 @@
+<select name="site_id" class="select-jump my-select">
+    <?php 
+        $paramSiteId = input('site_id') ?: 0;
+        if (count($authNpdSite['auth_site_list']) > 1) {
+    ?>
+            <option value="" <?php echo empty($paramSiteId) ? 'selected' : '' ; ?> href="{:url('index')}">全部 </option>
+    <?php } ?>
+    <?php 
+        foreach ($authNpdSite['auth_site_list'] as $key => $item) { 
+            $isSelect = $paramSiteId == $item['id'];
+            $jumpParam = request()->param();
+            $jumpParam['site_id'] = $item['id'];
+
+    ?>
+        <option value="{$item.id}" <?php echo $isSelect ? 'selected' : '' ; ?> href="{:url('index', $jumpParam)}" >{$item.title} </option>
+    <?php } ?>
+</select>

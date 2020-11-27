@@ -119,10 +119,11 @@ class Category extends Model
 
     /**
      * 取得列表，如果redis有
+     * @param  array<integer> $siteIds 站点id列表
      * @param  integer $exp 过期时间
      * @return array
      */
-    public function getList($exp = 3600 * 2)
+    public function getList($siteIds = null, $unGetDeleted = false, $exp = 3600 * 2)
     {
         $rKey = "npd:category:list";
         $redis = RedisData::getInstance();
@@ -131,9 +132,23 @@ class Category extends Model
             return $data;
         }
         if (!$data || $exp === -1) {
-            $data  = $this->where([['is_delete', '=', Db::raw(0)]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+            $data = $this->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+            $exp = empty($exp) || $exp < 1 ? 3600 * 2 : $exp;
             $redis->setex($rKey, $exp, json_encode($data));
         }
+        $newData = [];
+        foreach ($data as $key => $value) {
+            if ($unGetDeleted && $value['is_delete']) {
+                continue;
+            }
+            if (!empty($siteIds) && is_array($siteIds)) {
+                if (!in_array($value['site_id'], $siteIds)) {
+                    continue;
+                }
+            }
+            $newData[] = $value;
+        }
+        $data = $newData;
         return $data;
     }
 
@@ -150,7 +165,7 @@ class Category extends Model
      * 取得指定model字段下的分类数据
      *
      * @param string $model model
-     * @param boolean,integer $siteId 站点id, 为false时显示所有站点
+     * @param boolean,integer,array $siteId 站点id, 为false时显示所有站点, 当为array时为站点id列表
      * @param boolean,integer $status 状态, 为false时显示所有状态
      * @return array
      */
@@ -161,7 +176,11 @@ class Category extends Model
         foreach ($res as $key => $value) {
             $isHitModel = $model === '' || $value['model'] == $model;
             $isHitStatus = $status === false || $value['status'] == $status;
-            $isHitSiteId = $siteId === false || $value['site_id'] == $siteId;
+            if (is_array($siteId)) {
+                $isHitSiteId = $siteId === false || in_array($value['site_id'], $siteId);
+            } else {
+                $isHitSiteId = $siteId === false || $value['site_id'] == $siteId;
+            }
             if ($isHitModel && $isHitStatus && $isHitSiteId) {
                 $returnList[] = $value;
             }

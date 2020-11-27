@@ -1,0 +1,17 @@
+<?php 
+
+    $selectSiteID = $selectSiteID ?? $data['site_id'] ?? $authNpdSite['site_id'] ?? 0;
+?>
+<select name="site_id" class="[className] layui-disabled" lay-verify="[layVerify]" [props]>
+    <?php 
+        if (count($authNpdSite['auth_site_list']) > 1) {
+    ?>
+            <option value="" <?php echo empty($selectSiteID) ? 'selected' : '' ; ?> >请选择 </option>
+    <?php } ?>
+    <?php 
+        foreach ($authNpdSite['auth_site_list'] as $key => $item) { 
+            $isSelect = $selectSiteID == $item['id'];
+    ?>
+        <option value="{$item.id}" <?php echo $isSelect ? 'selected' : '' ; ?>  >{$item.title} </option>
+    <?php } ?>
+</select>

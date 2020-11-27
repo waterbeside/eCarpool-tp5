@@ -4,10 +4,13 @@
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
         <ul class="amain-tool-bar">
-            <li <?php if(!$recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/npd.category/index')}"  >栏目管理</a></li>
-            <li <?php if($recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/npd.category/index',['recycled'=>1])}"  >回收站</a></li>
+            <li class="btn-item btn-item-right">
+                {include file="/npd/_components/select_npdSiteId_index" /}
+            </li>
+            <li <?php if(!$recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/npd.category/index',['site_id'=>$authNpdSite['site_id']])}"  >栏目管理</a></li>
+            <li <?php if($recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/npd.category/index',['recycled'=>1, 'site_id'=>$authNpdSite['site_id']])}"  >回收站</a></li>
             <li class="btn-item btn-item-add">
-                <a class="layui-btn layui-btn-sm layui-btn-success " onclick="openLayer('{:url('admin/npd.category/add')}',{area: ['96%', '90%'], title:'添加栏目'});" href="javascript:void(0);"  >
+                <a class="layui-btn layui-btn-sm layui-btn-success " onclick="openLayer('{:url('admin/npd.category/add',['site_id'=>$authNpdSite['site_id']])}',{area: ['96%', '90%'], title:'添加栏目'});" href="javascript:void(0);"  >
                 <i class="fa fa-plus"></i> 添加栏目</a>
             </li>
         </ul>
@@ -26,8 +29,7 @@
                 <table id="NpdCateTree" class="layui-table table-tree" lay-size="sm"></table>
             </div>
         </div>
-    </div>
-</div>
+    </div></div>
 
 {/block}
 {block name="js"}
@@ -35,6 +37,9 @@
 <script src="__JS__/ueditor/ueditor.all.min.js"></script>
 {/block}
 {block name="script"}
+<?php 
+    $siteId = input('site_id');
+?>
 <script>
 PAGE_EXEC = {
     data : {
@@ -43,7 +48,7 @@ PAGE_EXEC = {
     treetable : $('#NpdCateTree'),
     getData : function(){
         var _this = this;
-        $.get("{:URL('admin/npd.category/index',['json'=>1,'recycled'=>$recycled])}").then(function(res){
+        $.get("{:URL('admin/npd.category/index',['json'=>1,'recycled'=>$recycled, 'site_id'=>$siteId])}").then(function(res){
         if(res.code === 0){
 
             _this.data.treeList = res.data
@@ -72,9 +77,11 @@ PAGE_EXEC = {
             datas: _this.data.treeList,
 
             columns:[[
-                    {field:'id',title:'#',width:60},
+                    {field:'id',title:'#',width:40},
+                    {field:'site_name',title:'站点',width:40},
                     {field:'name',title:'名称',width:290},
                     {field:'name_en',title:'Name',width:100},
+                    {field:'model',title:'Model',width:100},
                     // {field:'alias',title:'别称',width:100},
                     {field:'sort',title:'排序',width:50},
                     {field:'option',title:'操作',width:100,formatter:formatOption},
@@ -107,8 +114,8 @@ PAGE_EXEC = {
             <?php if($recycled){ ?>
                 var s = row.is_delete ? '<a href="javascript:void(0);" data-id="'+row.id+'" class="layui-btn layui-btn layui-btn-xs " onclick="PAGE_EXEC.recycle(this)">还原</a>' : '';
             <?php }else{ ?>
-                var s  = '<a href="javascript:void(0);" onclick="openLayer(\'{:url('admin/npd.category/add')}\',{urlParam:{pid:'+row.id+'},area: [\'96%\', \'90%\'], title:\'添加栏目 #'+row.id+'\'});" class="layui-btn layui-btn-success layui-btn-xs "><i class="layui-icon">&#xe654;</i> </a>'
-                    s += '<a href="javascript:void(0);" onclick="openLayer(\'{:url('admin/npd.category/edit')}\',{urlParam:{id:'+row.id+'},area: [\'96%\', \'90%\'], title:\'编辑栏目 #'+row.id+'\'});"  class="layui-btn  layui-btn-xs " title="编辑"> <i class="fa fa-pencil"></i> </a>';
+                var s  = '<a href="javascript:void(0);" onclick="openLayer(\'{:url('admin/npd.category/add',['site_id'=>$authNpdSite['site_id']])}\',{urlParam:{pid:'+row.id+'},area: [\'96%\', \'90%\'], title:\'添加栏目 #'+row.id+'\'});" class="layui-btn layui-btn-success layui-btn-xs "><i class="layui-icon">&#xe654;</i> </a>'
+                    s += '<a href="javascript:void(0);" onclick="openLayer(\'{:url('admin/npd.category/edit',['site_id'=>$authNpdSite['site_id']])}\',{urlParam:{id:'+row.id+'},area: [\'96%\', \'90%\'], title:\'编辑栏目 #'+row.id+'\'});"  class="layui-btn  layui-btn-xs " title="编辑"> <i class="fa fa-pencil"></i> </a>';
                     s += '<a href="{:url('admin/npd.category/delete')}?id='+row.id+'" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete">删</a>';
             <?php } ?>
             return s;

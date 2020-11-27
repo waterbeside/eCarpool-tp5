@@ -6,6 +6,7 @@ use app\npd\model\Category as CategoryModel;
 use app\admin\controller\npd\NpdAdminBase;
 use think\Db;
 use my\Tree;
+use my\Utils;
 
 /**
  * 栏目管理
@@ -17,11 +18,15 @@ class Category extends NpdAdminBase
 
     protected $category_model;
     protected $cacheVersionKey = "NPD:category:version";
+    protected $siteListIdMap;
+    protected $siteList;
 
     protected function initialize()
     {
         parent::initialize();
         $this->category_model = new CategoryModel();
+        $siteList = $this->authNpdSite['site_list'];
+        $this->siteListIdMap = Utils::getInstance()->list2Map($siteList, 'id');
     }
 
     /**
@@ -31,10 +36,22 @@ class Category extends NpdAdminBase
     public function index($json = 0, $recycled = 0)
     {
         if ($json) {
+            $where = [];
+            $siteIdwhere = $this->authNpdSite['sql_site_map'];
+            $siteListIdMap = $this->siteListIdMap;
+            if (!empty($siteIdwhere)) {
+                $where[] = $siteIdwhere;
+            }
             if (!$recycled) {
-                $data = $this->category_model->getList(1);
+                $data = $this->category_model->getList($this->authNpdSite['filter_site_ids'], 1);
             } else {
-                $data  = $this->category_model->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+                $data  = $this->category_model->where($where)->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+            }
+            if (!empty($data)) {
+                foreach ($data as $key => $item) {
+                    $siteData = $siteListIdMap[$item['site_id']] ?? [];
+                    $data[$key]['site_name'] = $siteData['title'] ?? '';
+                }
             }
             $tree = new Tree();
             $tree->init($data);
@@ -81,9 +98,11 @@ class Category extends NpdAdminBase
                 $this->jsonReturn(-1, '保存失败');
             }
         } else {
-            $category_level_list       = $this->category_model->where('is_delete', Db::raw(0))->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
+            $category_level_list = $this->getNpdCategoryList([$this->authNpdSite['site_id']], true, true);
+
             foreach ($category_level_list as $key => $value) {
                 $category_level_list[$key]['pid'] = $value['parent_id'];
+                $category_level_list[$key]['site_name'] = $value['site_data']['title'] ?? '';
             }
             $category_level_list = array2level($category_level_list);
             $this->assign('category_level_list', $category_level_list);
@@ -104,7 +123,12 @@ class Category extends NpdAdminBase
      */
     public function edit($id)
     {
+        $itemRes = $this->getItemAndCheckAuthSite($this->category_model, $id);
+
         if ($this->request->isPost()) {
+            if (!$itemRes['auth']) {
+                $this->jsonReturn(-1, '没有权限');
+            }
             $data            = $this->request->param();
             $validate_result = $this->validate($data, 'app\npd\validate\Category');
 
@@ -133,9 +157,23 @@ class Category extends NpdAdminBase
                 }
             }
         } else {
-            $category_level_list       = $this->category_model->where('is_delete', Db::raw(0))->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
+            if (!$itemRes['auth']) {
+                return '你没有权限';
+            }
+            $data = $itemRes['data'] ?? [];
+
+            $categoryListwhere = [['is_delete', '=', Db::raw(0)],];
+            // $authSiteWhere = $this->authNpdSite['sql_site_map'];
+            // if (!empty($authSiteWhere)) {
+            //     $categoryListwhere[] = $authSiteWhere;
+            // }
+            if ($data['site_id']) {
+                $categoryListwhere[] = ['site_id', '=', $data['site_id']];
+            }
+            $category_level_list = $this->getNpdCategoryList([$data['site_id']], true, true);
             foreach ($category_level_list as $key => $value) {
                 $category_level_list[$key]['pid'] = $value['parent_id'];
+                $category_level_list[$key]['site_name'] = $value['site_data']['title'] ?? '';
             }
             $category_level_list = array2level($category_level_list);
             $this->assign('category_level_list', $category_level_list);
@@ -143,9 +181,7 @@ class Category extends NpdAdminBase
             $category_model_list = config('npd.category_model_list');
             $this->assign('category_model_list', $category_model_list);
 
-
-            $category_data = $this->category_model->find($id);
-            return $this->fetch('edit', ['data' => $category_data]);
+            return $this->fetch('edit', ['data' => $data]);
         }
     }
 
@@ -157,6 +193,7 @@ class Category extends NpdAdminBase
      */
     public function delete($id)
     {
+        $this->getItemAndCheckAuthSite($this->category_model, $id, false, 1);
         if ($this->category_model->where('id', $id)->update(['is_delete' => 1])) {
             $this->category_model->deleteListCache();
             $this->updateDataVersion($this->cacheVersionKey);
@@ -184,6 +221,7 @@ class Category extends NpdAdminBase
      */
     public function recycle($id)
     {
+        $this->getItemAndCheckAuthSite($this->category_model, $id, false, 1);
         if ($this->category_model->where('id', $id)->update(['is_delete' => 0])) {
             $this->category_model->deleteListCache();
             $this->updateDataVersion($this->cacheVersionKey);

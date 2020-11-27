@@ -64,6 +64,20 @@ class AuthNpdsite extends Service
     public function getSiteListByIds($siteIds, $useCache = false)
     {
         $siteList = $this->getSiteList($useCache);
+        $returnList = $this->filterSiteListByIds($siteIds, $siteList);
+        return $returnList;
+    }
+
+
+    /**
+     * 通过id列表筛选站点列表
+     *
+     * @param array $siteIds 站点id列表
+     * @param array $siteList 站点列表
+     * @return array
+     */
+    public function filterSiteListByIds($siteIds, $siteList)
+    {
         $returnList = [];
         foreach ($siteList as $key => $value) {
             if (in_array($value['id'], $siteIds)) {
