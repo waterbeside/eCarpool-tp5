@@ -39,7 +39,6 @@
                     <table class="layui-table">
                         <thead>
                         <tr>
-
                             <th style="width: 30px;">ID</th>
                             <th>标题</th>
                             <th>分类</th>
@@ -53,7 +52,7 @@
                         {foreach name="lists" item="vo"}
                         <tr>
                             <td>{$vo.id}</td>
-                            <td>{$vo.title}</td>
+                            <td><a target="_blank" href="http://gitsite.net/carpool_assist/docs.html#/{$vo.id}" >{$vo.title}</a></td>
                             <td>{php}echo isset($category_list[$vo['cid']]) ? $category_list[$vo['cid']]: $vo['cid'] ; {/php}</td>
                             <td>{$vo.lang}</td>
                             <td>{php}echo $vo['status']==1 ? '显示' : '不显示';{/php}</td>
