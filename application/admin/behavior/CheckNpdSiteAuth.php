@@ -11,6 +11,7 @@ class CheckNpdSiteAuth
 {
     public function run(Request $request, $controller = null, $setting = [])
     {
+
         $userBaseData = $controller->userBaseInfo; //用户信息
         $adminId = $userBaseData['uid'];
         $isRootAdmin = $adminId == 1;
@@ -36,7 +37,7 @@ class CheckNpdSiteAuth
         $filterSiteIds = [];  // 从$siteId里查出允许访问的id
 
         if (count($authSiteIds) == 1) { // 如果用户只有一个站点的权限
-            $filterSiteIds = $authSiteIds[0];
+            $filterSiteIds = $authSiteIds;
         } elseif ($siteId) {
             foreach ($siteIdArray as $sid) {
                 if (!is_numeric($sid) && !$sid) {
@@ -57,7 +58,6 @@ class CheckNpdSiteAuth
         } else {
             $sqlSiteMap = ['site_id', '=', $filterSiteIds[0]];
         }
-
 
         $controller->authNpdSite = [
             "filter_site_ids" => $filterSiteIds,
