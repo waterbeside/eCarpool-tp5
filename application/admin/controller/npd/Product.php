@@ -8,6 +8,7 @@ use app\npd\model\ProductMerchandizing;
 use app\npd\model\ProductPatent;
 use app\npd\model\Customer;
 use app\npd\model\Category as CategoryModel;
+use app\npd\model\ProductFieldnameSite;
 
 use app\admin\controller\npd\NpdAdminBase;
 use think\Db;
@@ -30,36 +31,59 @@ class Product extends NpdAdminBase
      */
     public function index($cid = 0, $filter = ['keyword' => ''], $page = 1)
     {
-        $map   = [];
-        $map[] = ['t.is_delete', '=', Db::raw(0)];
+        $where   = [];
+        $where[] = ['t.is_delete', '=', Db::raw(0)];
+        $siteIdwhere = $this->authNpdSite['sql_site_map'];
+        $siteListIdMap = $this->getSiteListIdMap();
+        
+        if (!empty($siteIdwhere)) {
+            $siteIdwhere[0] = 't.site_id';
+            $where[] = $siteIdwhere;
+        }
         $field = 't.*,c.name as c_name';
         $CategoryModel = new CategoryModel();
         if ($cid > 0) {
             $cids = $CategoryModel->getChildrensId($cid);
-            $map[] = ['cid', 'in', $cids];
+            $where[] = ['cid', 'in', $cids];
         }
 
         if (isset($filter['keyword']) && $filter['keyword']) {
-            $map[] = ['title|title_en', 'like', "%{$filter['keyword']}%"];
+            $where[] = ['title|title_en', 'like', "%{$filter['keyword']}%"];
         }
 
         if (isset($filter['is_recommend'])  && is_numeric($filter['is_recommend'])) {
-            $map[] = ['is_recommend', '=', $filter['is_recommend']];
+            $where[] = ['is_recommend', '=', $filter['is_recommend']];
         }
 
         $join = [
             ['t_category c', 't.cid = c.id', 'left'],
         ];
-        $lists  = ProductModel::field($field)->alias('t')->join($join)->where($map)->order('t.sort DESC , t.create_time DESC , t.cid DESC ')
-            // ->fetchSql()->select();
-            ->paginate(15, false, ['page' => $page]);
 
-        $category_level_list       = $CategoryModel->getListByModel('product');
+        $lists  = ProductModel::field($field)->alias('t')->join($join)->where($where)->order('t.sort DESC , t.create_time DESC , t.cid DESC ')
+            // ->fetchSql()->select();
+            ->paginate(15, false, ['query' => request()->param()])
+            ->each(function ($item, $key) use ($siteListIdMap) {
+                $siteData = $siteListIdMap[$item->site_id] ?? [];
+                $item->site_name = $siteData['title'] ?? '';
+            });
+
+
+        $category_level_list = $this->getNpdCategoryList('product', $this->authNpdSite['site_id'], false, true, true);
         foreach ($category_level_list as $key => $value) {
             $category_level_list[$key]['pid'] = $value['parent_id'];
         }
         $category_level_list = array2level($category_level_list);
         $this->assign('category_level_list', $category_level_list);
+
+
+        // $category_level_list       = $CategoryModel->getListByModel('product');
+        // foreach ($category_level_list as $key => $value) {
+        //     $category_level_list[$key]['pid'] = $value['parent_id'];
+        // }
+
+        // $category_level_list = array2level($category_level_list);
+        // $this->assign('category_level_list', $category_level_list);
+
 
         return $this->fetch('index', ['lists' => $lists, 'cid' => $cid, 'filter' => $filter]);
     }
@@ -73,7 +97,8 @@ class Product extends NpdAdminBase
     public function add()
     {
         if ($this->request->isPost()) {
-            $data            = $this->request->param();
+            $data = $this->request->param();
+            $this->checkItemSiteAuth($data, 1); //检查权限
             $upData = $this->formatFormData($data);
             $validate_result = $this->validate($data, 'app\npd\validate\Product');
             if ($validate_result !== true) {
@@ -102,19 +127,26 @@ class Product extends NpdAdminBase
             $this->log('添加NPD产品成功 id=' . $id, -1);
             return $this->jsonReturn(0, '添加成功');
         } else {
-            $CategoryModel = new CategoryModel();
-            $category_level_list       = $CategoryModel->getListByModel('product');
+            $siteId = $this->authNpdSite['site_id'];
+            if (empty($siteId)) {
+                return $this->fetch('npd/common/select_site');
+            }
+            $category_level_list = $this->getNpdCategoryList('product', $siteId, false, true, true);
             foreach ($category_level_list as $key => $value) {
                 $category_level_list[$key]['pid'] = $value['parent_id'];
+                $category_level_list[$key]['site_name'] = $value['site_data']['title'] ?? '';
             }
+
             $category_level_list = array2level($category_level_list);
             $this->assign('category_level_list', $category_level_list);
+
+            $productFieldnameSite = new ProductFieldnameSite();
+            $fieldList = $productFieldnameSite->getFieldNames($this->authNpdSite['site_id'], true);
+            $this->assign('fieldList', $fieldList);
             $this->assign('patent_type_list', config('npd.patent_type'));
             return $this->fetch();
         }
     }
-
-
 
     /**
      * 编辑产品
@@ -125,7 +157,12 @@ class Product extends NpdAdminBase
     {
         $ProductModel = new ProductModel();
         $dataDetail     = $ProductModel->getDetail($id);
+        $siteAuth = $this->checkItemSiteAuth($dataDetail, false);
+
         if ($this->request->isPost()) {
+            if (!$siteAuth) {
+                $this->jsonReturn(-1, '没有权限');
+            }
             $data            = $this->request->param();
             $upData = $this->formatFormData($data, $id, $dataDetail);
             $validate_result = $this->validate($data, 'app\npd\validate\Product');
@@ -134,7 +171,6 @@ class Product extends NpdAdminBase
             }
             Db::connect('database_npd')->startTrans();
             try {
-
                 /******** 处理主表 ********/
                 $res = ProductModel::where('id', $id)->update($upData['primary']);
                 if ($res === 'false') {
@@ -155,13 +191,24 @@ class Product extends NpdAdminBase
             $this->log('更新NPD产品成功 id=' . $id, 0);
             return $this->jsonReturn(0, '更新成功');
         } else {
-            $CategoryModel = new CategoryModel();
-            $category_level_list       = $CategoryModel->getListByModel('product');
+            if (!$siteAuth) {
+                return '没有权限';
+            }
+            if ($dataDetail['site_id']) {
+                $categoryListwhere[] = ['site_id', '=', $dataDetail['site_id']];
+            }
+            $category_level_list = $this->getNpdCategoryList('product', $dataDetail['site_id'], false, true, true);
             foreach ($category_level_list as $key => $value) {
                 $category_level_list[$key]['pid'] = $value['parent_id'];
+                $category_level_list[$key]['site_name'] = $value['site_data']['title'] ?? '';
             }
             $category_level_list = array2level($category_level_list);
             $this->assign('category_level_list', $category_level_list);
+
+            $productFieldnameSite = new ProductFieldnameSite();
+            $fieldList = $productFieldnameSite->getFieldNames($dataDetail['site_id'], true);
+            $this->assign('fieldList', $fieldList);
+
             $this->assign('patent_type_list', config('npd.patent_type'));
             return $this->fetch('edit', ['data' => $dataDetail]);
         }
@@ -179,12 +226,12 @@ class Product extends NpdAdminBase
 
         /******** 处理 merchandizing副表 ********/
         ProductMerchandizing::where('pid', $id)->delete();
-        if ($upData['merchandizing'] &&  count($upData['merchandizing']) > 0) {
+        if (isset($upData['merchandizing']) && $upData['merchandizing'] &&  count($upData['merchandizing']) > 0) {
             ProductMerchandizing::insertAll($upData['merchandizing']);
         }
         /******** 处理 patent副表 ********/
         ProductPatent::where('pid', $id)->delete();
-        if ($upData['patent'] && count($upData['patent']) > 0) {
+        if (isset($upData['patent']) &&  $upData['patent'] && count($upData['patent']) > 0) {
             ProductPatent::insertAll($upData['patent']);
         }
     }
@@ -194,6 +241,12 @@ class Product extends NpdAdminBase
      */
     protected function formatFormData($data, $pid = 0, $dataDetail = null)
     {
+        $setDataKeyData = function ($lang, $key) use ($data) {
+            $dataValue = $data['data'][$lang][$key] ?? null;
+            $dataValue = $dataValue ?: null;
+            return $dataValue;
+        };
+
         $returnData = [];
         //创建主表数据
         $returnData['primary'] = [
@@ -208,6 +261,9 @@ class Product extends NpdAdminBase
             'sort' => isset($data['sort']) ? $data['sort'] : 0,
             'is_top' => isset($data['is_top']) ? $data['is_top'] : 0,
         ];
+        if (isset($data['site_id'])) {
+            $returnData['primary']['site_id'] = $data['site_id'];
+        }
         if (isset($data['customers'])) {
             $returnData['primary']['customers'] = $data['customers'];
         }
@@ -221,58 +277,66 @@ class Product extends NpdAdminBase
             $oldDataExtraInfo_zh = $dataDetail['data_zh']['extra_info'] ?: null;
             $oldDataExtraInfo_en = $dataDetail['data_en']['extra_info'] ?: null;
         }
-        $upcharge_leadtime_zh = $data['data']['zh']['upcharge_leadtime'] ? ['upcharge_leadtime' => $data['data']['zh']['upcharge_leadtime']] : [];
-        $upcharge_leadtime_en = $data['data']['en']['upcharge_leadtime'] ? ['upcharge_leadtime' => $data['data']['en']['upcharge_leadtime']] : [];
+        $upcharge_leadtime_zh = $setDataKeyData('zh', 'upcharge_leadtime') ? ['upcharge_leadtime' => $data['data']['zh']['upcharge_leadtime']] : [];
+        $upcharge_leadtime_en = $setDataKeyData('en', 'upcharge_leadtime') ? ['upcharge_leadtime' => $data['data']['en']['upcharge_leadtime']] : [];
         $extraInfo_data_zh = $this->addDataToData($upcharge_leadtime_zh, $oldDataExtraInfo_zh ?? []);
         $extraInfo_data_en = $this->addDataToData($upcharge_leadtime_en, $oldDataExtraInfo_en ?? []);
         $returnData['data_zh'] = [
             'pid'       => $pid,
-            'intro'   => $data['data']['zh']['intro'] ?: null ,
-            'feature'   => $data['data']['zh']['feature'] ?: null,
-            'testing'   => $data['data']['zh']['testing'] ?: null,
-            'bulk_note' => $data['data']['zh']['bulk_note'] ?: null,
-            'extra_info' => $extraInfo_data_zh ? json_encode($extraInfo_data_zh) : null,
+            'intro'     => $setDataKeyData('zh', 'intro') ,
+            'feature'   => $setDataKeyData('zh', 'feature'),
+            'testing'   => $setDataKeyData('zh', 'testing'),
+            'bulk_note' => $setDataKeyData('zh', 'bulk_note'),
+            'scope'     => $setDataKeyData('zh', 'scope'),
+            'reference'  => $setDataKeyData('zh', 'reference'),
+            'attention'  => $setDataKeyData('zh', 'attention'),
+            'extra_info'=> $extraInfo_data_zh ? json_encode($extraInfo_data_zh) : null,
             'lang'      => 'zh-cn',
         ];
         $returnData['data_en'] = [
             'pid'       => $pid,
-            'intro'   => $data['data']['en']['intro'] ?: null,
-            'feature'   => $data['data']['en']['feature'] ?: null,
-            'testing'   => $data['data']['en']['testing'] ?: null,
-            'bulk_note' => $data['data']['en']['bulk_note'] ?: null,
-            'extra_info' => $extraInfo_data_en ? json_encode($extraInfo_data_en) : null,
+            'intro'     => $setDataKeyData('en', 'intro') ,
+            'feature'   => $setDataKeyData('en', 'feature'),
+            'testing'   => $setDataKeyData('en', 'testing'),
+            'bulk_note' => $setDataKeyData('en', 'bulk_note'),
+            'scope'     => $setDataKeyData('en', 'scope'),
+            'reference' => $setDataKeyData('en', 'reference'),
+            'attention' => $setDataKeyData('en', 'attention'),
+            'extra_info'=> $extraInfo_data_en ? json_encode($extraInfo_data_en) : null,
             'lang'      => 'en',
         ];
         //创建 merchandizing 副表数据
-        $returnData['merchandizing'] = [];
-        foreach ($data['merchandizing'] as $key => $value) {
-            if (!empty($value['ppo_no']) && !empty($value['desc'])) {
-                $value['pid'] = $pid;
-                $returnData['merchandizing'][] = $value;
+        if (isset($data['merchandizing']) && is_array($data['merchandizing'])) {
+            $returnData['merchandizing'] = [];
+            foreach ($data['merchandizing'] as $key => $value) {
+                if (!empty($value['ppo_no']) && !empty($value['desc'])) {
+                    $value['pid'] = $pid;
+                    $returnData['merchandizing'][] = $value;
+                }
             }
         }
+        
         //创建 patent 副表数据
-        $returnData['patent'] = [];
-        foreach ($data['patent'] as $key => $value) {
-            $cty_name     = $value['cty_name'];
-            $cty_name_en  = $value['cty_name_en'];
-            $sn           = $value['sn'];
-            $type_name    = $value['type_name'];
-            if (!empty($cty_name) || !empty($sn) || !empty($cty_name_en)) {
-                $returnData['patent'][] = [
-                    'pid'            => $pid,
-                    'cty_name'       => $cty_name,
-                    'cty_name_en'    => $cty_name_en,
-                    'sn'             => $sn,
-                    'type_name'      => $type_name,
-                ];
+        if (isset($data['patent']) && is_array($data['patent'])) {
+            $returnData['patent'] = [];
+            foreach ($data['patent'] as $key => $value) {
+                $cty_name     = $value['cty_name'];
+                $cty_name_en  = $value['cty_name_en'];
+                $sn           = $value['sn'];
+                $type_name    = $value['type_name'];
+                if (!empty($cty_name) || !empty($sn) || !empty($cty_name_en)) {
+                    $returnData['patent'][] = [
+                        'pid'            => $pid,
+                        'cty_name'       => $cty_name,
+                        'cty_name_en'    => $cty_name_en,
+                        'sn'             => $sn,
+                        'type_name'      => $type_name,
+                    ];
+                }
             }
         }
-
         return $returnData;
     }
-
-
 
     /**
      * 删除产品
@@ -280,7 +344,9 @@ class Product extends NpdAdminBase
      */
     public function delete($id)
     {
-        if (ProductModel::where('id', $id)->update(['is_delete' => 1])) {
+        $productModel = new ProductModel();
+        $this->getItemAndCheckAuthSite($productModel, $id, false, 1);
+        if ($productModel->here('id', $id)->update(['is_delete' => 1])) {
             $this->log('删除产品成功', 0);
             $this->jsonReturn(0, '删除成功');
         } else {
@@ -298,6 +364,9 @@ class Product extends NpdAdminBase
     public function customers($pid = 0, $rt = 0)
     {
         if ($this->request->isPost()) {
+            $productModel = new ProductModel();
+            $this->getItemAndCheckAuthSite($productModel, $pid, false, 1);
+
             if (!$pid) {
                 return $this->jsonReturn(992, 'Error pid');
             }
@@ -326,8 +395,14 @@ class Product extends NpdAdminBase
                 'lists' => null,
                 'total' => 0,
             ];
-            $data     = ProductModel::find($pid);
-            if (!$data) {
+            $productModel = new ProductModel();
+            $itemRes = $this->getItemAndCheckAuthSite($productModel, $pid, false, 0);
+            if (!$itemRes['auth']) {
+                return '你沒有权限';
+            }
+            $data = $itemRes['data'] ?? [];
+
+            if (empty($data)) {
                 return $rt ? $this->jsonReturn(20002, $data, '找不到产品数据') : $this->fetch('', $returnData);
             }
             $returnData['data'] = $data;

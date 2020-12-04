@@ -6,307 +6,395 @@
         <div class="layui-row">
             <div class="layui-col-md8">
 
-            <div class="layui-form-item">
-                <label class="layui-form-label">产品名</label>
-                <div class="layui-input-block">
-                <input type="text" name="title" value="{$data.title}" required  lay-verify="required" placeholder="请输入产品名" class="layui-input">
-                </div>
-            </div>
-            
-            <div class="layui-form-item">
-                <label class="layui-form-label">产品名 EN</label>
-                <div class="layui-input-block">
-                <input type="text" name="title_en" value="{$data.title_en}"   placeholder="请输入产品英文名" class="layui-input">
-                </div>
-            </div>
-
-            <div class="layui-form-item">
-                <label class="layui-form-label">客户组合</label>
-                <div class="layui-input-block">
-                    <a onclick="openLayer('{:url('admin/npd.product/customers',['pid'=>$data['id']])}',{area: ['86%', '90%'], title:'产品客户 #{$data.id}'});" href="javascript:void(0);" class="layui-btn layui-btn-primary   " title="产品客户">
-                        产品客户修改
-                    </a>
-                    <!-- <input type="hidden" name="customers" value="{$data.customers}">
-                    <div class="customers-wrapper">
-                        <select lay-ignore name="customers_arr" id="" multiple placeholder="请选择" class="hidden"  value="{$data.customers}">  </select>
-                    </div> -->
-                </div>
-            </div>
-            
-            <div class="layui-tab layui-tab-inform">
-                <ul class="layui-tab-title" style="padding-left:12px">
-                    <li class="layui-this">中文</li>
-                    <li>EN</li>
-                </ul>
-                <div class="layui-tab-content">
-                    <!-- 中文 -->
-                    <div class="layui-tab-item layui-show">
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">介绍 
-                                <div><small>Introduction</small></div>
-                            </label>
-                            <div class="layui-input-block">
-                                <textarea name="data[zh][intro]" placeholder=""   id="intro">{$data.data_zh.intro}</textarea>
-                            </div>
-                        </div>
-
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">特点 
-                                <div><small>Feature</small></div>
-                            </label>
-                            <div class="layui-input-block">
-                                <textarea name="data[zh][feature]" placeholder=""   id="feature">{$data.data_zh.feature}</textarea>
-                            </div>
-                        </div>   
-            
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">测试方法与标准 
-                                <div><small>Testing method and standards</small></div>
-                            </label>
-                            <div class="layui-input-block">
-                                <textarea name="data[zh][testing]" placeholder=""   id="testing">{$data.data_zh.testing}</textarea>
-                            </div>
-                        </div>
-            
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">大货备注 
-                                <div><small>Notes to bulk</small></div>
-                            </label>
-                            <div class="layui-input-block">
-                                <textarea name="data[zh][bulk_note]" placeholder=""   id="bulk_note">{$data.data_zh.bulk_note}</textarea>
-                            </div>
-                        </div>
-
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">报价与交期 
-                                <div><small>Upcharge & Leadtime</small></div>
-                            </label>
-                            <div class="layui-input-block">
-                                <textarea name="data[zh][upcharge_leadtime]" placeholder=""   id="upcharge_leadtime">{$data.data_zh.extra_info.upcharge_leadtime ?? ''}</textarea>
-                            </div>
-                        </div>
-
-                    </div>
-
-
-                    <!-- 英文 -->
-                    <div class="layui-tab-item">
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">Introduction 
-                                <div><small>介绍</small></div>
-                            </label>
-                            <div class="layui-input-block">
-                                <textarea name="data[en][intro]" placeholder=""   id="intro_en">{$data.data_en.intro}</textarea>
-                            </div>
-                        </div>
-
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">Feature 
-                                <div><small>特点</small></div>
-                            </label>
-                            <div class="layui-input-block">
-                                <textarea name="data[en][feature]" placeholder=""   id="feature_en">{$data.data_en.feature}</textarea>
-                            </div>
-                        </div>
-            
-                        <div class="layui-form-item">
-                            <label class="layui-form-label">Testing method and standards
-                                <div><small>测试方法与标准 </small></div>
-                            </label>
-                            <div class="layui-input-block">
-                                <textarea name="data[en][testing]" placeholder=""   id="testing_en">{$data.data_en.testing}</textarea>
-                            </div>
-                        </div>
-            
-                        <div class="layui-form-item">
-                            <label class="layui-form-label"> Notes to bulk
-                                <div><small>大货备注</small></div>
-                            </label>
-                            <div class="layui-input-block">
-                                <textarea name="data[en][bulk_note]" placeholder=""   id="bulk_note_en">{$data.data_en.bulk_note}</textarea>
-                            </div>
-                        </div>
-
-                        <div class="layui-form-item">
-                            <label class="layui-form-label"> Upcharge & Leadtime
-                                <div><small>报价与交期</small></div>
-                            </label>
-                            <div class="layui-input-block">
-                                <textarea name="data[en][upcharge_leadtime]" placeholder=""   id="upcharge_leadtime_en">{$data.data_en.extra_info.upcharge_leadtime ?? ''}</textarea>
-                            </div>
-                        </div>
-                        
-                        
+                <div class="layui-form-item">
+                    <label class="layui-form-label">产品名</label>
+                    <div class="layui-input-block">
+                    <input type="text" name="title" value="{$data.title}" required  lay-verify="required" placeholder="请输入产品名" class="layui-input">
                     </div>
                 </div>
-
-            </div>
-            <!-- /end tab -->
-
-
-            <!-- 产品试验 -->
-            <div class="layui-form-item">
-                <label class="layui-form-label"> 产品试验
-                <div><small>Merchandizing kits</small></div>
-                </label>
-                <div class="layui-input-block">
-                <div class="merch-wrapper" id="merch-list">
-                    <?php if(count($data['merchandizing'])>0){ 
-                        foreach($data['merchandizing'] as $key => $value){
-                    ?>
-                    <div class="merch-item item">
-                        <div class="title handle">
-                            <i class="fa fa-bars handle-icon"></i>
-                            <div class="btns">
-                                <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this)"><i class="fa fa-plus"></i></a>
-                                <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this,1)"><i class="fa fa-copy"></i></a>
-                                <a href="javascript:void(0)" class="btn btn-delete" onclick="MyDynItem.del(this,{dl_action:2})"><i class="fa fa-times"></i></a>
-                            </div>
-                        </div>
-                            <input name="merch.ppo_no" placeholder="单号(PPO_NO)" class="layui-input" value="{$value.ppo_no}">
-                            <textarea name="merch.desc" placeholder="描述" class="layui-textarea" >{$value.desc}</textarea>
-                            <textarea name="merch.remark" placeholder="备注" class="layui-textarea" >{$value.remark}</textarea>
-                            <textarea name="merch.remark_en" placeholder="备注(EN)" class="layui-textarea" >{$value.remark_en}</textarea>
-                        </div>
-                    <?php }}else{  ?>
-                        <div class="merch-item item">
-                        <div class="title handle">
-                            <i class="fa fa-bars handle-icon"></i>
-                            <div class="btns">
-                                <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this)"><i class="fa fa-plus"></i></a>
-                                <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this,1)"><i class="fa fa-copy"></i></a>
-                                <a href="javascript:void(0)" class="btn btn-delete" onclick="MyDynItem.del(this,{dl_action:2})"><i class="fa fa-times"></i></a>
-                            </div>
-                        </div>
-                            <input name="merch.ppo_no" placeholder="单号(PPO_NO)" class="layui-input" >
-                            <textarea name="merch.desc" placeholder="描述" class="layui-textarea" ></textarea>
-                            <textarea name="merch.remark" placeholder="备注" class="layui-textarea" ></textarea>
-                            <textarea name="merch.remark_en" placeholder="备注(EN)" class="layui-textarea" ></textarea>
-                        </div>
-                    <?php } ?>
-                </div>
-                </div>
-            </div>
-
-            <!-- 专利 -->
-            <div class="layui-form-item">
-                <label class="layui-form-label"> 专利/商标
-                    <div><small>Patent/Trademark</small></div>
-                </label>
-                <div class="layui-input-block">
-                    <table class="layui-table">
-                    <thead>
-                        <tr>
-                        <td width="14">#</td>
-                        <td width="100">国家地区名</td>
-                        <td width="100">国家地区名(EN)</td>
-                        <td>专利号</td>
-                        <td>类型</td>
-                        <td width="75">操作</td>
-                        </tr>
-                    </thead>
-                    <tbody id="patent-list">
-                        <?php if(count($data['patent'])>0){ 
-                        foreach($data['patent'] as $key => $value){
-                        ?>
-                        <tr class="patent-item item">
-                            <td class="handle"><i class="fa fa-bars handle-icon"></i></td>
-                            <td><input name="patent.cty_name" placeholder="" class="layui-input" value="{$value.cty_name}"></td>
-                            <td><input name="patent.cty_name_en" placeholder="" class="layui-input" value="{$value.cty_name_en}" ></td>
-                            <td><input name="patent.sn" placeholder="" class="layui-input" value="{$value.sn}"></td>
-                            <td>
-                                <select name="patent.type_name">
-                                    <option value="">-</option>
-                                    {foreach name="patent_type_list" item="vo"}
-                                    <option value="{$vo.name}" {if condition="$value.type_name==$vo.name"} selected="selected"{/if}>{$vo.name} ({$vo.name_en})</option>
-                                    {/foreach}
-                                </select>
-                            </td>
-                            
-                            <!-- <td><input name="patent.type_name" placeholder="" class="layui-input" value="{$value.type_name}"></td> -->
-                            <td class="opt">
-                                <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this)"><i class="fa fa-plus"></i></a>
-                                <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this,1)"><i class="fa fa-copy"></i></a>
-                                <a href="javascript:void(0)" class="btn btn-delete" onclick="MyDynItem.del(this,{dl_action:2})"><i class="fa fa-times"></i></a>
-                            </td>
-                        </tr>
-                        <?php }}else{  ?>
-                        <tr class="patent-item item">
-                            <td class="handle"><i class="fa fa-bars handle-icon"></i></td>
-                            <td><input name="patent.cty_name" placeholder="" class="layui-input" ></td>
-                            <td><input name="patent.cty_name_en" placeholder="" class="layui-input" ></td>
-                            <td><input name="patent.sn" placeholder="" class="layui-input" ></td>
-                            <td>
-                                <select name="patent.type_name">
-                                    <option value="">-</option>
-                                    {foreach name="patent_type_list" item="vo"}
-                                    <option value="{$vo.name}">{$vo.name} ({$vo.name_en})</option>
-                                    {/foreach}
-                                </select>
-                            </td>
-                            <!-- <td><input name="patent.type_name" placeholder="" class="layui-input" ></td> -->
-                            <td class="opt">
-                                <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this)"><i class="fa fa-plus"></i></a>
-                                <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this,1)"><i class="fa fa-copy"></i></a>
-                                <a href="javascript:void(0)" class="btn btn-delete" onclick="MyDynItem.del(this,{dl_action:2})"><i class="fa fa-times"></i></a>
-                            </td>
-                        </tr>
-                        <?php } ?>
-
-                    </tbody>
-                    </table>
                 
+                <div class="layui-form-item">
+                    <label class="layui-form-label">产品名 EN</label>
+                    <div class="layui-input-block">
+                    <input type="text" name="title_en" value="{$data.title_en}"   placeholder="请输入产品英文名" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">客户组合</label>
+                    <div class="layui-input-block">
+                        <a onclick="openLayer('{:url('admin/npd.product/customers',['pid'=>$data['id']])}',{area: ['86%', '90%'], title:'产品客户 #{$data.id}'});" href="javascript:void(0);" class="layui-btn layui-btn-primary   " title="产品客户">
+                            产品客户修改
+                        </a>
+                        <!-- <input type="hidden" name="customers" value="{$data.customers}">
+                        <div class="customers-wrapper">
+                            <select lay-ignore name="customers_arr" id="" multiple placeholder="请选择" class="hidden"  value="{$data.customers}">  </select>
+                        </div> -->
+                    </div>
+                </div>
+                
+                <div class="layui-tab layui-tab-inform">
+                    <ul class="layui-tab-title" style="padding-left:12px">
+                        <li class="layui-this">中文</li>
+                        <li>EN</li>
+                    </ul>
+                    <div class="layui-tab-content">
+                        <!-- 中文 -->
+                        <div class="layui-tab-item layui-show">
+                            <?php if (in_array('intro', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">介绍 
+                                    <div><small>Introduction</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[zh][intro]" placeholder=""   id="intro">{$data.data_zh.intro}</textarea>
+                                </div>
+                            </div>
+                            <?php } ?>
+
+                            <?php if (in_array('feature', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">特点 
+                                    <div><small>Feature</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[zh][feature]" placeholder=""   id="feature">{$data.data_zh.feature}</textarea>
+                                </div>
+                            </div>   
+                            <?php } ?>
+
+
+                            <?php if (in_array('scope', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">产品范围 
+                                    <div><small>Scope</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[zh][scope]" placeholder=""   id="scope">{$data.data_zh.scope}</textarea>
+                                </div>
+                            </div>   
+                            <?php } ?>
+
+                            <?php if (in_array('reference', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">参考产品 
+                                    <div><small>Reference</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[zh][reference]" placeholder=""   id="reference">{$data.data_zh.reference}</textarea>
+                                </div>
+                            </div>   
+                            <?php } ?>
+
+                            <?php if (in_array('attention', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">产品注意事项 
+                                    <div><small>Attention</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[zh][attention]" placeholder=""   id="attention">{$data.data_zh.attention}</textarea>
+                                </div>
+                            </div>   
+                            <?php } ?>
+                            
+                            <?php if (in_array('testing', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">测试方法与标准 
+                                    <div><small>Testing method and standards</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[zh][testing]" placeholder=""   id="testing">{$data.data_zh.testing}</textarea>
+                                </div>
+                            </div>
+                            <?php } ?>
+                
+                            <?php if (in_array('bulk_note', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">大货备注 
+                                    <div><small>Notes to bulk</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[zh][bulk_note]" placeholder=""   id="bulk_note">{$data.data_zh.bulk_note}</textarea>
+                                </div>
+                            </div>
+                            <?php } ?>
+
+                            <?php if (in_array('upcharge_leadtime', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">报价与交期 
+                                    <div><small>Upcharge & Leadtime</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[zh][upcharge_leadtime]" placeholder=""   id="upcharge_leadtime">{$data.data_zh.extra_info.upcharge_leadtime ?? ''}</textarea>
+                                </div>
+                            </div>
+                            <?php } ?>
+                            
+
+                        </div>
+
+
+                        <!-- 英文 -->
+                        <div class="layui-tab-item">
+                            <?php if (in_array('intro', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">Introduction 
+                                    <div><small>介绍</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[en][intro]" placeholder=""   id="intro_en">{$data.data_en.intro}</textarea>
+                                </div>
+                            </div>
+                            <?php } ?>
+
+                            <?php if (in_array('feature', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">Feature 
+                                    <div><small>特点</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[en][feature]" placeholder=""   id="feature_en">{$data.data_en.feature}</textarea>
+                                </div>
+                            </div>
+                            <?php } ?>
+
+                            <?php if (in_array('scope', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">Scope
+                                    <div><small>产品范围</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[en][scope]" placeholder=""   id="scope_en">{$data.data_en.scope}</textarea>
+                                </div>
+                            </div>   
+                            <?php } ?>
+
+                            <?php if (in_array('reference', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">Reference
+                                    <div><small>参考产品</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[en][reference]" placeholder=""   id="reference_en">{$data.data_en.reference}</textarea>
+                                </div>
+                            </div>   
+                            <?php } ?>
+
+                            <?php if (in_array('attention', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">Attention
+                                    <div><small>产品注意事项</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[en][attention]" placeholder=""   id="attention_en">{$data.data_en.attention}</textarea>
+                                </div>
+                            </div>   
+                            <?php } ?>
+
+                
+                            <?php if (in_array('testing', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">Testing method and standards
+                                    <div><small>测试方法与标准 </small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[en][testing]" placeholder=""   id="testing_en">{$data.data_en.testing}</textarea>
+                                </div>
+                            </div>
+                            <?php } ?>
+                
+                            <?php if (in_array('bulk_note', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label"> Notes to bulk
+                                    <div><small>大货备注</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[en][bulk_note]" placeholder=""   id="bulk_note_en">{$data.data_en.bulk_note}</textarea>
+                                </div>
+                            </div>
+                            <?php } ?>
+
+                            <?php if (in_array('upcharge_leadtime', $fieldList)) { ?>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label"> Upcharge & Leadtime
+                                    <div><small>报价与交期</small></div>
+                                </label>
+                                <div class="layui-input-block">
+                                    <textarea name="data[en][upcharge_leadtime]" placeholder=""   id="upcharge_leadtime_en">{$data.data_en.extra_info.upcharge_leadtime ?? ''}</textarea>
+                                </div>
+                            </div>
+                            <?php } ?>
+                            
+                        </div>
+                    </div>
 
                 </div>
+                <!-- /end tab -->
+
+                <?php if (in_array('merchandizing', $fieldList)) { ?>
+                <!-- 产品试验 -->
+                <div class="layui-form-item">
+                    <label class="layui-form-label"> 产品试验
+                        <div><small>Merchandizing kits</small></div>
+                    </label>
+                    <div class="layui-input-block">
+                        <div class="merch-wrapper" id="merch-list">
+                            <?php if(count($data['merchandizing'])>0){ 
+                                foreach($data['merchandizing'] as $key => $value){
+                            ?>
+                            <div class="merch-item item">
+                                <div class="title handle">
+                                    <i class="fa fa-bars handle-icon"></i>
+                                    <div class="btns">
+                                        <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this)"><i class="fa fa-plus"></i></a>
+                                        <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this,1)"><i class="fa fa-copy"></i></a>
+                                        <a href="javascript:void(0)" class="btn btn-delete" onclick="MyDynItem.del(this,{dl_action:2})"><i class="fa fa-times"></i></a>
+                                    </div>
+                                </div>
+                                    <input name="merch.ppo_no" placeholder="单号(PPO_NO)" class="layui-input" value="{$value.ppo_no}">
+                                    <textarea name="merch.desc" placeholder="描述" class="layui-textarea" >{$value.desc}</textarea>
+                                    <textarea name="merch.remark" placeholder="备注" class="layui-textarea" >{$value.remark}</textarea>
+                                    <textarea name="merch.remark_en" placeholder="备注(EN)" class="layui-textarea" >{$value.remark_en}</textarea>
+                                </div>
+                            <?php }}else{  ?>
+                                <div class="merch-item item">
+                                <div class="title handle">
+                                    <i class="fa fa-bars handle-icon"></i>
+                                    <div class="btns">
+                                        <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this)"><i class="fa fa-plus"></i></a>
+                                        <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this,1)"><i class="fa fa-copy"></i></a>
+                                        <a href="javascript:void(0)" class="btn btn-delete" onclick="MyDynItem.del(this,{dl_action:2})"><i class="fa fa-times"></i></a>
+                                    </div>
+                                </div>
+                                    <input name="merch.ppo_no" placeholder="单号(PPO_NO)" class="layui-input" >
+                                    <textarea name="merch.desc" placeholder="描述" class="layui-textarea" ></textarea>
+                                    <textarea name="merch.remark" placeholder="备注" class="layui-textarea" ></textarea>
+                                    <textarea name="merch.remark_en" placeholder="备注(EN)" class="layui-textarea" ></textarea>
+                                </div>
+                            <?php } ?>
+                        </div>
+                    </div>
                 </div>
-            
-            
-            
-            
+                <?php } ?>
+
+                <?php if (in_array('patent', $fieldList)) { ?>
+                <!-- 专利 -->
+                <div class="layui-form-item">
+                    <label class="layui-form-label"> 专利/商标
+                        <div><small>Patent/Trademark</small></div>
+                    </label>
+                    <div class="layui-input-block">
+                        <table class="layui-table">
+                            <thead>
+                                <tr>
+                                <td width="14">#</td>
+                                <td width="100">国家地区名</td>
+                                <td width="100">国家地区名(EN)</td>
+                                <td>专利号</td>
+                                <td>类型</td>
+                                <td width="75">操作</td>
+                                </tr>
+                            </thead>
+                            <tbody id="patent-list">
+                                <?php if(count($data['patent'])>0){ 
+                                foreach($data['patent'] as $key => $value){
+                                ?>
+                                <tr class="patent-item item">
+                                    <td class="handle"><i class="fa fa-bars handle-icon"></i></td>
+                                    <td><input name="patent.cty_name" placeholder="" class="layui-input" value="{$value.cty_name}"></td>
+                                    <td><input name="patent.cty_name_en" placeholder="" class="layui-input" value="{$value.cty_name_en}" ></td>
+                                    <td><input name="patent.sn" placeholder="" class="layui-input" value="{$value.sn}"></td>
+                                    <td>
+                                        <select name="patent.type_name">
+                                            <option value="">-</option>
+                                            {foreach name="patent_type_list" item="vo"}
+                                            <option value="{$vo.name}" {if condition="$value.type_name==$vo.name"} selected="selected"{/if}>{$vo.name} ({$vo.name_en})</option>
+                                            {/foreach}
+                                        </select>
+                                    </td>
+                                    
+                                    <!-- <td><input name="patent.type_name" placeholder="" class="layui-input" value="{$value.type_name}"></td> -->
+                                    <td class="opt">
+                                        <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this)"><i class="fa fa-plus"></i></a>
+                                        <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this,1)"><i class="fa fa-copy"></i></a>
+                                        <a href="javascript:void(0)" class="btn btn-delete" onclick="MyDynItem.del(this,{dl_action:2})"><i class="fa fa-times"></i></a>
+                                    </td>
+                                </tr>
+                                <?php }}else{  ?>
+                                <tr class="patent-item item">
+                                    <td class="handle"><i class="fa fa-bars handle-icon"></i></td>
+                                    <td><input name="patent.cty_name" placeholder="" class="layui-input" ></td>
+                                    <td><input name="patent.cty_name_en" placeholder="" class="layui-input" ></td>
+                                    <td><input name="patent.sn" placeholder="" class="layui-input" ></td>
+                                    <td>
+                                        <select name="patent.type_name">
+                                            <option value="">-</option>
+                                            {foreach name="patent_type_list" item="vo"}
+                                            <option value="{$vo.name}">{$vo.name} ({$vo.name_en})</option>
+                                            {/foreach}
+                                        </select>
+                                    </td>
+                                    <!-- <td><input name="patent.type_name" placeholder="" class="layui-input" ></td> -->
+                                    <td class="opt">
+                                        <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this)"><i class="fa fa-plus"></i></a>
+                                        <a href="javascript:void(0)" class="btn btn-plus" onclick="MyDynItem.add(this,1)"><i class="fa fa-copy"></i></a>
+                                        <a href="javascript:void(0)" class="btn btn-delete" onclick="MyDynItem.del(this,{dl_action:2})"><i class="fa fa-times"></i></a>
+                                    </td>
+                                </tr>
+                                <?php } ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <?php } ?>
+
             </div>
 
             <!-- 右栏 -->
             <div class="layui-col-md4">
-                    
-            <div class="layui-form-item">
-                <label class="layui-form-label">产品分类</label>
-                <div class="layui-input-block">
-                <select name="cid" lay-verify="required">
-                    {foreach name="category_level_list" item="vo"}
-                    <option value="{$vo.id}" {if condition="$data.cid==$vo.id"} selected="selected"{/if}>{neq name="vo.level" value="1"}|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----';}{/php}{/neq} {$vo.name}</option>
-                    {/foreach}
-                </select>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">所属站点</label>
+                    <div class="layui-input-block">
+                        {include file="/npd/_components/select_npdSiteId" layVerify="require" props="disabled"/}
+                    </div>
                 </div>
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">缩略图</label>
-                <div class="layui-input-block j-upload-thumb" data-default="{$data.thumb}">  </div>
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">排序</label>
-                <div class="layui-input-block">
-                <input type="number" name="sort" placeholder="排序，越大越前" class="layui-input" value="{$data.sort}" >
-                <div class="layui-form-mid layui-word-aux"> 数字越大，排序越前</div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">产品分类</label>
+                    <div class="layui-input-block">
+                    <select name="cid" lay-verify="required">
+                        {foreach name="category_level_list" item="vo"}
+                        <option value="{$vo.id}" {if condition="$data.cid==$vo.id"} selected="selected"{/if}>{neq name="vo.level" value="1"}|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----';}{/php}{/neq} {$vo.name} - {$vo.site_name}</option>
+                        {/foreach}
+                    </select>
+                    </div>
                 </div>
-            </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">缩略图</label>
+                    <div class="layui-input-block j-upload-thumb" data-default="{$data.thumb}">  </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">排序</label>
+                    <div class="layui-input-block">
+                    <input type="number" name="sort" placeholder="排序，越大越前" class="layui-input" value="{$data.sort}" >
+                    <div class="layui-form-mid layui-word-aux"> 数字越大，排序越前</div>
+                    </div>
+                </div>
 
-            <div class="layui-form-item">
-                <label class="layui-form-label">发布时间</label>
-                <div class="layui-input-block">
-                <input type="text" class="layui-input" id="j-publish_time" name="publish_time" value="{$data.publish_time}">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">发布时间</label>
+                    <div class="layui-input-block">
+                    <input type="text" class="layui-input" id="j-publish_time" name="publish_time" value="{$data.publish_time}">
+                    </div>
                 </div>
-            </div>
 
-
-            <div class="layui-form-item">
-                <label class="layui-form-label">其它</label>
-                <div class="layui-input-block">
-                <input type="checkbox" name="status" title="显示" value='1' {if condition="$data.status==1"} checked="checked"{/if}> 
-                <input type="checkbox" name="is_recommend" value='1' title="推荐" {if condition="$data.is_recommend==1"} checked="checked"{/if}> 
-                <!-- <input type="checkbox" name="is_top" title="置顶" {if condition="$data.is_top==1"} checked="checked"{/if}> -->
+                <div class="layui-form-item">
+                    <label class="layui-form-label">其它</label>
+                    <div class="layui-input-block">
+                    <input type="checkbox" name="status" title="显示" value='1' {if condition="$data.status==1"} checked="checked"{/if}> 
+                    <input type="checkbox" name="is_recommend" value='1' title="推荐" {if condition="$data.is_recommend==1"} checked="checked"{/if}> 
+                    <!-- <input type="checkbox" name="is_top" title="置顶" {if condition="$data.is_top==1"} checked="checked"{/if}> -->
+                    </div>
                 </div>
-            </div>
-            
 
             </div>
 
@@ -336,5 +424,4 @@
 {/block}
 {block name="script"}
     {include file="/npd/product/_form_js" /}
-
 {/block}

@@ -18,6 +18,7 @@ class NpdAdminBase extends AdminBase
 {
 
     public $authNpdSite = [];
+    public $siteListIdMap = null;
 
     protected function initialize()
     {
@@ -95,18 +96,34 @@ class NpdAdminBase extends AdminBase
     /**
      * 取得NPD栏目分类(包含siteData)
      *
-     * @param array $siteIds 站点id列表
-     * @param boolean $unGetDeleted 是否不取delete的。
+     * @param string $model model
+     * @param boolean,integer,array $siteIds 站点id, 为false时显示所有站点, 当为array时为站点id列表
+     * @param boolean,integer $status 状态, 为false时显示所有状态
+     * @param  boolean $unGetDeleted 是否不取已删
      * @param boolean $useCache 是否使用缓存
      * @return array
      */
-    public function getNpdCategoryList($siteIds, $unGetDeleted = false, $useCache = true)
+    public function getNpdCategoryList($model = null, $siteIds = false, $status = false, $unGetDeleted = false, $useCache = true)
     {
-        
-        $model = new Category();
+        $categoryInst = new Category();
         $exp = $useCache ? 3600 * 2 : false;
-        $list = $model->getList($siteIds, $unGetDeleted, $exp);
+        $list = $categoryInst->getListByModel($model, $siteIds, $status, $unGetDeleted, $exp);
         $list = $this->listDataAddSiteData($list);
         return $list;
+    }
+
+    /**
+     * 取得siteListIdMap;
+     *
+     * @return array 站点以id为key的字典
+     */
+    public function getSiteListIdMap()
+    {
+        if ($this->siteListIdMap != null) {
+            return $this->siteListIdMap;
+        }
+        $siteList = $this->authNpdSite['site_list'];
+        $this->siteListIdMap = Utils::getInstance()->list2Map($siteList, 'id');
+        return $this->siteListIdMap;
     }
 }

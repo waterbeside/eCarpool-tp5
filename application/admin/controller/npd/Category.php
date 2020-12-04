@@ -18,15 +18,12 @@ class Category extends NpdAdminBase
 
     protected $category_model;
     protected $cacheVersionKey = "NPD:category:version";
-    protected $siteListIdMap;
     protected $siteList;
 
     protected function initialize()
     {
         parent::initialize();
         $this->category_model = new CategoryModel();
-        $siteList = $this->authNpdSite['site_list'];
-        $this->siteListIdMap = Utils::getInstance()->list2Map($siteList, 'id');
     }
 
     /**
@@ -38,7 +35,7 @@ class Category extends NpdAdminBase
         if ($json) {
             $where = [];
             $siteIdwhere = $this->authNpdSite['sql_site_map'];
-            $siteListIdMap = $this->siteListIdMap;
+            $siteListIdMap = $this->getSiteListIdMap();
             if (!empty($siteIdwhere)) {
                 $where[] = $siteIdwhere;
             }
@@ -98,8 +95,7 @@ class Category extends NpdAdminBase
                 $this->jsonReturn(-1, '保存失败');
             }
         } else {
-            $category_level_list = $this->getNpdCategoryList([$this->authNpdSite['site_id']], true, true);
-
+            $category_level_list = $this->getNpdCategoryList(null, $this->authNpdSite['site_id'], false, true, true);
             foreach ($category_level_list as $key => $value) {
                 $category_level_list[$key]['pid'] = $value['parent_id'];
                 $category_level_list[$key]['site_name'] = $value['site_data']['title'] ?? '';
@@ -162,7 +158,7 @@ class Category extends NpdAdminBase
             }
             $data = $itemRes['data'] ?? [];
 
-            $categoryListwhere = [['is_delete', '=', Db::raw(0)],];
+            $categoryListwhere = [['is_delete', '=', Db::raw(0)]];
             // $authSiteWhere = $this->authNpdSite['sql_site_map'];
             // if (!empty($authSiteWhere)) {
             //     $categoryListwhere[] = $authSiteWhere;
@@ -170,7 +166,7 @@ class Category extends NpdAdminBase
             if ($data['site_id']) {
                 $categoryListwhere[] = ['site_id', '=', $data['site_id']];
             }
-            $category_level_list = $this->getNpdCategoryList([$data['site_id']], true, true);
+            $category_level_list = $this->getNpdCategoryList(null, $data['site_id'], false, true, true);
             foreach ($category_level_list as $key => $value) {
                 $category_level_list[$key]['pid'] = $value['parent_id'];
                 $category_level_list[$key]['site_name'] = $value['site_data']['title'] ?? '';

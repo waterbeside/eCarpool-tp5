@@ -15,11 +15,18 @@ FORM_PAGE_EXEC = {
         var ue2 = this.renderUeditor('testing',0)
         var ue3 = this.renderUeditor('bulk_note',0)
         var ue4 = this.renderUeditor('upcharge_leadtime',0)
+        var ue5 = this.renderUeditor('scope',0)
+        var ue6 = this.renderUeditor('reference',0)
+        var ue7 = this.renderUeditor('attention',0)
         var ue_e = this.renderUeditor('intro_en',0)
         var ue1_e = this.renderUeditor('feature_en',0)
         var ue2_e = this.renderUeditor('testing_en',0)
         var ue3_e = this.renderUeditor('bulk_note_en',0)
         var ue4_e = this.renderUeditor('upcharge_leadtime_en',0)
+        var ue5_e = this.renderUeditor('scope_en',0)
+        var ue6_e = this.renderUeditor('reference_en',0)
+        var ue7_e = this.renderUeditor('attention_en',0)
+        
         
 
         /** thumb upload **/
@@ -32,19 +39,24 @@ FORM_PAGE_EXEC = {
 
 
         //merch拖动排序
-        var sortable = new  Sortable($("#merch-list")[0],{
-            handle: ".handle",
-            filter: ".btns",
-            onUpdate: function (evt/**Event*/){ 
-            console.log(evt)
-            }
-        }); 
+        if ($("#merch-list").length > 0) {
+            var sortable = new  Sortable($("#merch-list")[0],{
+                handle: ".handle",
+                filter: ".btns",
+                onUpdate: function (evt/**Event*/){ 
+                console.log(evt)
+                }
+            }); 
+        }
 
         //patent拖动排序
-        var sortable2 = new  Sortable($("#patent-list")[0],{
-            handle: ".handle",
-            filter: ".btns",
-        }); 
+        if ($("#patent-list").length > 0) {
+            var sortable2 = new  Sortable($("#patent-list")[0],{
+                handle: ".handle",
+                filter: ".btns",
+            }); 
+        }
+
 
         //执行一个laydate实例
         layui.laydate.render({
@@ -59,6 +71,7 @@ FORM_PAGE_EXEC = {
          * 提交
          */
         form.on('submit(*product_form)', function (data) {
+            console.log(data);
             _this.submitData(data);
         });
 
@@ -111,6 +124,10 @@ FORM_PAGE_EXEC = {
      * 创建和渲染uedit
      */
     renderUeditor:function(target_id,type){
+        var dom = document.getElementById(target_id);
+        if (!dom) {
+            return null;
+        }
         type = type || 0;
         var toolbars = [
             ['source','|','undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript',
@@ -139,7 +156,7 @@ FORM_PAGE_EXEC = {
             zIndex: 10,
             //默认的编辑区域高度
             initialFrameHeight:initialFrameHeight,
-        })
+        });
         return ue;
     },
 

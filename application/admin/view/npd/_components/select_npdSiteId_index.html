@@ -1,6 +1,7 @@
 <select name="site_id" class="select-jump my-select">
     <?php 
         $paramSiteId = input('site_id') ?: 0;
+        $param = request()->param();
         if (count($authNpdSite['auth_site_list']) > 1) {
     ?>
             <option value="" <?php echo empty($paramSiteId) ? 'selected' : '' ; ?> href="{:url('index')}">全部 </option>
@@ -8,10 +9,13 @@
     <?php 
         foreach ($authNpdSite['auth_site_list'] as $key => $item) { 
             $isSelect = $paramSiteId == $item['id'];
-            $jumpParam = request()->param();
+            $jumpParam = [];
+            if (isset($param['recycled'])) {
+                $jumpParam['recycled'] = $param['recycled'];
+            }
             $jumpParam['site_id'] = $item['id'];
-
+            $jumpParamStr = http_build_query($jumpParam);
     ?>
-        <option value="{$item.id}" <?php echo $isSelect ? 'selected' : '' ; ?> href="{:url('index', $jumpParam)}" >{$item.title} </option>
+        <option value="{$item.id}" <?php echo $isSelect ? 'selected' : '' ; ?> href="{:url('index', $jumpParamStr)}" >{$item.title} </option>
     <?php } ?>
 </select>

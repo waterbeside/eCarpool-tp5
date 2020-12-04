@@ -118,8 +118,9 @@ class Category extends Model
 
 
     /**
-     * 取得列表，如果redis有
+     * 取得列表
      * @param  array<integer> $siteIds 站点id列表
+     * @param  boolean $unGetDeleted 是否不取已删
      * @param  integer $exp 过期时间
      * @return array
      */
@@ -127,20 +128,24 @@ class Category extends Model
     {
         $rKey = "npd:category:list";
         $redis = RedisData::getInstance();
-        $data = json_decode($redis->get($rKey), true);
+        $data = $redis->cache($rKey);
         if ($exp === -2) {
             return $data;
         }
         if (!$data || $exp === -1) {
             $data = $this->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
             $exp = empty($exp) || $exp < 1 ? 3600 * 2 : $exp;
-            $redis->setex($rKey, $exp, json_encode($data));
+            $redis->cache($rKey, $data, $exp);
         }
         $newData = [];
+        if (!empty($siteIds) && is_numeric($siteIds)) {
+            $siteIds = [$siteIds];
+        }
         foreach ($data as $key => $value) {
             if ($unGetDeleted && $value['is_delete']) {
                 continue;
             }
+
             if (!empty($siteIds) && is_array($siteIds)) {
                 if (!in_array($value['site_id'], $siteIds)) {
                     continue;
@@ -149,10 +154,16 @@ class Category extends Model
             $newData[] = $value;
         }
         $data = $newData;
+
         return $data;
     }
 
 
+    /**
+     * 删除列表缓存
+     *
+     * @return void
+     */
     public function deleteListCache()
     {
         $redis = RedisData::getInstance();
@@ -165,23 +176,20 @@ class Category extends Model
      * 取得指定model字段下的分类数据
      *
      * @param string $model model
-     * @param boolean,integer,array $siteId 站点id, 为false时显示所有站点, 当为array时为站点id列表
+     * @param boolean,integer,array $siteIds 站点id, 为false时显示所有站点, 当为array时为站点id列表
      * @param boolean,integer $status 状态, 为false时显示所有状态
+     * @param  boolean $unGetDeleted 是否不取已删
+     * @param  integer $exp 过期时间
      * @return array
      */
-    public function getListByModel($model = '', $siteId = false, $status = false)
+    public function getListByModel($model = null, $siteIds = false, $status = false, $unGetDeleted = false, $exp = 3600 * 2)
     {
-        $res = $this->getList();
+        $res = $this->getList($siteIds, $unGetDeleted, $exp);
         $returnList = [];
         foreach ($res as $key => $value) {
-            $isHitModel = $model === '' || $value['model'] == $model;
-            $isHitStatus = $status === false || $value['status'] == $status;
-            if (is_array($siteId)) {
-                $isHitSiteId = $siteId === false || in_array($value['site_id'], $siteId);
-            } else {
-                $isHitSiteId = $siteId === false || $value['site_id'] == $siteId;
-            }
-            if ($isHitModel && $isHitStatus && $isHitSiteId) {
+            $isHitModel = empty($model) || $value['model'] == $model;
+            $isHitStatus = $status === false || (is_numeric($value['status']) &&  $value['status'] == $status);
+            if ($isHitModel && $isHitStatus) {
                 $returnList[] = $value;
             }
         }

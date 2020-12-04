@@ -1,0 +1,55 @@
+{extend name="base" /}
+{block name="css"}
+<style>
+    body {
+        background: #f0f0f0;
+    }
+    .P-npd-selectSite {
+        text-align: center;
+    }
+    .P-npd-selectSite h1 {
+        padding:20px 0  50px;
+    }
+    .P-npd-selectSite .site-btn{
+        display: inline-block;
+        width: 180px;
+        height: 180px;
+        text-align: center;
+        line-height: 180px;
+        border:1px solid #eee;
+        margin: 40px;
+        font-size: 30px;
+        background-color: #f0f0f0;
+        border-radius: 46px;
+        box-shadow: 16px 16px 40px 0 rgba(0,0,0,.1), -16px -16px 30px 0 rgba(255,255,255,.8);
+        color: #666;
+        transition: all .2s linear;
+    }
+    .P-npd-selectSite .site-btn:hover {
+        transform: scale(1.05);
+        background: linear-gradient(145deg, #d8d8d8, #ffffff);
+    }
+</style>
+{/block}
+{block name="body"}
+<?php 
+    if (count($authNpdSite['auth_site_list']) == 1) {
+        $url = url('', ['site_id'=>$authNpdSite['auth_site_ids'][0]]);
+        Header("HTTP/1.1 303 See Other"); 
+        Header("Location:$url");
+        exit;
+    }
+?>
+
+<div class="layui-tab-content P-npd-selectSite">
+    <h1>请先选择站点</h2>
+    <?php 
+        foreach ($authNpdSite['auth_site_list'] as $key => $item) { 
+    ?>
+        <a class="site-btn" href="{:url('', ['site_id'=>$item['id']])}" >{$item.title} </option>
+    <?php } ?>
+    
+</div>
+
+{/block}
+
