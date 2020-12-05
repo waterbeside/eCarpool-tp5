@@ -50,16 +50,14 @@ class LogTempData extends AdminBase
 
         $lists  = TempDatalModel::field($field)->alias('t')->where($map)->order(' t.time DESC, t.create_date DESC, t.id DESC ')
             // ->fetchSql()->select();
-            ->paginate($pagesize, false, ['page' => $page]);
-
-        foreach ($lists as $key => $value) {
-            try {
-                $lists[$key]['jsonData'] = json_decode($value['data'], true);
-
-            } catch (\Throwable $th) {
-                $lists[$key]['jsonData'] = null;
-            }
-        }
+            ->paginate($pagesize, false, ['query' => request()->param()])
+            ->each(function ($item, $key) {
+                try {
+                    $item->jsonData = json_decode($item->data, true);
+                } catch (\Throwable $th) {
+                    $item->jsonData = null;
+                }
+            });
 
         $returnData = [
             'lists' => $lists,

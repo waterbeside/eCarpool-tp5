@@ -52,7 +52,7 @@ class Digital extends AdminBase
 
         $lists  = DigitalModel::field($field)->alias('t')->where($map)->order('t.id DESC , t.create_date DESC  ')
             // ->fetchSql()->select();
-            ->paginate($pagesize, false, ['page' => $page]);
+            ->paginate($pagesize, false, ['query' => request()->param()]);
 
         if (!empty($lists)) {
             foreach ($lists as $key => $value) {
