@@ -47,11 +47,22 @@ class ScoreConfigs extends AdminBase
         }
 
         $resList = ScoreConfigsModel::alias('t')->field($fields)->join($join)->where($map)->order('d.id')->select();
-
+        $names = [];
+        $namesSelectList = [];
+        foreach ($resList as $key => $value) {
+            if (!in_array($value['name'], $names)) {
+                $names[] = $value['name'];
+                $namesSelectList[] = [
+                    'name' => $value['name'],
+                    'title' => $value['title'],
+                ];
+            }
+        }
         $returnData =  [
             'lists' => $resList,
             'filter' => $filter,
-            'authDoc' => $this->checkActionAuth('admin/Score/doc')
+            'authDoc' => $this->checkActionAuth('admin/Score/doc'),
+            'namesSelectList' => $namesSelectList,
         ];
 
         return $this->fetch('index', $returnData);
