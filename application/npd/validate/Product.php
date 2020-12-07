@@ -20,4 +20,8 @@ class Product extends Validate
         'site_id.min'     => '没有选择站点',
         'site_id.require'     => '没有选择站点',
     ];
+
+    protected $scene = [
+        'edit'  =>  ['title', 'title_en', 'cid'],
+    ];
 }
