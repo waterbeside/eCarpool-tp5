@@ -67,14 +67,7 @@ class Product extends NpdAdminBase
                 $item->site_name = $siteData['title'] ?? '';
             });
 
-
-        $category_level_list = $this->getNpdCategoryList('product', $this->authNpdSite['site_id'], false, true, true);
-        foreach ($category_level_list as $key => $value) {
-            $category_level_list[$key]['pid'] = $value['parent_id'];
-        }
-        $category_level_list = array2level($category_level_list);
-        $this->assign('category_level_list', $category_level_list);
-
+        $this->getCateLevelList('product', $this->authNpdSite['site_id']);
 
         // $category_level_list       = $CategoryModel->getListByModel('product');
         // foreach ($category_level_list as $key => $value) {
@@ -128,20 +121,12 @@ class Product extends NpdAdminBase
             return $this->jsonReturn(0, '添加成功');
         } else {
             $siteId = $this->authNpdSite['site_id'];
-            if (empty($siteId)) {
-                return $this->fetch('npd/common/select_site');
+            $view = $this->addPage('product', false);
+            if ($view) {
+                return $view;
             }
-            $category_level_list = $this->getNpdCategoryList('product', $siteId, false, true, true);
-            foreach ($category_level_list as $key => $value) {
-                $category_level_list[$key]['pid'] = $value['parent_id'];
-                $category_level_list[$key]['site_name'] = $value['site_data']['title'] ?? '';
-            }
-
-            $category_level_list = array2level($category_level_list);
-            $this->assign('category_level_list', $category_level_list);
-
             $productFieldnameSite = new ProductFieldnameSite();
-            $fieldList = $productFieldnameSite->getFieldNames($this->authNpdSite['site_id'], true);
+            $fieldList = $productFieldnameSite->getFieldNames($siteId, true);
             $this->assign('fieldList', $fieldList);
             $this->assign('patent_type_list', config('npd.patent_type'));
             return $this->fetch();
@@ -165,7 +150,7 @@ class Product extends NpdAdminBase
             }
             $data            = $this->request->param();
             $upData = $this->formatFormData($data, $id, $dataDetail);
-            $validate_result = $this->validate($data, 'app\npd\validate\Product');
+            $validate_result = $this->validate($data, 'app\npd\validate\Product.edit');
             if ($validate_result !== true) {
                 $this->jsonReturn(-1, $validate_result);
             }
@@ -197,13 +182,8 @@ class Product extends NpdAdminBase
             if ($dataDetail['site_id']) {
                 $categoryListwhere[] = ['site_id', '=', $dataDetail['site_id']];
             }
-            $category_level_list = $this->getNpdCategoryList('product', $dataDetail['site_id'], false, true, true);
-            foreach ($category_level_list as $key => $value) {
-                $category_level_list[$key]['pid'] = $value['parent_id'];
-                $category_level_list[$key]['site_name'] = $value['site_data']['title'] ?? '';
-            }
-            $category_level_list = array2level($category_level_list);
-            $this->assign('category_level_list', $category_level_list);
+
+            $this->getCateLevelList('product', $dataDetail['site_id']);
 
             $productFieldnameSite = new ProductFieldnameSite();
             $fieldList = $productFieldnameSite->getFieldNames($dataDetail['site_id'], true);
@@ -345,14 +325,7 @@ class Product extends NpdAdminBase
     public function delete($id)
     {
         $productModel = new ProductModel();
-        $this->getItemAndCheckAuthSite($productModel, $id, false, 1);
-        if ($productModel->here('id', $id)->update(['is_delete' => 1])) {
-            $this->log('删除产品成功', 0);
-            $this->jsonReturn(0, '删除成功');
-        } else {
-            $this->log('删除产品失败', -1);
-            $this->jsonReturn(-1, '删除失败');
-        }
+        return $this->checkAuthAndDelete($productModel, $id, true, '删除产品');
     }
 
     /**
