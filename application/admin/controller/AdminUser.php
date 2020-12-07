@@ -182,7 +182,7 @@ class AdminUser extends AdminBase
 
             $data['group_id'] = $auth_group_access['group_id'];
             $data['dept_group_id'] = $auth_group_access['dept_group_id'];
-            $data['user_npdsite_ids'] = $authNpdsite->getUserSiteIds($this->userBaseInfo['uid'], false);
+            $data['user_npdsite_ids'] = $authNpdsite->getUserSiteIds($id, false);
 
             $dept_group_list = DeptGroupModel::select();
             $returnData = [
