@@ -77,16 +77,17 @@ function get_articles_by_cid_paged($cid, $page_size = 15, $where = [], $order = 
  * @param array $array 源数组
  * @param int   $pid
  * @param int   $level
+ * @param string $pidName       父级ID的字段名
  * @return array
  */
-function array2level($array, $pid = 0, $level = 1)
+function array2level($array, $pid = 0, $level = 1, $pidName = 'pid')
 {
     static $list = [];
     foreach ($array as $v) {
-        if ($v['pid'] == $pid) {
+        if ($v[$pidName] == $pid) {
             $v['level'] = $level;
             $list[]     = $v;
-            array2level($array, $v['id'], $level + 1);
+            array2level($array, $v['id'], $level + 1, $pidName);
         }
     }
 
@@ -96,13 +97,13 @@ function array2level($array, $pid = 0, $level = 1)
 /**
  * 构建层级（树状）数组
  * @param array  $array          要进行处理的一维数组，经过该函数处理后，该数组自动转为树状数组
- * @param string $pid_name       父级ID的字段名
- * @param string $child_key_name 子元素键名
+ * @param string $pidName       父级ID的字段名
+ * @param string $childKeyName 子元素键名
  * @return array|bool
  */
-function array2tree(&$array, $pid_name = 'pid', $child_key_name = 'children')
+function array2tree(&$array, $pidName = 'pid', $childKeyName = 'children')
 {
-    $counter = array_children_count($array, $pid_name);
+    $counter = array_children_count($array, $pidName);
     if (!isset($counter[0]) || $counter[0] == 0) {
         return $array;
     }
@@ -112,13 +113,13 @@ function array2tree(&$array, $pid_name = 'pid', $child_key_name = 'children')
         if (isset($counter[$temp['id']]) && $counter[$temp['id']] > 0) {
             array_push($array, $temp);
         } else {
-            if ($temp[$pid_name] == 0) {
+            if ($temp[$pidName] == 0) {
                 $tree[] = $temp;
             } else {
-                $array = array_child_append($array, $temp[$pid_name], $temp, $child_key_name);
+                $array = array_child_append($array, $temp[$pidName], $temp, $childKeyName);
             }
         }
-        $counter = array_children_count($array, $pid_name);
+        $counter = array_children_count($array, $pidName);
     }
 
     return $tree;
