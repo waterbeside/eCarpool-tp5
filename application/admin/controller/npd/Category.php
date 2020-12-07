@@ -72,6 +72,7 @@ class Category extends NpdAdminBase
     {
         if ($this->request->isPost()) {
             $data            = $this->request->param();
+            $this->checkItemSiteAuth($data, 1); //检查权限
             $validate_result = $this->validate($data, 'app\npd\validate\Category');
             if ($validate_result !== true) {
                 $this->jsonReturn(-1, $validate_result);
@@ -120,13 +121,12 @@ class Category extends NpdAdminBase
     public function edit($id)
     {
         $itemRes = $this->getItemAndCheckAuthSite($this->category_model, $id);
-
         if ($this->request->isPost()) {
             if (!$itemRes['auth']) {
                 $this->jsonReturn(-1, '没有权限');
             }
             $data            = $this->request->param();
-            $validate_result = $this->validate($data, 'app\npd\validate\Category');
+            $validate_result = $this->validate($data, 'app\npd\validate\Category.edit');
 
             if ($validate_result !== true) {
                 $this->jsonReturn(-1, $validate_result);
@@ -157,15 +157,6 @@ class Category extends NpdAdminBase
                 return '你没有权限';
             }
             $data = $itemRes['data'] ?? [];
-
-            $categoryListwhere = [['is_delete', '=', Db::raw(0)]];
-            // $authSiteWhere = $this->authNpdSite['sql_site_map'];
-            // if (!empty($authSiteWhere)) {
-            //     $categoryListwhere[] = $authSiteWhere;
-            // }
-            if ($data['site_id']) {
-                $categoryListwhere[] = ['site_id', '=', $data['site_id']];
-            }
             $category_level_list = $this->getNpdCategoryList(null, $data['site_id'], false, true, true);
             foreach ($category_level_list as $key => $value) {
                 $category_level_list[$key]['pid'] = $value['parent_id'];
