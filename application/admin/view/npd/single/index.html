@@ -4,13 +4,16 @@
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
         <ul class="amain-tool-bar">
-        <li class="layui-this"><a href="{:url('admin/npd.single/index')}">单页文章管理</a></li>
-        <li class="btn-item btn-item-add">
-            <a class="layui-btn layui-btn-sm layui-btn-success "
-            onclick="openLayer('{:url('admin/npd.single/add')}',{area: ['96%', '90%'], title:'添加单页文章'});"
-            href="javascript:void(0);">
-            <i class="fa fa-plus"></i> 添加单页文章</a>
-        </li>
+            <li class="btn-item btn-item-right">
+                {include file="/npd/_components/select_npdSiteId_index" /}
+            </li>
+            <li class="layui-this"><a href="{:url('admin/npd.single/index')}">单页文章管理</a></li>
+            <li class="btn-item btn-item-add">
+                <a class="layui-btn layui-btn-sm layui-btn-success "
+                onclick="openLayer('{:url('admin/npd.single/add')}',{area: ['96%', '90%'], title:'添加单页文章'});"
+                href="javascript:void(0);">
+                <i class="fa fa-plus"></i> 添加单页文章</a>
+            </li>
         </ul>
         <div class="layui-tab-content">
 

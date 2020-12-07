@@ -39,49 +39,55 @@
 
             <div class="layui-col-md4">
                 <div class="col-wrapper">
-                <div class="layui-form-item">
-                    <label class="layui-form-label">所属分组</label>
-                    <div class="layui-input-block">
-                    <select name="cid">
-                        <option value="0">选译类型-未选分类</option>
-                        {foreach name="category_level_list" item="vo"}
-                        <option value="{$vo.id}" {if condition="$data.cid==$vo.id"} selected="selected"{/if}>{neq name="vo.level" value="1"}|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----';}{/php}{/neq} {$vo.name}</option>
-                        {/foreach}
-                    </select> 
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">所属站点</label>
+                        <div class="layui-input-block">
+                            {include file="/npd/_components/select_npdSiteId" layVerify="require" props="disabled"/}
+                        </div>
                     </div>
-                </div>
-                
-                <div class="layui-form-item">
-                    <label class="layui-form-label ">选择语言</label>
-                    <div class="layui-input-block">
-                    <select name="lang" lay-verify="required" lay-search>
-                        <option value="0">请选择语言</option>
-                    </select>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">所属分组</label>
+                        <div class="layui-input-block">
+                        <select name="cid">
+                            <option value="0">选译类型-未选分类</option>
+                            {foreach name="category_level_list" item="vo"}
+                            <option value="{$vo.id}" {if condition="$data.cid==$vo.id"} selected="selected"{/if}>{neq name="vo.level" value="1"}|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----';}{/php}{/neq} {$vo.name} - {$vo.site_name}</option>
+                            {/foreach}
+                        </select> 
+                        </div>
                     </div>
-                </div>
-                
-                <div class="layui-form-item">
-                    <label class="layui-form-label">状态</label>
-                    <div class="layui-input-block">
-                    <input type="radio" name="status" value="1" title="显示" {if condition="$data.status==1" } checked="checked" {/if}> 
-                    <input type="radio" name="status" value="0" title="隐藏" {if condition="$data.status==0" } checked="checked" {/if}> 
+                    
+                    <div class="layui-form-item">
+                        <label class="layui-form-label ">选择语言</label>
+                        <div class="layui-input-block">
+                        <select name="lang" lay-verify="required" lay-search>
+                            <option value="0">请选择语言</option>
+                        </select>
+                        </div>
+                    </div>
+                    
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-block">
+                        <input type="radio" name="status" value="1" title="显示" {if condition="$data.status==1" } checked="checked" {/if}> 
+                        <input type="radio" name="status" value="0" title="隐藏" {if condition="$data.status==0" } checked="checked" {/if}> 
+                        </div> 
                     </div> 
-                </div> 
 
-                <div class="layui-form-item">
-                    <label class="layui-form-label">发布时间</label>
-                    <div class="layui-input-block">
-                    <input type="text" class="layui-input" id="j-publish_time" name="publish_time" value="{$data.publish_time}">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">发布时间</label>
+                        <div class="layui-input-block">
+                        <input type="text" class="layui-input" id="j-publish_time" name="publish_time" value="{$data.publish_time}">
+                        </div>
                     </div>
-                </div>
 
-                <div class="layui-form-item">
-                    <label class="layui-form-label">排序</label>
-                    <div class="layui-input-block">
-                    <input type="text" name="sort" value="{$data.sort}" required lay-verify="required"
-                        class="layui-input">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">排序</label>
+                        <div class="layui-input-block">
+                        <input type="text" name="sort" value="{$data.sort}" required lay-verify="required"
+                            class="layui-input">
+                        </div>
                     </div>
-                </div>
                 </div>
             </div>
             <!-- /layui-col-md3  -->

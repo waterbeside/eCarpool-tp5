@@ -36,12 +36,18 @@
             <div class="layui-col-md4">
                 <div class="col-wrapper">
                     <div class="layui-form-item">
+                        <label class="layui-form-label">所属站点</label>
+                        <div class="layui-input-block">
+                            {include file="/npd/_components/select_npdSiteId" layVerify="require" /}
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
                         <label class="layui-form-label">选择分类</label>
                         <div class="layui-input-block">
                             <select name="cid" lay-verify="required">
                             {foreach name="category_level_list" item="vo"}
                             <option value="{$vo.id}">{neq name="vo.level" value="1"}|
-                                {php}for($i=1;$i <$vo['level'];$i++){echo ' ----' ;}{/php}{/neq} {$vo.name}
+                                {php}for($i=1;$i <$vo['level'];$i++){echo ' ----' ;}{/php}{/neq} {$vo.name} - {$vo.site_name}
                             </option> 
                             {/foreach}
                             </select> 

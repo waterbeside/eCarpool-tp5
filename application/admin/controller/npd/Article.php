@@ -23,34 +23,41 @@ class Article extends NpdAdminBase
 
     public function index($cid = 0, $keyword = '', $page = 1)
     {
-        $map   = [];
-        $map[] = ['t.is_delete', '=', Db::raw(0)];
+
+        $where   = [];
+        $where[] = ['t.is_delete', '=', Db::raw(0)];
+        $siteIdwhere = $this->authNpdSite['sql_site_map'];
+        $siteListIdMap = $this->getSiteListIdMap();
+        if (!empty($siteIdwhere)) {
+            $siteIdwhere[0] = 't.site_id';
+            $where[] = $siteIdwhere;
+        }
 
         $field = 't.*,c.name as c_name';
         $CategoryModel = new CategoryModel();
         if ($cid > 0) {
             $cids = $CategoryModel->getChildrensId($cid);
-            $map[] = ['cid', 'in', $cids];
+            $where[] = ['cid', 'in', $cids];
         }
 
         if (!empty($keyword)) {
-            $map[] = ['title', 'like', "%{$keyword}%"];
+            $where[] = ['title', 'like', "%{$keyword}%"];
         }
 
         $join = [
             ['t_category c', 't.cid = c.id', 'left'],
         ];
-        $lists  = ArticleModel::field($field)->alias('t')->join($join)->where($map)->order('t.sort DESC , t.cid DESC , t.create_time DESC')
-            ->paginate(15, false, ['page' => $page]);
+        $lists  = ArticleModel::field($field)->alias('t')->join($join)->where($where)->order('t.sort DESC , t.cid DESC , t.create_time DESC')
+            ->paginate(15, false, ['query' => request()->param()])
+            ->each(function ($item, $key) use ($siteListIdMap) {
+                $siteData = $siteListIdMap[$item->site_id] ?? [];
+                $item->site_name = $siteData['title'] ?? '';
+            });
         // ->fetchSql()->select();
         // dump($lists);exit;
 
-        $category_level_list       = $CategoryModel->getListByModel('article');
-        foreach ($category_level_list as $key => $value) {
-            $category_level_list[$key]['pid'] = $value['parent_id'];
-        }
-        $category_level_list = array2level($category_level_list);
-        $this->assign('category_level_list', $category_level_list);
+        
+        $this->getCateLevelList('article', $this->authNpdSite['site_id']);
 
         return $this->fetch('index', ['lists' => $lists, 'cid' => $cid, 'keyword' => $keyword]);
     }
@@ -65,6 +72,8 @@ class Article extends NpdAdminBase
     {
         if ($this->request->isPost()) {
             $data            = $this->request->param();
+            $data = $this->request->param();
+            $this->checkItemSiteAuth($data, 1); //检查权限
             $validate_result = $this->validate($data, 'app\npd\validate\Article');
             $data['description'] = $data['description'] ? iconv_substr($data['description'], 0, 250) : '';
             if ($validate_result !== true) {
@@ -80,14 +89,7 @@ class Article extends NpdAdminBase
                 }
             }
         } else {
-            $CategoryModel = new CategoryModel();
-            $category_level_list       = $CategoryModel->getListByModel('article');
-            foreach ($category_level_list as $key => $value) {
-                $category_level_list[$key]['pid'] = $value['parent_id'];
-            }
-            $category_level_list = array2level($category_level_list);
-            $this->assign('category_level_list', $category_level_list);
-            return $this->fetch();
+            return $this->addPage('article', true);
         }
     }
 
@@ -100,15 +102,19 @@ class Article extends NpdAdminBase
      */
     public function edit($id)
     {
+        $dataModel = new ArticleModel();
         if ($this->request->isPost()) {
+            $itemRes = $this->getItemAndCheckAuthSite($dataModel, $id);
+            if (!$itemRes['auth']) {
+                $this->jsonReturn(-1, '没有权限');
+            }
             $data            = $this->request->param();
-            $validate_result = $this->validate($data, 'app\npd\validate\Article');
+            $validate_result = $this->validate($data, 'app\npd\validate\Article.edit');
             $data['description'] = $data['description'] ? iconv_substr($data['description'], 0, 250) : '';
             if ($validate_result !== true) {
                 $this->jsonReturn(-1, $validate_result);
             } else {
-                $article_model = new ArticleModel();
-                if ($article_model->allowField(true)->save($data, $id) !== false) {
+                if ($dataModel->allowField(true)->save($data, $id) !== false) {
                     $this->log('编辑NPD文档成功', 0);
                     $this->jsonReturn(0, '修改成功');
                 } else {
@@ -117,16 +123,7 @@ class Article extends NpdAdminBase
                 }
             }
         } else {
-            $data = ArticleModel::find($id);
-            $CategoryModel = new CategoryModel();
-            $category_level_list       = $CategoryModel->getListByModel('article');
-            foreach ($category_level_list as $key => $value) {
-                $category_level_list[$key]['pid'] = $value['parent_id'];
-            }
-            $category_level_list = array2level($category_level_list);
-            $this->assign('category_level_list', $category_level_list);
-            $this->assign('data', $data);
-            return $this->fetch();
+            return $this->editPage($dataModel, $id, 'article', true);
         }
     }
 
@@ -140,14 +137,7 @@ class Article extends NpdAdminBase
     public function delete($id = 0, $ids = [])
     {
         $id = $ids ? $ids : $id;
-        if ($id) {
-            if (ArticleModel::destroy($id)) {
-                $this->jsonReturn(0, '删除成功');
-            } else {
-                $this->jsonReturn(-1, '删除失败');
-            }
-        } else {
-            $this->jsonReturn(-1, '请选择需要删除的文章');
-        }
+        $dataModel = new ArticleModel();
+        return $this->checkAuthAndDelete($dataModel, $id, true, '删除NPD文章');
     }
 }
