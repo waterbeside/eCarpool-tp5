@@ -4,6 +4,9 @@
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
         <ul class="amain-tool-bar">
+            <li class="btn-item btn-item-right">
+                {include file="/npd/_components/select_npdSiteId_index" /}
+            </li>
             <li <?php if(!$recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/npd.nav/index')}"  >导航管理</a></li>
             <li <?php if($recycled) echo 'class="layui-this"';?> ><a href="{:url('admin/npd.nav/index',['recycled'=>1])}"  >回收站</a></li>
             <li class="btn-item btn-item-add">
@@ -35,6 +38,9 @@
 <script src="__JS__/ueditor/ueditor.all.min.js"></script>
 {/block}
 {block name="script"}
+<?php 
+    $siteId = input('site_id');
+?>
 <script>
 PAGE_EXEC = {
     data : {
@@ -43,17 +49,17 @@ PAGE_EXEC = {
     treetable : $('#NpdCateTree'),
     getData : function(){
         var _this = this;
-        $.get("{:URL('admin/npd.nav/index',['json'=>1,'recycled'=>$recycled])}").then(function(res){
-        if(res.code === 0){
+        $.get("{:URL('admin/npd.nav/index',['json'=>1,'recycled'=>$recycled, 'site_id'=>$siteId])}").then(function(res){
+            if (res.code === 0) {
 
-            _this.data.treeList = res.data
-            _this.setTreegrid();
+                _this.data.treeList = res.data
+                _this.setTreegrid();
 
-        }else{
-            layer.msg('数据加载失败');
+            } else {
+                layer.msg('数据加载失败');
 
-        }
-        _this
+            }
+            // _this
         })
     },
 
@@ -72,17 +78,19 @@ PAGE_EXEC = {
         datas: _this.data.treeList,
 
         columns:[[
-                {field:'id',title:'#',width:60},
-                {field:'name',title:'名称',width:290},
-                {field:'name_en',title:'Name',width:100},
-                // {field:'alias',title:'别称',width:100},
-                {field:'sort',title:'排序',width:50},
-                {field:'option',title:'操作',width:100,formatter:formatOption},
-            ]],
+            {field:'id',title:'#',width:60},
+            {field:'site_name',title:'站点',width:40},
+            {field:'name',title:'名称',width:290},
+            {field:'name_en',title:'Name',width:100},
+            // {field:'alias',title:'别称',width:100},
+            {field:'sort',title:'排序',width:50},
+            {field:'option',title:'操作',width:100,formatter:formatOption},
+        ]],
 
         onClickRow:function(row){
 
         },
+
         onLoadSuccess:function(data){
             <?php if($recycled){ ?>
             var countRecycled = 0;

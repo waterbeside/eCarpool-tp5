@@ -44,23 +44,26 @@ class Nav extends Model
 
     /**
      * 取得列表
-     * @param  integer $siteId 站点id
+     * @param  integer|array $siteIds 站点id列表
      * @param  integer $exp 缓存过期时间
      * @return array
      */
-    public function getList($siteId = 0, $exp = 3600 * 2)
+    public function getList($siteIds = null, $exp = 3600 * 2)
     {
         $rKey = "npd:nav:list";
         $redis = RedisData::getInstance();
-        $data = json_decode($redis->get($rKey), true);
-        if (!$data || $exp === -1) {
+        $data = $redis->cache($rKey);
+        if (!$data || empty($exp) || $exp < 1) {
             $data  = $this->where([['is_delete', '=', Db::raw(0)]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
-            $redis->setex($rKey, $exp, json_encode($data));
+            $exp = empty($exp) || $exp < 1 ? 3600 * 2 : $exp;
+            $redis->cache($rKey, $data, $exp);
         }
-        if ($siteId > 0) {
+        if (!empty($siteIds)) {
             $newData = [];
             foreach ($data as $key => $value) {
-                if ($value['site_id'] == $siteId) {
+                if (is_array(($siteIds)) && in_array($value['site_id'], $siteIds)) {
+                    $newData[] = $value;
+                } elseif ($value['site_id'] == $siteIds) {
                     $newData[] = $value;
                 }
             }

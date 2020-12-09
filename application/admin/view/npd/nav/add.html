@@ -2,8 +2,13 @@
 {block name="body"}
 <div class="layui-tab-content P-npdNav-detail-form">
 
-    <form class="layui-form " action="{:url('admin/npdNav/add')}" method="post" id="editForm" data-jump-target="parent">
-
+    <form class="layui-form " action="{:url('admin/npd.nav/add')}" method="post" id="editForm" data-jump-target="parent">
+        <div class="layui-form-item">
+            <label class="layui-form-label">所属站点</label>
+            <div class="layui-input-block">
+                {include file="/npd/_components/select_npdSiteId" layVerify="require" /}
+            </div>
+        </div>
         <div class="layui-form-item">
             <label class="layui-form-label">上级导航</label>
             <div class="layui-input-block">
@@ -47,7 +52,7 @@
                 <input type="radio" name="link_type" value="0" title="不跳转" > 
                 <input type="radio" name="link_type" value="1" title="路由" checked="checked"> 
                 <input type="radio" name="link_type" value="2" title="连接(要写http://)" > 
-            </div> 
+            </div>
         </div> 
         <!-- <div class="layui-form-item">
         <label class="layui-form-label">图标</label>
@@ -81,7 +86,6 @@
                 <button type="reset" class="layui-btn layui-btn-primary">重置</button>
             </div>
         </div>
-
 
     </form>
 
