@@ -32,10 +32,23 @@ class Nav extends NpdAdminBase
     public function index($json = 0, $recycled = 0)
     {
         if ($json) {
+            $where = [];
+            $siteIdwhere = $this->authNpdSite['sql_site_map'];
+            $siteListIdMap = $this->getSiteListIdMap();
+            if (!empty($siteIdwhere)) {
+                $where[] = $siteIdwhere;
+            }
+
             if (!$recycled) {
-                $data = $this->nav_model->getList(1);
+                $data = $this->nav_model->getList($this->authNpdSite['filter_site_ids']);
             } else {
-                $data  = $this->nav_model->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+                $data  = $this->nav_model->where($where)->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+            }
+            if (!empty($data)) {
+                foreach ($data as $key => $item) {
+                    $siteData = $siteListIdMap[$item['site_id']] ?? [];
+                    $data[$key]['site_name'] = $siteData['title'] ?? '';
+                }
             }
             $tree = new Tree();
             $tree->init($data);
@@ -53,10 +66,11 @@ class Nav extends NpdAdminBase
      * @param string $pid
      * @return mixed
      */
-    public function add($pid = '')
+    public function add($pid = 0)
     {
         if ($this->request->isPost()) {
             $data            = $this->request->param();
+            $this->checkItemSiteAuth($data, 1); //检查权限
             $validate_result = $this->validate($data, 'app\npd\validate\Nav');
             if ($validate_result !== true) {
                 $this->jsonReturn(-1, $validate_result);
@@ -74,13 +88,23 @@ class Nav extends NpdAdminBase
                 $this->jsonReturn(-1, '保存失败');
             }
         } else {
-            $nav_level_list       = $this->nav_model->where('is_delete', Db::raw(0))->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
+            $siteId = $this->authNpdSite['site_id'];
+            if (empty($siteId) && empty($pid)) {
+                return view('npd/common/select_site', ['pid' => $pid]);
+            }
+            $pItemRes = $this->getItemAndCheckAuthSite($this->nav_model, $pid);
+            if (!$pItemRes['auth']) {
+                $this->jsonReturn(-1, '没有权限');
+            }
+            $siteId = $pItemRes['data']['site_id'];
+            
+            $nav_level_list    =  $this->nav_model->getList($this->authNpdSite['site_id'] ?: null, 0);
             foreach ($nav_level_list as $key => $value) {
                 $nav_level_list[$key]['pid'] = $value['pid'];
             }
             $nav_level_list = array2level($nav_level_list);
             $this->assign('nav_level_list', $nav_level_list);
-            return $this->fetch('add', ['pid' => $pid]);
+            return $this->fetch('add', ['pid' => $pid, 'site_id'=>$siteId]);
         }
     }
 
@@ -93,7 +117,11 @@ class Nav extends NpdAdminBase
      */
     public function edit($id)
     {
+        $itemRes = $this->getItemAndCheckAuthSite($this->nav_model, $id);
         if ($this->request->isPost()) {
+            if (!$itemRes['auth']) {
+                $this->jsonReturn(-1, '没有权限');
+            }
             $data            = $this->request->param();
             $validate_result = $this->validate($data, 'app\npd\validate\Nav');
 
@@ -116,14 +144,16 @@ class Nav extends NpdAdminBase
                 }
             }
         } else {
-            $nav_level_list       = $this->nav_model->where('is_delete', Db::raw(0))->order(['sort' => 'DESC', 'id' => 'ASC'])->select();
+            if (!$itemRes['auth']) {
+                return '你没有权限';
+            }
+            $data = $itemRes['data'] ?? [];
+            $nav_level_list    =  $this->nav_model->getList($this->authNpdSite['site_id'] ?: null, 0);
             foreach ($nav_level_list as $key => $value) {
                 $nav_level_list[$key]['pid'] = $value['pid'];
             }
             $nav_level_list = array2level($nav_level_list);
             $this->assign('nav_level_list', $nav_level_list);
-
-            $data = $this->nav_model->find($id);
             return $this->fetch('edit', ['data' => $data]);
         }
     }
@@ -131,20 +161,12 @@ class Nav extends NpdAdminBase
 
 
     /**
-     * 删除栏目
+     * 删除导航
      * @param $id
      */
     public function delete($id)
     {
-        if ($this->nav_model->where('id', $id)->update(['is_delete' => 1])) {
-            $this->nav_model->deleteListCache();
-            $this->updateDataVersion($this->cacheVersionKey);
-            $this->log('删除导航菜单成功', 0);
-            $this->jsonReturn(0, '删除成功');
-        } else {
-            $this->log('删除导航菜单失败', -1);
-            $this->jsonReturn(-1, '删除失败');
-        }
+        return $this->checkAuthAndDelete($this->nav_model, $id, true, '删除导航菜单');
     }
 
 
@@ -154,6 +176,7 @@ class Nav extends NpdAdminBase
      */
     public function recycle($id)
     {
+        $this->getItemAndCheckAuthSite($this->nav_model, $id, false, 1);
         if ($this->nav_model->where('id', $id)->update(['is_delete' => 0])) {
             $this->nav_model->deleteListCache();
             $this->updateDataVersion($this->cacheVersionKey);
