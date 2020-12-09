@@ -49,16 +49,13 @@ PAGE_EXEC = {
     getData : function(){
         var _this = this;
         $.get("{:URL('admin/npd.category/index',['json'=>1,'recycled'=>$recycled, 'site_id'=>$siteId])}").then(function(res){
-        if(res.code === 0){
-
-            _this.data.treeList = res.data
-            _this.setTreegrid();
-
-        }else{
-            layer.msg('数据加载失败');
-
-        }
-        _this
+            if (res.code === 0){
+                _this.data.treeList = res.data
+                _this.setTreegrid();
+            } else {
+                layer.msg('数据加载失败');
+            }
+            // _this
         })
     },
 
