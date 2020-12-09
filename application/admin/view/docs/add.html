@@ -159,8 +159,8 @@ $(function() {
     var url="{:url('/api/ueditor')}";
     var ue = UE.getEditor('content',{
         serverUrl :url,
-        toolbars:[['undo','redo','|','forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript','|'
-        ,'justifyleft','justifyright','justifycenter','|','simpleupload','|','blockquote','pasteplain','inserttable','autotypeset','removeformat']],
+        toolbars:[['undo','redo','|','fontsize', 'forecolor','backcolor', 'underline','strikethrough','bold','italic','subscript','superscript','|'
+        ,'justifyleft','justifyright','justifycenter','|','simpleupload','|','blockquote','pasteplain','inserttable','autotypeset','removeformat','drafts']],
         topOffset:0,
         wordCount:true,
         maximumWords:8000,
@@ -168,8 +168,6 @@ $(function() {
         initialFrameHeight:300,
     })
     PAGE_EXEC.init();
-
-
 
 
   /*  var uploadEditor = UE.getEditor('upload-photo-btn');
