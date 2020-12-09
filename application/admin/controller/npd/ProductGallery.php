@@ -29,6 +29,9 @@ class ProductGallery extends NpdAdminBase
         $map   = [];
         $map[] = ['t.is_delete', '=', Db::raw(0)];
 
+
+        $siteListIdMap = $this->getSiteListIdMap();
+
         if (isset($filter['keyword']) && $filter['keyword']) {
             $map[] = ['title|title_en', 'like', "%{$filter['keyword']}%"];
         }
@@ -36,12 +39,28 @@ class ProductGallery extends NpdAdminBase
             $map[] = ['status', '=', $filter['status']];
         }
         $map[] = ['model', '=', 'product'];
-        if ($pid) {
+        if ($pid > 0) {
+            $ProductModel = new ProductModel();
+            $itemRes = $this->getItemAndCheckAuthSite($ProductModel, $pid);
+            if (!$itemRes['auth']) {
+                return '没有权限';
+            }
             $map[] = ['aid', '=', $pid];
+        } else {
+            $siteIdwhere = $this->authNpdSite['sql_site_map'];
+            if (!empty($siteIdwhere)) {
+                $siteIdwhere[0] = 't.site_id';
+                $map[] = $siteIdwhere;
+            }
         }
+
         $listBef  = GalleryModel::alias('t')->where($map)->order('t.sort DESC , t.create_time DESC , t.id DESC ');
         if ($pagesize > 0 && $pid < 1) {
-            $list =  $listBef->paginate($pagesize, false, ['query' => request()->param()]);
+            $list =  $listBef->paginate($pagesize, false, ['query' => request()->param()])
+            ->each(function ($item, $key) use ($siteListIdMap) {
+                $siteData = $siteListIdMap[$item->site_id] ?? [];
+                $item->site_name = $siteData['title'] ?? '';
+            });
             $total = $list->total();
         } else {
             $list =  $listBef->select();
@@ -65,9 +84,17 @@ class ProductGallery extends NpdAdminBase
      */
     public function add()
     {
+        $pid = input('post.pid') ?: input('param.pid');
+        $ProductModel = new ProductModel();
+        $itemRes = $this->getItemAndCheckAuthSite($ProductModel, $pid);
+
         if ($this->request->isPost()) {
+            if (!$itemRes['auth']) {
+                return $this->jsonReturn(-1, '没有权限');
+            }
             $data          = $this->request->param();
             $data['model'] = 'product';
+            $data['site_id'] = $itemRes['data']['site_id'] ?? 0;
             $data['status'] = isset($data['status']) ? isset($data['status']) : 0;
             $validate_result = $this->validate($data, 'app\npd\validate\Gallery');
             if ($validate_result !== true) {
@@ -80,14 +107,15 @@ class ProductGallery extends NpdAdminBase
                 $this->jsonReturn(-1, '保存失败');
             }
         } else {
-            $pid = input('param.pid');
+            if (!$itemRes['auth']) {
+                return '没有权限';
+            }
             $this->assign('model', 'product');
             $this->assign('aid', $pid);
             $this->assign('form_action', url('admin/npd.productGallery/add', ['pid'=>$pid]));
             return $this->fetch('npd/gallery/add');
         }
     }
-
 
 
     /**
@@ -97,9 +125,18 @@ class ProductGallery extends NpdAdminBase
      */
     public function edit($id)
     {
+        $itemData     = GalleryModel::find($id);
+        if ($itemData) {
+            $ProductModel = new ProductModel();
+            $itemRes = $this->getItemAndCheckAuthSite($ProductModel, $itemData['aid']);
+        }
         if ($this->request->isPost()) {
+            if (!$itemRes['auth']) {
+                return $this->jsonReturn(-1, '没有权限');
+            }
             $data          = $this->request->param();
             $data['model'] = 'product';
+            $data['site_id'] = $itemRes['data']['site_id'] ?? 0;
             $data['status'] = isset($data['status']) ? isset($data['status']) : 0;
             $validate_result = $this->validate($data, 'app\npd\validate\Gallery');
             if ($validate_result !== true) {
@@ -112,10 +149,12 @@ class ProductGallery extends NpdAdminBase
                 $this->jsonReturn(-1, '保存失败');
             }
         } else {
-            $data     = GalleryModel::find($id);
+            if (!$itemRes['auth']) {
+                return '没有权限';
+            }
             $this->assign('form_action', url('admin/npd.productGallery/edit'));
             $this->assign('id', $id);
-            return $this->fetch('npd/gallery/edit', ['data' => $data]);
+            return $this->fetch('npd/gallery/edit', ['data' => $itemData]);
         }
     }
 
@@ -126,6 +165,14 @@ class ProductGallery extends NpdAdminBase
      */
     public function delete($id)
     {
+        $data     = GalleryModel::find($id);
+        if ($data) {
+            $ProductModel = new ProductModel();
+            $itemRes = $this->getItemAndCheckAuthSite($ProductModel, $data['aid']);
+            if (!$itemRes['auth']) {
+                $this->jsonReturn(-1, '没有权限');
+            }
+        }
         if (GalleryModel::where('id', $id)->update(['is_delete' => 1])) {
             $this->log('删除产品图片成功', 0);
             $this->jsonReturn(0, '删除成功');
