@@ -30,7 +30,7 @@ class Product extends NpdApiBase
     {
         $keyword = input('keyword', '', 'addslashes');
         $mapExp = '';
-        $orderBy = 'is_top DESC , sort DESC';
+        $orderBy = 'is_top DESC , sort DESC, id DESC';
         $map = [
             ['is_delete', '=', Db::raw(0)],
             ['status', '=', 1],
