@@ -45,8 +45,12 @@
     <h1>请先选择站点</h2>
     <?php 
         foreach ($authNpdSite['auth_site_list'] as $key => $item) { 
+        $param = ['site_id'=>$item['id']];
+        if (isset($pid) && !empty($pid)) {
+            $param['pid'] = $pid;
+        }
     ?>
-        <a class="site-btn" href="{:url('', ['site_id'=>$item['id']])}" >{$item.title} </option>
+        <a class="site-btn" href="{:url('', $param)}" >{$item.title} </option>
     <?php } ?>
     
 </div>
