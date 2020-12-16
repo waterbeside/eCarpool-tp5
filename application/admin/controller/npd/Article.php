@@ -71,7 +71,6 @@ class Article extends NpdAdminBase
     public function add()
     {
         if ($this->request->isPost()) {
-            $data            = $this->request->param();
             $data = $this->request->param();
             $this->checkItemSiteAuth($data, 1); //检查权限
             $validate_result = $this->validate($data, 'app\npd\validate\Article');
