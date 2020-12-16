@@ -24,7 +24,7 @@
                 <option value="0">根栏目</option>
                 {foreach name="category_level_list" item="vo"}
                 <option value="{$vo.id}" {if condition="$cid==$vo['id']" } selected="selected" {/if}>{neq name="vo.level"
-                    value="1" }|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----' ;}{/php}{/neq} {$vo.name}</option>
+                    value="1" }|{php}for($i=1;$i<$vo['level'];$i++){echo ' ----' ;}{/php}{/neq} {$vo.name} - {$vo.site_name}</option>
                     {/foreach} </select> </div> </div> <div class="layui-inline">
                     <div class="layui-input-inline">
                     <input type="text" name="keyword" value="{$keyword}" placeholder="请输入关键词" class="layui-input">
