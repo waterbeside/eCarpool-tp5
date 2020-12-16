@@ -188,7 +188,7 @@ class NpdAdminBase extends AdminBase
      * @param boolean $isFetch 是否直接渲染模板
      * @return void
      */
-    public function editPage($modelInstance, $id, $cateModelName, $isFetch = false)
+    public function editPage($modelInstance, $id, $cateModelName = null, $isFetch = false)
     {
         $itemRes = $this->getItemAndCheckAuthSite($modelInstance, $id);
         if (!$itemRes['auth']) {
@@ -196,8 +196,9 @@ class NpdAdminBase extends AdminBase
         }
         $data = $itemRes['data'] ?? [];
         $this->assign('data', $data);
-
-        $this->getCateLevelList($cateModelName, $data['site_id']);
+        if (!empty($cateModelName)) {
+            $this->getCateLevelList($cateModelName, $data['site_id']);
+        }
         if ($isFetch) {
             return $this->fetch();
         }
@@ -210,7 +211,7 @@ class NpdAdminBase extends AdminBase
      * @param boolean $isFetch 是否直接渲染模板
      * @return void
      */
-    public function addPage($cateModelName, $isFetch = false)
+    public function addPage($cateModelName = null, $isFetch = false)
     {
 
         $siteId = $this->authNpdSite['site_id'];
@@ -218,7 +219,9 @@ class NpdAdminBase extends AdminBase
             return view('npd/common/select_site');
         }
 
-        $this->getCateLevelList($cateModelName, $siteId);
+        if (!empty($cateModelName)) {
+            $this->getCateLevelList($cateModelName, $siteId);
+        }
         if ($isFetch) {
             return $this->fetch();
         }
