@@ -30,15 +30,27 @@ class Banner extends NpdAdminBase
     {
 
 
-        $map  = [];
-        $map[]  = ['is_delete', "=", Db::raw(0)];
+        $where   = [];
+        $where[] = ['t.is_delete', '=', Db::raw(0)];
+        $siteIdwhere = $this->authNpdSite['sql_site_map'];
+        $siteListIdMap = $this->getSiteListIdMap();
+        if (!empty($siteIdwhere)) {
+            $siteIdwhere[0] = 't.site_id';
+            $where[] = $siteIdwhere;
+        }
+
         if (isset($filter['keyword']) && $filter['keyword']) {
-            $map[] = ['title', 'like', "%{$filter['keyword']}%"];
+            $where[] = ['title', 'like', "%{$filter['keyword']}%"];
         }
 
 
-        $lists  = BannerModel::where($map)->order(['sort' => 'DESC', 'id' => 'DESC'])->paginate($pagesize, false, ['page' => $page]);
-        $DepartmentModel = new Department();
+        $lists  = BannerModel::alias('t')->where($where)->order(['sort' => 'DESC', 'id' => 'DESC'])
+            ->paginate($pagesize, false, ['query' => request()->param()])
+            ->each(function ($item, $key) use ($siteListIdMap) {
+                $siteData = $siteListIdMap[$item->site_id] ?? [];
+                $item->site_name = $siteData['title'] ?? '';
+            });
+        // $DepartmentModel = new Department();
 
         foreach ($lists as $key => $value) {
             $lists[$key]['thumb'] = $value["image"];
@@ -60,8 +72,8 @@ class Banner extends NpdAdminBase
     public function add()
     {
         if ($this->request->isPost()) {
-            $data            = $this->request->param();
-
+            $data = $this->request->param();
+            $this->checkItemSiteAuth($data, 1); //检查权限
 
             if ($data['link_type'] > 0 && !trim($data['link'])) {
                 return $this->jsonReturn(-1, '你选择了跳转，请填写跳转连接');
@@ -115,7 +127,13 @@ class Banner extends NpdAdminBase
      */
     public function edit($id)
     {
+        $dataModel = new BannerModel();
+
         if ($this->request->isPost()) {
+            $itemRes = $this->getItemAndCheckAuthSite($dataModel, $id);
+            if (!$itemRes['auth']) {
+                $this->jsonReturn(-1, '没有权限');
+            }
             $data            = $this->request->param();
 
             if ($data['link_type'] > 0 && !trim($data['link'])) {
@@ -152,7 +170,11 @@ class Banner extends NpdAdminBase
                 $this->jsonReturn(-1, '修改失败');
             }
         } else {
-            $data = BannerModel::find($id);
+            $itemRes = $this->getItemAndCheckAuthSite($dataModel, $id);
+            if (!$itemRes['auth']) {
+                return '你没有权限';
+            }
+            $data = $itemRes['data'] ?? [];
             // $deptsArray = explode(',',$data['region_id']);
             $typeList = config('npd.banner_type');
             $data['thumb'] = $data["image"] ? $data["image"] : "";
@@ -168,17 +190,7 @@ class Banner extends NpdAdminBase
      */
     public function delete($id)
     {
-        $oldData = BannerModel::get($id);
-        if (!$oldData) {
-            $this->jsonReturn(0, '删除成功');
-        }
-        $oldData->is_delete = 1;
-        if ($oldData->save()) {
-            $this->log('删除NPD banner图成功', 0);
-            $this->jsonReturn(0, '删除成功');
-        } else {
-            $this->log('删除NPD banner图失败', -1);
-            $this->jsonReturn(-1, '删除失败');
-        }
+        $dataModel = new BannerModel();
+        return $this->checkAuthAndDelete($dataModel, $id, true, '删除NPD banner图');
     }
 }

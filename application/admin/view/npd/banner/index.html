@@ -4,10 +4,13 @@
     <!--tab标签-->
     <div class="layui-tab layui-tab-brief">
         <ul class="amain-tool-bar">
-            <li class="layui-this"><a href="{:url('admin/npd.banner/index')}">Banner管理</a></li>
+            <li class="btn-item btn-item-right">
+                {include file="/npd/_components/select_npdSiteId_index" /}
+            </li>
+            <li class="layui-this"><a href="{:url('admin/npd.banner/index', ['site_id'=>$authNpdSite['site_id']])}">Banner管理</a></li>
             <li class="btn-item btn-item-add">
 
-                <a href="{:url('admin/npd.banner/add')}" data-title="添加Banner" data-trigger="modal" title="添加Banner"
+                <a href="{:url('admin/npd.banner/add', ['site_id'=>$authNpdSite['site_id']])}" data-title="添加Banner" data-trigger="modal" title="添加Banner"
                     class="layui-btn layui-btn-sm layui-btn-success   "><i class="fa fa-plus"></i> 添加Banner</a>
             </li>
         </ul>
@@ -33,15 +36,12 @@
                     <table class="layui-table">
                         <thead>
                             <tr>
-
                                 <th style="width: 30px;">ID</th>
+                                <th style="width: 40px;">站点</th>
                                 <th>图</th>
                                 <th>标题</th>
                                 <th>分类</th>
-
                                 <th>状态</th>
-
-
                                 <th>创建时间</th>
                                 <th>更新时间</th>
                                 <th>Language</th>
@@ -52,6 +52,7 @@
                             {foreach name="lists" item="vo"}
                             <tr>
                                 <td>{$vo.id}</td>
+                                <td>{$vo.site_name}</td>
                                 <td>
                                     <div class="cover-pic-wrapper"
                                         style=" float: left;width:30px;height:30px;background-image:url('{$vo.thumb}')">
