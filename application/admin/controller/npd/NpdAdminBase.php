@@ -209,13 +209,14 @@ class NpdAdminBase extends AdminBase
      *
      * @param string $cateModelName 分类的所属模型名
      * @param boolean $isFetch 是否直接渲染模板
+     * @param boolean $selectBefore 是否先让其选择站点
      * @return void
      */
-    public function addPage($cateModelName = null, $isFetch = false)
+    public function addPage($cateModelName = null, $isFetch = false, $selectBefore = true)
     {
 
         $siteId = $this->authNpdSite['site_id'];
-        if (empty($siteId)) {
+        if (empty($siteId) && $selectBefore) {
             return view('npd/common/select_site');
         }
 
@@ -250,35 +251,40 @@ class NpdAdminBase extends AdminBase
      * @param integer|array $id 数据id
      * @param boolean $isFetch 是否直接渲染模板
      * @param string $logFlag 记录日志时语句，为null时不记录
+     * @param callable $successFun 回调函数
      * @return void
      */
-    public function checkAuthAndDelete($modelInstance, $id, $isFetch = false, $logFlag = null)
+    public function checkAuthAndDelete($modelInstance, $id, $isFetch = false, $logFlag = null, callable $successFun = null)
     {
         
         if (empty($id)) {
             return $this->jsonReturn(-1, '请选择需要删除的内容');
         }
+        $data = null;
         if (is_array($id)) {
             $this->checkIdsAuth($modelInstance, $id, true, 1);
             $where = [['id', 'in', $id]];
         } else {
-            $this->getItemAndCheckAuthSite($modelInstance, $id, false, 1);
+            $itemRes = $this->getItemAndCheckAuthSite($modelInstance, $id, false, 0);
+            if (!$itemRes['auth']) {
+                $this->jsonReturn(-1, '没有权限');
+            }
+            $data = $itemRes['data'] ?? [];
             $where = [['id', '=', $id]];
         }
         $res = $modelInstance->where($where)->update(['is_delete' => 1]);
-        if (!$isFetch) {
-            return $res;
-        }
-        if ($res) {
-            if ($logFlag) {
+        if ($logFlag) {
+            if ($res !== false) {
                 $this->log("{$logFlag}成功", 0);
-            }
-            return $this->jsonReturn(0, '删除成功');
-        } else {
-            if ($logFlag) {
+            } else {
                 $this->log("{$logFlag}失败", -1);
             }
-            return $this->jsonReturn(-1, '删除失败');
         }
+        if ($successFun && $res) {
+            call_user_func_array($successFun, [$data]);
+        }
+        return $res !== false
+        ? ($isFetch ? $this->jsonReturn(0, '删除成功') : true)
+        : ($isFetch ? $this->jsonReturn(-1, '删除失败') : false);
     }
 }
