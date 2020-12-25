@@ -98,6 +98,7 @@ class Banner extends NpdAdminBase
                 'link_type' => $data['link_type'],
                 'link' => $data['link'],
                 'lang' => $data['lang'],
+                'site_id' => $data['site_id'],
             ];
             if ($data['thumb'] && trim($data['thumb'])) {
                 $upData['image'] =  $data['thumb'];
@@ -145,7 +146,7 @@ class Banner extends NpdAdminBase
             if ($data['lang'] == '-1') {
                 $data['lang'] = $data['lang_input'];
             }
-            $validate_result = $this->validate($data, 'app\npd\validate\Banner');
+            $validate_result = $this->validate($data, 'app\npd\validate\Banner.edit');
             if ($validate_result !== true) {
                 return $this->jsonReturn(-1, $validate_result);
             }
