@@ -83,7 +83,7 @@ class ProductRcm extends NpdAdminBase
                 $this->jsonReturn(-1, '保存失败');
             }
         } else {
-            return $this->addPage(null, true);
+            return $this->addPage(null, true, false);
         }
     }
 
