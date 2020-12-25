@@ -45,6 +45,7 @@ class User extends Validate
         $map = [
             ['account', '=', $value],
             ['is_delete', '=', Db::raw(0)],
+            ['site_id', '=', $data['site_id']],
         ];
         $pk = $userModel->getPk();
         if (is_string($pk)) {
