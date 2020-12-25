@@ -20,33 +20,44 @@ class User extends NpdAdminBase
 
     public function index($filter = [], $page = 1, $pagesize = 15)
     {
-        $map   = [];
-        // $map[] = ['t.is_delete', '=', Db::raw(0)];
+
+        $where   = [];
+        $siteIdwhere = $this->authNpdSite['sql_site_map'];
+        $siteListIdMap = $this->getSiteListIdMap();
+
+        if (!empty($siteIdwhere)) {
+            $siteIdwhere[0] = 't.site_id';
+            $where[] = $siteIdwhere;
+        }
 
         $field = 't.*';
 
         //筛选用户信息
         if (isset($filter['keyword']) && $filter['keyword']) {
-            $map[] = ['account', 'like', "%{$filter['keyword']}%"];
+            $where[] = ['account', 'like', "%{$filter['keyword']}%"];
         }
 
         //筛选用户邮箱信息
         if (isset($filter['email']) && $filter['email']) {
-            $map[] = ['email', 'like', "%{$filter['email']}%"];
+            $where[] = ['email', 'like', "%{$filter['email']}%"];
         }
         
         //筛选是否被删的用户
         $is_delete = isset($filter['is_delete']) && $filter['is_delete'] ? Db::raw(1) : Db::raw(0);
-        $map[] = ['is_delete', '=', $is_delete];
+        $where[] = ['is_delete', '=', $is_delete];
 
         //筛选状态用户
         if (isset($filter['status']) && is_numeric($filter['status'])) {
             $status = $filter['status'] ? Db::raw(1) : Db::raw(0);
-            $map[] = ['status', '=', $status];
+            $where[] = ['status', '=', $status];
         }
 
-        $lists  = UserModel::field($field)->alias('t')->where($map)->order('t.create_time DESC, t.id DESC')
-            ->paginate($pagesize, false, ['page' => $page]);
+        $lists  = UserModel::field($field)->alias('t')->where($where)->order('t.create_time DESC, t.id DESC')
+            ->paginate($pagesize, false, ['query' => request()->param()])
+            ->each(function ($item, $key) use ($siteListIdMap) {
+                $siteData = $siteListIdMap[$item->site_id] ?? [];
+                $item->site_name = $siteData['title'] ?? '';
+            });
 
         $returnData = [
             'lists' => $lists,
@@ -65,6 +76,12 @@ class User extends NpdAdminBase
     {
         if ($this->request->isPost()) {
             $data            = $this->request->post();
+            $this->checkItemSiteAuth($data, 1); //检查权限
+
+            if (empty($data['site_id'])) {
+                return $this->jsonReturn(-1, '请选择站点');
+            }
+
             $user = new UserModel();
             $validate   = new UserValidate();
             $validate_result = $validate->check($data);
@@ -90,7 +107,7 @@ class User extends NpdAdminBase
                 return $this->jsonReturn(-1, '保存失败');
             }
         } else {
-            return $this->fetch('add');
+            return $this->addPage(null, true, false);
         }
     }
 
@@ -101,10 +118,15 @@ class User extends NpdAdminBase
      */
     public function edit($id)
     {
+        $user = new UserModel();
+
         if ($this->request->isPost()) {
+            $itemRes = $this->getItemAndCheckAuthSite($user, $id);
+            if (!$itemRes['auth']) {
+                $this->jsonReturn(-1, '没有权限');
+            }
             $data               = $this->request->post();
             $data['status']  = $this->request->post('status/d', 0);
-            $user = new UserModel();
             //开始验证字段
             $validate   = new UserValidate();
             if (!empty($data['password'])) {
@@ -138,8 +160,9 @@ class User extends NpdAdminBase
                 return $this->jsonReturn(-1, '保存失败');
             }
         } else {
-            $user = UserModel::find($id);
-            return $this->fetch('edit', ['data' => $user]);
+            return $this->editPage($user, $id, null, true);
+            // $user = UserModel::find($id);
+            // return $this->fetch('edit', ['data' => $user]);
         }
     }
 
@@ -149,13 +172,8 @@ class User extends NpdAdminBase
      */
     public function delete($id)
     {
-        if (UserModel::where('id', $id)->update(['is_delete' => 1])) {
-            $this->log('删除NPD用户成功，id=' . $id, 0);
-            return $this->jsonReturn(0, '删除成功');
-        } else {
-            $this->log('删除NPD用户失败，id=' . $id, -1);
-            return $this->jsonReturn(-1, '删除失败');
-        }
+        $dataModel = new UserModel();
+        return $this->checkAuthAndDelete($dataModel, $id, true, '删除NPD用户');
     }
 
     /**
@@ -166,9 +184,13 @@ class User extends NpdAdminBase
         if (!$id) {
             return $this->error('Lost id');
         }
-        $userInfo = UserModel::find($id);
+        $data = UserModel::find($id);
+        $siteListIdMap = $this->getSiteListIdMap();
+        $siteData = $siteListIdMap[$data['site_id']] ?? [];
+        $data['site_name'] = $siteData['title'] ?? '';
+
         $returnData = [
-            'data' => $userInfo,
+            'data' => $data,
         ];
         return $this->fetch('detail', $returnData);
     }

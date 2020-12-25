@@ -4,6 +4,12 @@
         <fieldset class="amain-fieldset layui-elem-field" >
             <legend>基本信息</legend>
             <div class="layui-form-item">
+                <label class="layui-form-label">所属站点</label>
+                <div class="layui-input-block">
+                    {include file="/npd/_components/select_npdSiteId" layVerify="require" /}
+                </div>
+            </div>
+            <div class="layui-form-item">
                 <label class="layui-form-label">账号名</label>
                 <div class="layui-input-block">
                     <input type="text" name="account" value="" required  lay-verify="required" placeholder="请输入用户名" class="layui-input">
