@@ -159,6 +159,7 @@ return [
 
 
   //主框页
+  'Site' => 'Site',
   'Welcome' => 'Welcome',
   'Carpool Management' => 'Carpool Management',
   'Clear cache' => 'Clear cache',

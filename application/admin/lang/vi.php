@@ -159,6 +159,7 @@ return [
 
 
   //主框页
+  'Site' => 'Site',
   'Welcome' => 'Chào mừng bạn',
   'Carpool Management' => 'Carpool Nền tảng quản lý',
   'Clear cache' => 'Xóa bộ nhớ cache',

@@ -156,6 +156,7 @@ return [
   'Time range' => '时间范围',
 
   //主框页
+  'Site' => '站点',
   'Welcome' => '欢迎',
   'Carpool Management' => 'Carpool 管理后台',
   'Clear cache' => '清除缓存',
