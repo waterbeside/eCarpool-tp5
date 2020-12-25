@@ -30,7 +30,7 @@ class Category extends NpdApiBase
     {
         $CateModel = new CateModel();
         $siteId = $this->siteId;
-        $res = $CateModel->getListByModel($model, $siteId, 1);
+        $res = $CateModel->getListByModel($model, $siteId, 1, true);
 
         $list = [];
         if ($res) {
