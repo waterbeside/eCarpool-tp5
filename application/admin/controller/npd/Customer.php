@@ -26,19 +26,34 @@ class Customer extends NpdAdminBase
      */
     public function index($filter = ['keyword' => ''], $page = 1, $pagesize = 20)
     {
-        $map  = [];
-        $map[]  = ['is_delete', "=", Db::raw(0)];
-        if (isset($filter['keyword']) && $filter['keyword']) {
-            $map[] = ['name', 'like', "%{$filter['keyword']}%"];
-        }
-        if (isset($filter['is_recommend'])  && is_numeric($filter['is_recommend'])) {
-            $map[] = ['is_recommend', '=', $filter['is_recommend']];
-        }
-        if (isset($filter['r_group'])  && $filter['r_group'] != '') {
-            $map[] = ['r_group', '=', $filter['r_group']];
+        $where  = [];
+        $where[]  = ['is_delete', "=", Db::raw(0)];
+
+        $siteIdwhere = $this->authNpdSite['sql_site_map'];
+        $siteListIdMap = $this->getSiteListIdMap();
+
+        if (!empty($siteIdwhere)) {
+            $where[] = $siteIdwhere;
         }
 
-        $lists  = CustomerModel::where($map)->order(['sort' => 'DESC', 'id' => 'DESC'])->paginate($pagesize, false, ['page' => $page]);
+
+        if (isset($filter['keyword']) && $filter['keyword']) {
+            $where[] = ['name', 'like', "%{$filter['keyword']}%"];
+        }
+        if (isset($filter['is_recommend'])  && is_numeric($filter['is_recommend'])) {
+            $where[] = ['is_recommend', '=', $filter['is_recommend']];
+        }
+        if (isset($filter['r_group'])  && $filter['r_group'] != '') {
+            $where[] = ['r_group', '=', $filter['r_group']];
+        }
+
+        $lists  = CustomerModel::where($where)->order(['sort' => 'DESC', 'id' => 'DESC'])
+            ->paginate($pagesize, false, ['query' => request()->param()])
+            ->each(function ($item, $key) use ($siteListIdMap) {
+                $siteData = $siteListIdMap[$item->site_id] ?? [];
+                $item->site_name = $siteData['title'] ?? '';
+            });
+
         $this->assign('lists', $lists);
         $this->assign('filter', $filter);
         $this->assign('pagesize', $pagesize);
@@ -54,6 +69,11 @@ class Customer extends NpdAdminBase
     {
         if ($this->request->isPost()) {
             $data            = $this->request->param();
+            $this->checkItemSiteAuth($data, 1); //检查权限
+
+            if (empty($data['site_id'])) {
+                return $this->jsonReturn(-1, '请选择站点');
+            }
 
             if (!$data['thumb']) {
                 $this->jsonReturn(-1, '请上传缩略图');
@@ -69,6 +89,7 @@ class Customer extends NpdAdminBase
                 'thumb' => $data['thumb'],
                 'is_recommend' => isset($data['is_recommend']) ? $data['is_recommend'] : 0,
                 'r_group' => $data['r_group'],
+                'site_id' => $data['site_id'],
             ];
 
 
@@ -76,7 +97,7 @@ class Customer extends NpdAdminBase
 
             $id = $CustomerModel->insertGetId($upData);
             if ($id) {
-                $CustomerModel->deleteListCache();
+                $CustomerModel->deleteListCache($data['site_id']);
                 $this->log('添加客户成功', 0);
                 $this->jsonReturn(0, '保存成功');
             } else {
@@ -98,7 +119,14 @@ class Customer extends NpdAdminBase
      */
     public function edit($id)
     {
+        $dataModel = new CustomerModel();
+
         if ($this->request->isPost()) {
+            $itemRes = $this->getItemAndCheckAuthSite($dataModel, $id);
+            if (!$itemRes['auth']) {
+                $this->jsonReturn(-1, '没有权限');
+            }
+            $siteId = $itemRes['data']['site_id'] ?? 0;
             $data            = $this->request->param();
 
             if (!$data['thumb']) {
@@ -117,10 +145,8 @@ class Customer extends NpdAdminBase
                 'is_recommend' => isset($data['is_recommend']) ? $data['is_recommend'] : 0,
             ];
 
-            $CustomerModel = new CustomerModel();
-
-            if ($CustomerModel->where('id', $id)->update($upData) !== false) {
-                $CustomerModel->deleteListCache();
+            if ($dataModel->where('id', $id)->update($upData) !== false) {
+                $dataModel->deleteListCache($siteId);
                 $this->log('编辑客户成功', 0);
                 $this->jsonReturn(0, '修改成功');
             } else {
@@ -128,9 +154,8 @@ class Customer extends NpdAdminBase
                 $this->jsonReturn(-1, '修改失败');
             }
         } else {
-            $data = CustomerModel::find($id);
             $this->assign('groups', config('npd.customer_group'));
-            return $this->fetch('edit', ['data' => $data]);
+            return $this->editPage($dataModel, $id, null, true);
         }
     }
 
@@ -141,20 +166,12 @@ class Customer extends NpdAdminBase
      */
     public function delete($id)
     {
-        $CustomerModel = new CustomerModel();
-        $oldData = $CustomerModel->get($id);
-        if (!$oldData) {
-            $this->jsonReturn(0, '删除成功');
-        }
-        $oldData->is_delete = 1;
-        if ($oldData->save()) {
-            $CustomerModel->deleteListCache();
-            $this->log('删除产品客户成功', 0);
-            $this->jsonReturn(0, '删除成功');
-        } else {
-            $this->log('删除产品客户失败', -1);
-            $this->jsonReturn(-1, '删除失败');
-        }
+        $dataModel = new CustomerModel();
+        return $this->checkAuthAndDelete($dataModel, $id, true, '删除产品客户', function ($res) use ($dataModel) {
+            if ($res && $res['site_id']) {
+                $dataModel->deleteListCache($res['site_id']);
+            }
+        });
     }
 
     /**
@@ -162,9 +179,9 @@ class Customer extends NpdAdminBase
      */
     public function public_lists()
     {
-
+        $site_id = $this->authNpdSite['site_id'];
         $CustomerModel = new CustomerModel();
-        $lists = $CustomerModel->getList();
+        $lists = $CustomerModel->getList($site_id);
         $this->jsonReturn(0, ['lists' => $lists], 'success');
     }
 }

@@ -14,24 +14,37 @@ class Customer extends Model
 
     /**
      * 取得列表，如果redis有
+     * @param  integer $site_id 站点id
      * @param  integer $recache 是否不使用缓存
      */
-    public function getList($recache = 0)
+    public function getList($site_id, $recache = 0)
     {
-        $cacheKey = 'npd:customer:list';
+        $cacheKey = "npd:customer:list:siteId_$site_id";
 
         $redis = RedisData::getInstance();
         $lists = json_decode($redis->get($cacheKey), true);
+        $where = [
+            ['is_delete', '=', Db::raw(0)]
+        ];
+        if ($site_id > 0) {
+            $where[] = ['site_id', '=', $site_id];
+        }
 
         if (!$lists || $recache) {
-            $lists  = $this->where([['is_delete', '=', Db::raw(0)]])->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
+            $lists  = $this->where($where)->order(['sort' => 'DESC', 'id' => 'ASC'])->select()->toArray();
             $redis->setex($cacheKey, 3600 * 4, json_encode($lists));
         }
         return $lists;
     }
 
 
-    public function deleteListCache()
+    /**
+     * 清除列表缓存
+     *
+     * @param  integer $site_id 站点id
+     * @return void
+     */
+    public function deleteListCache($site_id)
     {
         $redis = RedisData::getInstance();
         $redis->del("npd:customer:list");

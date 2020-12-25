@@ -4,17 +4,20 @@
 	<!--tab标签-->
 	<div class="layui-tab layui-tab-brief">
 		<ul class="amain-tool-bar">
-			<li class="layui-this"><a href="{:url('admin/npd.customer/index')}">客户管理</a></li>
+			<li class="btn-item btn-item-right">
+				{include file="/npd/_components/select_npdSiteId_index" /}
+			</li>
+			<li class="layui-this"><a href="{:url('admin/npd.customer/index', ['site_id'=>$authNpdSite['site_id']])}">客户管理</a></li>
 			<li class="btn-item btn-item-add">
 
-				<a href="{:url('admin/npd.customer/add')}" data-title="添加客户 " data-trigger="modal" title="添加客户 "
+				<a href="{:url('admin/npd.customer/add', ['site_id'=>$authNpdSite['site_id']])}" data-title="添加客户 " data-trigger="modal" title="添加客户 "
 				class="layui-btn layui-btn-sm layui-btn-success   "><i class="fa fa-plus"></i> 添加客户</a>
 
 			</li>
 		</ul>
 		<div class="layui-tab-content">
 
-			<form class="layui-form layui-form-pane" action="{:url('admin/npd.customer/index')}" method="get">
+			<form class="layui-form layui-form-pane" action="{:url('admin/npd.customer/index', ['site_id'=>$authNpdSite['site_id']])}" method="get">
 
 				<div class="layui-inline">
 				<div class="layui-input-inline">
@@ -49,6 +52,7 @@
 					<thead>
 					<tr>
 						<th style="width: 30px;">ID</th>
+						<th style="width: 40px;">站点</th>
 						<th>图</th>
 						<th>名称</th>
 						<th>推荐</th>
@@ -60,6 +64,7 @@
 					{foreach name="lists" item="vo"}
 					<tr>
 						<td>{$vo.id}</td>
+						<td>{$vo.site_name}</td>
 						<td>
 						<div class="cover-pic-wrapper"
 							style=" float: left;width:30px;height:30px;background-image:url('{$vo.thumb}')"></div>
