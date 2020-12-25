@@ -236,12 +236,15 @@ class Category extends Model
             }
             $path = $cateDetail['path'] . $cid;
         } elseif (is_array($cid) && isset($cid['path'])) {
-            $path = $cid['path'] . $cid['id'];
+            $cateDetail = $cid;
+            $path = $cateDetail['path'] . $cateDetail['id'];
         } else {
             return false;
         }
+        $siteId = $cateDetail['site_id'];
         $path_arr = explode(',', $path);
-        $list_data = $this->getListByModel($model, 1);
+
+        $list_data = $this->getListByModel($model, $siteId);
         $list_temp = [];
         foreach ($list_data as $k => $v) {
             if (in_array($v['id'], $path_arr)) {
