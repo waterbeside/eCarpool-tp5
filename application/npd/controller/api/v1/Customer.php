@@ -19,7 +19,7 @@ class Customer extends NpdApiBase
     protected function initialize()
     {
         parent::initialize();
-        // $this->checkPassport(1);s
+        // $this->checkPassport(1);
     }
 
     /**
@@ -37,6 +37,7 @@ class Customer extends NpdApiBase
         }
         $map = [
             ['is_delete', '=', Db::raw(0)],
+            ['site_id', '=', $siteId],
         ];
         if ($is_recommend) {
             $map[] = ['is_recommend', '=', Db::raw(1)];
