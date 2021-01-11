@@ -1,0 +1,79 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body">
+
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <ul class=" amain-tool-bar" >
+            <li class="layui-this"><a href="{:url('admin/mis.tvshow.config/sql')}"  >TV SHOW SQL</a></li>
+        
+        </ul>
+        <div class="layui-tab-content">
+            <div class="blank20"></div>
+            <?php if($msg){ ?>
+                <blockquote class="layui-elem-quote layui-elem-quote-warning">
+                {$msg}
+                </blockquote>
+            <?php } ?>
+            <form class="layui-form " action="{:url('admin/mis.tvshow.config/sql')}" method="get">
+                <table class="layui-table">
+                    <tbody>
+                        <tr>
+                            <td width="120">Key </td>
+                            <td>
+                                <div class="layui-input-inline">
+                                    esquel:tv:sql:</div>
+                                <div class="layui-input-inline" style="width: 180px;">
+                                    <input type="text" name="key" value="{$key}" required  lay-verify="required"  class="layui-input">
+                                </div>
+                                <div class="layui-input-inline">
+                                    <button class="layui-btn " lay-submit>query</button>
+                                </div>
+
+
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </form>
+            <form class="layui-form " action="{:url('admin/mis.tvshow.config/sql_update')}" method="post">
+                <input type="hidden" name="key" value="{$key}" required >
+                
+                <table class="layui-table">
+                    <tbody>
+                        <tr>
+                            <td width="120">Sql </td>
+                            <td>
+                                <textarea name="sql" style="height: 400px;" class="layui-textarea" >{$sql}</textarea>
+                                
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+
+                <div class="blank20"></div>
+
+                <div class="layui-btn-container layui-row" style="text-align: right">
+                    <button class="layui-btn layui-btn-lg" lay-submit lay-filter="*">保存</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+PAGE_EXEC = {
+
+}
+
+
+
+</script>
+{/block}
