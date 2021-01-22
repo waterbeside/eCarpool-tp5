@@ -1,0 +1,101 @@
+{extend name="base" /}
+{block name="body"}
+<div class="amain-body wipPoint-item-eidt" >
+    <!--tab标签-->
+    <div class="layui-tab layui-tab-brief">
+
+        <div class="layui-tab-content">
+
+            <form class="layui-form  " action="{:url('admin/mis.wip.wipPoint/add')}" method="post" style="margin-right:15px;" id="editForm" data-jump-target="parent">
+
+                <div class="layui-row">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label"><span class="text-red">*</span>名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="name" required  lay-verify="required" placeholder="请输入名称" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">标准</label>
+                        <div class="layui-input-block">
+                            <input type="number" name="standard"  required  lay-verify="required" class="layui-input">
+                        </div>
+                    </div>
+
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">WIP CODE</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="wip_code"  placeholder="请输入wip_code" class="layui-input">
+
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">语句类型</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="sql_flag" value="1" title="条件语句" checked="checked">
+                            <input type="radio" name="sql_flag" value="0" title="完整语句" >
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">条件语句</label>
+                        <div class="layui-input-block">
+                            <textarea name="condition_sql" placeholder="条件语句" class="layui-textarea" style="height: 200px;"></textarea>
+                            <div class="layui-word-aux">当语句类型为“完整语句”时，请填写完整的SQL语句，否则填写条件语句，即where的部分</div>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">显示级别</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="status" value="2" title="默认勾选">
+                            <input type="radio" name="status" value="1" title="普通显示" checked="checked">
+                            <input type="radio" name="status" value="0" title="不显示" >
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">明细列表</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="is_detail_list" value="1" title="显示" checked="checked">
+                            <input type="radio" name="is_detail_list" value="0" title="不显示" >
+                        </div>
+                    </div>
+
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">排序</label>
+                        <div class="layui-input-block">
+                            <input type="number" name="listorder" value="0" required  lay-verify="required" class="layui-input">
+                            <div class="layui-word-aux">越大越前</div>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">备注</label>
+                        <div class="layui-input-block">
+                            <textarea name="remark" placeholder="remark" class="layui-textarea" ></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="*">更新</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{/block}
+
+{block name="script"}
+<script>
+
+</script>
+{/block}
