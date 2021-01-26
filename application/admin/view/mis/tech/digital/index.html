@@ -95,7 +95,7 @@
                     <th lay-data="{field:'batch_status', width:120}">缸状态</th>
                     <th lay-data="{field:'image_src', width:120}">图稿路径</th>
                     <th lay-data="{field:'status', width:90, fixed: 'right'}">是否关闭</th>
-                    <th lay-data="{field:'options', width:100, fixed: 'right'}">操作</th>
+                    <th lay-data="{field:'options', width:150, fixed: 'right'}">操作</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -149,6 +149,14 @@
                     <a href="{:url('admin/mis.tech.digital/delete',['id'=>$vo['id']])}" class="layui-btn layui-btn-primary layui-btn-xs ajax-delete" title="删除">
                         <i class="layui-icon">&#xe640;</i>
                     </a>
+                    <a class="layui-btn layui-btn-xs layui-btn-success digital-autoFill__btn"
+                        id="autoFill__btn__{$vo.id}"
+                        onclick="PAGE_EXEC.fillItemField({$vo.id})"
+                        href="javascript:void(0);"
+                        title="自动填充">
+                        <span class="loading-text"><i class="fa fa-spin fa-spinner"></i></span>
+                        <span class="text">AF</span>
+                        </a>
                     </td>
                 </tr>
                 {/foreach}
@@ -192,7 +200,15 @@
         background: #009688;
         color: #fff;
         box-shadow: inset 0 0 6px rgba(0,0,0,.1);
-
+    }
+    .digital-autoFill__btn .loading-text {
+        display: none;
+    }
+    .digital-autoFill__btn.loading .loading-text {
+        display: inline;
+    }
+    .digital-autoFill__btn.loading .text {
+        display: none;
     }
 
 </style>
@@ -204,6 +220,9 @@ PAGE_EXEC = {
     init: function(){
         initLayuiTable({ limit: {$pagesize} })
     },
+    /**
+     * 同步数据
+     */
     sync: function() {
         var $btn = $('#sync-btn');
         var isLoading = $btn.data('loading');
@@ -239,6 +258,56 @@ PAGE_EXEC = {
                 $btn.data('loading', false);
             }
         })
+    },
+    /**
+     * 补
+     */
+    fillItemField: function(id) {
+        if (!confirm('自动填充数据，有可能复盖你填写的数据，是否继续')){
+            return false;
+        }
+        var token = MyCookies.get('admin_token');
+        console.log('token', token)
+        var _this = this;
+        var $btn = jQuery('#autoFill__btn__'+id);
+        var isLoading = $btn.data('loading');
+        if (isLoading) {
+            layer.msg('请忽过频点击');
+            return false;
+        }
+        $btn.data('loading', true);
+        console.log($btn.data('loading'));
+        $btn.addClass('loading');
+        this.init();
+        $.ajax({
+            url: 'http://192.168.101.143:8031/mis/api/v1/digital/autoFillItem',
+            method: 'post',
+            dataType: 'json',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader("Authorization", "Bearer "+ token);
+            },
+            data: {id: id},
+            success: function (res) {
+                var code = res.code;
+                if (code === 0 ) {
+                    layer.msg('成功, 请手动刷新列表');
+                } else {
+                    layer.msg(res.msg || res.desc);
+                }
+            },
+            error: function (error) {
+                console.log(error)
+                layer.msg('网络不通，请注意只能在公司内网执行');
+            },
+            complete: function() {
+                // btnDom.classList.remove('loading');        
+                $btn.removeClass('loading');
+                $btn.data('loading', false);
+                _this.init();
+
+            }
+        })
+
     },
     chageStatus: function(id) {
         var _this = this;
