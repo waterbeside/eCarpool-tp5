@@ -51,37 +51,39 @@ PAGE_EXEC = {
         var treegridHeight = document.documentElement.clientHeight-treeOffsetTop-20
         $treetable.kanTreegrid({
 
-        idField:'id',
-        pidField:'pid',
-        treeField: 'title',
-        height:treegridHeight,
-        datas: _this.data.treeList,
+            idField:'id',
+            pidField:'pid',
+            treeField: 'title',
+            height:treegridHeight,
+            datas: _this.data.treeList,
 
-        columns:[[
-                {field:'id',title:'#',width:60},
-                {field:'title',title:'标题',width:290,formatter:formatTitle},
-                {field:'name',title:'路由标识' ,formatter:formatName},
-                {field:'status',title:'状态',width:50,formatter:formatStatus},
-                {field:'sort',title:'排序',width:40},
-                {field:'option',title:'操作',width:150,formatter:formatOption},
-        ]],
-        onClickRow:function(row){
+            columns:[[
+                    {field:'id',title:'#',width:60},
+                    {field:'title',title:'标题',width:290,formatter:formatTitle},
+                    {field:'name',title:'路由标识' ,formatter:formatName},
+                    {field:'status',title:'状态',width:50,formatter:formatStatus},
+                    {field:'sort',title:'排序',width:40},
+                    {field:'option',title:'操作',width:150,formatter:formatOption},
+            ]],
+            onClickRow:function(row){
 
-        },
-        onLoadSuccess:function(node, data){
-            $(".P-menu [data-tips]").each(function(index, el) {
-                var $_this = $(this);
-                $(this).hover(function(){
-                    var tips = $_this.attr('data-tips');
-                    if(tips){
-                    var tipsPosition = $_this.data('tips-position') ;
-                    layer.tips(tips, this,{
-                        // time:1000,
-                        tips:4,
+            },
+            onLoadSuccess:function(node, data){
+                $(".P-menu [data-tips]").each(function(index, el) {
+                    var $_this = $(this);
+                    $(this).hover(function(){
+                        var tips = $_this.attr('data-tips');
+                        if(tips){
+                            var tipsPosition = $_this.data('tips-position') ;
+                            layer.tips(tips, this,{
+                                // time:1000,
+                                tips:4,
+                            })
+                        }
                     })
-                    }
-                })
                 });
+                _this.collapseAll();
+
             }
         })
 
