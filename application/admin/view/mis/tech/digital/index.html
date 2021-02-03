@@ -49,8 +49,8 @@
             <div class="layui-input-inline">
                 <select name="filter[status]">
                 <option value="" {if condition="!isset($filter['status']) || !is_numeric($filter['status'])" }  selected="selected" {/if}>状态：不限 </option>
-                <option value="1" {if condition="isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 1" } selected="selected" {/if}>完结 </option> 
-                <option value="0" {if condition="isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 0"  } selected="selected" {/if}>进行中 </option> 
+                <option value="1" {if condition="isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 1" } selected="selected" {/if}>关闭 </option> 
+                <option value="0" {if condition="isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 0"  } selected="selected" {/if}>开启 </option> 
                 </select> 
             </div>
             <div class="layui-input-inline" style="width: 120px;">
@@ -94,6 +94,7 @@
                     
                     <th lay-data="{field:'batch_status', width:120}">缸状态</th>
                     <th lay-data="{field:'image_src', width:120}">图稿路径</th>
+                    <th lay-data="{field:'create_date', width:120}">同步时间</th>
                     <th lay-data="{field:'status', width:90, fixed: 'right'}">是否关闭</th>
                     <th lay-data="{field:'options', width:150, fixed: 'right'}">操作</th>
                 </tr>
@@ -130,6 +131,8 @@
                     
                     <td>{$vo.batch_status}</td>
                     <td>{$vo.image_src}</td>
+                    <td>{$vo.create_date}</td>
+
                     <td><a href="javascript:void(0);" 
                         id="change-status__btn__{$vo.id}" 
                         class="digital-status__btn status-{$vo.status}" 
@@ -142,7 +145,7 @@
                     <td>
                     <a onclick="openLayer('{:url('admin/mis.tech.digital/edit',['id'=>$vo['id']])}',{area: ['96%', '90%'], title:'编辑数据 #{$vo.id}'});" 
                         href="javascript:void(0);" 
-                        class="layui-btn layui-btn-xs " 
+                        class="layui-btn layui-btn-xs" 
                         title="编辑">
                         <i class="layui-icon">&#xe642;</i>
                     </a>
@@ -280,7 +283,9 @@ PAGE_EXEC = {
         $btn.addClass('loading');
         this.init();
         $.ajax({
+            // url: 'http://127.0.0.1:8031/mis/api/v1/digital/autoFillItem',
             url: 'http://192.168.101.143:8031/mis/api/v1/digital/autoFillItem',
+            // url: 'http://127.0.0.1:8031/mis/api/v1/digital/autoFillItemTest',
             method: 'post',
             dataType: 'json',
             beforeSend: function(xhr) {
