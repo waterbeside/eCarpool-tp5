@@ -37,8 +37,8 @@ class Digital extends AdminBase
         if (isset($filter['keyword2']) && $filter['keyword2']) {
             $map[] = ['model_no|order_id|name', 'like', "%{$filter['keyword2']}%"];
         }
-        if (isset($filter['batch_no']) && $filter['keyword']) {
-            $map[] = ['batch_no', '=', $filter['batch_no']];
+        if (isset($filter['batch_no']) && $filter['batch_no']) {
+            $map[] = ['batch_no|digital_id', 'like', "%{$filter['batch_no']}%"];
         }
 
         if (isset($filter['bulk_sample']) && $filter['bulk_sample']) {
