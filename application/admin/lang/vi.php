@@ -348,6 +348,8 @@ return [
   'sl:已开奖' => 'Already drawn',
   'sl:未开奖' => 'Not yet awarded',
   'sl:中奖' => 'Winning',
+  'sl:未中奖' => 'Not winning',
+  'sl:开奖中' => 'In the lottery',
 
   'sl:管理员操作' => 'Administrator operation',
   'sl:拼车减分' => 'Carpooling is illegal',
