@@ -30,15 +30,16 @@ class User extends Validate
     // edit 验证场景定义
     public function sceneEdit()
     {
-        return $this->only(['loginname', 'Department'])
-            ->remove('loginname', 'unique');
+        return $this->only(['Department']);
+        // return $this->only(['loginname', 'Department'])
+        //     ->remove('loginname', 'unique');
     }
 
     // edit 验证场景定义
     public function sceneEdit_change_password()
     {
-        return $this->only(['loginname', 'Department', 'password', 'confirm_password'])
+        return $this->only(['Department', 'password', 'confirm_password']);
             // ->append('password', 'length:6,18')
-            ->remove('loginname', 'unique');
+            // ->remove('loginname', 'unique');
     }
 }
