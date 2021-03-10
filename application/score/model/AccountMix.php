@@ -113,6 +113,9 @@ class AccountMix extends AccountModel
      */
     public function updateScore($params, $setEffectivePoint = false)
     {
+        $isMustBothChange = config('score.is_must_change_effective_point');
+        $setEffectivePoint =  $isMustBothChange ? true : $setEffectivePoint; // 选检查配置是否两个分一定要同时改变
+
         $account_id   = isset($params['account_id']) ? $params['account_id'] : null;
         $account  = null;
         $accountField = 'carpool_account';

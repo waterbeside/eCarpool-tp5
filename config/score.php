@@ -20,6 +20,7 @@ return [
         "305" => "合理化建议加减",
         "301" => "合并账号",
     ],
+    "is_must_change_effective_point" => true, // 改总分同时，是否一定同时修改合理化奸议分 20201-02-22
     "reason_operable" => ['-99', '-305', '1', '99', '305'], // 后台允许更改的积分原因
     'platform' => [
         'Unknow', 'iOS', 'Android', 'H5', 'master'
