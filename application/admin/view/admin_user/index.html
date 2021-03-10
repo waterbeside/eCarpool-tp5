@@ -11,6 +11,46 @@
             </li>
         </ul>
         <div class="layui-tab-content">
+            <form class="layui-form layui-form-pane" action="{:url('admin/admin_user/index')}" method="get">
+                <div class="layui-inline">
+                    <label class="layui-form-label">检索</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="filter[keyword]" value="{$filter['keyword'] ? $filter['keyword'] :''}" placeholder="用户名|工号｜昵称" class="layui-input" style="width:140px" >
+                    </div>
+                    <div class="layui-input-inline">
+                        <select name="filter[status]">
+                            <option value="1" <?php if(isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 1 ){ echo 'selected="selected"'; } ?> > 正常用户</option>
+                            <option value="0" <?php if(isset($filter['status']) && is_numeric($filter['status']) && $filter['status'] == 0  ){ echo 'selected="selected"'; } ?> > 禁用用户</option>
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <select name="filter[auth_group_id]" lay-search>
+                            <option value="">权限组</option>
+                            <?php
+                                foreach($auth_group_list as $groupItem) {
+                            ?>
+                                <option value="{$groupItem.id}" <?php if(isset($filter['auth_group_id']) && is_numeric($filter['auth_group_id']) && $filter['auth_group_id'] == $groupItem['id'] ){ echo 'selected="selected"'; } ?> > <?php echo $groupItem['title'];?></option>
+                            <?php } ?>
+
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <select name="filter[dept_group_id]" lay-search>
+                            <option value="">地区组</option>
+                            <?php
+                                foreach($dept_group_list as $groupItem) {
+                            ?>
+                                <option value="{$groupItem.id}" <?php if(isset($filter['dept_group_id']) && is_numeric($filter['dept_group_id']) && $filter['dept_group_id'] == $groupItem['id'] ){ echo 'selected="selected"'; } ?> > <?php echo $groupItem['title'];?></option>
+                            <?php } ?>
+
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <input type="hidden" name="export" value="0">
+                    <button class="layui-btn"><i class="fa fa-search"></i></button>
+                </div>
+                </form>
             <div class="layui-tab-item layui-show">
                 <table lay-filter="listtable"  class="layui-table ">
                     <thead>
@@ -82,9 +122,9 @@ PAGE_EXEC = {
         var $tableWrapper_l = $tableWrapper.find(".layui-table-fixed .layui-table-body");
         $tr.each(function(index, el) {
             if($(el).find("[data-field=id]").find('.status_0').length > 0){
-            $(el).addClass('delete');
-            $(el).find('.ajax-delete').hide();
-            $tableWrapper_l.find('tr').eq(index).addClass('delete')
+                $(el).addClass('delete');
+                // $(el).find('.ajax-delete').hide();
+                $tableWrapper_l.find('tr').eq(index).addClass('delete')
             }
         });
     }

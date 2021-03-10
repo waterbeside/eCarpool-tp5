@@ -36,7 +36,9 @@ class AdminUser extends Model
         if (empty($identifier)) {
             return false;
         }
-        $map = array();
+        $map = [
+            ['is_delete', '=', 0]
+        ];
         if (is_int($identifier)) {
             $map[] = ['id', '=', $identifier];
         } else {

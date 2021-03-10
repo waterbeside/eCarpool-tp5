@@ -34,7 +34,7 @@ class AdminUser extends AdminBase
      * 管理员管理
      * @return mixed
      */
-    public function index($filter = [], $pagesize = 50)
+    public function index($filter = [], $pagesize = 20)
     {
         $auth_group_list = $this->auth_group_model->select();
         $dept_group_list = DeptGroupModel::select();
@@ -46,11 +46,24 @@ class AdminUser extends AdminBase
         foreach ($dept_group_list as $key => $value) {
             $dept_groups[$value['id']] = $value;
         }
-
-        $map = [];
+        $filter['status'] = isset($filter['status']) ? $filter['status'] : 1;
+        $map = [
+            ['is_delete', '=', 0],
+            ['status', '=', $filter['status']]
+        ];
         //筛选用户信息
         if (isset($filter['keyword']) && $filter['keyword']) {
-            $map[] = ['u.username|real_name|nickname', 'like', "%{$filter['keyword']}%"];
+            $map[] = ['u.username|real_name|nickname|carpool_account', 'like', "%{$filter['keyword']}%"];
+        }
+        //筛选组
+        if (isset($filter['auth_group_id']) && $filter['auth_group_id']) {
+            $uids = $this->auth_group_access_model->where('group_id', $filter['auth_group_id'])->column('uid');
+            $map[] = ['id', 'in', $uids];
+        }
+        //筛选地区组
+        if (isset($filter['dept_group_id']) && $filter['dept_group_id']) {
+            $uids = $this->auth_group_access_model->where('dept_group_id', $filter['dept_group_id'])->column('uid');
+            $map[] = ['id', 'in', $uids];
         }
         $authNpdsite = new AuthNpdsite();
         $lists = $this->admin_user_model->alias('u')->where($map)
@@ -76,7 +89,10 @@ class AdminUser extends AdminBase
             'lists' => $lists,
             'groups' => $groups,
             'dept_groups' => $dept_groups,
-            'pagesize' => $pagesize
+            'auth_group_list' => $auth_group_list,
+            'dept_group_list' => $dept_group_list,
+            'pagesize' => $pagesize,
+            'filter' => $filter,
         ];
         return $this->fetch('index', $returnData);
     }
@@ -93,7 +109,7 @@ class AdminUser extends AdminBase
             $validate_result = $this->validate($data, 'AdminUser');
 
             if ($validate_result !== true) {
-                $this->jsonReturn(1, $validate_result);
+                $this->jsonReturn(-1, $validate_result);
             } else {
                 // $data['password'] = md5($data['password'] . Config::get('salt'));
                 $data['password']  = password_hash($data['password'], PASSWORD_BCRYPT);
@@ -135,10 +151,10 @@ class AdminUser extends AdminBase
         $authNpdsite = new AuthNpdsite();
         if ($this->request->isPost()) {
             $data            = $this->request->param();
-            $validate_result = $this->validate($data, 'AdminUser');
             if ($id == 1) {
                 $this->jsonReturn(-1, "创始人账号无法编辑");
             }
+            $validate_result = $this->validate($data, 'AdminUser');
             if ($validate_result !== true) {
                 $this->jsonReturn(-1, $validate_result);
             } else {
@@ -205,7 +221,12 @@ class AdminUser extends AdminBase
         if ($id == 1) {
             $this->error('默认管理员不可删除');
         }
-        if ($this->admin_user_model->destroy($id)) {
+        $oldData = $this->admin_user_model::get($id);
+        if (!$oldData) {
+            $this->jsonReturn(0, '删除成功');
+        }
+        $oldData->is_delete = 1;
+        if ($oldData->save()) {
             $this->auth_group_access_model->where('uid', $id)->delete();
             $this->log('删除后台用户成功，id=' . $id, 0);
             $this->jsonReturn(0, '删除成功');
